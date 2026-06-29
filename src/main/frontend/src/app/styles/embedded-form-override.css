@@ -1,0 +1,354 @@
+/* Embedded form presentation overrides */
+
+:root {
+  --cf-brand: #2563eb;
+  --cf-brand-dark: #1d4ed8;
+  --cf-brand-light: #eff6ff;
+  --cf-surface: #f9fafb;
+  --cf-card: #ffffff;
+  --cf-border: #e4e7ec;
+  --cf-text: #111827;
+  --cf-muted: #667085;
+  --cf-radius: 8px;
+}
+
+.cf-wrapper {
+  position: relative;
+  direction: rtl;
+  overflow: visible;
+}
+
+.fjs-container {
+  direction: rtl !important;
+  overflow: visible !important;
+  padding: 0 !important;
+  border: 1px solid var(--cf-border) !important;
+  border-radius: var(--cf-radius) !important;
+  background: var(--cf-surface) !important;
+  color: var(--cf-text) !important;
+  box-shadow: none !important;
+  font-family: "IRANYekan", IRANSans, Tahoma, Arial, sans-serif !important;
+}
+
+.fjs-form {
+  direction: rtl !important;
+  overflow: visible !important;
+  padding: 0 !important;
+}
+
+.fjs-vertical-layout,
+.fjs-children {
+  overflow: visible !important;
+  padding: 18px !important;
+  gap: 16px !important;
+}
+
+.fjs-form-field {
+  min-width: 0 !important;
+  margin-bottom: 0 !important;
+  overflow: visible !important;
+}
+
+.fjs-form-field-label {
+  margin-bottom: 7px !important;
+  color: var(--cf-text) !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  line-height: 1.7 !important;
+  letter-spacing: 0 !important;
+  text-align: right !important;
+  text-transform: none !important;
+}
+
+.fjs-description,
+.fjs-form-field-description {
+  color: var(--cf-muted) !important;
+  font-size: 12px !important;
+  line-height: 1.8 !important;
+  text-align: right !important;
+}
+
+.fjs-input,
+.fjs-textarea,
+.fjs-select,
+.fjs-taglist-input {
+  width: 100% !important;
+  min-height: 44px !important;
+  box-sizing: border-box !important;
+  border: 1px solid var(--cf-border) !important;
+  border-radius: var(--cf-radius) !important;
+  background: var(--cf-card) !important;
+  color: var(--cf-text) !important;
+  padding: 10px 12px !important;
+  font-family: inherit !important;
+  font-size: 14px !important;
+  line-height: 1.7 !important;
+  text-align: right !important;
+  outline: none !important;
+  transition: border-color 0.15s ease, background 0.15s ease !important;
+}
+
+.fjs-input::placeholder,
+.fjs-textarea::placeholder {
+  color: #98a2b3 !important;
+}
+
+.fjs-input:focus,
+.fjs-textarea:focus,
+.fjs-select:focus,
+.fjs-taglist-input:focus {
+  border-color: var(--cf-brand) !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.fjs-container *:focus,
+.fjs-container *:focus-visible {
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.fjs-container .fjs-taglist:focus-within,
+.fjs-container .fjs-input-group:focus-within,
+.fjs-container .fjs-input[type="text"]:focus,
+.fjs-container .fjs-input[type="email"]:focus,
+.fjs-container .fjs-input[type="tel"]:focus,
+.fjs-container .fjs-input[type="number"]:focus,
+.fjs-container .fjs-textarea:focus,
+.fjs-container .fjs-select:focus {
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.fjs-container .fjs-input-group:focus-within {
+  border: 0 !important;
+}
+
+.fjs-container .fjs-input-group .fjs-input:focus,
+.fjs-container .fjs-input-group .fjs-taglist:focus-within,
+.fjs-container .fjs-input-group .fjs-select:focus {
+  border-color: var(--cf-border) !important;
+}
+
+.fjs-textarea {
+  min-height: 110px !important;
+  resize: vertical !important;
+}
+
+.fjs-input-group {
+  direction: rtl !important;
+  overflow: visible !important;
+  border: 0 !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+.fjs-input-adornment {
+  min-height: 44px !important;
+  border-color: var(--cf-border) !important;
+  background: var(--cf-brand-light) !important;
+  color: var(--cf-brand-dark) !important;
+}
+
+.fjs-number-arrow-container {
+  border-right: 1px solid var(--cf-border) !important;
+  border-left: 0 !important;
+  background: var(--cf-surface) !important;
+}
+
+.fjs-number-arrow-up,
+.fjs-number-arrow-down {
+  color: var(--cf-brand-dark) !important;
+  border-color: var(--cf-border) !important;
+}
+
+.fjs-number-arrow-up:hover,
+.fjs-number-arrow-down:hover {
+  background: var(--cf-brand-light) !important;
+}
+
+.fjs-taglist {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  min-height: 46px !important;
+  gap: 7px !important;
+  border: 1px solid var(--cf-border) !important;
+  border-radius: var(--cf-radius) !important;
+  background: var(--cf-card) !important;
+  padding: 8px 10px !important;
+}
+
+.fjs-taglist:focus-within {
+  border-color: var(--cf-brand) !important;
+  box-shadow: none !important;
+}
+
+.fjs-taglist-tag {
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: var(--cf-brand-light) !important;
+  color: var(--cf-brand-dark) !important;
+  padding: 4px 10px !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+}
+
+.fjs-container .fjs-taglist .fjs-taglist-tag .fjs-taglist-tag-remove {
+  display: grid !important;
+  place-items: center !important;
+  width: 24px !important;
+  height: 24px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: rgba(37, 99, 235, 0.11) !important;
+  color: var(--cf-brand-dark) !important;
+  line-height: 0 !important;
+  opacity: 0.75 !important;
+  overflow: hidden !important;
+  text-align: center !important;
+  transition: background 0.15s ease, opacity 0.15s ease, color 0.15s ease !important;
+}
+
+.fjs-container .fjs-taglist .fjs-taglist-tag .fjs-taglist-tag-remove:hover,
+.fjs-container .fjs-taglist .fjs-taglist-tag .fjs-taglist-tag-remove:focus {
+  background: var(--cf-brand) !important;
+  color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+.fjs-container .fjs-taglist .fjs-taglist-tag .fjs-taglist-tag-remove svg {
+  width: 14px !important;
+  height: 14px !important;
+  display: block !important;
+  margin: 0 !important;
+}
+
+.fjs-checkbox,
+.fjs-radio {
+  accent-color: var(--cf-brand) !important;
+}
+
+.fjs-form .fjs-form-field button[type="submit"],
+.fjs-form button.fjs-action-button {
+  min-height: 44px !important;
+  border: 0 !important;
+  border-radius: var(--cf-radius) !important;
+  background: var(--cf-brand) !important;
+  color: #ffffff !important;
+  padding: 0 22px !important;
+  cursor: pointer !important;
+  font-family: inherit !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+}
+
+.fjs-form button[type="submit"]:hover,
+.fjs-form button.fjs-action-button:hover {
+  background: var(--cf-brand-dark) !important;
+}
+
+.cf-footer {
+  display: flex;
+  justify-content: flex-start;
+  padding-top: 16px;
+}
+
+.cf-submit-btn {
+  min-width: 170px;
+  padding: 0 22px;
+  color: #ffffff;
+  background: var(--cf-brand);
+}
+
+.flatpickr-calendar {
+  direction: rtl !important;
+  z-index: 10000 !important;
+  overflow: visible !important;
+  border: 1px solid var(--cf-border) !important;
+  border-radius: var(--cf-radius) !important;
+  box-shadow: 0 18px 55px rgba(23, 33, 29, 0.2) !important;
+  font-family: "IRANYekan", IRANSans, Tahoma, Arial, sans-serif !important;
+}
+
+.flatpickr-calendar.open {
+  display: inline-block !important;
+}
+
+.flatpickr-months,
+.flatpickr-weekdays,
+.flatpickr-days {
+  direction: ltr !important;
+}
+
+.flatpickr-months .flatpickr-month,
+.flatpickr-current-month,
+.flatpickr-weekday {
+  color: var(--cf-brand-dark) !important;
+}
+
+.flatpickr-day {
+  border-radius: 6px !important;
+}
+
+.flatpickr-day.selected,
+.flatpickr-day.selected:hover {
+  border-color: var(--cf-brand) !important;
+  background: var(--cf-brand) !important;
+}
+
+.flatpickr-day.today {
+  border-color: var(--cf-brand) !important;
+  color: var(--cf-brand-dark) !important;
+}
+
+.flatpickr-day:hover {
+  background: var(--cf-brand-light) !important;
+}
+
+.fjs-powered-by,
+.fjs-powered-by a {
+  display: none !important;
+}
+
+.cds--grid {
+  width: 100% !important;
+  padding: 0 !important;
+}
+
+.cds--row {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  margin: 0 !important;
+  gap: 16px !important;
+}
+
+.cds--col {
+  min-width: min(100%, 240px) !important;
+  padding: 0 !important;
+}
+
+@media (max-width: 640px) {
+  .fjs-vertical-layout,
+  .fjs-children {
+    padding: 14px !important;
+  }
+
+  .cds--row {
+    display: grid !important;
+    gap: 14px !important;
+  }
+
+  .cds--col {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .flatpickr-calendar {
+    max-width: calc(100vw - 24px) !important;
+    right: 12px !important;
+    left: auto !important;
+  }
+}
