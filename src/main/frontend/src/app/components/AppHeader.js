@@ -72,6 +72,17 @@ function formatJalaliDate(date) {
   return `${weekday} ${toPersianDigits(jd)} ${PERSIAN_MONTHS[jm - 1]} ${toPersianDigits(jy)}`;
 }
 
+function formatTime(date) {
+  return toPersianDigits(
+    date.toLocaleTimeString("fa-IR", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    }),
+  );
+}
+
 // ── Component ──────────────────────────────────────────────────────────────────
 
 /**
@@ -83,9 +94,18 @@ function formatJalaliDate(date) {
  */
 export default function AppHeader({ title, subtitle }) {
   const [dateStr, setDateStr] = useState("");
+  const [timeStr, setTimeStr] = useState("");
 
   useEffect(() => {
-    setDateStr(formatJalaliDate(new Date()));
+    const updateDateTime = () => {
+      const now = new Date();
+      setDateStr(formatJalaliDate(now));
+      setTimeStr(formatTime(now));
+    };
+
+    updateDateTime();
+    const intervalId = window.setInterval(updateDateTime, 1000);
+    return () => window.clearInterval(intervalId);
   }, []);
 
   return (
@@ -111,7 +131,7 @@ export default function AppHeader({ title, subtitle }) {
           gap: 16,
         }}
       >
-        {/* RIGHT block: logos + org text */}
+        {/* RIGHT block: organisation logo + text */}
         <div
           style={{
             display: "flex",
@@ -120,7 +140,6 @@ export default function AppHeader({ title, subtitle }) {
             flexShrink: 0,
           }}
         >
-          {/* Iran Tax Organization logo (سازمان امور مالیاتی) */}
           <div
             style={{
               width: 56,
@@ -138,7 +157,6 @@ export default function AppHeader({ title, subtitle }) {
             />
           </div>
 
-          {/* Organisation name text */}
           <div style={{ lineHeight: 1.7 }}>
             <div
               style={{
@@ -169,34 +187,6 @@ export default function AppHeader({ title, subtitle }) {
             >
               معاونت فناوری‌های مالیاتی
             </div>
-          </div>
-
-          {/* Vertical divider */}
-          <div
-            style={{
-              width: 1,
-              height: 48,
-              background: "#e5e7eb",
-              margin: "0 4px",
-            }}
-          />
-
-          {/* Iranian flag circle */}
-          <div
-            style={{
-              width: 44,
-              height: 44,
-              position: "relative",
-              flexShrink: 0,
-            }}
-          >
-            <Image
-              src="/images/iran-flag.png"
-              alt="پرچم ایران"
-              fill
-              style={{ objectFit: "contain", borderRadius: "50%" }}
-              priority
-            />
           </div>
         </div>
 
@@ -236,19 +226,46 @@ export default function AppHeader({ title, subtitle }) {
           )}
         </div>
 
-        {/* LEFT: Jalali date */}
-        <div style={{ textAlign: "left", minWidth: 160, flexShrink: 0 }}>
+        {/* LEFT corner: Iran flag with date/time below */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            minWidth: 170,
+            flexShrink: 0,
+            direction: "rtl",
+          }}
+        >
+          <div
+            style={{
+              width: 44,
+              height: 44,
+              position: "relative",
+              flexShrink: 0,
+            }}
+          >
+            <Image
+              src="/images/iran-flag.png"
+              alt="پرچم ایران"
+              fill
+              style={{ objectFit: "contain", borderRadius: "50%" }}
+              priority
+            />
+          </div>
           <div
             style={{
               fontSize: 12,
               color: "#374151",
               fontWeight: 500,
-              textAlign: "right",
-              direction: "rtl",
+              textAlign: "center",
+              lineHeight: 1.6,
               letterSpacing: "0.01em",
+              marginTop: 3,
             }}
           >
-            {dateStr}
+            <div>{dateStr}</div>
+            <div>{timeStr}</div>
           </div>
         </div>
       </div>
@@ -266,7 +283,6 @@ export default function AppHeader({ title, subtitle }) {
           direction: "rtl",
         }}
       >
-        {/* Notification bell */}
         <button
           aria-label="اعلان‌ها"
           style={{
@@ -287,7 +303,6 @@ export default function AppHeader({ title, subtitle }) {
           🔔
         </button>
 
-        {/* Logout button */}
         <button
           style={{
             display: "inline-flex",
