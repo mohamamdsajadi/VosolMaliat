@@ -1,403 +1,393 @@
-'use client'
+"use client";
 
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useState } from "react";
-import AppShell from './components/app-shell';
-import {
-  formatFaNumber,
-  getProcessSubtitle,
-  getProcessTitle
-} from './lib/display';
-import {
-  fetchProcessDefinitions,
-  startProcessInstance
-} from './lib/tasks';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
+import AppHeader from "./components/AppHeader";
 
-const CATEGORY_STORAGE_KEY = 'processCategories';
-const UNCATEGORIZED_KEY = 'uncategorized';
-const DEFAULT_PROCESS_CATEGORIES = [
-  { id: 'evaluation', name: 'ارزیابی', prefix: 'Evaluation_p1' },
-  { id: 'register', name: 'ثبت نام', prefix: 'register_p1' }
-];
+const PieChartComponent = dynamic(() => import("./components/PieChartWidget"), {
+  ssr: false,
+  loading: () => (
+    <div
+      style={{
+        height: 260,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "#9ca3af",
+      }}
+    >
+      در حال بارگذاری نمودار…
+    </div>
+  ),
+});
 
-export default function Home() {
-  const router = useRouter();
-  const [processDefinitions, setProcessDefinitions] = useState([]);
-  const [startingProcessKey, setStartingProcessKey] = useState("");
-  const [loadingProcesses, setLoadingProcesses] = useState(true);
-  const [message, setMessage] = useState("");
-  const [categories, setCategories] = useState(DEFAULT_PROCESS_CATEGORIES);
-  const [activeCategoryKey, setActiveCategoryKey] = useState(DEFAULT_PROCESS_CATEGORIES[0].id);
-  const [newCategoryName, setNewCategoryName] = useState("");
-  const [newCategoryPrefix, setNewCategoryPrefix] = useState("");
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-  const processLinks = useMemo(() => processDefinitions.map((processDefinition) => ({
-    processDefinitionKey: processDefinition.processDefinitionKey,
-    title: getProcessTitle(processDefinition)
-  })), [processDefinitions]);
+function toPersianDigits(str) {
+  const persianDigits = "۰۱۲۳۴۵۶۷۸۹";
+  return String(str).replace(/\d/g, (d) => persianDigits[d]);
+}
 
-  const categorizedProcesses = useMemo(
-    () => categorizeProcesses(processDefinitions, categories),
-    [categories, processDefinitions]
+function formatRial(amount) {
+  if (amount == null || amount === "") return "۰ ریال";
+  return toPersianDigits(Number(amount).toLocaleString("en-US")) + " ریال";
+}
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+function Card({ children, style }) {
+  return (
+    <div
+      style={{
+        background: "white",
+        borderRadius: 12,
+        boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
+        border: "1px solid #e5e7eb",
+        padding: "24px",
+        ...style,
+      }}
+    >
+      {children}
+    </div>
   );
-  const activeCategory = categorizedProcesses.find((category) => category.id === activeCategoryKey)
-    || categorizedProcesses[0];
-  const visibleProcessDefinitions = activeCategory?.processes || [];
+}
 
-  const loadProcessDefinitions = useCallback(async () => {
-    setLoadingProcesses(true);
-    setMessage("");
+function CardTitle({ children }) {
+  return (
+    <h2
+      style={{
+        fontSize: 16,
+        fontWeight: 700,
+        color: "#1e3a5f",
+        marginBottom: 20,
+        textAlign: "right",
+        paddingBottom: 12,
+        borderBottom: "2px solid #eff6ff",
+      }}
+    >
+      {children}
+    </h2>
+  );
+}
 
-    try {
-      const items = await fetchProcessDefinitions();
-      setProcessDefinitions(items);
-    } catch (error) {
-      setMessage(error.message || "دریافت فرایندها با خطا روبه‌رو شد.");
-      setProcessDefinitions([]);
-    } finally {
-      setLoadingProcesses(false);
-    }
+function StatRow({ badgeBg, badgeColor, value, label }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "12px",
+        direction: "rtl",
+        padding: "8px 0",
+        borderBottom: "1px solid #f9fafb",
+      }}
+    >
+      <span
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          minWidth: 48,
+          padding: "3px 12px",
+          borderRadius: 9999,
+          background: badgeBg,
+          color: badgeColor,
+          fontWeight: 700,
+          fontSize: 15,
+          flexShrink: 0,
+        }}
+      >
+        {toPersianDigits(value ?? 0)}
+      </span>
+      <span style={{ color: "#374151", fontSize: 14 }}>{label}</span>
+    </div>
+  );
+}
+
+function FinancialRow({ label, value }) {
+  return (
+    <div
+      style={{
+        paddingBottom: 14,
+        marginBottom: 14,
+        borderBottom: "1px solid #f3f4f6",
+      }}
+    >
+      <div
+        style={{
+          fontSize: 12,
+          color: "#6b7280",
+          marginBottom: 4,
+          textAlign: "right",
+        }}
+      >
+        {label}
+      </div>
+      <div
+        style={{
+          fontSize: 17,
+          fontWeight: 700,
+          color: "#1f2937",
+          textAlign: "right",
+        }}
+      >
+        {value}
+      </div>
+    </div>
+  );
+}
+
+function ActionButton({ onClick, children, dark }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        marginTop: 20,
+        padding: "11px 20px",
+        background: dark ? "#1e293b" : "#2563eb",
+        color: "white",
+        borderRadius: 8,
+        border: "none",
+        cursor: "pointer",
+        width: "100%",
+        fontSize: 14,
+        fontWeight: 600,
+        transition: "opacity 0.15s",
+      }}
+      onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.85")}
+      onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+    >
+      {children}
+    </button>
+  );
+}
+
+// ─── Main page ────────────────────────────────────────────────────────────────
+
+export default function DashboardPage() {
+  const router = useRouter();
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchStats = () => {
+    setLoading(true);
+    setError(null);
+    fetch("/api/v1/dashboard/stats")
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
+      .then((data) => {
+        setStats(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError(err.message);
+        setLoading(false);
+      });
+  };
+
+  useEffect(() => {
+    fetchStats();
   }, []);
-
-  const startProcess = async (processDefinitionKey) => {
-    if (!processDefinitionKey) {
-      setMessage("برای شروع، شناسه فرایند معتبر نیست.");
-      return;
-    }
-
-    setStartingProcessKey(processDefinitionKey);
-    setMessage("");
-
-    try {
-      const result = await startProcessInstance(processDefinitionKey);
-      const href = `/processes/${encodeURIComponent(processDefinitionKey)}/tasks`;
-      const startedInstanceKey = result?.processInstanceKey
-        ? `?startedInstanceKey=${encodeURIComponent(result.processInstanceKey)}`
-        : "";
-      router.push(`${href}${startedInstanceKey}`);
-    } catch (error) {
-      setMessage(error.message || "شروع فرایند با خطا روبه‌رو شد.");
-    } finally {
-      setStartingProcessKey("");
-    }
-  };
-
-  useEffect(() => {
-    const savedCategories = readSavedCategories();
-    if (savedCategories !== null) {
-      setCategories(savedCategories);
-      setActiveCategoryKey(savedCategories[0]?.id || UNCATEGORIZED_KEY);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadProcessDefinitions();
-  }, [loadProcessDefinitions]);
-
-  useEffect(() => {
-    if (categorizedProcesses.length > 0 && !categorizedProcesses.some((category) => category.id === activeCategoryKey)) {
-      setActiveCategoryKey(categorizedProcesses[0].id);
-    }
-  }, [activeCategoryKey, categorizedProcesses]);
-
-  const addCategory = (event) => {
-    event.preventDefault();
-    const name = newCategoryName.trim();
-    const prefix = newCategoryPrefix.trim();
-
-    if (!name || !prefix) {
-      setMessage("برای افزودن دسته، نام دسته و پیشوند فرایند را وارد کنید.");
-      return;
-    }
-
-    const nextCategories = [
-      ...categories,
-      {
-        id: `custom-${Date.now()}`,
-        name,
-        prefix
-      }
-    ];
-    saveCategories(nextCategories);
-    setCategories(nextCategories);
-    setActiveCategoryKey(nextCategories[nextCategories.length - 1].id);
-    setNewCategoryName("");
-    setNewCategoryPrefix("");
-    setMessage("");
-  };
-
-  const removeCategory = (categoryId) => {
-    const nextCategories = categories.filter((category) => category.id !== categoryId);
-    saveCategories(nextCategories);
-    setCategories(nextCategories);
-    if (activeCategoryKey === categoryId) {
-      setActiveCategoryKey(nextCategories[0]?.id || UNCATEGORIZED_KEY);
-    }
-  };
-
-  const versionCount = processDefinitions.reduce((sum, item) => sum + Number(item.version || 0), 0);
-  const startableCount = processDefinitions.filter((item) => item.hasStartForm !== false).length;
 
   return (
-    <AppShell
-      active="processes"
-      title="داشبورد فرایندهای خدمت"
-      eyebrow="سناریوی عملیاتی"
-      subtitle="یک مرکز عملیات واقعی برای شروع پرونده، دیدن کارهای هر فرایند، تکمیل فرم مرحله و بستن همان کار."
-      processLinks={processLinks}
-      actions={(
-        <button
-          className="ghost-action"
-          onClick={loadProcessDefinitions}
-          disabled={loadingProcesses}
+    <div style={{ minHeight: "100vh", background: "#f9fafb" }}>
+      <AppHeader
+        title="دستیار هوشمند حسابرسی"
+        subtitle="میزکار مامورین مالیاتی"
+      />
+
+      <div style={{ padding: "28px 24px", maxWidth: 1400, margin: "0 auto" }}>
+        <h1
+          style={{
+            fontSize: 24,
+            fontWeight: 800,
+            color: "#1e3a5f",
+            marginBottom: 24,
+            textAlign: "right",
+          }}
         >
-          {loadingProcesses ? 'در حال بروزرسانی' : 'بروزرسانی فرایندها'}
-        </button>
-      )}
-    >
-      <section className="dashboard-grid">
-        <article className="scenario-card">
-          <p className="eyebrow">تحلیل سناریو</p>
-          <h2>مرکز عملیات درخواست‌های سازمانی</h2>
-          <p>
-            این دمو را مثل میز کار یک تیم خدمات سازمانی طراحی کردم: مشتری یا اپراتور یک پرونده خدمت را شروع می‌کند، هر مرحله انسانی به صف کار می‌آید، کارشناس فرم همان مرحله را تکمیل می‌کند و بعد از ثبت، پرونده به گام بعدی فرایند می‌رود.
-          </p>
-          <div className="flow-rail" aria-label="جریان اصلی">
-            <span>شروع پرونده</span>
-            <span>صف کار فرایند</span>
-            <span>تکمیل فرم مرحله</span>
-            <span>ثبت نتیجه</span>
-          </div>
-        </article>
+          میزکار
+        </h1>
 
-        <div className="metric-grid">
-          <MetricCard label="فرایندهای آماده اجرا" value={formatFaNumber(processDefinitions.length)} />
-          <MetricCard label="نسخه‌های عملیاتی" value={formatFaNumber(versionCount)} />
-          <MetricCard label="فرایندهای قابل شروع" value={formatFaNumber(startableCount)} />
-        </div>
-      </section>
-
-      <section className="panel-section">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">صف شروع</p>
-            <h2>فرایندهای قابل اجرا</h2>
-          </div>
-          <Link className="text-action" href="/tasks">مشاهده همه کارهای فعال</Link>
-        </div>
-
-        <div className="category-manager">
-          <div className="category-tabs" role="tablist" aria-label="دسته‌بندی فرایندها">
-            {categorizedProcesses.map((category) => {
-              const removable = category.id !== UNCATEGORIZED_KEY;
-
-              return (
-                <div
-                  className={activeCategory?.id === category.id ? "category-tab category-tab--active" : "category-tab"}
-                  key={category.id}
-                  onClick={() => setActiveCategoryKey(category.id)}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter' || event.key === ' ') {
-                      event.preventDefault();
-                      setActiveCategoryKey(category.id);
-                    }
-                  }}
-                  role="tab"
-                  tabIndex={0}
-                >
-                  <span className="category-tab-main">
-                    <strong>{category.name}</strong>
-                    <small>{category.prefix ? `پیشوند: ${category.prefix}` : 'بدون پیشوند'}</small>
-                  </span>
-                  <span className="category-count">{formatFaNumber(category.processes.length)}</span>
-                  {removable && (
-                    <button
-                      className="category-remove"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        removeCategory(category.id);
-                      }}
-                      type="button"
-                    >
-                      حذف
-                    </button>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-          <form className="category-form" onSubmit={addCategory}>
-            <div>
-              <label htmlFor="category-name">نام دسته جدید</label>
-              <input
-                id="category-name"
-                value={newCategoryName}
-                onChange={(event) => setNewCategoryName(event.target.value)}
-                placeholder="مثلا: اعتبارسنجی"
-              />
-            </div>
-            <div>
-              <label htmlFor="category-prefix">پیشوند نام فرایند</label>
-              <input
-                id="category-prefix"
-                value={newCategoryPrefix}
-                onChange={(event) => setNewCategoryPrefix(event.target.value)}
-                placeholder="مثلا: credit_"
-              />
-            </div>
-            <button className="ghost-action" type="submit">افزودن دسته</button>
-          </form>
-        </div>
-
-        {message && <div className="notice error">{message}</div>}
-
-        {loadingProcesses ? (
-          <div className="process-grid" aria-hidden="true">
-            {[1, 2, 3, 4].map((item) => (
-              <article className="process-card process-card--loading" key={item}>
-                <span className="skeleton-line title" />
-                <span className="skeleton-line medium" />
-                <span className="skeleton-input" />
-              </article>
-            ))}
-          </div>
-        ) : processDefinitions.length === 0 ? (
-          <div className="empty-state">
-            <strong>فرایندی برای نمایش پیدا نشد.</strong>
-            <span>اتصال Camunda یا دسترسی API جستجوی فرایندها را بررسی کنید.</span>
-          </div>
-        ) : visibleProcessDefinitions.length === 0 ? (
-          <div className="empty-state">
-            <strong>فرایندی در دسته «{activeCategory?.name}» وجود ندارد.</strong>
-            <span>نام فرایندها باید با پیشوند تعریف‌شده برای این دسته شروع شود.</span>
-          </div>
-        ) : (
-          <div className="process-row-list">
-            {visibleProcessDefinitions.map((processDefinition, index) => {
-              const title = getProcessTitle(processDefinition);
-              const key = processDefinition.processDefinitionKey;
-              const starting = startingProcessKey === key;
-
-              return (
-                <article className="process-card process-card--row" key={key}>
-                  <div className="process-card-head">
-                    <span className="process-avatar">{String(index + 1).padStart(2, "0")}</span>
-                    <div>
-                      <p className="eyebrow">مسیر خدمت</p>
-                      <h3>{title}</h3>
-                      <p className="process-copy">{getProcessSubtitle(processDefinition)}</p>
-                    </div>
-                    <span className="status-pill status-pill--ready">
-                      نسخه {Number(processDefinition.version || 0).toLocaleString('fa-IR')}
-                    </span>
-                  </div>
-
-                  <dl className="process-meta">
-                    <div>
-                      <dt>شناسه فرایند</dt>
-                      <dd>{processDefinition.processDefinitionId || '-'}</dd>
-                    </div>
-                    <div>
-                      <dt>کلید اجرا</dt>
-                      <dd>{key}</dd>
-                    </div>
-                    <div>
-                      <dt>منبع</dt>
-                      <dd>{processDefinition.resourceName || '-'}</dd>
-                    </div>
-                  </dl>
-                    <div className="process-actions">
-                        <button
-                            className="primary-action"
-                            onClick={() => startProcess(key)}
-                            disabled={Boolean(startingProcessKey)}
-                        >
-                            {starting ? 'در حال شروع...' : 'شروع پرونده'}
-                        </button>
-
-                        <Link
-                            className="ghost-action"
-                            href={`/processes/${encodeURIComponent(key)}/tasks`}
-                        >
-                            صف کار
-                        </Link>
-                    </div>
-                </article>
-              )
-            })}
+        {/* ── Loading ── */}
+        {loading && (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: 240,
+            }}
+          >
+            <div className="spinner" />
           </div>
         )}
-      </section>
-    </AppShell>
+
+        {/* ── Error ── */}
+        {!loading && error && (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 16,
+              padding: "60px 40px",
+            }}
+          >
+            <div style={{ fontSize: 36 }}>⚠️</div>
+            <p style={{ color: "#dc2626", fontSize: 15, textAlign: "center" }}>
+              خطا در دریافت اطلاعات: {error}
+            </p>
+            <button
+              onClick={fetchStats}
+              style={{
+                padding: "10px 28px",
+                background: "#2563eb",
+                color: "white",
+                borderRadius: 8,
+                border: "none",
+                cursor: "pointer",
+                fontSize: 14,
+                fontWeight: 600,
+              }}
+            >
+              تلاش مجدد
+            </button>
+          </div>
+        )}
+
+        {/* ── Content ── */}
+        {!loading && !error && stats && (
+          <>
+            {/* ROW 1 */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "2fr 3fr",
+                gap: 24,
+                marginBottom: 24,
+              }}
+            >
+              {/* Card: Welcome + Stats */}
+              <Card>
+                <CardTitle>به میزکار مامورین مالیاتی خوش آمدید.</CardTitle>
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 0 }}
+                >
+                  <StatRow
+                    badgeBg="#ffe4e6"
+                    badgeColor="#be123c"
+                    value={stats.unassignedExecutionPapers}
+                    label="برگ اجرا تخصیص نیافته"
+                  />
+                  <StatRow
+                    badgeBg="#dcfce7"
+                    badgeColor="#15803d"
+                    value={stats.arrestOrderIssued}
+                    label="دستور بازداشت صادر شده"
+                  />
+                  <StatRow
+                    badgeBg="#f3f4f6"
+                    badgeColor="#374151"
+                    value={stats.arrestOrderNotIssued}
+                    label="دستور بازداشت صادر نشده"
+                  />
+                  <StatRow
+                    badgeBg="#ffedd5"
+                    badgeColor="#c2410c"
+                    value={stats.awaitingArrestOrder}
+                    label="در انتظار صدور دستور بازداشت"
+                  />
+                </div>
+                <ActionButton onClick={() => router.push("/execution-papers")}>
+                  مشاهده برگ‌های اجرا
+                </ActionButton>
+              </Card>
+
+              {/* Card: Pie Chart */}
+              <Card>
+                <CardTitle>گزارش تخصیص</CardTitle>
+                <PieChartComponent stats={stats} />
+              </Card>
+            </div>
+
+            {/* ROW 2 */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: 24,
+              }}
+            >
+              {/* Card: وضعیت وصول مطالبات */}
+              <Card>
+                <CardTitle>وضعیت وصول مطالبات</CardTitle>
+                <div style={{ direction: "rtl" }}>
+                  <FinancialRow
+                    label="جمع بدهی در انتظار دستور بازداشت اموال"
+                    value={formatRial(stats.totalDebtAwaitingSeizure)}
+                  />
+                  <FinancialRow
+                    label="جمع بدهی صدور دستور بازداشت اموال"
+                    value={formatRial(stats.totalDebtWithSeizureOrder)}
+                  />
+                  <FinancialRow
+                    label="مبالغ وصول شده"
+                    value={formatRial(stats.collectedAmounts)}
+                  />
+                  <FinancialRow
+                    label="مبالغ وصول نشده"
+                    value={formatRial(stats.uncollectedAmounts)}
+                  />
+                </div>
+              </Card>
+
+              {/* Card: اقدامات من */}
+              <Card>
+                <CardTitle>اقدامات من</CardTitle>
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 0 }}
+                >
+                  <StatRow
+                    badgeBg="#dbeafe"
+                    badgeColor="#1d4ed8"
+                    value={stats.myActionsNew}
+                    label="جدید"
+                  />
+                  <StatRow
+                    badgeBg="#ffedd5"
+                    badgeColor="#c2410c"
+                    value={stats.myActionsAwaitingCompletion}
+                    label="در انتظار تکمیل"
+                  />
+                  <StatRow
+                    badgeBg="#dcfce7"
+                    badgeColor="#15803d"
+                    value={stats.myActionsCompleted}
+                    label="تکمیل شده"
+                  />
+                  <StatRow
+                    badgeBg="#ffe4e6"
+                    badgeColor="#be123c"
+                    value={stats.myActionsCancelled}
+                    label="لغو شده"
+                  />
+                </div>
+                <ActionButton
+                  dark
+                  onClick={() => router.push("/execution-papers")}
+                >
+                  مشاهده اقدامات من
+                </ActionButton>
+              </Card>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
   );
-}
-
-function MetricCard({ label, value }) {
-  return (
-    <article className="metric-card">
-      <span>{label}</span>
-      <strong>{value}</strong>
-    </article>
-  );
-}
-
-function categorizeProcesses(processDefinitions, categories) {
-  const categoryBuckets = categories.map((category) => ({
-    ...category,
-    processes: []
-  }));
-  const uncategorized = {
-    id: UNCATEGORIZED_KEY,
-    name: "سایر",
-    prefix: "",
-    processes: []
-  };
-
-  processDefinitions.forEach((processDefinition) => {
-    const processName = getRawProcessName(processDefinition);
-    const category = categoryBuckets.find((item) => matchesPrefix(processName, item.prefix));
-    if (category) {
-      category.processes.push(processDefinition);
-    } else {
-      uncategorized.processes.push(processDefinition);
-    }
-  });
-
-  return uncategorized.processes.length > 0
-    ? [...categoryBuckets, uncategorized]
-    : categoryBuckets;
-}
-
-function getRawProcessName(processDefinition) {
-  return String(
-    processDefinition?.name
-    || processDefinition?.processDefinitionId
-    || processDefinition?.resourceName
-    || ""
-  );
-}
-
-function matchesPrefix(processName, prefix) {
-  return processName.toLowerCase().startsWith(String(prefix || "").toLowerCase());
-}
-
-function readSavedCategories() {
-  try {
-    const savedValue = window.localStorage.getItem(CATEGORY_STORAGE_KEY);
-    if (savedValue === null) {
-      return null;
-    }
-    const savedCategories = JSON.parse(savedValue || "[]");
-    return Array.isArray(savedCategories)
-      ? savedCategories.filter((category) => category?.name && category?.prefix)
-      : [];
-  } catch {
-    return null;
-  }
-}
-
-function saveCategories(categories) {
-  window.localStorage.setItem(CATEGORY_STORAGE_KEY, JSON.stringify(categories));
 }

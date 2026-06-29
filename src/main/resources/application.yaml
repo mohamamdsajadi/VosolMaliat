@@ -1,36 +1,52 @@
+spring:
+  application:
+    name: vosol-maliat
 
-tasklist:
-  client:
-    profile: oidc
-    base-url: https://parand.mparsict.com
-    auth-url: https://keycloack.parand.mparsict.com/auth/realms/camunda-platform/protocol/openid-connect/token
-    client-id: orchestration
-    client-secret: secret
-    audience: orchestration
+  datasource:
+    url: jdbc:sqlite:${DB_PATH:/home/mohammad/IdeaProjects/VosolMaliat/identifier.sqlite}
+    driver-class-name: org.sqlite.JDBC
+
+  jpa:
+    database-platform: org.hibernate.community.dialect.SQLiteDialect
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        jdbc:
+          time_zone: UTC
+
+  jackson:
+    default-property-inclusion: non_null
+    serialization:
+      write-dates-as-timestamps: false
 
 camunda:
-  api:
-    base-url: https://parand.mparsict.com
-    auth:
-      token-url: https://keycloack.parand.mparsict.com/auth/realms/camunda-platform/protocol/openid-connect/token
-      client-id: orchestration
-      client-secret: secret
-      audience: orchestration
-  webhook:
-    url: http://46.245.79.18:8086/inbound
-    authorization:
-      username: "semati"
-      password: "semati"
   client:
     mode: self-managed
-    grpc-address: http://46.245.79.18:26500
-    rest-address: https://parand.mparsict.com
+    grpc-address: ${CAMUNDA_GRPC_ADDRESS:http://46.245.79.18:26500}
+    rest-address: ${CAMUNDA_REST_ADDRESS:https://parand.mparsict.com}
     auth:
       method: oidc
-      token-url: https://keycloack.parand.mparsict.com/auth/realms/camunda-platform/protocol/openid-connect/token
-      client-id: orchestration
-      client-secret: secret
-      audience: orchestration
+      token-url: ${CAMUNDA_TOKEN_URL:https://keycloack.parand.mparsict.com/auth/realms/camunda-platform/protocol/openid-connect/token}
+      client-id: ${CAMUNDA_CLIENT_ID:orchestration}
+      client-secret: ${CAMUNDA_CLIENT_SECRET:secret}
+      audience: ${CAMUNDA_AUDIENCE:orchestration}
     enabled: true
+
 server:
   port: ${SERVER_PORT:8025}
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+logging:
+  level:
+    com.mparsict.vosolmaliat: DEBUG
+    io.camunda.client: INFO
+    io.camunda.zeebe: WARN
+    org.hibernate.SQL: WARN

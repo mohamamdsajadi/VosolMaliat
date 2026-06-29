@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:zeebe="http://camunda.org/schema/zeebe/1.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  id="Definitions_ExecutionPaperIssuance"
+  targetNamespace="http://mparsict.com/bpmn/tax-execution"
+  exporter="Camunda Modeler"
+  exporterVersion="5.0.0">
+
+  <bpmn:process id="execution-paper-issuance" name="صدور برگ اجرا" isExecutable="true">
+
+    <!-- =================== START =================== -->
+    <bpmn:startEvent id="StartEvent_ReceiveDebtPaper"
+                     name="دریافت اطلاعات پرونده و میزان بدهی از سامانه عملیاتی">
+      <bpmn:outgoing>Flow_ToCheckIssuance</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <!-- =================== TASK 1: CHECK RULES =================== -->
+    <bpmn:serviceTask id="Task_CheckIssuancePossibility"
+                      name="بررسی امکان صدور اجرا (براساس محدودیت‌های اعمالی مدیر سامانه)">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="check-issuance-possibility" retries="3"/>
+        <zeebe:ioMapping>
+          <zeebe:input source="=issuanceRequestId" target="issuanceRequestId"/>
+          <zeebe:input source="=debtPaperPayload"  target="debtPaperPayload"/>
+          <zeebe:output source="=canIssue"                 target="canIssue"/>
+          <zeebe:output source="=rejectionReasonCode"      target="rejectionReasonCode"/>
+          <zeebe:output source="=rejectionReasonDesc"      target="rejectionReasonDesc"/>
+          <zeebe:output source="=restrictionRemovalDate"   target="restrictionRemovalDate"/>
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_ToCheckIssuance</bpmn:incoming>
+      <bpmn:outgoing>Flow_ToGateway</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- =================== GATEWAY =================== -->
+    <bpmn:exclusiveGateway id="Gateway_CanIssue" name="امکان صدور">
+      <bpmn:incoming>Flow_ToGateway</bpmn:incoming>
+      <bpmn:outgoing>Flow_IssuancePossible</bpmn:outgoing>
+      <bpmn:outgoing>Flow_IssuanceNotPossible</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <!-- =================== TASK 2A: ISSUE PAPER =================== -->
+    <bpmn:serviceTask id="Task_IssueExecutionPaper"
+                      name="صدور برگ اجرا با شناسه یکتا">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="issue-execution-paper" retries="3"/>
+        <zeebe:ioMapping>
+          <zeebe:input source="=issuanceRequestId" target="issuanceRequestId"/>
+          <zeebe:input source="=debtPaperPayload"  target="debtPaperPayload"/>
+          <zeebe:output source="=executionPaperCode" target="executionPaperCode"/>
+          <zeebe:output source="=success"             target="success"/>
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_IssuancePossible</bpmn:incoming>
+      <bpmn:outgoing>Flow_ToSuccessEnd</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- =================== TASK 2B: SEND REJECTION =================== -->
+    <bpmn:serviceTask id="Task_SendRejectionResponse"
+                      name="ارسال پاسخ عدم امکان صدور برگ اجرا، نوع و تاریخ رفع محدودیت">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="send-rejection-response" retries="3"/>
+        <zeebe:ioMapping>
+          <zeebe:input source="=issuanceRequestId"       target="issuanceRequestId"/>
+          <zeebe:input source="=rejectionReasonCode"     target="rejectionReasonCode"/>
+          <zeebe:input source="=rejectionReasonDesc"     target="rejectionReasonDesc"/>
+          <zeebe:input source="=restrictionRemovalDate"  target="restrictionRemovalDate"/>
+          <zeebe:output source="=success" target="success"/>
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_IssuanceNotPossible</bpmn:incoming>
+      <bpmn:outgoing>Flow_ToRejectedEnd</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- =================== END EVENTS =================== -->
+    <bpmn:endEvent id="EndEvent_Success" name="برگ اجرا با موفقیت صادر شد">
+      <bpmn:incoming>Flow_ToSuccessEnd</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:endEvent id="EndEvent_Rejected" name="درخواست رد شد - عدم امکان صدور">
+      <bpmn:incoming>Flow_ToRejectedEnd</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <!-- =================== SEQUENCE FLOWS =================== -->
+    <bpmn:sequenceFlow id="Flow_ToCheckIssuance"
+                       sourceRef="StartEvent_ReceiveDebtPaper"
+                       targetRef="Task_CheckIssuancePossibility"/>
+
+    <bpmn:sequenceFlow id="Flow_ToGateway"
+                       sourceRef="Task_CheckIssuancePossibility"
+                       targetRef="Gateway_CanIssue"/>
+
+    <bpmn:sequenceFlow id="Flow_IssuancePossible"
+                       name="امکان صدور وجود دارد"
+                       sourceRef="Gateway_CanIssue"
+                       targetRef="Task_IssueExecutionPaper">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=canIssue = true</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="Flow_IssuanceNotPossible"
+                       name="امکان صدور وجود ندارد"
+                       sourceRef="Gateway_CanIssue"
+                       targetRef="Task_SendRejectionResponse">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=canIssue = false</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="Flow_ToSuccessEnd"
+                       sourceRef="Task_IssueExecutionPaper"
+                       targetRef="EndEvent_Success"/>
+
+    <bpmn:sequenceFlow id="Flow_ToRejectedEnd"
+                       sourceRef="Task_SendRejectionResponse"
+                       targetRef="EndEvent_Rejected"/>
+
+  </bpmn:process>
+
+  <!-- =================== DIAGRAM =================== -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="execution-paper-issuance">
+
+      <bpmndi:BPMNShape id="StartEvent_ReceiveDebtPaper_di" bpmnElement="StartEvent_ReceiveDebtPaper">
+        <dc:Bounds x="152" y="182" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="120" y="225" width="100" height="40"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_CheckIssuancePossibility_di" bpmnElement="Task_CheckIssuancePossibility">
+        <dc:Bounds x="240" y="160" width="200" height="80"/>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Gateway_CanIssue_di" bpmnElement="Gateway_CanIssue" isMarkerVisible="true">
+        <dc:Bounds x="495" y="175" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="485" y="232" width="70" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_IssueExecutionPaper_di" bpmnElement="Task_IssueExecutionPaper">
+        <dc:Bounds x="600" y="100" width="200" height="80"/>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_SendRejectionResponse_di" bpmnElement="Task_SendRejectionResponse">
+        <dc:Bounds x="600" y="260" width="200" height="80"/>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="EndEvent_Success_di" bpmnElement="EndEvent_Success">
+        <dc:Bounds x="862" y="122" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="838" y="165" width="84" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="EndEvent_Rejected_di" bpmnElement="EndEvent_Rejected">
+        <dc:Bounds x="862" y="282" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="838" y="325" width="84" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNEdge id="Flow_ToCheckIssuance_di" bpmnElement="Flow_ToCheckIssuance">
+        <di:waypoint x="188" y="200"/>
+        <di:waypoint x="240" y="200"/>
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_ToGateway_di" bpmnElement="Flow_ToGateway">
+        <di:waypoint x="440" y="200"/>
+        <di:waypoint x="495" y="200"/>
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_IssuancePossible_di" bpmnElement="Flow_IssuancePossible">
+        <di:waypoint x="520" y="175"/>
+        <di:waypoint x="520" y="140"/>
+        <di:waypoint x="600" y="140"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="500" y="150" width="80" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_IssuanceNotPossible_di" bpmnElement="Flow_IssuanceNotPossible">
+        <di:waypoint x="520" y="225"/>
+        <di:waypoint x="520" y="300"/>
+        <di:waypoint x="600" y="300"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="500" y="255" width="80" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_ToSuccessEnd_di" bpmnElement="Flow_ToSuccessEnd">
+        <di:waypoint x="800" y="140"/>
+        <di:waypoint x="862" y="140"/>
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Flow_ToRejectedEnd_di" bpmnElement="Flow_ToRejectedEnd">
+        <di:waypoint x="800" y="300"/>
+        <di:waypoint x="862" y="300"/>
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

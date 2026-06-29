@@ -4,15 +4,31 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>io.camunda.example</groupId>
-  <artifactId>react-tasklist</artifactId>
-  <version>1.0-SNAPSHOT</version>
-  <name>Camunda 8 React Tasklist Example</name>
+  <groupId>com.mparsict</groupId>
+  <artifactId>vosol-maliat</artifactId>
+  <version>1.0.0</version>
+  <name>VosolMaliat - Tax Execution System</name>
+  <description>سامانه وصول و اجرای مالیاتی - Tax Collection and Enforcement System</description>
+
   <properties>
+    <!-- Java: use <release> so IntelliJ also respects it when JDK > 21 is set as project SDK -->
+    <maven.compiler.release>21</maven.compiler.release>
+    <!-- Keep source/target for legacy tools that read them -->
     <maven.compiler.source>21</maven.compiler.source>
     <maven.compiler.target>21</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+    <!-- Versions -->
     <version.node>v22.16.0</version.node>
+    <version.camunda>8.8.8</version.camunda>
+    <version.spring-boot>3.5.3</version.spring-boot>
+    <version.sqlite-jdbc>3.47.1.0</version.sqlite-jdbc>
+    <version.hibernate-community>6.6.13.Final</version.hibernate-community>
+    <!--
+      Lombok 1.18.40 (Sep 2025) = first release with JDK 25 support.
+      1.18.46 (Apr 2026) = latest; also adds JDK 26 support.
+    -->
+    <version.lombok>1.18.46</version.lombok>
   </properties>
 
   <dependencyManagement>
@@ -20,42 +36,124 @@
       <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-dependencies</artifactId>
-        <version>3.5.9</version>
+        <version>${version.spring-boot}</version>
         <scope>import</scope>
         <type>pom</type>
       </dependency>
     </dependencies>
   </dependencyManagement>
+
   <dependencies>
+
+    <!-- ===== Camunda 8 ===== -->
     <dependency>
       <groupId>io.camunda</groupId>
       <artifactId>camunda-spring-boot-starter</artifactId>
-      <version>8.8.8</version>
+      <version>${version.camunda}</version>
     </dependency>
-    <dependency>
-      <groupId>io.camunda</groupId>
-      <artifactId>spring-boot-starter-camunda-tasklist</artifactId>
-      <version>8.7.4</version>
-    </dependency>
+
+    <!-- ===== Spring Boot ===== -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
-      <dependency>
-          <groupId>io.camunda</groupId>
-          <artifactId>camunda-operate-client-java</artifactId>
-          <version>8.2.0</version>
-      </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-validation</artifactId>
+    </dependency>
+
+    <!-- ===== SQLite ===== -->
+    <dependency>
+      <groupId>org.xerial</groupId>
+      <artifactId>sqlite-jdbc</artifactId>
+      <version>${version.sqlite-jdbc}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate.orm</groupId>
+      <artifactId>hibernate-community-dialects</artifactId>
+      <version>${version.hibernate-community}</version>
+    </dependency>
+
+    <!-- ===== Lombok ===== -->
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>${version.lombok}</version>
+      <optional>true</optional>
+    </dependency>
+
+    <!-- ===== Jackson (managed by Spring Boot BOM) ===== -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+    </dependency>
+
+    <!-- ===== Testing ===== -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+
   </dependencies>
 
   <build>
     <plugins>
+
+      <!--
+        Java compiler.
+        Key points:
+          release=21 forces Java 21 cross-compilation even when JDK 25 is the host.
+          annotationProcessorPaths wires Lombok into APT.
+          compilerArgs open internal javac packages so Lombok works on JDK 17 through 25.
+      -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.13.0</version>
+        <configuration>
+          <release>21</release>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok</artifactId>
+              <version>${version.lombok}</version>
+            </path>
+          </annotationProcessorPaths>
+          <compilerArgs>
+            <!-- Embed parameter names in bytecode: required by Spring MVC for @RequestParam
+                 name resolution and by Camunda SDK for job variable injection -->
+            <arg>-parameters</arg>
+            <!-- Open JDK-internal packages to Lombok annotation processor -->
+            <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
+            <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
+            <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED</arg>
+            <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED</arg>
+            <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED</arg>
+            <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</arg>
+            <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
+            <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED</arg>
+          </compilerArgs>
+        </configuration>
+      </plugin>
+
+      <!-- Spring Boot packaging -->
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
-        <version>3.5.9</version>
+        <version>${version.spring-boot}</version>
         <configuration>
           <layout>ZIP</layout>
+          <excludes>
+            <exclude>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok</artifactId>
+            </exclude>
+          </excludes>
         </configuration>
         <executions>
           <execution>
@@ -66,6 +164,8 @@
           </execution>
         </executions>
       </plugin>
+
+      <!-- Frontend build via Node -->
       <plugin>
         <groupId>com.github.eirslett</groupId>
         <artifactId>frontend-maven-plugin</artifactId>
@@ -103,13 +203,15 @@
           </execution>
         </executions>
       </plugin>
+
+      <!-- Copy built frontend into static resources -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-resources-plugin</artifactId>
         <version>3.4.0</version>
         <executions>
           <execution>
-            <id>copy-resources</id>
+            <id>copy-frontend</id>
             <phase>process-resources</phase>
             <goals>
               <goal>copy-resources</goal>
@@ -125,6 +227,7 @@
           </execution>
         </executions>
       </plugin>
+
     </plugins>
   </build>
 
