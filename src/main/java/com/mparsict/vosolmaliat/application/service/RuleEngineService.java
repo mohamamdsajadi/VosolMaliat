@@ -156,12 +156,32 @@ public class RuleEngineService {
 
     private Object resolveField(String field, DebtPaperIssuanceRequest request) {
         return switch (field) {
+            case "performanceYear", "performanceYearPeriod" -> request.performanceYear();
+            case "performancePeriod" -> request.performancePeriod();
+            case "mainTaxBureauId" -> request.mainTaxBureauId();
+            case "taxBureauId" -> request.taxBureauId();
+            case "taxOffice" -> request.taxBureauId() != null ? request.taxBureauId() : request.mainTaxBureauId();
+            case "taxSource" -> request.taxSource();
+            case "activityTypeCode" -> request.activityTypeCode();
+            case "totalFinalizedAmount" -> computeTotalFinalizedAmount(request);
+            case "finalizedTaxAndNonDeductibleAmount" -> computeFinalizedTaxAndNonDeductibleAmount(request);
             case "debtAmount" -> computeTotalDebtAmount(request);
             case "taxpayerType" -> request.taxpayer() != null ? request.taxpayer().type() : null;
-            case "taxSource" -> request.taxSource();
             case "finalizationReason" -> request.finalizationReason();
             default -> null;
         };
+    }
+
+    private double computeTotalFinalizedAmount(DebtPaperIssuanceRequest request) {
+        if (request.debtInfo() == null) return 0.0;
+        DebtPaperIssuanceRequest.DebtInfo d = request.debtInfo();
+        return orZero(d.taxAmount()) + orZero(d.penaltyArticle22()) + orZero(d.nonDeductiblePenalty());
+    }
+
+    private double computeFinalizedTaxAndNonDeductibleAmount(DebtPaperIssuanceRequest request) {
+        if (request.debtInfo() == null) return 0.0;
+        DebtPaperIssuanceRequest.DebtInfo d = request.debtInfo();
+        return orZero(d.taxAmount()) + orZero(d.nonDeductiblePenalty());
     }
 
     private double computeTotalDebtAmount(DebtPaperIssuanceRequest request) {
