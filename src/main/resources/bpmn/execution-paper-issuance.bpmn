@@ -11,11 +11,14 @@
   exporter="Camunda Modeler"
   exporterVersion="5.0.0">
 
+  <bpmn:message id="Message_DebtPaperReceived" name="debt_paper_recieved"/>
+
   <bpmn:process id="execution-paper-issuance" name="صدور برگ اجرا" isExecutable="true">
 
     <!-- =================== START =================== -->
     <bpmn:startEvent id="StartEvent_ReceiveDebtPaper"
-                     name="دریافت اطلاعات پرونده و میزان بدهی از سامانه عملیاتی">
+                     name="دریافت پیام debt_paper_recieved از سامانه عملیاتی">
+      <bpmn:messageEventDefinition id="MessageEventDefinition_DebtPaperReceived" messageRef="Message_DebtPaperReceived"/>
       <bpmn:outgoing>Flow_ToCheckIssuance</bpmn:outgoing>
     </bpmn:startEvent>
 

@@ -1,6 +1,7 @@
 package com.mparsict.vosolmaliat.application.service;
 
 import com.mparsict.vosolmaliat.application.dto.request.DebtPaperIssuanceRequest;
+import com.mparsict.vosolmaliat.application.dto.response.ExecutionPaperDetailResponse;
 import com.mparsict.vosolmaliat.application.dto.response.ExecutionPaperDto;
 import com.mparsict.vosolmaliat.application.dto.response.ExecutionPaperPageResponse;
 import com.mparsict.vosolmaliat.common.util.UniqueCodeGenerator;
@@ -21,7 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -145,6 +148,79 @@ public class ExecutionPaperService {
         Page<ExecutionPaper> pageResult = executionPaperRepository
                 .findByCurrentState(ExecutionPaperState.UNASSIGNED.name(), pageable);
         return toPageResponse(pageResult);
+    }
+
+
+    public ExecutionPaperDetailResponse getDetails(Long id) {
+        ExecutionPaper ep = executionPaperRepository.findById(id)
+                .orElseThrow(() -> new com.mparsict.vosolmaliat.common.exception.BusinessException("EXECUTION_PAPER_NOT_FOUND", "برگ اجرا یافت نشد"));
+
+        Map<String, Object> execution = new LinkedHashMap<>();
+        execution.put("id", ep.getId());
+        execution.put("uniqueCode", ep.getExecutionPaperUniqueCode());
+        execution.put("currentState", ep.getCurrentState());
+        execution.put("mainTaxBureauId", ep.getMainTaxBureauId());
+        execution.put("taxBureauId", ep.getTaxBureauId());
+        execution.put("taxUnitId", ep.getTaxUnitId());
+        execution.put("sendingUnitId", ep.getSendingUnitId());
+        execution.put("finalizationReason", ep.getFinalizationReason());
+        execution.put("taxSource", ep.getTaxSource());
+        execution.put("createdAt", ep.getCreatedAt());
+
+        Map<String, Object> finalized = new LinkedHashMap<>();
+        finalizedDebtPaperRepository.findById(ep.getFinalizedDebtPaperId()).ifPresent(fdp -> {
+            finalized.put("debtPaperUniqueCode", fdp.getDebtPaperUniqueCode());
+            finalized.put("debtPaperIssueDate", fdp.getDebtPaperIssueDate());
+            finalized.put("notificationId", fdp.getNotificationId());
+            finalized.put("createdAt", fdp.getCreatedAt());
+        });
+
+        Map<String, Object> taxpayerMap = new LinkedHashMap<>();
+        taxpayerRepository.findById(ep.getTaxpayerId()).ifPresent(taxpayer -> {
+            taxpayerMap.put("id", taxpayer.getId());
+            taxpayerMap.put("type", taxpayer.getType().name());
+            taxpayerMap.put("debtPaperUniqueCode", taxpayer.getDebtPaperUniqueCode());
+            taxpayerMap.put("debtPaperIssueDate", taxpayer.getDebtPaperIssueDate());
+            if (taxpayer.getNaturalPersonId() != null) {
+                naturalPersonRepository.findById(taxpayer.getNaturalPersonId()).ifPresent(np -> {
+                    taxpayerMap.put("nationalCode", np.getNationalCode());
+                    taxpayerMap.put("firstName", np.getFirstName());
+                    taxpayerMap.put("lastName", np.getLastName());
+                    taxpayerMap.put("fatherName", np.getFatherName());
+                    taxpayerMap.put("birthDate", np.getBirthDate());
+                });
+            } else if (taxpayer.getLegalPersonId() != null) {
+                legalPersonRepository.findById(taxpayer.getLegalPersonId()).ifPresent(lp -> {
+                    taxpayerMap.put("nationalId", lp.getNationalId());
+                    taxpayerMap.put("registrationNumber", lp.getRegistrationNumber());
+                    taxpayerMap.put("registrationDate", lp.getRegistrationDate());
+                    taxpayerMap.put("companyName", lp.getName());
+                });
+            }
+        });
+
+        Map<String, Object> debt = new LinkedHashMap<>();
+        debtInformationRepository.findByExecutionPaperId(ep.getId()).ifPresent(di -> {
+            debt.put("taxAmount", di.getTaxAmount());
+            debt.put("dutyAmount", di.getDutyAmount());
+            debt.put("penaltyArticle22", di.getPenaltyArticle22());
+            debt.put("penaltyArticle23", di.getPenaltyArticle23());
+            debt.put("deductiblePenalty", di.getDeductiblePenalty());
+            debt.put("nonDeductiblePenalty", di.getNonDeductiblePenalty());
+            debt.put("taxPaidAmount", di.getTaxPaidAmount());
+            debt.put("penaltyPaidAmount", di.getPenaltyPaidAmount());
+            debt.put("taxCredit", di.getTaxCredit());
+            debt.put("remainingTax", di.getRemainingTax());
+            debt.put("totalDebt", di.getTotalDebt());
+        });
+
+        Map<String, Object> notification = new LinkedHashMap<>();
+        executionPaperNotificationRepository.findByExecutionPaperId(ep.getId()).ifPresent(n -> {
+            notification.put("electronicNotificationDate", n.getElectronicNotificationDate());
+            notification.put("createdAt", n.getCreatedAt());
+        });
+
+        return new ExecutionPaperDetailResponse(toDto(ep), execution, finalized, taxpayerMap, debt, notification);
     }
 
     private ExecutionPaperPageResponse toPageResponse(Page<ExecutionPaper> pageResult) {

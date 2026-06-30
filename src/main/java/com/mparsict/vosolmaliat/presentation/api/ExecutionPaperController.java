@@ -1,5 +1,6 @@
 package com.mparsict.vosolmaliat.presentation.api;
 
+import com.mparsict.vosolmaliat.application.dto.response.ExecutionPaperDetailResponse;
 import com.mparsict.vosolmaliat.application.dto.response.ExecutionPaperPageResponse;
 import com.mparsict.vosolmaliat.application.service.ExecutionPaperService;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,12 @@ public class ExecutionPaperController {
             @RequestParam(defaultValue = "10") int size) {
         log.debug("GET /api/v1/execution-papers page={}, size={}", page, size);
         return executionPaperService.getAll(page, size);
+    }
+
+    @GetMapping("/{id}")
+    public ExecutionPaperDetailResponse getDetails(@PathVariable Long id) {
+        log.debug("GET /api/v1/execution-papers/{}", id);
+        return executionPaperService.getDetails(id);
     }
 
     @GetMapping("/assigned")
