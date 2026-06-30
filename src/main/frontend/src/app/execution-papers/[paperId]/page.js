@@ -27,7 +27,7 @@ const SECTIONS = [
   {
     key: 'finalizedDebtPaper',
     title: 'اطلاعات برگ بدهی قطعی',
-    labels: { debtPaperUniqueCode: 'شناسه یکتا/ارجاع پرونده', debtPaperIssueDate: 'تاریخ قطعیت', notificationId: 'شماره ابلاغ', createdAt: 'تاریخ ثبت' }
+    labels: { debtPaperUniqueCode: 'شناسه یکتا/ارجاع پرونده', debtPaperIssueDate: 'تاریخ قطعیت', notificationId: 'شماره ابلاغ', finalizationReason: 'علت قطعیت', taxSource: 'منبع مالیاتی', performanceYear: 'سال عملکرد', performancePeriod: 'دوره عملکرد', activityTypeCode: 'نوع فعالیت', mainTaxBureauId: 'اداره کل', taxBureauId: 'اداره امور مالیاتی', taxUnitId: 'واحد مالیاتی', totalFinalizedAmount: 'کل مبلغ قطعی‌شده', finalizedTaxAndNonDeductibleAmount: 'مبلغ قطعی‌شده بدون جریمه ق.ب', createdAt: 'تاریخ ثبت' }
   },
   {
     key: 'taxpayer',

@@ -52,6 +52,16 @@ public class ExecutionPaperService {
                                 .debtPaperUniqueCode(request.debtPaperUniqueCode())
                                 .debtPaperIssueDate(request.debtPaperIssueDate())
                                 .notificationId(request.notificationId())
+                                .finalizationReason(request.finalizationReason())
+                                .taxSource(request.taxSource())
+                                .performanceYear(request.performanceYear())
+                                .performancePeriod(request.performancePeriod())
+                                .activityTypeCode(request.activityTypeCode())
+                                .mainTaxBureauId(request.mainTaxBureauId())
+                                .taxBureauId(request.taxBureauId())
+                                .taxUnitId(request.taxUnitId())
+                                .totalFinalizedAmount(computeTotalFinalizedAmount(request.debtInfo()))
+                                .finalizedTaxAndNonDeductibleAmount(computeFinalizedTaxAndNonDeductibleAmount(request.debtInfo()))
                                 .build()
                 ));
 
@@ -172,6 +182,16 @@ public class ExecutionPaperService {
             finalized.put("debtPaperUniqueCode", fdp.getDebtPaperUniqueCode());
             finalized.put("debtPaperIssueDate", fdp.getDebtPaperIssueDate());
             finalized.put("notificationId", fdp.getNotificationId());
+            finalized.put("finalizationReason", fdp.getFinalizationReason());
+            finalized.put("taxSource", fdp.getTaxSource());
+            finalized.put("performanceYear", fdp.getPerformanceYear());
+            finalized.put("performancePeriod", fdp.getPerformancePeriod());
+            finalized.put("activityTypeCode", fdp.getActivityTypeCode());
+            finalized.put("mainTaxBureauId", fdp.getMainTaxBureauId());
+            finalized.put("taxBureauId", fdp.getTaxBureauId());
+            finalized.put("taxUnitId", fdp.getTaxUnitId());
+            finalized.put("totalFinalizedAmount", fdp.getTotalFinalizedAmount());
+            finalized.put("finalizedTaxAndNonDeductibleAmount", fdp.getFinalizedTaxAndNonDeductibleAmount());
             finalized.put("createdAt", fdp.getCreatedAt());
         });
 
@@ -341,6 +361,18 @@ public class ExecutionPaperService {
                 .name(info.companyName() != null ? info.companyName() : "")
                 .build();
         return legalPersonRepository.save(lp);
+    }
+
+    private double computeTotalFinalizedAmount(DebtPaperIssuanceRequest.DebtInfo debtInfo) {
+        if (debtInfo == null) return 0.0;
+        return orZero(debtInfo.taxAmount())
+                + orZero(debtInfo.penaltyArticle22())
+                + orZero(debtInfo.nonDeductiblePenalty());
+    }
+
+    private double computeFinalizedTaxAndNonDeductibleAmount(DebtPaperIssuanceRequest.DebtInfo debtInfo) {
+        if (debtInfo == null) return 0.0;
+        return orZero(debtInfo.taxAmount()) + orZero(debtInfo.nonDeductiblePenalty());
     }
 
     private double orZero(Double val) {

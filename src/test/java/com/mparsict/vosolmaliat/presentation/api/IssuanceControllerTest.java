@@ -122,6 +122,9 @@ class IssuanceControllerTest {
         assertThat(mappedRequest.notificationId()).isEqualTo("BL-1403-000125");
         assertThat(mappedRequest.finalizationReason()).isEqualTo("عدم پرداخت اقساط مالیاتی");
         assertThat(mappedRequest.taxSource()).isEqualTo("VAT");
+        assertThat(mappedRequest.performanceYear()).isEqualTo("1403");
+        assertThat(mappedRequest.performancePeriod()).isEqualTo("1403");
+        assertThat(mappedRequest.activityTypeCode()).isEqualTo("2");
         assertThat(mappedRequest.mainTaxBureauId()).isEqualTo(12L);
         assertThat(mappedRequest.taxBureauId()).isEqualTo(1203L);
         assertThat(mappedRequest.taxUnitId()).isEqualTo(5L);
