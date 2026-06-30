@@ -1,30 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:modeler="http://camunda.org/schema/modeler/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Web Modeler" exporterVersion="e787c33" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.8.0">
-  <bpmn:process id="Process_0rtbdc5" name="ExecutionPapers" isExecutable="true">
-    <bpmn:extensionElements />
-    <bpmn:intermediateCatchEvent id="Event_1dm1a0h">
-      <bpmn:extensionElements />
-      <bpmn:outgoing>Flow_0k4vjit</bpmn:outgoing>
-      <bpmn:messageEventDefinition id="MessageEventDefinition_0b6d0ei" messageRef="Message_1i8unl4" />
-    </bpmn:intermediateCatchEvent>
-    <bpmn:sequenceFlow id="Flow_0k4vjit" sourceRef="Event_1dm1a0h" targetRef="Activity_1ahtl92" />
-    <bpmn:exclusiveGateway id="Gateway_1uchrac">
-      <bpmn:incoming>Flow_0tajbqi</bpmn:incoming>
-      <bpmn:outgoing>Flow_0eioah5</bpmn:outgoing>
-      <bpmn:outgoing>Flow_0k7613y</bpmn:outgoing>
-    </bpmn:exclusiveGateway>
-    <bpmn:sequenceFlow id="Flow_0tajbqi" sourceRef="Activity_1ahtl92" targetRef="Gateway_1uchrac" />
-    <bpmn:sequenceFlow id="Flow_0eioah5" name="امکان صدور وجود دارد" sourceRef="Gateway_1uchrac" targetRef="Activity_0rwz3ak">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=canIssue = true</bpmn:conditionExpression>
-    </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="Flow_0k7613y" name="امکان صدور وجود ندارد" sourceRef="Gateway_1uchrac" targetRef="Activity_010iyzn">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=canIssue = false</bpmn:conditionExpression>
-    </bpmn:sequenceFlow>
-    <bpmn:endEvent id="Event_10ewku3">
-      <bpmn:incoming>Flow_05tcjnl</bpmn:incoming>
-    </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_05tcjnl" sourceRef="Activity_010iyzn" targetRef="Event_10ewku3" />
-    <bpmn:businessRuleTask id="Activity_1ahtl92" name="بررسی امکان صدور برگ اجرا (براساس محدودیت‌های اعمالی مدیر سامانه)">
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:zeebe="http://camunda.org/schema/zeebe/1.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  id="Definitions_ExecutionPaperIssuance"
+  targetNamespace="http://mparsict.com/bpmn/tax-execution"
+  exporter="Camunda Modeler"
+  exporterVersion="5.0.0">
+
+  <bpmn:message id="Message_DebtPaperReceived" name="debt_paper_recieved"/>
+
+  <bpmn:process id="execution-paper-issuance" name="صدور برگ اجرا" isExecutable="true">
+
+    <!-- =================== START =================== -->
+    <bpmn:startEvent id="StartEvent_ReceiveDebtPaper"
+                     name="دریافت پیام debt_paper_recieved از سامانه عملیاتی">
+      <bpmn:messageEventDefinition id="MessageEventDefinition_DebtPaperReceived" messageRef="Message_DebtPaperReceived"/>
+      <bpmn:outgoing>Flow_ToCheckIssuance</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <!-- =================== TASK 1: CHECK RULES =================== -->
+    <bpmn:serviceTask id="Task_CheckIssuancePossibility"
+                      name="بررسی امکان صدور اجرا (براساس محدودیت‌های اعمالی مدیر سامانه)">
       <bpmn:extensionElements>
         <zeebe:taskDefinition type="check-issuance-possibility" />
       </bpmn:extensionElements>
