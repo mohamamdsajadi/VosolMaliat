@@ -25,7 +25,7 @@ public class IssueExecutionPaperWorker {
     private final IssuanceRequestService issuanceRequestService;
     private final ObjectMapper objectMapper;
 
-    @JobWorker(type = "issue-execution-paper")
+    @JobWorker(type = ProcessConstants.JOB_ISSUE_PAPER)
     public void handle(final JobClient client, final ActivatedJob job) {
         log.debug("Processing job: issue-execution-paper, key={}", job.getKey());
         try {
