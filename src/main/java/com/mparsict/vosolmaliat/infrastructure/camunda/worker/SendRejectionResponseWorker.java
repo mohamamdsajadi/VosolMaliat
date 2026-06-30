@@ -19,16 +19,20 @@ public class SendRejectionResponseWorker {
 
     private final IssuanceRequestService issuanceRequestService;
 
-    @JobWorker(type = "send-rejection-response")
+    @JobWorker(type = ProcessConstants.JOB_SEND_REJECTION)
     public void handle(final JobClient client, final ActivatedJob job) {
-        log.debug("Processing job: send-rejection-response, key={}", job.getKey());
+        log.debug("Processing job: inform_sanim_rejection, key={}", job.getKey());
         try {
             Map<String, Object> variables = job.getVariablesAsMap();
             Long requestId = ((Number) variables.get(ProcessConstants.VAR_ISSUANCE_REQUEST_ID)).longValue();
             String rejectionCode = (String) variables.get(ProcessConstants.VAR_REJECTION_CODE);
             String rejectionDesc = (String) variables.get(ProcessConstants.VAR_REJECTION_DESC);
+            String restrictionRemovalDate = (String) variables.get(ProcessConstants.VAR_RESTRICTION_REMOVAL_DATE);
 
             String rejectionReason = rejectionCode + ": " + rejectionDesc;
+            if (restrictionRemovalDate != null && !restrictionRemovalDate.isBlank()) {
+                rejectionReason += " (restriction removal date: " + restrictionRemovalDate + ")";
+            }
             issuanceRequestService.markAsRejected(requestId, rejectionReason, null);
 
             Map<String, Object> outputVars = new HashMap<>();

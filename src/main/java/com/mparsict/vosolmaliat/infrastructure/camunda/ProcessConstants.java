@@ -2,10 +2,10 @@ package com.mparsict.vosolmaliat.infrastructure.camunda;
 
 public final class ProcessConstants {
 
-    public static final String PROCESS_ID = "execution-paper-issuance";
+    public static final String PROCESS_ID = "Process_0rtbdc5";
     public static final String JOB_CHECK_ISSUANCE = "check-issuance-possibility";
     public static final String JOB_ISSUE_PAPER = "issue-execution-paper";
-    public static final String JOB_SEND_REJECTION = "send-rejection-response";
+    public static final String JOB_SEND_REJECTION = "inform_sanim_rejection";
 
     public static final String VAR_ISSUANCE_REQUEST_ID = "issuanceRequestId";
     public static final String VAR_DEBT_PAPER_PAYLOAD = "debtPaperPayload";
