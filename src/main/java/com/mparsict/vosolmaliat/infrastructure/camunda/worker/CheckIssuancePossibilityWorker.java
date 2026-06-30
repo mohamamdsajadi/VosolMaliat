@@ -22,7 +22,7 @@ public class CheckIssuancePossibilityWorker {
     private final RuleEngineService ruleEngineService;
     private final ObjectMapper objectMapper;
 
-    @JobWorker(type = "check-issuance-possibility")
+    @JobWorker(type = ProcessConstants.JOB_CHECK_ISSUANCE)
     public void handle(final JobClient client, final ActivatedJob job) {
         log.debug("Processing job: check-issuance-possibility, key={}", job.getKey());
         try {
