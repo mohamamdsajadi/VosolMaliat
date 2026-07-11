@@ -1,3 +1,5 @@
+import { apiFetch } from './api';
+
 export async function fetchProcessDefinitions() {
   const response = await appPost("/api/process-definitions/search", {});
 
@@ -86,7 +88,7 @@ export async function fetchAllTasks() {
 }
 
 export async function fetchTask(taskId) {
-  const response = await fetch(`/api/user-tasks/${taskId}/form`);
+  const response = await apiFetch(`/api/user-tasks/${taskId}/form`);
 
   if (!response.ok) {
     throw new Error(getTaskErrorMessage(response.status));
@@ -102,7 +104,7 @@ export async function fetchTask(taskId) {
 }
 
 export async function completeTask(taskId, data) {
-  const response = await fetch(`/api/user-tasks/${taskId}/completion`, {
+  const response = await apiFetch(`/api/user-tasks/${taskId}/completion`, {
     method: "POST",
     body: JSON.stringify({ variables: data || {} }),
     headers: { "Content-Type": "application/json" }
@@ -140,7 +142,7 @@ export function isVisibleTaskSummary(task) {
 }
 
 function appPost(path, body) {
-  return fetch(path, {
+  return apiFetch(path, {
     method: "POST",
     body: JSON.stringify(body),
     headers: { "Content-Type": "application/json" }

@@ -23,6 +23,12 @@ spring:
     serialization:
       write-dates-as-timestamps: false
 
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:https://keycloack.parand.mparsict.com/auth/realms/vosol-maliat}
+
 camunda:
   client:
     mode: self-managed
@@ -50,3 +56,4 @@ logging:
     io.camunda.client: INFO
     io.camunda.zeebe: WARN
     org.hibernate.SQL: WARN
+    org.springframework.security: INFO
