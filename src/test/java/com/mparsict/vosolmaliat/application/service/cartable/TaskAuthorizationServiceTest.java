@@ -1,6 +1,6 @@
 package com.mparsict.vosolmaliat.application.service.cartable;
 
-import com.mparsict.vosolmaliat.application.dto.response.security.OrganizationUnitResponse;
+import com.mparsict.vosolmaliat.application.dto.response.security.MasterdataOrganizationResponse;
 import com.mparsict.vosolmaliat.application.security.CurrentUserContext;
 import com.mparsict.vosolmaliat.application.service.security.OrganizationScopeService;
 import io.camunda.client.api.search.enums.UserTaskState;
@@ -26,7 +26,7 @@ class TaskAuthorizationServiceTest {
         CurrentUserContext user = user(Set.of("TAX_UNIT_USER"), Set.of(), Set.of("TASK_CLAIM"), organization(10L));
         UserTask task = task(null, List.of("TAX_UNIT_USER"), List.of());
 
-        assertThat(service.canClaim(user, task, Map.of("organizationUnitId", 10L))).isTrue();
+        assertThat(service.canClaim(user, task, Map.of("taxUnitId", 10L))).isTrue();
     }
 
     @Test
@@ -43,10 +43,10 @@ class TaskAuthorizationServiceTest {
         UserTask task = task("someone", List.of("OTHER"), List.of());
 
         assertThat(service.canAssign(admin)).isTrue();
-        assertThat(service.canView(admin, task, Map.of("organizationUnitId", 99L))).isTrue();
+        assertThat(service.canView(admin, task, Map.of("taxUnitId", 99L))).isTrue();
     }
 
-    private CurrentUserContext user(Set<String> roles, Set<String> groups, Set<String> permissions, OrganizationUnitResponse organizationUnit) {
+    private CurrentUserContext user(Set<String> roles, Set<String> groups, Set<String> permissions, MasterdataOrganizationResponse organization) {
         return new CurrentUserContext(
                 "kc-1",
                 "ali",
@@ -56,14 +56,14 @@ class TaskAuthorizationServiceTest {
                 roles,
                 groups,
                 permissions,
-                organizationUnit,
+                organization,
                 true,
                 false
         );
     }
 
-    private OrganizationUnitResponse organization(Long id) {
-        return new OrganizationUnitResponse(id, "Unit " + id, "U-" + id, "TAX_UNIT", null, true);
+    private MasterdataOrganizationResponse organization(Long id) {
+        return new MasterdataOrganizationResponse(null, null, null, null, id, "Unit " + id);
     }
 
     private UserTask task(String assignee, List<String> candidateGroups, List<String> candidateUsers) {

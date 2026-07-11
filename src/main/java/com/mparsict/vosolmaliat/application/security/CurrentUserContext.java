@@ -1,6 +1,6 @@
 package com.mparsict.vosolmaliat.application.security;
 
-import com.mparsict.vosolmaliat.application.dto.response.security.OrganizationUnitResponse;
+import com.mparsict.vosolmaliat.application.dto.response.security.MasterdataOrganizationResponse;
 
 import java.util.Set;
 
@@ -13,7 +13,7 @@ public record CurrentUserContext(
         Set<String> roles,
         Set<String> groups,
         Set<String> permissions,
-        OrganizationUnitResponse organizationUnit,
+        MasterdataOrganizationResponse organization,
         boolean enabledInBusinessSystem,
         boolean lockedInBusinessSystem
 ) {

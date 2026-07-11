@@ -1,6 +1,7 @@
 package com.mparsict.vosolmaliat.domain.model.security;
 
 import com.mparsict.vosolmaliat.domain.model.BaseEntity;
+import com.mparsict.vosolmaliat.domain.model.masterdata.TaxUnit;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -40,8 +41,8 @@ public class AppUserProfile extends BaseEntity {
     private String phoneNumber;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "organization_unit_id")
-    private OrganizationUnit organizationUnit;
+    @JoinColumn(name = "tax_unit_id")
+    private TaxUnit taxUnit;
 
     @Builder.Default
     @Column(name = "enabled_in_business_system", nullable = false)

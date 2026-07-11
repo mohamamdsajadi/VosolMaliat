@@ -10,7 +10,7 @@ public record CurrentUserResponse(
         Set<String> keycloakRoles,
         Set<String> keycloakGroups,
         Set<String> localBusinessPermissions,
-        OrganizationUnitResponse organizationUnit,
+        MasterdataOrganizationResponse organization,
         Boolean enabledInBusinessSystem,
         Boolean lockedInBusinessSystem,
         Set<String> allowedActions

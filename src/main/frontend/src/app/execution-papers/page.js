@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import AppHeader from '../components/AppHeader'
+import { apiFetch } from '../lib/api'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -208,9 +209,12 @@ export default function ExecutionPapersPage() {
     setLoading(true)
     setError(null)
 
-    fetch(`${endpoints[activeTab]}?page=${page}&size=10`)
+    apiFetch(`${endpoints[activeTab]}?page=${page}&size=10`)
       .then(r => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`)
+        if (!r.ok) {
+          if (r.status === 403) throw new Error('شما مجوز مشاهده فهرست برگ‌های اجرا را ندارید.')
+          throw new Error(`HTTP ${r.status}`)
+        }
         return r.json()
       })
       .then(json => {

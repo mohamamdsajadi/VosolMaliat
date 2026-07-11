@@ -63,10 +63,18 @@ public class UserManagementController {
         return userProfileService.updateLock(id, request);
     }
 
-    @PatchMapping("/{id}/organization-unit")
+    @PatchMapping("/{id}/tax-unit")
     @PreAuthorize("hasAuthority('USER_PROFILE_ASSIGN_ORGANIZATION')")
-    public AppUserProfileResponse organization(@PathVariable Long id, @RequestBody @Valid AssignOrganizationUnitRequest request) {
-        log.debug("PATCH /api/v1/users/{}/organization-unit", id);
-        return userProfileService.assignOrganization(id, request);
+    public AppUserProfileResponse taxUnit(@PathVariable Long id, @RequestBody @Valid AssignTaxUnitRequest request) {
+        log.debug("PATCH /api/v1/users/{}/tax-unit", id);
+        return userProfileService.assignTaxUnit(id, request);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasAuthority('USER_PROFILE_UPDATE')")
+    public void delete(@PathVariable Long id) {
+        log.debug("DELETE /api/v1/users/{}", id);
+        userProfileService.delete(id);
     }
 }

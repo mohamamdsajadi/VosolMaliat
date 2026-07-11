@@ -2,9 +2,11 @@ package com.mparsict.vosolmaliat.common.config.security;
 
 import com.mparsict.vosolmaliat.domain.model.security.GroupPermission;
 import com.mparsict.vosolmaliat.domain.model.security.Permission;
+import com.mparsict.vosolmaliat.domain.repository.security.AppUserProfileRepository;
 import com.mparsict.vosolmaliat.domain.repository.security.GroupPermissionRepository;
 import com.mparsict.vosolmaliat.domain.repository.security.PermissionRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,7 +31,17 @@ public class SecurityDataInitializer {
 
     private final PermissionRepository permissionRepository;
     private final GroupPermissionRepository groupPermissionRepository;
+    private final AppUserProfileRepository userProfileRepository;
     private final TransactionTemplate transactionTemplate;
+
+    @Value("${app.security.bootstrap-admin.keycloak-user-id:${ADMIN_KEYCLOAK_USER_ID:dev-admin-keycloak-user-id}}")
+    private String bootstrapAdminKeycloakUserId;
+
+    @Value("${app.security.bootstrap-admin.username:${ADMIN_USERNAME:admin}}")
+    private String bootstrapAdminUsername;
+
+    @Value("${app.security.bootstrap-admin.email:${ADMIN_EMAIL:admin@vosol-maliat.local}}")
+    private String bootstrapAdminEmail;
 
     @Bean
     CommandLineRunner seedSecurityData() {
@@ -47,6 +59,7 @@ public class SecurityDataInitializer {
             for (String code : TAX_UNIT_USER_PERMISSIONS) {
                 ensureGroupPermission("TAX_UNIT_USER", code);
             }
+            seedLocalAdminProfile();
         });
     }
 
@@ -58,6 +71,24 @@ public class SecurityDataInitializer {
         groupPermissionRepository.save(GroupPermission.builder()
                 .groupName(groupName)
                 .permission(permission)
+                .build());
+    }
+
+    private void seedLocalAdminProfile() {
+        if (bootstrapAdminKeycloakUserId == null || bootstrapAdminKeycloakUserId.isBlank()
+                || userProfileRepository.existsByKeycloakUserId(bootstrapAdminKeycloakUserId)
+                || userProfileRepository.existsByUsername(bootstrapAdminUsername)
+                || userProfileRepository.existsByEmail(bootstrapAdminEmail)) {
+            return;
+        }
+        userProfileRepository.save(com.mparsict.vosolmaliat.domain.model.security.AppUserProfile.builder()
+                .keycloakUserId(bootstrapAdminKeycloakUserId)
+                .username(bootstrapAdminUsername)
+                .email(bootstrapAdminEmail)
+                .firstName("System")
+                .lastName("Administrator")
+                .enabledInBusinessSystem(true)
+                .lockedInBusinessSystem(false)
                 .build());
     }
 }

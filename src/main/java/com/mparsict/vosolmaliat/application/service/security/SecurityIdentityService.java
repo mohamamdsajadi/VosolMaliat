@@ -60,7 +60,7 @@ public class SecurityIdentityService {
                 roles,
                 groups,
                 permissions,
-                SecurityDtoMapper.toOrganizationUnitResponse(profile == null ? null : profile.getOrganizationUnit()),
+                SecurityDtoMapper.toOrganizationResponse(profile == null ? null : profile.getTaxUnit()),
                 profile == null || Boolean.TRUE.equals(profile.getEnabledInBusinessSystem()),
                 profile != null && Boolean.TRUE.equals(profile.getLockedInBusinessSystem())
         );
@@ -81,7 +81,7 @@ public class SecurityIdentityService {
                 user.roles(),
                 user.groups(),
                 user.permissions(),
-                user.organizationUnit(),
+                user.organization(),
                 user.enabledInBusinessSystem(),
                 user.lockedInBusinessSystem(),
                 allowedActions

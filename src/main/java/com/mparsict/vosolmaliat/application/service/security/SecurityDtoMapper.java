@@ -2,28 +2,28 @@ package com.mparsict.vosolmaliat.application.service.security;
 
 import com.mparsict.vosolmaliat.application.dto.response.security.AppUserProfileResponse;
 import com.mparsict.vosolmaliat.application.dto.response.security.GroupPermissionResponse;
-import com.mparsict.vosolmaliat.application.dto.response.security.OrganizationUnitResponse;
+import com.mparsict.vosolmaliat.application.dto.response.security.MasterdataOrganizationResponse;
 import com.mparsict.vosolmaliat.application.dto.response.security.PermissionResponse;
+import com.mparsict.vosolmaliat.domain.model.masterdata.TaxUnit;
 import com.mparsict.vosolmaliat.domain.model.security.AppUserProfile;
 import com.mparsict.vosolmaliat.domain.model.security.GroupPermission;
-import com.mparsict.vosolmaliat.domain.model.security.OrganizationUnit;
 import com.mparsict.vosolmaliat.domain.model.security.Permission;
 
 public final class SecurityDtoMapper {
     private SecurityDtoMapper() {
     }
 
-    public static OrganizationUnitResponse toOrganizationUnitResponse(OrganizationUnit entity) {
-        if (entity == null) {
+    public static MasterdataOrganizationResponse toOrganizationResponse(TaxUnit taxUnit) {
+        if (taxUnit == null) {
             return null;
         }
-        return new OrganizationUnitResponse(
-                entity.getId(),
-                entity.getName(),
-                entity.getCode(),
-                entity.getType().name(),
-                entity.getParent() == null ? null : entity.getParent().getId(),
-                entity.getEnabled()
+        return new MasterdataOrganizationResponse(
+                null,
+                null,
+                taxUnit.getTaxAffairsOfficeId(),
+                null,
+                taxUnit.getId(),
+                taxUnit.getTaxUnitName()
         );
     }
 
@@ -37,7 +37,7 @@ public final class SecurityDtoMapper {
                 entity.getLastName(),
                 fullName(entity.getFirstName(), entity.getLastName(), entity.getUsername()),
                 entity.getPhoneNumber(),
-                toOrganizationUnitResponse(entity.getOrganizationUnit()),
+                toOrganizationResponse(entity.getTaxUnit()),
                 entity.getEnabledInBusinessSystem(),
                 entity.getLockedInBusinessSystem(),
                 entity.getCreatedAt(),

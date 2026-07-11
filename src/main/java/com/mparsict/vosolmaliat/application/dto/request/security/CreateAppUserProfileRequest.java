@@ -9,5 +9,5 @@ public record CreateAppUserProfileRequest(
         String firstName,
         String lastName,
         String phoneNumber,
-        Long organizationUnitId
+        Long taxUnitId
 ) {}

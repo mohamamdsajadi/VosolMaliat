@@ -1,4 +1,5 @@
 import "./globals.css";
+import AuthGuard from "./components/auth-guard";
 
 export const metadata = {
   title: "دستیار هوشمند حسابرسی | سازمان امور مالیاتی کشور",
@@ -42,7 +43,7 @@ export default function RootLayout({ children }) {
           backgroundColor: "#f4f6f9",
         }}
       >
-        {children}
+        <AuthGuard>{children}</AuthGuard>
       </body>
     </html>
   );

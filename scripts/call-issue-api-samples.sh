@@ -4,7 +4,7 @@ set -euo pipefail
 BASE_URL="${BASE_URL:-http://localhost:3000}"
 ENDPOINT="$BASE_URL/api/v1/debt-papers/issue"
 
-for i in 3  ; do
+for i in 3 4 5  ; do
   portal_id="123758959${i}"
   curl -sS -X POST "$ENDPOINT" \
     -H 'Content-Type: application/json' \

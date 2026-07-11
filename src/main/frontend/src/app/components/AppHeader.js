@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { logoutFromKeycloak } from "../lib/keycloak";
+import { fetchCurrentUser } from "../lib/security";
 
 // ── Jalali date helpers ────────────────────────────────────────────────────────
 
@@ -95,6 +97,7 @@ function formatTime(date) {
 export default function AppHeader({ title, subtitle }) {
   const [dateStr, setDateStr] = useState("");
   const [timeStr, setTimeStr] = useState("");
+  const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
     const updateDateTime = () => {
@@ -106,6 +109,12 @@ export default function AppHeader({ title, subtitle }) {
     updateDateTime();
     const intervalId = window.setInterval(updateDateTime, 1000);
     return () => window.clearInterval(intervalId);
+  }, []);
+
+  useEffect(() => {
+    fetchCurrentUser()
+      .then(setCurrentUser)
+      .catch(() => setCurrentUser(null));
   }, []);
 
   return (
@@ -266,6 +275,11 @@ export default function AppHeader({ title, subtitle }) {
           >
             <div>{dateStr}</div>
             <div>{timeStr}</div>
+            {currentUser && (
+              <div style={{ color: "#15803d", fontWeight: 700, marginTop: 2 }}>
+                {currentUser.fullName || currentUser.username}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -304,6 +318,7 @@ export default function AppHeader({ title, subtitle }) {
         </button>
 
         <button
+          onClick={logoutFromKeycloak}
           style={{
             display: "inline-flex",
             alignItems: "center",

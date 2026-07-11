@@ -1,20 +1,3 @@
-create table if not exists organization_unit (
-  id integer primary key,
-  name varchar(255) not null,
-  code varchar(255) not null unique,
-  type varchar(64) not null,
-  parent_id integer,
-  enabled boolean not null,
-  created_at timestamp,
-  updated_at timestamp,
-  created_by varchar(255),
-  updated_by varchar(255),
-  deleted_at timestamp,
-  deleted_by varchar(255),
-  is_deleted boolean,
-  foreign key (parent_id) references organization_unit(id)
-);
-
 create table if not exists app_user_profile (
   id integer primary key,
   keycloak_user_id varchar(255) not null unique,
@@ -23,7 +6,7 @@ create table if not exists app_user_profile (
   first_name varchar(255),
   last_name varchar(255),
   phone_number varchar(255),
-  organization_unit_id integer,
+  tax_unit_id integer,
   enabled_in_business_system boolean not null,
   locked_in_business_system boolean not null,
   created_at timestamp,
@@ -33,7 +16,7 @@ create table if not exists app_user_profile (
   deleted_at timestamp,
   deleted_by varchar(255),
   is_deleted boolean,
-  foreign key (organization_unit_id) references organization_unit(id)
+  foreign key (tax_unit_id) references tax_unit(id)
 );
 
 create table if not exists permission (

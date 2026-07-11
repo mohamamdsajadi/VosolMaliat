@@ -3,10 +3,10 @@ package com.mparsict.vosolmaliat.application.service.security;
 import com.mparsict.vosolmaliat.application.dto.request.security.*;
 import com.mparsict.vosolmaliat.application.dto.response.security.AppUserProfileResponse;
 import com.mparsict.vosolmaliat.common.exception.BusinessException;
+import com.mparsict.vosolmaliat.domain.model.masterdata.TaxUnit;
 import com.mparsict.vosolmaliat.domain.model.security.AppUserProfile;
-import com.mparsict.vosolmaliat.domain.model.security.OrganizationUnit;
+import com.mparsict.vosolmaliat.domain.repository.TaxUnitRepository;
 import com.mparsict.vosolmaliat.domain.repository.security.AppUserProfileRepository;
-import com.mparsict.vosolmaliat.domain.repository.security.OrganizationUnitRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,14 +18,14 @@ import java.util.List;
 public class AppUserProfileService {
 
     private final AppUserProfileRepository userProfileRepository;
-    private final OrganizationUnitRepository organizationUnitRepository;
+    private final TaxUnitRepository taxUnitRepository;
     private final SecurityIdentityService securityIdentityService;
     private final AuditLogService auditLogService;
 
     @Transactional
     public AppUserProfileResponse create(CreateAppUserProfileRequest request) {
         validateUniqueForCreate(request);
-        OrganizationUnit organizationUnit = request.organizationUnitId() == null ? null : findOrganizationUnit(request.organizationUnitId());
+        TaxUnit taxUnit = request.taxUnitId() == null ? null : findTaxUnit(request.taxUnitId());
         AppUserProfile profile = AppUserProfile.builder()
                 .keycloakUserId(request.keycloakUserId())
                 .username(request.username())
@@ -33,7 +33,7 @@ public class AppUserProfileService {
                 .firstName(request.firstName())
                 .lastName(request.lastName())
                 .phoneNumber(request.phoneNumber())
-                .organizationUnit(organizationUnit)
+                .taxUnit(taxUnit)
                 .enabledInBusinessSystem(true)
                 .lockedInBusinessSystem(false)
                 .build();
@@ -95,15 +95,23 @@ public class AppUserProfileService {
     }
 
     @Transactional
-    public AppUserProfileResponse assignOrganization(Long id, AssignOrganizationUnitRequest request) {
+    public AppUserProfileResponse assignTaxUnit(Long id, AssignTaxUnitRequest request) {
         AppUserProfile profile = findProfile(id);
-        Long oldValue = profile.getOrganizationUnit() == null ? null : profile.getOrganizationUnit().getId();
-        OrganizationUnit organizationUnit = findOrganizationUnit(request.organizationUnitId());
-        profile.setOrganizationUnit(organizationUnit);
+        Long oldValue = profile.getTaxUnit() == null ? null : profile.getTaxUnit().getId();
+        TaxUnit taxUnit = findTaxUnit(request.taxUnitId());
+        profile.setTaxUnit(taxUnit);
         AppUserProfile saved = userProfileRepository.save(profile);
-        auditLogService.record(securityIdentityService.currentUser(), "USER_PROFILE_ORGANIZATION_ASSIGNED", "APP_USER_PROFILE",
-                saved.getId().toString(), String.valueOf(oldValue), organizationUnit.getId().toString());
+        auditLogService.record(securityIdentityService.currentUser(), "USER_PROFILE_TAX_UNIT_ASSIGNED", "APP_USER_PROFILE",
+                saved.getId().toString(), String.valueOf(oldValue), taxUnit.getId().toString());
         return SecurityDtoMapper.toAppUserProfileResponse(saved);
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        AppUserProfile profile = findProfile(id);
+        userProfileRepository.delete(profile);
+        auditLogService.record(securityIdentityService.currentUser(), "USER_PROFILE_DELETED", "APP_USER_PROFILE",
+                id.toString(), profile.getUsername(), null);
     }
 
     private AppUserProfile findProfile(Long id) {
@@ -111,9 +119,9 @@ public class AppUserProfileService {
                 .orElseThrow(() -> new BusinessException("USER_PROFILE_NOT_FOUND", "پروفایل کاربر یافت نشد"));
     }
 
-    private OrganizationUnit findOrganizationUnit(Long id) {
-        return organizationUnitRepository.findById(id)
-                .orElseThrow(() -> new BusinessException("ORGANIZATION_UNIT_NOT_FOUND", "واحد سازمانی یافت نشد"));
+    private TaxUnit findTaxUnit(Long id) {
+        return taxUnitRepository.findById(id)
+                .orElseThrow(() -> new BusinessException("TAX_UNIT_NOT_FOUND", "واحد مالیاتی یافت نشد"));
     }
 
     private void validateUniqueForCreate(CreateAppUserProfileRequest request) {

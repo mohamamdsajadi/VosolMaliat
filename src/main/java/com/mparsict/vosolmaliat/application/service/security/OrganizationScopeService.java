@@ -9,14 +9,15 @@ import java.util.Map;
 public class OrganizationScopeService {
 
     public boolean canAccessTaskVariables(CurrentUserContext user, Map<String, Object> variables) {
-        if (user.isAdmin() || variables == null || variables.isEmpty() || user.organizationUnit() == null) {
+        if (user.isAdmin() || variables == null || variables.isEmpty() || user.organization() == null) {
             return true;
         }
-        Object organizationUnitId = firstPresent(variables, "organizationUnitId", "taxUnitId", "tax_unit_id");
-        if (organizationUnitId == null) {
+        Object taxUnitId = firstPresent(variables, "taxUnitId", "tax_unit_id");
+        if (taxUnitId == null) {
             return true;
         }
-        return user.organizationUnit().id().toString().equals(organizationUnitId.toString());
+        return user.organization().taxUnitId() != null
+                && user.organization().taxUnitId().toString().equals(taxUnitId.toString());
     }
 
     private Object firstPresent(Map<String, Object> variables, String... keys) {

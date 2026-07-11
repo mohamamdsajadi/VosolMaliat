@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import AppHeader from '../../components/AppHeader'
+import { apiFetch } from '../../lib/api'
 
 function toPersianDigits(str) {
   const persianDigits = '۰۱۲۳۴۵۶۷۸۹'
@@ -74,8 +75,15 @@ export default function ExecutionPaperDetailsPage() {
 
   useEffect(() => {
     setLoading(true)
-    fetch(`/api/v1/execution-papers/${paperId}`)
-      .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json() })
+    apiFetch(`/api/v1/execution-papers/${paperId}`)
+      .then(r => {
+        if (!r.ok) {
+          if (r.status === 401) throw new Error('نشست شما معتبر نیست. دوباره وارد شوید.')
+          if (r.status === 403) throw new Error('شما مجوز مشاهده جزئیات برگ اجرا را ندارید.')
+          throw new Error(`HTTP ${r.status}`)
+        }
+        return r.json()
+      })
       .then(json => { setData(json); setLoading(false) })
       .catch(err => { setError(err.message); setLoading(false) })
   }, [paperId])

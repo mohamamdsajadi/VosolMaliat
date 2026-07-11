@@ -1,6 +1,9 @@
 'use client'
 
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { logoutFromKeycloak } from '../lib/keycloak';
+import { fetchCurrentUser } from '../lib/security';
 
 const navItems = [
   {
@@ -20,6 +23,30 @@ const navItems = [
     href: "/operations",
     label: "دید عملیاتی",
     helper: "کنترل ظرفیت و سلامت"
+  },
+  {
+    key: "admin",
+    href: "/admin",
+    label: "مدیریت سامانه",
+    helper: "کاربران و دسترسی‌ها"
+  },
+  {
+    key: "permissions",
+    href: "/admin/permissions",
+    label: "مجوزها",
+    helper: "اعطا و لغو دسترسی"
+  },
+  {
+    key: "organizations",
+    href: "/admin/organizations",
+    label: "واحدهای سازمانی",
+    helper: "اداره کل، اداره و واحد مالیاتی"
+  },
+  {
+    key: "data-entry",
+    href: "/admin/data-entry",
+    label: "ورود دستی داده",
+    helper: "برگ بدهی و برگ اجرا"
   }
 ];
 
@@ -33,6 +60,14 @@ export default function AppShell({
   processLinks = [],
   contextItems = []
 }) {
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    fetchCurrentUser()
+      .then(setCurrentUser)
+      .catch(() => setCurrentUser(null));
+  }, []);
+
   return (
     <main className="app-frame">
       <aside className="app-sidebar" aria-label="منوی اصلی">
@@ -94,6 +129,8 @@ export default function AppShell({
             <span>اتصال به موتور فرایند</span>
           </div>
           <div className="topbar-links">
+            {currentUser && <span className="topbar-user">{currentUser.fullName || currentUser.username}</span>}
+            <button className="topbar-logout" onClick={logoutFromKeycloak}>خروج</button>
             <a href="https://www.mehrparsict.com/" target="_blank" rel="noreferrer">
               mehrparsict.com
             </a>
