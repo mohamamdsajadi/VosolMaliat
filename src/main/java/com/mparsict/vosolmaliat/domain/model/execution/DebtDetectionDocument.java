@@ -1,9 +1,9 @@
 package com.mparsict.vosolmaliat.domain.model.execution;
 
+import com.mparsict.vosolmaliat.domain.model.BaseEntity;
+
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "debt_detection_document")
@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class DebtDetectionDocument {
+public class DebtDetectionDocument extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,12 +20,4 @@ public class DebtDetectionDocument {
 
     @Column(name = "execution_paper_id")
     private Long executionPaperId;
-
-    @Column(name = "created_at")
-    private String createdAt;
-
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now().toString();
-    }
 }

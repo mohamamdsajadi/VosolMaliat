@@ -1,9 +1,9 @@
 package com.mparsict.vosolmaliat.domain.model.inquiry;
 
+import com.mparsict.vosolmaliat.domain.model.BaseEntity;
+
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "debt_inquiry_result")
@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class DebtInquiryResult {
+public class DebtInquiryResult extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,12 +26,4 @@ public class DebtInquiryResult {
 
     @Column(name = "hash")
     private String hash;
-
-    @Column(name = "created_at")
-    private String createdAt;
-
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now().toString();
-    }
 }

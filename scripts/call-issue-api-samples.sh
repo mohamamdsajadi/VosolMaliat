@@ -4,8 +4,8 @@ set -euo pipefail
 BASE_URL="${BASE_URL:-http://localhost:3000}"
 ENDPOINT="$BASE_URL/api/v1/debt-papers/issue"
 
-for i in 1 2 3 4 5; do
-  portal_id="12372389${i}"
+for i in 3  ; do
+  portal_id="123758959${i}"
   curl -sS -X POST "$ENDPOINT" \
     -H 'Content-Type: application/json' \
     -d @- <<JSON
@@ -18,7 +18,7 @@ for i in 1 2 3 4 5; do
   "bedehitype": "1",
   "EdareKolTitle_tbz": "اداره کل امور مالیاتی تهران",
   "OmurCode_tbz": "1${i}",
-  "VahedCode_tbz": "1203",
+  "VahedCode_tbz": "120${i}",
   "EdareAddress_tbz": "تهران، خیابان ولیعصر، ساختمان مالیاتی",
   "EdareTel_tbz": "02188776655",
   "KelaseID_tbz": "5",
@@ -32,7 +32,7 @@ for i in 1 2 3 4 5; do
   "tbz_MoadiAddress": "Tehran, Vanak St, No. ${i}",
   "Economiccode_Tbz": "123456789${i}",
   "Tbz_Business_reputation": "Ahmadi Trading ${i}",
-  "CODE_ACTIVITY_tbz": "2",
+  "CODE_ACTIVITY_tbz": "3",
   "intacode_Tbz": "INTA-00${i}",
   "MoadiTel_tbz": "0912123456${i}",
   "SodurPlace_tbz": "Tehran",

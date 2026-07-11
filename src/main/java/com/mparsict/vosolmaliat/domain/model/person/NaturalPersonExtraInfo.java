@@ -1,9 +1,9 @@
 package com.mparsict.vosolmaliat.domain.model.person;
 
+import com.mparsict.vosolmaliat.domain.model.BaseEntity;
+
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "natural_person_extra_info")
@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class NaturalPersonExtraInfo {
+public class NaturalPersonExtraInfo extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,21 +44,4 @@ public class NaturalPersonExtraInfo {
 
     @Column(name = "passport_expiry_date")
     private String passportExpiryDate;
-
-    @Column(name = "created_at")
-    private String createdAt;
-
-    @Column(name = "updated_at")
-    private String updatedAt;
-
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now().toString();
-        this.updatedAt = LocalDateTime.now().toString();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now().toString();
-    }
 }

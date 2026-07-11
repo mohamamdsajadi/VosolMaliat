@@ -40,24 +40,26 @@ public class DemoDataInitializer {
             return;
         }
 
-        NaturalPerson naturalPerson = naturalPersonRepository.save(NaturalPerson.builder()
+        NaturalPerson naturalPerson = NaturalPerson.builder()
                 .nationalCode("0012345678")
                 .firstName("علی")
                 .lastName("رضایی")
                 .fatherName("حسین")
                 .birthDate("1368/02/18")
-                .createdBy("demo")
-                .updatedBy("demo")
-                .build());
+                .build();
+        naturalPerson.setCreatedBy("demo");
+        naturalPerson.setUpdatedBy("demo");
+        naturalPerson = naturalPersonRepository.save(naturalPerson);
 
-        LegalPerson legalPerson = legalPersonRepository.save(LegalPerson.builder()
+        LegalPerson legalPerson = LegalPerson.builder()
                 .nationalId("14001234567")
                 .registrationNumber("54321")
                 .registrationDate("1399/07/12")
                 .name("شرکت نمونه پارس")
-                .createdBy("demo")
-                .updatedBy("demo")
-                .build());
+                .build();
+        legalPerson.setCreatedBy("demo");
+        legalPerson.setUpdatedBy("demo");
+        legalPerson = legalPersonRepository.save(legalPerson);
 
         Taxpayer firstTaxpayer = taxpayerRepository.save(Taxpayer.builder()
                 .debtPaperUniqueCode("DEMO-DEBT-001")

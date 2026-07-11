@@ -4,8 +4,6 @@ import com.mparsict.vosolmaliat.domain.enums.TaxpayerType;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
-
 @Entity
 @Table(name = "taxpayer")
 @Getter
@@ -13,7 +11,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Taxpayer {
+public class Taxpayer extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,23 +28,6 @@ public class Taxpayer {
 
     @Column(name = "legal_person_id")
     private Long legalPersonId;
-
-    @Column(name = "created_at")
-    private String createdAt;
-
-    @Column(name = "updated_at")
-    private String updatedAt;
-
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now().toString();
-        this.updatedAt = LocalDateTime.now().toString();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now().toString();
-    }
 
     @Transient
     public TaxpayerType getType() {

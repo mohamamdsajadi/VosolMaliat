@@ -3,8 +3,6 @@ package com.mparsict.vosolmaliat.domain.model;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
-
 @Entity
 @Table(name = "taxpayer_activity_type")
 @Getter
@@ -12,7 +10,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TaxpayerActivityType {
+public class TaxpayerActivityType extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,12 +21,4 @@ public class TaxpayerActivityType {
 
     @Column(name = "activity_type")
     private String activityType;
-
-    @Column(name = "created_at")
-    private String createdAt;
-
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now().toString();
-    }
 }

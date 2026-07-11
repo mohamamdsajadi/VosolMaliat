@@ -1,5 +1,7 @@
 package com.mparsict.vosolmaliat.domain.model.masterdata;
 
+import com.mparsict.vosolmaliat.domain.model.BaseEntity;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -10,7 +12,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TaxUnit {
+public class TaxUnit extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

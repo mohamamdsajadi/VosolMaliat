@@ -1,9 +1,9 @@
 package com.mparsict.vosolmaliat.domain.model.rule;
 
+import com.mparsict.vosolmaliat.domain.model.BaseEntity;
+
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "execution_paper_issuance_request")
@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ExecutionPaperIssuanceRequest {
+public class ExecutionPaperIssuanceRequest extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,12 +32,4 @@ public class ExecutionPaperIssuanceRequest {
 
     @Column(name = "rejection_reason_id")
     private Long rejectionReasonId;
-
-    @Column(name = "created_at")
-    private String createdAt;
-
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now().toString();
-    }
 }

@@ -1,9 +1,9 @@
 package com.mparsict.vosolmaliat.domain.model.execution;
 
+import com.mparsict.vosolmaliat.domain.model.BaseEntity;
+
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "debt_information")
@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class DebtInformation {
+public class DebtInformation extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -72,14 +72,6 @@ public class DebtInformation {
     @Builder.Default
     @Column(name = "compliance_bonus")
     private Double complianceBonus = 0.0;
-
-    @Column(name = "created_at")
-    private String createdAt;
-
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now().toString();
-    }
 
     @Transient
     public Double getTotalDebt() {
