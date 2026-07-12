@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import AppHeader from '../../components/AppHeader'
+import { apiJson } from '../../lib/api'
 
 const FIELD_OPTIONS = [
   { value: 'performanceYear', label: 'سال (و دوره) عملکرد', type: 'text', placeholder: 'مثلاً 1403' },
@@ -72,9 +73,7 @@ export default function RuleDashboardPage() {
 
   const loadRules = async () => {
     setLoading(true)
-    const response = await fetch('/api/v1/admin/rejection-rules')
-    if (!response.ok) throw new Error(`HTTP ${response.status}`)
-    setRules(await response.json())
+    setRules(await apiJson('/api/v1/admin/rejection-rules'))
     setLoading(false)
   }
 
@@ -89,9 +88,8 @@ export default function RuleDashboardPage() {
   const saveRule = async event => {
     event.preventDefault()
     setMessage('')
-    const response = await fetch('/api/v1/admin/rejection-rules', {
+    await apiJson('/api/v1/admin/rejection-rules', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         ruleJson: JSON.stringify(preview),
         startDate,
@@ -101,17 +99,13 @@ export default function RuleDashboardPage() {
         description,
       }),
     })
-    if (!response.ok) {
-      setMessage(`ثبت قانون با خطا مواجه شد: HTTP ${response.status}`)
-      return
-    }
     setMessage('قانون با موفقیت ثبت شد و برای نمونه‌های جدید اعمال می‌شود.')
     setConditions([emptyCondition()])
     await loadRules()
   }
 
   const deleteRule = async id => {
-    await fetch(`/api/v1/admin/rejection-rules/${id}`, { method: 'DELETE' })
+    await apiJson(`/api/v1/admin/rejection-rules/${id}`, { method: 'DELETE' })
     await loadRules()
   }
 
