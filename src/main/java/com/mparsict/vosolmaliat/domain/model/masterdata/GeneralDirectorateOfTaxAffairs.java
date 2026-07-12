@@ -20,4 +20,13 @@ public class GeneralDirectorateOfTaxAffairs extends BaseEntity {
 
     @Column(name = "general_directorate_name")
     private String generalDirectorateName;
+
+    @Column(name = "postal_code")
+    private String postalCode;
+
+    @Column(name = "address")
+    private String address;
+
+    @Column(name = "phone")
+    private String phone;
 }

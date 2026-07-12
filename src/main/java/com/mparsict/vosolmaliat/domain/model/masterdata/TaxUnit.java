@@ -24,6 +24,9 @@ public class TaxUnit extends BaseEntity {
     @Column(name = "tax_unit_name")
     private String taxUnitName;
 
+    @Column(name = "postal_code")
+    private String postalCode;
+
     @Column(name = "address")
     private String address;
 

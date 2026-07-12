@@ -5,5 +5,8 @@ import jakarta.validation.constraints.NotNull;
 
 public record TaxAffairsOfficeRequest(
         @NotNull Long generalDirectorateOfTaxAffairsId,
-        @NotBlank String officeName
+        @NotBlank String officeName,
+        String postalCode,
+        String address,
+        String phone
 ) {}

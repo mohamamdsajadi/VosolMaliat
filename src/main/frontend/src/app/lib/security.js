@@ -83,17 +83,17 @@ export function fetchGeneralDirectorates() {
   return apiJson('/api/v1/masterdata/general-directorates');
 }
 
-export function createGeneralDirectorate(name) {
+export function createGeneralDirectorate(generalDirectorate) {
   return apiJson('/api/v1/masterdata/general-directorates', {
     method: 'POST',
-    body: JSON.stringify({ name })
+    body: JSON.stringify(generalDirectorate)
   });
 }
 
-export function updateGeneralDirectorate(id, name) {
+export function updateGeneralDirectorate(id, generalDirectorate) {
   return apiJson(`/api/v1/masterdata/general-directorates/${id}`, {
     method: 'PUT',
-    body: JSON.stringify({ name })
+    body: JSON.stringify(generalDirectorate)
   });
 }
 

@@ -17,9 +17,9 @@ import {
   updateTaxUnit
 } from '../../lib/security';
 
-const initialGeneral = { name: '' };
-const initialOffice = { generalDirectorateOfTaxAffairsId: '', officeName: '' };
-const initialUnit = { taxAffairsOfficeId: '', taxUnitName: '', address: '', phone: '' };
+const initialGeneral = { name: '', postalCode: '', address: '', phone: '' };
+const initialOffice = { generalDirectorateOfTaxAffairsId: '', officeName: '', postalCode: '', address: '', phone: '' };
+const initialUnit = { taxAffairsOfficeId: '', taxUnitName: '', postalCode: '', address: '', phone: '' };
 
 export default function AdminOrganizationsPage() {
   const [generals, setGenerals] = useState([]);
@@ -57,11 +57,17 @@ export default function AdminOrganizationsPage() {
 
   const saveGeneral = async (event) => {
     event.preventDefault();
+    const payload = {
+      name: generalForm.name,
+      postalCode: generalForm.postalCode,
+      address: generalForm.address,
+      phone: generalForm.phone
+    };
     try {
       if (editing.type === 'general') {
-        await updateGeneralDirectorate(editing.id, generalForm.name);
+        await updateGeneralDirectorate(editing.id, payload);
       } else {
-        await createGeneralDirectorate(generalForm.name);
+        await createGeneralDirectorate(payload);
       }
       resetForms();
       await load();
@@ -74,7 +80,10 @@ export default function AdminOrganizationsPage() {
     event.preventDefault();
     const payload = {
       generalDirectorateOfTaxAffairsId: Number(officeForm.generalDirectorateOfTaxAffairsId),
-      officeName: officeForm.officeName
+      officeName: officeForm.officeName,
+      postalCode: officeForm.postalCode,
+      address: officeForm.address,
+      phone: officeForm.phone
     };
     try {
       if (editing.type === 'office') {
@@ -94,6 +103,7 @@ export default function AdminOrganizationsPage() {
     const payload = {
       taxAffairsOfficeId: Number(unitForm.taxAffairsOfficeId),
       taxUnitName: unitForm.taxUnitName,
+      postalCode: unitForm.postalCode,
       address: unitForm.address,
       phone: unitForm.phone
     };
@@ -156,10 +166,24 @@ export default function AdminOrganizationsPage() {
           eyebrow="GeneralDirectorateOfTaxAffairs"
           onSubmit={saveGeneral}
           form={(
-            <label>
-              <span>نام اداره کل</span>
-              <input value={generalForm.name} onChange={(event) => setGeneralForm({ name: event.target.value })} required />
-            </label>
+            <>
+              <label>
+                <span>نام اداره کل</span>
+                <input value={generalForm.name} onChange={(event) => setGeneralForm((current) => ({ ...current, name: event.target.value }))} required />
+              </label>
+              <label>
+                <span>کد پستی</span>
+                <input value={generalForm.postalCode} onChange={(event) => setGeneralForm((current) => ({ ...current, postalCode: event.target.value }))} />
+              </label>
+              <label>
+                <span>نشانی</span>
+                <input value={generalForm.address} onChange={(event) => setGeneralForm((current) => ({ ...current, address: event.target.value }))} />
+              </label>
+              <label>
+                <span>تلفن</span>
+                <input value={generalForm.phone} onChange={(event) => setGeneralForm((current) => ({ ...current, phone: event.target.value }))} />
+              </label>
+            </>
           )}
           editing={editing.type === 'general'}
           onCancel={resetForms}
@@ -168,8 +192,16 @@ export default function AdminOrganizationsPage() {
             <MasterdataRow
               key={item.id}
               title={item.name}
-              subtitle={`شناسه: ${item.id}`}
-              onEdit={() => { setEditing({ type: 'general', id: item.id }); setGeneralForm({ name: item.name }); }}
+              subtitle={contactSubtitle(item, `شناسه: ${item.id}`)}
+              onEdit={() => {
+                setEditing({ type: 'general', id: item.id });
+                setGeneralForm({
+                  name: item.name,
+                  postalCode: item.postalCode || '',
+                  address: item.address || '',
+                  phone: item.phone || ''
+                });
+              }}
               onDelete={() => remove('general', item)}
             />
           ))}
@@ -192,6 +224,18 @@ export default function AdminOrganizationsPage() {
                 <span>نام اداره مالیات</span>
                 <input value={officeForm.officeName} onChange={(event) => setOfficeForm((current) => ({ ...current, officeName: event.target.value }))} required />
               </label>
+              <label>
+                <span>کد پستی</span>
+                <input value={officeForm.postalCode} onChange={(event) => setOfficeForm((current) => ({ ...current, postalCode: event.target.value }))} />
+              </label>
+              <label>
+                <span>نشانی</span>
+                <input value={officeForm.address} onChange={(event) => setOfficeForm((current) => ({ ...current, address: event.target.value }))} />
+              </label>
+              <label>
+                <span>تلفن</span>
+                <input value={officeForm.phone} onChange={(event) => setOfficeForm((current) => ({ ...current, phone: event.target.value }))} />
+              </label>
             </>
           )}
           editing={editing.type === 'office'}
@@ -201,12 +245,15 @@ export default function AdminOrganizationsPage() {
             <MasterdataRow
               key={item.id}
               title={item.officeName}
-              subtitle={item.generalDirectorateName || 'بدون اداره کل'}
+              subtitle={contactSubtitle(item, item.generalDirectorateName || 'بدون اداره کل')}
               onEdit={() => {
                 setEditing({ type: 'office', id: item.id });
                 setOfficeForm({
                   generalDirectorateOfTaxAffairsId: String(item.generalDirectorateOfTaxAffairsId),
-                  officeName: item.officeName
+                  officeName: item.officeName,
+                  postalCode: item.postalCode || '',
+                  address: item.address || '',
+                  phone: item.phone || ''
                 });
               }}
               onDelete={() => remove('office', item)}
@@ -232,6 +279,10 @@ export default function AdminOrganizationsPage() {
                 <input value={unitForm.taxUnitName} onChange={(event) => setUnitForm((current) => ({ ...current, taxUnitName: event.target.value }))} required />
               </label>
               <label>
+                <span>کد پستی</span>
+                <input value={unitForm.postalCode} onChange={(event) => setUnitForm((current) => ({ ...current, postalCode: event.target.value }))} />
+              </label>
+              <label>
                 <span>نشانی</span>
                 <input value={unitForm.address} onChange={(event) => setUnitForm((current) => ({ ...current, address: event.target.value }))} />
               </label>
@@ -248,12 +299,13 @@ export default function AdminOrganizationsPage() {
             <MasterdataRow
               key={item.id}
               title={item.taxUnitName}
-              subtitle={`${item.taxAffairsOfficeName || 'بدون اداره مالیات'} · ${item.generalDirectorateName || 'بدون اداره کل'}`}
+              subtitle={contactSubtitle(item, `${item.taxAffairsOfficeName || 'بدون اداره مالیات'} · ${item.generalDirectorateName || 'بدون اداره کل'}`)}
               onEdit={() => {
                 setEditing({ type: 'unit', id: item.id });
                 setUnitForm({
                   taxAffairsOfficeId: String(item.taxAffairsOfficeId),
                   taxUnitName: item.taxUnitName,
+                  postalCode: item.postalCode || '',
                   address: item.address || '',
                   phone: item.phone || ''
                 });
@@ -265,6 +317,15 @@ export default function AdminOrganizationsPage() {
       </section>
     </AppShell>
   );
+}
+
+function contactSubtitle(item, fallback) {
+  return [
+    fallback,
+    item.postalCode ? `کد پستی: ${item.postalCode}` : null,
+    item.phone ? `تلفن: ${item.phone}` : null,
+    item.address ? `نشانی: ${item.address}` : null
+  ].filter(Boolean).join(' · ');
 }
 
 function MasterdataPanel({ eyebrow, title, form, onSubmit, editing, onCancel, children }) {

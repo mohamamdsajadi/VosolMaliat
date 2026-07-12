@@ -36,6 +36,9 @@ public class MasterdataService {
     public GeneralDirectorateResponse createGeneralDirectorate(GeneralDirectorateRequest request) {
         GeneralDirectorateOfTaxAffairs saved = generalDirectorateRepository.save(GeneralDirectorateOfTaxAffairs.builder()
                 .generalDirectorateName(request.name())
+                .postalCode(request.postalCode())
+                .address(request.address())
+                .phone(request.phone())
                 .build());
         return toResponse(saved);
     }
@@ -44,6 +47,9 @@ public class MasterdataService {
     public GeneralDirectorateResponse updateGeneralDirectorate(Long id, GeneralDirectorateRequest request) {
         GeneralDirectorateOfTaxAffairs existing = findGeneralDirectorate(id);
         existing.setGeneralDirectorateName(request.name());
+        existing.setPostalCode(request.postalCode());
+        existing.setAddress(request.address());
+        existing.setPhone(request.phone());
         return toResponse(generalDirectorateRepository.save(existing));
     }
 
@@ -69,6 +75,9 @@ public class MasterdataService {
         TaxAffairsOffice saved = taxAffairsOfficeRepository.save(TaxAffairsOffice.builder()
                 .generalDirectorateOfTaxAffairsId(request.generalDirectorateOfTaxAffairsId())
                 .officeName(request.officeName())
+                .postalCode(request.postalCode())
+                .address(request.address())
+                .phone(request.phone())
                 .build());
         return toResponse(saved);
     }
@@ -79,6 +88,9 @@ public class MasterdataService {
         TaxAffairsOffice existing = findTaxAffairsOffice(id);
         existing.setGeneralDirectorateOfTaxAffairsId(request.generalDirectorateOfTaxAffairsId());
         existing.setOfficeName(request.officeName());
+        existing.setPostalCode(request.postalCode());
+        existing.setAddress(request.address());
+        existing.setPhone(request.phone());
         return toResponse(taxAffairsOfficeRepository.save(existing));
     }
 
@@ -104,6 +116,7 @@ public class MasterdataService {
         TaxUnit saved = taxUnitRepository.save(TaxUnit.builder()
                 .taxAffairsOfficeId(request.taxAffairsOfficeId())
                 .taxUnitName(request.taxUnitName())
+                .postalCode(request.postalCode())
                 .address(request.address())
                 .phone(request.phone())
                 .build());
@@ -116,6 +129,7 @@ public class MasterdataService {
         TaxUnit existing = findTaxUnit(id);
         existing.setTaxAffairsOfficeId(request.taxAffairsOfficeId());
         existing.setTaxUnitName(request.taxUnitName());
+        existing.setPostalCode(request.postalCode());
         existing.setAddress(request.address());
         existing.setPhone(request.phone());
         return toResponse(taxUnitRepository.save(existing));
@@ -145,7 +159,13 @@ public class MasterdataService {
     }
 
     private GeneralDirectorateResponse toResponse(GeneralDirectorateOfTaxAffairs entity) {
-        return new GeneralDirectorateResponse(entity.getId(), entity.getGeneralDirectorateName());
+        return new GeneralDirectorateResponse(
+                entity.getId(),
+                entity.getGeneralDirectorateName(),
+                entity.getPostalCode(),
+                entity.getAddress(),
+                entity.getPhone()
+        );
     }
 
     private TaxAffairsOfficeResponse toResponse(TaxAffairsOffice entity) {
@@ -156,7 +176,10 @@ public class MasterdataService {
                 entity.getId(),
                 entity.getGeneralDirectorateOfTaxAffairsId(),
                 general == null ? null : general.getGeneralDirectorateName(),
-                entity.getOfficeName()
+                entity.getOfficeName(),
+                entity.getPostalCode(),
+                entity.getAddress(),
+                entity.getPhone()
         );
     }
 
@@ -172,6 +195,7 @@ public class MasterdataService {
                 office == null ? null : office.getGeneralDirectorateOfTaxAffairsId(),
                 general == null ? null : general.getGeneralDirectorateName(),
                 entity.getTaxUnitName(),
+                entity.getPostalCode(),
                 entity.getAddress(),
                 entity.getPhone()
         );

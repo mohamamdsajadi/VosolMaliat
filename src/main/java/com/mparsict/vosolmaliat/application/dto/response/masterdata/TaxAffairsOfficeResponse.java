@@ -4,5 +4,8 @@ public record TaxAffairsOfficeResponse(
         Long id,
         Long generalDirectorateOfTaxAffairsId,
         String generalDirectorateName,
-        String officeName
+        String officeName,
+        String postalCode,
+        String address,
+        String phone
 ) {}

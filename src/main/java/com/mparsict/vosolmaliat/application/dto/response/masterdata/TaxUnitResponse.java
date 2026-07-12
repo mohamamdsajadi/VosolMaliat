@@ -7,6 +7,7 @@ public record TaxUnitResponse(
         Long generalDirectorateOfTaxAffairsId,
         String generalDirectorateName,
         String taxUnitName,
+        String postalCode,
         String address,
         String phone
 ) {}
