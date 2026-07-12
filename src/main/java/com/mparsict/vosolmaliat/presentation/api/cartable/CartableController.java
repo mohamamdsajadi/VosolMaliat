@@ -82,9 +82,10 @@ public class CartableController {
     }
 
     @PostMapping("/tasks/{taskKey}/delegate")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasAuthority('TASK_DELEGATE')")
-    public CartableTaskResponse delegate(@PathVariable Long taskKey, @RequestBody(required = false) DelegateTaskRequest request) {
+    public void delegate(@PathVariable Long taskKey, @RequestBody(required = false) DelegateTaskRequest request) {
         log.debug("POST /api/v1/cartable/tasks/{}/delegate", taskKey);
-        return cartableService.delegate(taskKey, request == null ? new DelegateTaskRequest(null, null) : request);
+        cartableService.delegate(taskKey, request == null ? new DelegateTaskRequest(null, null) : request);
     }
 }

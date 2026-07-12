@@ -1,8 +1,9 @@
 'use client'
 
+import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import AppShell from '../components/app-shell';
-import { formatFaNumber, formatCompactId } from '../lib/display';
+import { formatFaNumber } from '../lib/display';
 import { claimCartableTask, delegateTask, fetchCartableTasks, fetchDelegationTargets } from '../lib/tasks';
 import { fetchCurrentUser } from '../lib/security';
 
@@ -68,8 +69,8 @@ export default function AllTasksPage() {
           </div>
         ) : (
           <div className="task-list">
-            {tasks.map((task, index) => (
-              <CartableTaskCard key={task.taskKey} task={task} order={index + 1} onChanged={loadTasks} readOnly={isAdmin} />
+            {tasks.map((task) => (
+              <CartableTaskCard key={task.taskKey} task={task} onChanged={loadTasks} readOnly={isAdmin} />
             ))}
           </div>
         )}
@@ -78,7 +79,7 @@ export default function AllTasksPage() {
   );
 }
 
-function CartableTaskCard({ task, order, onChanged, readOnly }) {
+function CartableTaskCard({ task, onChanged, readOnly }) {
   const [targets, setTargets] = useState([]);
   const [target, setTarget] = useState('');
   const [loadingTargets, setLoadingTargets] = useState(false);
@@ -86,6 +87,25 @@ function CartableTaskCard({ task, order, onChanged, readOnly }) {
   const [claiming, setClaiming] = useState(false);
   const canClaim = task.allowedActions?.claim && !readOnly;
   const canDelegate = task.allowedActions?.delegate && !readOnly;
+  const variables = variableMap(task.variables);
+  const executionPaperId = firstValue(variables, ['executionPaperId', 'execution_paper_id']);
+  const executionPaperCode = firstValue(variables, ['executionPaperCode', 'executionPaperUniqueCode', 'execution_paper_code']);
+  const hasOrganizationScope = Boolean(firstValue(variables, [
+    'taxUnitId',
+    'tax_unit_id',
+    'taxAffairsOfficeId',
+    'taxBureauId',
+    'generalDirectorateId',
+    'mainTaxBureauId'
+  ]));
+  const candidateLabel = task.candidateGroups?.length
+    ? task.candidateGroups.map(roleLabel).join('، ')
+    : 'بدون گروه کاندید';
+  const statusLabel = readOnly
+    ? 'مشاهده مدیریتی'
+    : task.assignee
+      ? 'اختصاص‌یافته'
+      : 'در انتظار دریافت';
 
   const claimTask = async () => {
     setClaiming(true);
@@ -129,20 +149,38 @@ function CartableTaskCard({ task, order, onChanged, readOnly }) {
   };
 
   return (
-    <article className="task-summary-card">
-      <div className="task-summary-main">
-        <span className="task-index">{Number(order || 1).toLocaleString('fa-IR')}</span>
-        <div>
-          <p className="eyebrow">{task.processDefinitionId || 'فرایند'}</p>
-          <h3>{task.name || 'کار فعال'}</h3>
-          <p className="summary-copy">
-            شناسه کار: {formatCompactId(task.taskKey)} · مسئول فعلی: {task.assignee || 'بدون مسئول'}
-          </p>
-          {task.candidateGroups?.length > 0 && <p className="summary-copy">گروه‌های کاندید: {task.candidateGroups.join('، ')}</p>}
+    <article className="execution-task-card">
+      <div className="execution-task-card__content">
+        <div className="execution-task-card__header">
+          <div>
+            <p className="eyebrow">برگ اجرا</p>
+            <h3>{executionPaperCode ? `برگ اجرا ${executionPaperCode}` : task.name || 'برگ اجرای در جریان'}</h3>
+          </div>
+          <span className={`task-state-badge ${task.assignee ? 'task-state-badge--assigned' : 'task-state-badge--candidate'}`}>
+            {statusLabel}
+          </span>
         </div>
+
+        <div className="execution-task-meta">
+          <MetaItem label="مرحله فعلی" value={task.name || 'بررسی سازمانی'} />
+          <MetaItem label="مسئول فعلی" value={task.assignee || 'آماده دریافت توسط نقش مجاز'} />
+          <MetaItem label="نقش مجاز" value={candidateLabel} />
+          <MetaItem label="تاریخ ایجاد" value={formatDate(task.createdAt)} />
+        </div>
+
+        <div className="execution-task-scope">
+          <span>{hasOrganizationScope ? 'محدوده سازمانی پرونده کنترل می‌شود' : 'محدوده سازمانی در پرونده ثبت نشده است'}</span>
+        </div>
+
+        {message && <div className="delegate-message execution-task-message">{message}</div>}
       </div>
-      <div className="task-summary-side">
-        <span className="status-pill status-pill--ready">{readOnly ? 'فقط مشاهده' : 'آماده اقدام'}</span>
+
+      <div className="execution-task-actions">
+        {executionPaperId && (
+          <Link className="ghost-action task-detail-action" href={`/execution-papers/${executionPaperId}`}>
+            مشاهده جزئیات برگ اجرا
+          </Link>
+        )}
         {canClaim && (
           <button className="primary-action" type="button" onClick={claimTask} disabled={claiming}>
             {claiming ? 'در حال دریافت' : 'دریافت کار'}
@@ -162,12 +200,56 @@ function CartableTaskCard({ task, order, onChanged, readOnly }) {
               </>
             )}
             <button className="ghost-action" type="button" onClick={delegateToGroup}>ارجاع به نقش بعدی</button>
-            {message && <span className="delegate-message">{message}</span>}
           </div>
         )}
       </div>
     </article>
   );
+}
+
+function MetaItem({ label, value }) {
+  return (
+    <div className="execution-task-meta__item">
+      <span>{label}</span>
+      <strong>{value || '-'}</strong>
+    </div>
+  );
+}
+
+function variableMap(variables = []) {
+  return variables.reduce((acc, item) => {
+    if (item?.name) {
+      acc[item.name] = item.value;
+    }
+    return acc;
+  }, {});
+}
+
+function firstValue(values, keys) {
+  for (const key of keys) {
+    const value = values[key];
+    if (value !== undefined && value !== null && value !== '') {
+      return value;
+    }
+  }
+  return null;
+}
+
+function formatDate(value) {
+  if (!value) {
+    return '-';
+  }
+  try {
+    return new Intl.DateTimeFormat('fa-IR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(new Date(value));
+  } catch {
+    return value;
+  }
 }
 
 function roleLabel(value) {

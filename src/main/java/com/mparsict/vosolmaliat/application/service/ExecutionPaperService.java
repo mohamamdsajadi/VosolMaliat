@@ -5,13 +5,18 @@ import com.mparsict.vosolmaliat.application.dto.request.ExecutionPaperSearchCrit
 import com.mparsict.vosolmaliat.application.dto.response.ExecutionPaperDetailResponse;
 import com.mparsict.vosolmaliat.application.dto.response.ExecutionPaperDto;
 import com.mparsict.vosolmaliat.application.dto.response.ExecutionPaperPageResponse;
+import com.mparsict.vosolmaliat.application.dto.response.ExecutionPaperTraceItemResponse;
+import com.mparsict.vosolmaliat.application.dto.response.ExecutionPaperTraceResponse;
+import com.mparsict.vosolmaliat.application.service.security.AuditLogService;
 import com.mparsict.vosolmaliat.common.util.UniqueCodeGenerator;
 import com.mparsict.vosolmaliat.domain.enums.ExecutionPaperState;
 import com.mparsict.vosolmaliat.domain.model.Taxpayer;
 import com.mparsict.vosolmaliat.domain.model.execution.*;
+import com.mparsict.vosolmaliat.domain.model.security.AuditLog;
 import com.mparsict.vosolmaliat.domain.model.person.LegalPerson;
 import com.mparsict.vosolmaliat.domain.model.person.NaturalPerson;
 import com.mparsict.vosolmaliat.domain.repository.*;
+import com.mparsict.vosolmaliat.domain.repository.security.AuditLogRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -23,6 +28,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +48,8 @@ public class ExecutionPaperService {
     private final DebtInformationRepository debtInformationRepository;
     private final ExecutionPaperStateHistoryRepository stateHistoryRepository;
     private final ExecutionPaperNotificationRepository executionPaperNotificationRepository;
+    private final AuditLogRepository auditLogRepository;
+    private final AuditLogService auditLogService;
     private final UniqueCodeGenerator uniqueCodeGenerator;
 
     @Transactional
@@ -116,6 +125,7 @@ public class ExecutionPaperService {
                 .stateDate(LocalDate.now().toString())
                 .build();
         stateHistoryRepository.save(history);
+        auditLogService.record(null, "EXECUTION_PAPER_CREATED", "EXECUTION_PAPER", ep.getId().toString(), null, ep.getExecutionPaperUniqueCode());
 
         // 5. Create DebtInformation
         DebtPaperIssuanceRequest.DebtInfo di = request.debtInfo();
@@ -300,6 +310,82 @@ public class ExecutionPaperService {
         });
 
         return new ExecutionPaperDetailResponse(toDto(ep), execution, finalized, taxpayerMap, debt, notification);
+    }
+
+    public ExecutionPaperTraceResponse getTrace(Long id) {
+        ExecutionPaper ep = executionPaperRepository.findById(id)
+                .orElseThrow(() -> new com.mparsict.vosolmaliat.common.exception.BusinessException("EXECUTION_PAPER_NOT_FOUND", "برگ اجرا یافت نشد"));
+
+        List<ExecutionPaperTraceItemResponse> stateItems = stateHistoryRepository.findByExecutionPaperId(id).stream()
+                .map(history -> new ExecutionPaperTraceItemResponse(
+                        "STATE",
+                        history.getState(),
+                        stateLabel(history.getState()),
+                        history.getCreatedBy() == null ? "system" : history.getCreatedBy(),
+                        null,
+                        history.getState(),
+                        stateHistoryDate(history)
+                ))
+                .toList();
+
+        List<ExecutionPaperTraceItemResponse> auditItems = auditLogRepository
+                .findByTargetTypeAndTargetIdOrderByCreatedAtAsc("EXECUTION_PAPER", id.toString())
+                .stream()
+                .map(this::toTraceItem)
+                .toList();
+
+        List<ExecutionPaperTraceItemResponse> items = java.util.stream.Stream.concat(stateItems.stream(), auditItems.stream())
+                .sorted(Comparator.comparing(ExecutionPaperTraceItemResponse::occurredAt, Comparator.nullsLast(Comparator.naturalOrder())))
+                .toList();
+
+        return new ExecutionPaperTraceResponse(id, ep.getExecutionPaperUniqueCode(), items);
+    }
+
+    private ExecutionPaperTraceItemResponse toTraceItem(AuditLog auditLog) {
+        return new ExecutionPaperTraceItemResponse(
+                "AUDIT",
+                auditLog.getAction(),
+                actionLabel(auditLog.getAction()),
+                auditLog.getActorUsername(),
+                auditLog.getOldValue(),
+                auditLog.getNewValue(),
+                auditLog.getCreatedAt()
+        );
+    }
+
+    private LocalDateTime stateHistoryDate(ExecutionPaperStateHistory history) {
+        if (history.getCreatedAt() != null) {
+            return history.getCreatedAt();
+        }
+        try {
+            return LocalDate.parse(history.getStateDate()).atTime(LocalTime.MIN);
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    private String stateLabel(String state) {
+        return switch (state == null ? "" : state) {
+            case "UNASSIGNED" -> "ایجاد برگ اجرا و ورود به صف ارجاع";
+            case "ASSIGNED" -> "اختصاص برگ اجرا";
+            case "NOTIFIED" -> "ابلاغ برگ اجرا";
+            case "COMPLETED" -> "تکمیل فرایند برگ اجرا";
+            case "CANCELLED" -> "لغو برگ اجرا";
+            default -> state == null ? "تغییر وضعیت" : state;
+        };
+    }
+
+    private String actionLabel(String action) {
+        return switch (action == null ? "" : action) {
+            case "EXECUTION_PAPER_CREATED" -> "ثبت برگ اجرا";
+            case "TASK_CLAIMED" -> "دریافت کار";
+            case "TASK_UNCLAIMED" -> "رهاسازی کار";
+            case "TASK_COMPLETED" -> "تکمیل کار";
+            case "TASK_ASSIGNED" -> "اختصاص کار";
+            case "TASK_DELEGATED_TO_USER" -> "ارجاع به کاربر";
+            case "TASK_DELEGATED_TO_GROUP" -> "ارجاع به نقش بعدی";
+            default -> action == null ? "عملیات" : action;
+        };
     }
 
     private ExecutionPaperPageResponse toPageResponse(Page<ExecutionPaper> pageResult) {

@@ -21,7 +21,7 @@ public class TaskAuthorizationService {
         return user.isAdmin()
                 || (organizationScopeService.canAccessTaskVariables(user, variables)
                 && (isAssignedTo(user, task)
-                || isCandidateFor(user, task)
+                || (isBlank(task.getAssignee()) && isCandidateFor(user, task))
                 || user.hasPermission("TASK_VIEW_ORG_SCOPE")));
     }
 

@@ -3,6 +3,7 @@ package com.mparsict.vosolmaliat.presentation.api;
 import com.mparsict.vosolmaliat.application.dto.request.ExecutionPaperSearchCriteria;
 import com.mparsict.vosolmaliat.application.dto.response.ExecutionPaperDetailResponse;
 import com.mparsict.vosolmaliat.application.dto.response.ExecutionPaperPageResponse;
+import com.mparsict.vosolmaliat.application.dto.response.ExecutionPaperTraceResponse;
 import com.mparsict.vosolmaliat.application.service.ExecutionPaperService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,10 +38,17 @@ public class ExecutionPaperController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('REPORT_VIEW')")
+    @PreAuthorize("hasAnyAuthority('REPORT_VIEW','EXECUTION_PAPER_DETAIL_VIEW')")
     public ExecutionPaperDetailResponse getDetails(@PathVariable Long id) {
         log.debug("GET /api/v1/execution-papers/{}", id);
         return executionPaperService.getDetails(id);
+    }
+
+    @GetMapping("/{id}/trace")
+    @PreAuthorize("hasAnyAuthority('REPORT_VIEW','AUDIT_VIEW','EXECUTION_PAPER_TRACE_VIEW')")
+    public ExecutionPaperTraceResponse getTrace(@PathVariable Long id) {
+        log.debug("GET /api/v1/execution-papers/{}/trace", id);
+        return executionPaperService.getTrace(id);
     }
 
     @GetMapping("/assigned")

@@ -32,6 +32,8 @@ const permissionLabels = {
   TASK_ASSIGN: 'ارجاع کار به کاربر دیگر',
   TASK_DELEGATE: 'تفویض کار به نقش پایین‌دست',
   TASK_VIEW_ORG_SCOPE: 'مشاهده کارها در محدوده سازمانی',
+  EXECUTION_PAPER_DETAIL_VIEW: 'مشاهده فقط جزئیات برگ اجرا',
+  EXECUTION_PAPER_TRACE_VIEW: 'مشاهده فقط سوابق برگ اجرا',
   REPORT_VIEW: 'مشاهده گزارش‌ها',
   AUDIT_VIEW: 'مشاهده سوابق و ممیزی'
 };
