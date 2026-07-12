@@ -14,6 +14,31 @@ const initialForm = {
   permissionCode: ''
 };
 
+const permissionLabels = {
+  USER_PROFILE_CREATE: 'ایجاد پروفایل کاربر',
+  USER_PROFILE_UPDATE: 'ویرایش پروفایل کاربر',
+  USER_PROFILE_VIEW: 'مشاهده پروفایل کاربران',
+  USER_PROFILE_ENABLE_DISABLE: 'فعال/غیرفعال کردن کاربر',
+  USER_PROFILE_ASSIGN_ORGANIZATION: 'اختصاص واحد سازمانی به کاربر',
+  PERMISSION_VIEW: 'مشاهده مجوزها',
+  PERMISSION_ASSIGN: 'اعطای مجوز',
+  GROUP_PERMISSION_VIEW: 'مشاهده مجوزهای نقش/گروه',
+  GROUP_PERMISSION_UPDATE: 'ویرایش مجوزهای نقش/گروه',
+  TASK_VIEW_OWN: 'مشاهده کارهای اختصاص‌یافته به خود',
+  TASK_VIEW_CANDIDATE: 'مشاهده کارهای قابل اخذ',
+  TASK_CLAIM: 'اخذ کار',
+  TASK_UNCLAIM: 'رها کردن کار',
+  TASK_COMPLETE: 'تکمیل کار',
+  TASK_ASSIGN: 'ارجاع کار به کاربر دیگر',
+  TASK_VIEW_ORG_SCOPE: 'مشاهده کارها در محدوده سازمانی',
+  REPORT_VIEW: 'مشاهده گزارش‌ها',
+  AUDIT_VIEW: 'مشاهده سوابق و ممیزی'
+};
+
+function permissionLabel(code) {
+  return permissionLabels[code] || code;
+}
+
 export default function AdminPermissionsPage() {
   const [permissions, setPermissions] = useState([]);
   const [groupPermissions, setGroupPermissions] = useState([]);
@@ -100,7 +125,9 @@ export default function AdminPermissionsPage() {
             <span>مجوز</span>
             <select name="permissionCode" value={form.permissionCode} onChange={updateForm} required>
               {permissions.map((permission) => (
-                <option value={permission.code} key={permission.id}>{permission.code}</option>
+                <option value={permission.code} key={permission.id}>
+                  {permissionLabel(permission.code)} - {permission.code}
+                </option>
               ))}
             </select>
           </label>
@@ -118,8 +145,8 @@ export default function AdminPermissionsPage() {
             {filteredMappings.map((item) => (
               <div className="admin-row admin-row--with-actions" key={item.id}>
                 <div>
-                  <strong>{item.permission?.code}</strong>
-                  <span>{item.groupName} · {item.permission?.description || 'بدون توضیح'}</span>
+                  <strong>{permissionLabel(item.permission?.code)}</strong>
+                  <span>{item.groupName} · {item.permission?.code}</span>
                 </div>
                 <button className="ghost-action danger-action" onClick={() => revoke(item)}>لغو</button>
               </div>
@@ -127,6 +154,23 @@ export default function AdminPermissionsPage() {
             {!loading && filteredMappings.length === 0 && <div className="empty-state compact">مجوزی برای این نقش/گروه ثبت نشده است.</div>}
           </div>
         </section>
+      </section>
+
+      <section className="panel-section permission-reference">
+        <div className="section-heading compact-heading">
+          <div>
+            <p className="eyebrow">فهرست مرجع</p>
+            <h2>همه مجوزها</h2>
+          </div>
+        </div>
+        <div className="permission-reference-grid">
+          {permissions.map((permission) => (
+            <div className="permission-reference-item" key={permission.id}>
+              <strong>{permissionLabel(permission.code)}</strong>
+              <span>{permission.code}</span>
+            </div>
+          ))}
+        </div>
       </section>
     </AppShell>
   );
