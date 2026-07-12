@@ -33,6 +33,9 @@ public class AppUserProfileService {
                 .firstName(request.firstName())
                 .lastName(request.lastName())
                 .phoneNumber(request.phoneNumber())
+                .businessRole(request.businessRole())
+                .generalDirectorateId(request.generalDirectorateId())
+                .taxAffairsOfficeId(request.taxAffairsOfficeId())
                 .taxUnit(taxUnit)
                 .enabledInBusinessSystem(true)
                 .lockedInBusinessSystem(false)
@@ -58,7 +61,7 @@ public class AppUserProfileService {
     @Transactional
     public AppUserProfileResponse update(Long id, UpdateAppUserProfileRequest request) {
         AppUserProfile profile = findProfile(id);
-        String oldValue = profile.getEmail() + "|" + profile.getFirstName() + "|" + profile.getLastName();
+        String oldValue = profile.getEmail() + "|" + profile.getFirstName() + "|" + profile.getLastName() + "|" + profile.getBusinessRole();
         if (request.email() != null && !request.email().equals(profile.getEmail()) && userProfileRepository.existsByEmail(request.email())) {
             throw new BusinessException("EMAIL_ALREADY_LINKED", "ایمیل قبلا به کاربر دیگری متصل شده است");
         }
@@ -66,6 +69,13 @@ public class AppUserProfileService {
         profile.setFirstName(request.firstName());
         profile.setLastName(request.lastName());
         profile.setPhoneNumber(request.phoneNumber());
+        if (request.businessRole() != null) {
+            profile.setBusinessRole(request.businessRole());
+        }
+        profile.setGeneralDirectorateId(request.generalDirectorateId());
+        profile.setTaxAffairsOfficeId(request.taxAffairsOfficeId());
+        TaxUnit taxUnit = request.taxUnitId() == null ? null : findTaxUnit(request.taxUnitId());
+        profile.setTaxUnit(taxUnit);
         AppUserProfile saved = userProfileRepository.save(profile);
         auditLogService.record(securityIdentityService.currentUser(), "USER_PROFILE_UPDATED", "APP_USER_PROFILE",
                 saved.getId().toString(), oldValue, saved.getEmail() + "|" + saved.getFirstName() + "|" + saved.getLastName());

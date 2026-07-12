@@ -19,36 +19,54 @@ public class TaskAuthorizationService {
 
     public boolean canView(CurrentUserContext user, UserTask task, Map<String, Object> variables) {
         return user.isAdmin()
-                || isAssignedTo(user, task)
+                || (organizationScopeService.canAccessTaskVariables(user, variables)
+                && (isAssignedTo(user, task)
                 || isCandidateFor(user, task)
-                || (user.hasPermission("TASK_VIEW_ORG_SCOPE") && organizationScopeService.canAccessTaskVariables(user, variables));
+                || user.hasPermission("TASK_VIEW_ORG_SCOPE")));
     }
 
     public boolean canClaim(CurrentUserContext user, UserTask task, Map<String, Object> variables) {
-        return user.isAdmin()
-                || (user.hasPermission("TASK_CLAIM")
+        return !user.isAdmin()
+                && (user.hasPermission("TASK_CLAIM")
                 && isBlank(task.getAssignee())
-                && (isCandidateFor(user, task) || organizationScopeService.canAccessTaskVariables(user, variables)));
+                && isCandidateFor(user, task)
+                && organizationScopeService.canAccessTaskVariables(user, variables));
     }
 
-    public boolean canUnclaim(CurrentUserContext user, UserTask task) {
-        return user.isAdmin() || (user.hasPermission("TASK_UNCLAIM") && isAssignedTo(user, task));
+    public boolean canUnclaim(CurrentUserContext user, UserTask task, Map<String, Object> variables) {
+        return !user.isAdmin()
+                && user.hasPermission("TASK_UNCLAIM")
+                && isAssignedTo(user, task)
+                && organizationScopeService.canAccessTaskVariables(user, variables);
     }
 
-    public boolean canComplete(CurrentUserContext user, UserTask task) {
-        return user.isAdmin() || (user.hasPermission("TASK_COMPLETE") && isAssignedTo(user, task));
+    public boolean canComplete(CurrentUserContext user, UserTask task, Map<String, Object> variables) {
+        return !user.isAdmin()
+                && user.hasPermission("TASK_COMPLETE")
+                && isAssignedTo(user, task)
+                && organizationScopeService.canAccessTaskVariables(user, variables);
     }
 
     public boolean canAssign(CurrentUserContext user) {
-        return user.isAdmin() || user.hasPermission("TASK_ASSIGN");
+        return !user.isAdmin() && user.hasPermission("TASK_ASSIGN");
+    }
+
+    public boolean canDelegate(CurrentUserContext user, UserTask task, Map<String, Object> variables) {
+        return !user.isAdmin()
+                && user.hasPermission("TASK_DELEGATE")
+                && isAssignedTo(user, task)
+                && user.businessRole() != null
+                && user.businessRole().nextDelegationRole() != null
+                && organizationScopeService.canAccessTaskVariables(user, variables);
     }
 
     public AllowedTaskActionsResponse allowedActions(CurrentUserContext user, UserTask task, Map<String, Object> variables) {
         return new AllowedTaskActionsResponse(
                 canClaim(user, task, variables),
-                canUnclaim(user, task),
-                canComplete(user, task),
+                canUnclaim(user, task, variables),
+                canComplete(user, task, variables),
                 canAssign(user),
+                canDelegate(user, task, variables),
                 canView(user, task, variables)
         );
     }

@@ -5,5 +5,6 @@ public record AllowedTaskActionsResponse(
         boolean unclaim,
         boolean complete,
         boolean assign,
+        boolean delegate,
         boolean view
 ) {}

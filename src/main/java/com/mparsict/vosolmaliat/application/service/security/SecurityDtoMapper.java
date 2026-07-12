@@ -27,6 +27,21 @@ public final class SecurityDtoMapper {
         );
     }
 
+    public static MasterdataOrganizationResponse toOrganizationResponse(AppUserProfile profile) {
+        if (profile == null) {
+            return null;
+        }
+        TaxUnit taxUnit = profile.getTaxUnit();
+        return new MasterdataOrganizationResponse(
+                profile.getGeneralDirectorateId(),
+                null,
+                profile.getTaxAffairsOfficeId() != null ? profile.getTaxAffairsOfficeId() : taxUnit == null ? null : taxUnit.getTaxAffairsOfficeId(),
+                null,
+                taxUnit == null ? null : taxUnit.getId(),
+                taxUnit == null ? null : taxUnit.getTaxUnitName()
+        );
+    }
+
     public static AppUserProfileResponse toAppUserProfileResponse(AppUserProfile entity) {
         return new AppUserProfileResponse(
                 entity.getId(),
@@ -37,7 +52,8 @@ public final class SecurityDtoMapper {
                 entity.getLastName(),
                 fullName(entity.getFirstName(), entity.getLastName(), entity.getUsername()),
                 entity.getPhoneNumber(),
-                toOrganizationResponse(entity.getTaxUnit()),
+                entity.getBusinessRole() == null ? null : entity.getBusinessRole().name(),
+                toOrganizationResponse(entity),
                 entity.getEnabledInBusinessSystem(),
                 entity.getLockedInBusinessSystem(),
                 entity.getCreatedAt(),

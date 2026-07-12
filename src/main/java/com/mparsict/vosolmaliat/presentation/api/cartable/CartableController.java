@@ -3,7 +3,9 @@ package com.mparsict.vosolmaliat.presentation.api.cartable;
 import com.mparsict.vosolmaliat.application.dto.request.cartable.AssignTaskRequest;
 import com.mparsict.vosolmaliat.application.dto.request.cartable.ClaimTaskRequest;
 import com.mparsict.vosolmaliat.application.dto.request.cartable.CompleteTaskRequest;
+import com.mparsict.vosolmaliat.application.dto.request.cartable.DelegateTaskRequest;
 import com.mparsict.vosolmaliat.application.dto.response.cartable.CartableTaskResponse;
+import com.mparsict.vosolmaliat.application.dto.response.cartable.DelegationTargetResponse;
 import com.mparsict.vosolmaliat.application.service.cartable.CartableService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -70,5 +72,19 @@ public class CartableController {
     public CartableTaskResponse assign(@PathVariable Long taskKey, @RequestBody @Valid AssignTaskRequest request) {
         log.debug("POST /api/v1/cartable/tasks/{}/assign", taskKey);
         return cartableService.assign(taskKey, request);
+    }
+
+    @GetMapping("/tasks/{taskKey}/delegation-targets")
+    @PreAuthorize("hasAuthority('TASK_DELEGATE')")
+    public List<DelegationTargetResponse> delegationTargets(@PathVariable Long taskKey) {
+        log.debug("GET /api/v1/cartable/tasks/{}/delegation-targets", taskKey);
+        return cartableService.delegationTargets(taskKey);
+    }
+
+    @PostMapping("/tasks/{taskKey}/delegate")
+    @PreAuthorize("hasAuthority('TASK_DELEGATE')")
+    public CartableTaskResponse delegate(@PathVariable Long taskKey, @RequestBody(required = false) DelegateTaskRequest request) {
+        log.debug("POST /api/v1/cartable/tasks/{}/delegate", taskKey);
+        return cartableService.delegate(taskKey, request == null ? new DelegateTaskRequest(null, null) : request);
     }
 }

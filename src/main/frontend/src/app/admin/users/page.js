@@ -5,10 +5,11 @@ import AppShell from '../../components/app-shell';
 import {
   createUserProfile,
   deleteUserProfile,
+  fetchGeneralDirectorates,
+  fetchTaxAffairsOffices,
   fetchTaxUnits,
   fetchUsers,
   updateUserProfile,
-  assignUserTaxUnit,
   setUserLock,
   setUserStatus
 } from '../../lib/security';
@@ -20,11 +21,24 @@ const initialForm = {
   firstName: '',
   lastName: '',
   phoneNumber: '',
+  businessRole: 'TAX_EXPERT',
+  generalDirectorateId: '',
+  taxAffairsOfficeId: '',
   taxUnitId: ''
 };
 
+const businessRoles = [
+  { value: 'GENERAL_OFFICE_HEAD', label: 'رئیس اداره کل' },
+  { value: 'TAX_OFFICE_HEAD', label: 'رئیس اداره مالیات' },
+  { value: 'TAX_UNIT_HEAD', label: 'رئیس واحد مالیاتی' },
+  { value: 'TAX_EXPERT', label: 'کارشناس مالیاتی' },
+  { value: 'ADMIN', label: 'مدیر سامانه' }
+];
+
 export default function AdminUsersPage() {
   const [users, setUsers] = useState([]);
+  const [generals, setGenerals] = useState([]);
+  const [offices, setOffices] = useState([]);
   const [taxUnits, setTaxUnits] = useState([]);
   const [form, setForm] = useState(initialForm);
   const [editingId, setEditingId] = useState(null);
@@ -36,11 +50,15 @@ export default function AdminUsersPage() {
     setLoading(true);
     setMessage('');
     try {
-      const [userResult, organizationResult] = await Promise.all([
+      const [userResult, generalResult, officeResult, organizationResult] = await Promise.all([
         fetchUsers(),
+        fetchGeneralDirectorates(),
+        fetchTaxAffairsOffices(),
         fetchTaxUnits()
       ]);
       setUsers(userResult);
+      setGenerals(generalResult);
+      setOffices(officeResult);
       setTaxUnits(organizationResult);
     } catch (error) {
       setMessage(error.message || 'دریافت کاربران ناموفق بود.');
@@ -64,6 +82,8 @@ export default function AdminUsersPage() {
     try {
       await createUserProfile({
         ...form,
+        generalDirectorateId: form.generalDirectorateId ? Number(form.generalDirectorateId) : null,
+        taxAffairsOfficeId: form.taxAffairsOfficeId ? Number(form.taxAffairsOfficeId) : null,
         taxUnitId: form.taxUnitId ? Number(form.taxUnitId) : null
       });
       setForm(initialForm);
@@ -84,6 +104,9 @@ export default function AdminUsersPage() {
       firstName: user.firstName || '',
       lastName: user.lastName || '',
       phoneNumber: user.phoneNumber || '',
+      businessRole: user.businessRole || 'TAX_EXPERT',
+      generalDirectorateId: user.organization?.generalDirectorateId ? String(user.organization.generalDirectorateId) : '',
+      taxAffairsOfficeId: user.organization?.taxAffairsOfficeId ? String(user.organization.taxAffairsOfficeId) : '',
       taxUnitId: user.organization?.taxUnitId ? String(user.organization.taxUnitId) : ''
     });
   };
@@ -102,11 +125,12 @@ export default function AdminUsersPage() {
         email: form.email,
         firstName: form.firstName,
         lastName: form.lastName,
-        phoneNumber: form.phoneNumber
+        phoneNumber: form.phoneNumber,
+        businessRole: form.businessRole,
+        generalDirectorateId: form.generalDirectorateId ? Number(form.generalDirectorateId) : null,
+        taxAffairsOfficeId: form.taxAffairsOfficeId ? Number(form.taxAffairsOfficeId) : null,
+        taxUnitId: form.taxUnitId ? Number(form.taxUnitId) : null
       });
-      if (form.taxUnitId) {
-        await assignUserTaxUnit(editingId, Number(form.taxUnitId));
-      }
       cancelEdit();
       await loadUsers();
     } catch (error) {
@@ -184,6 +208,30 @@ export default function AdminUsersPage() {
               <input name="phoneNumber" value={form.phoneNumber} onChange={updateForm} />
             </label>
             <label>
+              <span>نقش کسب‌وکاری</span>
+              <select name="businessRole" value={form.businessRole} onChange={updateForm} required>
+                {businessRoles.map((role) => <option value={role.value} key={role.value}>{role.label}</option>)}
+              </select>
+            </label>
+          </div>
+          <div className="form-grid">
+            <label>
+              <span>اداره کل</span>
+              <select name="generalDirectorateId" value={form.generalDirectorateId} onChange={updateForm}>
+                <option value="">بدون اداره کل</option>
+                {generals.map((general) => <option value={general.id} key={general.id}>{general.name}</option>)}
+              </select>
+            </label>
+            <label>
+              <span>اداره مالیات</span>
+              <select name="taxAffairsOfficeId" value={form.taxAffairsOfficeId} onChange={updateForm}>
+                <option value="">بدون اداره مالیات</option>
+                {offices.map((office) => <option value={office.id} key={office.id}>{office.officeName}</option>)}
+              </select>
+            </label>
+          </div>
+          <div className="form-grid">
+            <label>
               <span>واحد مالیاتی</span>
               <select name="taxUnitId" value={form.taxUnitId} onChange={updateForm}>
                 <option value="">بدون واحد</option>
@@ -212,7 +260,7 @@ export default function AdminUsersPage() {
               <div className="admin-row admin-row--with-actions" key={user.id}>
                 <div>
                   <strong>{user.fullName || user.username}</strong>
-                  <span>{user.username} · {user.keycloakUserId}</span>
+                  <span>{roleLabel(user.businessRole)} · {user.username} · {user.keycloakUserId}</span>
                 </div>
                 <div className="row-actions">
                   <button className="ghost-action" onClick={() => toggleStatus(user)}>
@@ -232,4 +280,8 @@ export default function AdminUsersPage() {
       </section>
     </AppShell>
   );
+}
+
+function roleLabel(value) {
+  return businessRoles.find((role) => role.value === value)?.label || value || 'بدون نقش';
 }

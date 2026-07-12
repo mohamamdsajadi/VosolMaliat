@@ -30,6 +30,7 @@ const permissionLabels = {
   TASK_UNCLAIM: 'رها کردن کار',
   TASK_COMPLETE: 'تکمیل کار',
   TASK_ASSIGN: 'ارجاع کار به کاربر دیگر',
+  TASK_DELEGATE: 'تفویض کار به نقش پایین‌دست',
   TASK_VIEW_ORG_SCOPE: 'مشاهده کارها در محدوده سازمانی',
   REPORT_VIEW: 'مشاهده گزارش‌ها',
   AUDIT_VIEW: 'مشاهده سوابق و ممیزی'

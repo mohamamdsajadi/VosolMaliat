@@ -12,6 +12,14 @@ public class OrganizationScopeService {
         if (user.isAdmin() || variables == null || variables.isEmpty() || user.organization() == null) {
             return true;
         }
+        Object generalDirectorateId = firstPresent(variables, "generalDirectorateId", "mainTaxBureauId", "general_directorate_id", "main_tax_bureau_id");
+        if (generalDirectorateId != null && user.organization().generalDirectorateId() != null) {
+            return user.organization().generalDirectorateId().toString().equals(generalDirectorateId.toString());
+        }
+        Object taxAffairsOfficeId = firstPresent(variables, "taxAffairsOfficeId", "taxBureauId", "tax_affairs_office_id", "tax_bureau_id");
+        if (taxAffairsOfficeId != null && user.organization().taxAffairsOfficeId() != null) {
+            return user.organization().taxAffairsOfficeId().toString().equals(taxAffairsOfficeId.toString());
+        }
         Object taxUnitId = firstPresent(variables, "taxUnitId", "tax_unit_id");
         if (taxUnitId == null) {
             return true;

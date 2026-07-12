@@ -1,4 +1,20 @@
 import { apiFetch } from './api';
+import { apiJson } from './api';
+
+export function fetchCartableTasks() {
+  return apiJson('/api/v1/cartable/my-tasks');
+}
+
+export function fetchDelegationTargets(taskKey) {
+  return apiJson(`/api/v1/cartable/tasks/${taskKey}/delegation-targets`);
+}
+
+export function delegateTask(taskKey, payload) {
+  return apiJson(`/api/v1/cartable/tasks/${taskKey}/delegate`, {
+    method: 'POST',
+    body: JSON.stringify(payload || {})
+  });
+}
 
 export async function fetchProcessDefinitions() {
   const response = await appPost("/api/process-definitions/search", {});

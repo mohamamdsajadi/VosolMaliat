@@ -7,6 +7,7 @@ public record CurrentUserResponse(
         String username,
         String fullName,
         String email,
+        String businessRole,
         Set<String> keycloakRoles,
         Set<String> keycloakGroups,
         Set<String> localBusinessPermissions,

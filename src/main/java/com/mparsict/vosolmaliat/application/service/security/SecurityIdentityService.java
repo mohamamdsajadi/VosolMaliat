@@ -4,6 +4,7 @@ import com.mparsict.vosolmaliat.application.dto.response.security.CurrentUserRes
 import com.mparsict.vosolmaliat.application.security.CurrentUserContext;
 import com.mparsict.vosolmaliat.application.security.KeycloakPrincipalMapper;
 import com.mparsict.vosolmaliat.common.exception.BusinessException;
+import com.mparsict.vosolmaliat.domain.enums.BusinessRole;
 import com.mparsict.vosolmaliat.domain.model.security.AppUserProfile;
 import com.mparsict.vosolmaliat.domain.repository.security.AppUserProfileRepository;
 import com.mparsict.vosolmaliat.domain.repository.security.GroupPermissionRepository;
@@ -36,14 +37,18 @@ public class SecurityIdentityService {
         Set<String> roles = new TreeSet<>(principalMapper.extractRealmRoles(jwt));
         roles.addAll(principalMapper.extractClientRoles(jwt));
         Set<String> groups = principalMapper.extractGroups(jwt);
+        AppUserProfile profile = userProfileRepository.findByKeycloakUserId(jwt.getSubject()).orElse(null);
+        BusinessRole businessRole = profile == null ? inferBusinessRole(roles, groups) : profile.getBusinessRole();
         Set<String> identityGroups = new TreeSet<>(roles);
         identityGroups.addAll(groups);
+        if (businessRole != null) {
+            identityGroups.add(businessRole.name());
+        }
         Set<String> permissions = groupPermissionRepository.findByGroupNameIn(identityGroups).stream()
                 .filter(groupPermission -> Boolean.TRUE.equals(groupPermission.getPermission().getEnabled()))
                 .map(groupPermission -> groupPermission.getPermission().getCode())
                 .collect(Collectors.toCollection(TreeSet::new));
 
-        AppUserProfile profile = userProfileRepository.findByKeycloakUserId(jwt.getSubject()).orElse(null);
         if (profile != null && Boolean.FALSE.equals(profile.getEnabledInBusinessSystem())) {
             throw new BusinessException("BUSINESS_USER_DISABLED", "کاربر در سامانه کسب‌وکاری غیرفعال است");
         }
@@ -57,10 +62,11 @@ public class SecurityIdentityService {
                 firstNonBlank(profile == null ? null : profile.getEmail(), jwt.getClaimAsString("email")),
                 firstNonBlank(profile == null ? null : profile.getFirstName(), jwt.getClaimAsString("given_name")),
                 firstNonBlank(profile == null ? null : profile.getLastName(), jwt.getClaimAsString("family_name")),
+                businessRole,
                 roles,
                 groups,
                 permissions,
-                SecurityDtoMapper.toOrganizationResponse(profile == null ? null : profile.getTaxUnit()),
+                SecurityDtoMapper.toOrganizationResponse(profile),
                 profile == null || Boolean.TRUE.equals(profile.getEnabledInBusinessSystem()),
                 profile != null && Boolean.TRUE.equals(profile.getLockedInBusinessSystem())
         );
@@ -78,6 +84,7 @@ public class SecurityIdentityService {
                 user.username(),
                 user.fullName(),
                 user.email(),
+                user.businessRole() == null ? null : user.businessRole().name(),
                 user.roles(),
                 user.groups(),
                 user.permissions(),
@@ -90,5 +97,14 @@ public class SecurityIdentityService {
 
     private String firstNonBlank(String preferred, String fallback) {
         return preferred != null && !preferred.isBlank() ? preferred : fallback;
+    }
+
+    private BusinessRole inferBusinessRole(Set<String> roles, Set<String> groups) {
+        for (BusinessRole role : BusinessRole.values()) {
+            if (roles.contains(role.name()) || groups.contains(role.name())) {
+                return role;
+            }
+        }
+        return null;
     }
 }

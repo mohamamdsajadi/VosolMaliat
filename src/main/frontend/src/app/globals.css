@@ -958,6 +958,28 @@ textarea {
     font-size: 11px;
 }
 
+.delegate-box {
+    display: grid;
+    gap: 8px;
+    min-width: 220px;
+}
+
+.delegate-box select {
+    width: 100%;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    min-height: 38px;
+    padding: 0 10px;
+    background: #ffffff;
+    color: #0f172a;
+}
+
+.delegate-message {
+    color: #991b1b;
+    font-size: 12px;
+    line-height: 1.7;
+}
+
 .empty-state {
     display: grid;
     gap: 6px;

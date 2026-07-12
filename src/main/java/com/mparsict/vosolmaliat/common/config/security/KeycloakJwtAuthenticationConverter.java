@@ -1,6 +1,7 @@
 package com.mparsict.vosolmaliat.common.config.security;
 
 import com.mparsict.vosolmaliat.application.security.KeycloakPrincipalMapper;
+import com.mparsict.vosolmaliat.domain.repository.security.AppUserProfileRepository;
 import com.mparsict.vosolmaliat.domain.repository.security.GroupPermissionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.convert.converter.Converter;
@@ -21,10 +22,14 @@ public class KeycloakJwtAuthenticationConverter implements Converter<Jwt, Abstra
 
     private final KeycloakPrincipalMapper principalMapper;
     private final GroupPermissionRepository groupPermissionRepository;
+    private final AppUserProfileRepository userProfileRepository;
 
     @Override
     public AbstractAuthenticationToken convert(Jwt jwt) {
         Set<String> identityGroups = principalMapper.extractIdentityGroups(jwt);
+        userProfileRepository.findByKeycloakUserId(jwt.getSubject())
+                .map(profile -> profile.getBusinessRole() == null ? null : profile.getBusinessRole().name())
+                .ifPresent(identityGroups::add);
         Set<String> authorities = new TreeSet<>(identityGroups);
         authorities.addAll(identityGroups.stream().map(role -> "ROLE_" + role).collect(Collectors.toSet()));
         authorities.addAll(groupPermissionRepository.findByGroupNameIn(identityGroups).stream()

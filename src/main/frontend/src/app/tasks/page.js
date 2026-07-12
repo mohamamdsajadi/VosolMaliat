@@ -1,28 +1,26 @@
 'use client'
 
-import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import AppShell from '../components/app-shell';
-import TaskSummaryCard from '../components/task-summary-card';
-import {
-  formatFaNumber,
-  groupTasksByProcess
-} from '../lib/display';
-import { fetchAllTasks } from '../lib/tasks';
+import { formatFaNumber, formatCompactId } from '../lib/display';
+import { delegateTask, fetchCartableTasks, fetchDelegationTargets } from '../lib/tasks';
+import { fetchCurrentUser } from '../lib/security';
 
 export default function AllTasksPage() {
   const [tasks, setTasks] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
   const [loadingTasks, setLoadingTasks] = useState(true);
   const [message, setMessage] = useState("");
 
   const loadTasks = useCallback(async () => {
     setLoadingTasks(true);
     setMessage("");
-
     try {
-      setTasks(await fetchAllTasks());
+      const [me, taskResult] = await Promise.all([fetchCurrentUser(), fetchCartableTasks()]);
+      setCurrentUser(me);
+      setTasks(taskResult);
     } catch (error) {
-      setMessage(error.message || "دریافت کارهای فعال با خطا روبه‌رو شد.");
+      setMessage(error.message || "دریافت کارتابل با خطا روبه‌رو شد.");
       setTasks([]);
     } finally {
       setLoadingTasks(false);
@@ -33,18 +31,17 @@ export default function AllTasksPage() {
     loadTasks();
   }, [loadTasks]);
 
-  const processGroups = groupTasksByProcess(tasks);
-  const processCount = Object.keys(processGroups).length;
+  const isAdmin = currentUser?.businessRole === 'ADMIN' || currentUser?.allowedActions?.includes('ADMIN');
 
   return (
     <AppShell
       active="tasks"
-      title="همه کارهای فعال"
-      eyebrow="صف مشترک"
-      subtitle="دید سراسری از کارهایی که در فرایندهای مختلف منتظر اقدام کارشناس هستند."
+      title={isAdmin ? "مشاهده همه کارهای فعال" : "کارتابل شخصی"}
+      eyebrow="کارتابل"
+      subtitle={isAdmin ? "مدیر سامانه کارها را فقط به صورت خواندنی مشاهده می‌کند." : "فقط کارهای اختصاص‌یافته و مجاز در محدوده سازمانی شما نمایش داده می‌شود."}
       contextItems={[
         `کارهای فعال: ${formatFaNumber(tasks.length)}`,
-        `فرایندهای دارای کار: ${formatFaNumber(processCount)}`
+        currentUser?.businessRole ? `نقش: ${roleLabel(currentUser.businessRole)}` : 'نقش: نامشخص'
       ]}
       actions={(
         <button className="ghost-action" onClick={loadTasks} disabled={loadingTasks}>
@@ -55,45 +52,110 @@ export default function AllTasksPage() {
       <section className="panel-section">
         <div className="section-heading">
           <div>
-            <p className="eyebrow">کارتابل کارشناسان</p>
-            <h2>کارها به ترتیب آخرین ایجاد</h2>
+            <p className="eyebrow">Inbox</p>
+            <h2>{isAdmin ? 'همه کارها' : 'کارهای اختصاص‌یافته به من'}</h2>
           </div>
-          <Link className="text-action" href="/">شروع پرونده جدید</Link>
         </div>
 
         {message && <div className="notice error">{message}</div>}
 
         {loadingTasks ? (
-          <div className="task-list" aria-hidden="true">
-            {[1, 2, 3, 4].map((item) => (
-              <article className="task-summary-card task-summary-card--loading" key={item}>
-                <div className="task-summary-main">
-                  <span className="task-index skeleton-index" />
-                  <div className="task-heading-skeleton">
-                    <span className="skeleton-line tiny" />
-                    <span className="skeleton-line title" />
-                  </div>
-                </div>
-                <div className="task-summary-side">
-                  <span className="status-pill status-pill--loading">در حال دریافت</span>
-                  <span className="skeleton-line tiny" />
-                </div>
-              </article>
-            ))}
-          </div>
+          <div className="empty-state compact">در حال دریافت کارتابل...</div>
         ) : tasks.length === 0 ? (
           <div className="empty-state">
-            <strong>فعلا کاری در صف مشترک نیست.</strong>
-            <span>از داشبورد فرایندها یک پرونده شروع کنید یا چند لحظه بعد بروزرسانی کنید.</span>
+            <strong>فعلا کاری در کارتابل وجود ندارد.</strong>
+            <span>بعد از ایجاد یا ارجاع کار، این فهرست را بروزرسانی کنید.</span>
           </div>
         ) : (
           <div className="task-list">
             {tasks.map((task, index) => (
-              <TaskSummaryCard key={task.id} task={task} order={index + 1} />
+              <CartableTaskCard key={task.taskKey} task={task} order={index + 1} onChanged={loadTasks} readOnly={isAdmin} />
             ))}
           </div>
         )}
       </section>
     </AppShell>
   );
+}
+
+function CartableTaskCard({ task, order, onChanged, readOnly }) {
+  const [targets, setTargets] = useState([]);
+  const [target, setTarget] = useState('');
+  const [loadingTargets, setLoadingTargets] = useState(false);
+  const [message, setMessage] = useState('');
+  const canDelegate = task.allowedActions?.delegate && !readOnly;
+
+  const loadTargets = async () => {
+    setLoadingTargets(true);
+    setMessage('');
+    try {
+      const result = await fetchDelegationTargets(task.taskKey);
+      setTargets(result);
+      setTarget(result[0]?.username || '');
+    } catch (error) {
+      setMessage(error.message || 'دریافت کاربران مقصد ناموفق بود.');
+    } finally {
+      setLoadingTargets(false);
+    }
+  };
+
+  const delegateToUser = async () => {
+    if (!target) {
+      setMessage('ابتدا کاربر مقصد را انتخاب کنید.');
+      return;
+    }
+    await delegateTask(task.taskKey, { assignee: target });
+    await onChanged();
+  };
+
+  const delegateToGroup = async () => {
+    await delegateTask(task.taskKey, {});
+    await onChanged();
+  };
+
+  return (
+    <article className="task-summary-card">
+      <div className="task-summary-main">
+        <span className="task-index">{Number(order || 1).toLocaleString('fa-IR')}</span>
+        <div>
+          <p className="eyebrow">{task.processDefinitionId || 'فرایند'}</p>
+          <h3>{task.name || 'کار فعال'}</h3>
+          <p className="summary-copy">
+            شناسه کار: {formatCompactId(task.taskKey)} · مسئول فعلی: {task.assignee || 'بدون مسئول'}
+          </p>
+          {task.candidateGroups?.length > 0 && <p className="summary-copy">گروه‌های کاندید: {task.candidateGroups.join('، ')}</p>}
+        </div>
+      </div>
+      <div className="task-summary-side">
+        <span className="status-pill status-pill--ready">{readOnly ? 'فقط مشاهده' : 'آماده اقدام'}</span>
+        {canDelegate && (
+          <div className="delegate-box">
+            <button className="ghost-action" type="button" onClick={loadTargets} disabled={loadingTargets}>
+              {loadingTargets ? 'در حال دریافت' : 'نمایش مقصدها'}
+            </button>
+            {targets.length > 0 && (
+              <>
+                <select value={target} onChange={(event) => setTarget(event.target.value)}>
+                  {targets.map((item) => <option value={item.username} key={item.username}>{item.fullName} - {roleLabel(item.businessRole)}</option>)}
+                </select>
+                <button className="primary-action" type="button" onClick={delegateToUser}>ارجاع به کاربر</button>
+              </>
+            )}
+            <button className="ghost-action" type="button" onClick={delegateToGroup}>ارجاع به نقش بعدی</button>
+            {message && <span className="delegate-message">{message}</span>}
+          </div>
+        )}
+      </div>
+    </article>
+  );
+}
+
+function roleLabel(value) {
+  return {
+    GENERAL_OFFICE_HEAD: 'رئیس اداره کل',
+    TAX_OFFICE_HEAD: 'رئیس اداره مالیات',
+    TAX_UNIT_HEAD: 'رئیس واحد مالیاتی',
+    TAX_EXPERT: 'کارشناس مالیاتی',
+    ADMIN: 'مدیر سامانه'
+  }[value] || value;
 }

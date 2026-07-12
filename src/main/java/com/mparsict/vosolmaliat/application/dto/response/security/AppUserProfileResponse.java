@@ -11,6 +11,7 @@ public record AppUserProfileResponse(
         String lastName,
         String fullName,
         String phoneNumber,
+        String businessRole,
         MasterdataOrganizationResponse organization,
         Boolean enabledInBusinessSystem,
         Boolean lockedInBusinessSystem,

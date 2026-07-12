@@ -5,12 +5,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mparsict.vosolmaliat.application.dto.request.cartable.AssignTaskRequest;
 import com.mparsict.vosolmaliat.application.dto.request.cartable.ClaimTaskRequest;
 import com.mparsict.vosolmaliat.application.dto.request.cartable.CompleteTaskRequest;
+import com.mparsict.vosolmaliat.application.dto.request.cartable.DelegateTaskRequest;
 import com.mparsict.vosolmaliat.application.dto.response.cartable.CartableTaskResponse;
+import com.mparsict.vosolmaliat.application.dto.response.cartable.DelegationTargetResponse;
 import com.mparsict.vosolmaliat.application.dto.response.cartable.TaskVariableResponse;
 import com.mparsict.vosolmaliat.application.security.CurrentUserContext;
 import com.mparsict.vosolmaliat.application.service.security.AuditLogService;
 import com.mparsict.vosolmaliat.application.service.security.SecurityIdentityService;
 import com.mparsict.vosolmaliat.common.exception.BusinessException;
+import com.mparsict.vosolmaliat.domain.enums.BusinessRole;
+import com.mparsict.vosolmaliat.domain.model.security.AppUserProfile;
+import com.mparsict.vosolmaliat.domain.repository.security.AppUserProfileRepository;
 import io.camunda.client.CamundaClient;
 import io.camunda.client.api.search.enums.UserTaskState;
 import io.camunda.client.api.search.response.UserTask;
@@ -32,10 +37,15 @@ public class CartableService {
     private final CamundaIdentityMappingService identityMappingService;
     private final TaskAuthorizationService taskAuthorizationService;
     private final AuditLogService auditLogService;
+    private final AppUserProfileRepository userProfileRepository;
     private final ObjectMapper objectMapper;
 
     public List<CartableTaskResponse> myTasks() {
         CurrentUserContext user = securityIdentityService.currentUser();
+        if (user.isAdmin()) {
+            List<UserTask> tasks = searchTasks(filter -> filter.state(UserTaskState.CREATED));
+            return toAuthorizedResponses(user, tasks);
+        }
         List<UserTask> tasks = searchTasks(filter -> filter
                 .state(UserTaskState.CREATED)
                 .assignee(identityMappingService.toCamundaAssignee(user)));
@@ -92,7 +102,8 @@ public class CartableService {
     public CartableTaskResponse unclaim(Long taskKey) {
         CurrentUserContext user = securityIdentityService.currentUser();
         UserTask task = fetchTask(taskKey);
-        if (!taskAuthorizationService.canUnclaim(user, task)) {
+        Map<String, Object> variables = fetchVariablesMap(taskKey);
+        if (!taskAuthorizationService.canUnclaim(user, task, variables)) {
             throw new BusinessException("TASK_UNCLAIM_NOT_ALLOWED", "امکان آزادسازی این کار وجود ندارد");
         }
         try {
@@ -110,7 +121,8 @@ public class CartableService {
     public void complete(Long taskKey, CompleteTaskRequest request) {
         CurrentUserContext user = securityIdentityService.currentUser();
         UserTask task = fetchTask(taskKey);
-        if (!taskAuthorizationService.canComplete(user, task)) {
+        Map<String, Object> variables = fetchVariablesMap(taskKey);
+        if (!taskAuthorizationService.canComplete(user, task, variables)) {
             throw new BusinessException("TASK_COMPLETE_NOT_ALLOWED", "امکان تکمیل این کار وجود ندارد");
         }
         try {
@@ -145,6 +157,116 @@ public class CartableService {
         } catch (Exception ex) {
             throw new BusinessException("TASK_ASSIGN_FAILED", "ارجاع کار ناموفق بود", ex);
         }
+    }
+
+    public List<DelegationTargetResponse> delegationTargets(Long taskKey) {
+        CurrentUserContext user = securityIdentityService.currentUser();
+        UserTask task = fetchTask(taskKey);
+        Map<String, Object> variables = fetchVariablesMap(taskKey);
+        validateCanDelegate(user, task, variables);
+        BusinessRole nextRole = user.businessRole().nextDelegationRole();
+        return userProfileRepository.findByBusinessRole(nextRole).stream()
+                .filter(profile -> Boolean.TRUE.equals(profile.getEnabledInBusinessSystem()))
+                .filter(profile -> !Boolean.TRUE.equals(profile.getLockedInBusinessSystem()))
+                .filter(profile -> isInDelegationScope(user, profile))
+                .map(profile -> new DelegationTargetResponse(
+                        profile.getId(),
+                        profile.getUsername(),
+                        fullName(profile),
+                        profile.getBusinessRole().name()
+                ))
+                .toList();
+    }
+
+    public CartableTaskResponse delegate(Long taskKey, DelegateTaskRequest request) {
+        CurrentUserContext user = securityIdentityService.currentUser();
+        UserTask task = fetchTask(taskKey);
+        Map<String, Object> variables = fetchVariablesMap(taskKey);
+        validateCanDelegate(user, task, variables);
+        BusinessRole nextRole = user.businessRole().nextDelegationRole();
+        String targetAssignee = request == null ? null : blankToNull(request.assignee());
+        String candidateGroup = request == null ? null : blankToNull(request.candidateGroup());
+        try {
+            if (targetAssignee != null) {
+                AppUserProfile target = userProfileRepository.findByUsername(targetAssignee)
+                        .orElseThrow(() -> new BusinessException("DELEGATION_TARGET_NOT_FOUND", "کاربر مقصد ارجاع یافت نشد"));
+                if (target.getBusinessRole() != nextRole || !isInDelegationScope(user, target)) {
+                    throw new BusinessException("DELEGATION_TARGET_NOT_ALLOWED", "کاربر مقصد در نقش یا محدوده سازمانی مجاز نیست");
+                }
+                camundaClient.newAssignUserTaskCommand(taskKey)
+                        .assignee(target.getUsername())
+                        .allowOverride(true)
+                        .action("delegate")
+                        .requestTimeout(Duration.ofSeconds(20))
+                        .send()
+                        .join();
+                auditLogService.record(user, "TASK_DELEGATED_TO_USER", "CAMUNDA_USER_TASK", taskKey.toString(), task.getAssignee(), target.getUsername());
+            } else {
+                String group = candidateGroup == null ? nextRole.name() : candidateGroup;
+                if (!group.equals(nextRole.name())) {
+                    throw new BusinessException("DELEGATION_GROUP_NOT_ALLOWED", "گروه مقصد ارجاع باید نقش مستقیم بعدی باشد");
+                }
+                if (!isBlank(task.getAssignee())) {
+                    camundaClient.newUnassignUserTaskCommand(taskKey)
+                            .requestTimeout(Duration.ofSeconds(20))
+                            .send()
+                            .join();
+                }
+                camundaClient.newUpdateUserTaskCommand(taskKey)
+                        .candidateGroups(group)
+                        .clearCandidateUsers()
+                        .action("delegate")
+                        .requestTimeout(Duration.ofSeconds(20))
+                        .send()
+                        .join();
+                auditLogService.record(user, "TASK_DELEGATED_TO_GROUP", "CAMUNDA_USER_TASK", taskKey.toString(), task.getAssignee(), group);
+            }
+            return getTask(taskKey);
+        } catch (BusinessException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new BusinessException("TASK_DELEGATION_FAILED", "ارجاع کار ناموفق بود", ex);
+        }
+    }
+
+    private void validateCanDelegate(CurrentUserContext user, UserTask task, Map<String, Object> variables) {
+        if (!taskAuthorizationService.canDelegate(user, task, variables)) {
+            throw new BusinessException("TASK_DELEGATION_NOT_ALLOWED", "امکان ارجاع این کار برای شما وجود ندارد");
+        }
+    }
+
+    private boolean isInDelegationScope(CurrentUserContext actor, AppUserProfile target) {
+        if (actor.businessRole() == BusinessRole.GENERAL_OFFICE_HEAD) {
+            return actor.organization() != null
+                    && actor.organization().generalDirectorateId() != null
+                    && Objects.equals(actor.organization().generalDirectorateId(), target.getGeneralDirectorateId());
+        }
+        if (actor.businessRole() == BusinessRole.TAX_OFFICE_HEAD) {
+            return actor.organization() != null
+                    && actor.organization().taxAffairsOfficeId() != null
+                    && Objects.equals(actor.organization().taxAffairsOfficeId(), target.getTaxAffairsOfficeId());
+        }
+        if (actor.businessRole() == BusinessRole.TAX_UNIT_HEAD) {
+            return actor.organization() != null
+                    && actor.organization().taxUnitId() != null
+                    && target.getTaxUnit() != null
+                    && Objects.equals(actor.organization().taxUnitId(), target.getTaxUnit().getId());
+        }
+        return false;
+    }
+
+    private String fullName(AppUserProfile profile) {
+        String value = ((profile.getFirstName() == null ? "" : profile.getFirstName()) + " "
+                + (profile.getLastName() == null ? "" : profile.getLastName())).trim();
+        return value.isBlank() ? profile.getUsername() : value;
+    }
+
+    private String blankToNull(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
 
     private List<UserTask> searchTasks(Consumer<io.camunda.client.api.search.filter.UserTaskFilter> filter) {

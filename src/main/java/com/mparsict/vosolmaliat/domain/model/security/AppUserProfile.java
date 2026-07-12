@@ -1,6 +1,7 @@
 package com.mparsict.vosolmaliat.domain.model.security;
 
 import com.mparsict.vosolmaliat.domain.model.BaseEntity;
+import com.mparsict.vosolmaliat.domain.enums.BusinessRole;
 import com.mparsict.vosolmaliat.domain.model.masterdata.TaxUnit;
 import jakarta.persistence.*;
 import lombok.*;
@@ -39,6 +40,16 @@ public class AppUserProfile extends BaseEntity {
 
     @Column(name = "phone_number")
     private String phoneNumber;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "business_role")
+    private BusinessRole businessRole;
+
+    @Column(name = "general_directorate_id")
+    private Long generalDirectorateId;
+
+    @Column(name = "tax_affairs_office_id")
+    private Long taxAffairsOfficeId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tax_unit_id")
