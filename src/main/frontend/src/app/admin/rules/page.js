@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import AppHeader from '../../components/AppHeader'
+import AppShell from '../../components/app-shell'
 import { apiJson } from '../../lib/api'
 
 const FIELD_OPTIONS = [
@@ -110,9 +110,13 @@ export default function RuleDashboardPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f3f6f9' }} dir="rtl">
-      <AppHeader title="پنل مدیریت قوانین صدور" subtitle="تعریف شرایط جلوگیری از صدور برگ اجرا" />
-      <main style={{ maxWidth: 1280, margin: '0 auto', padding: 24 }}>
+    <AppShell
+      active="rules"
+      title="پنل مدیریت قوانین صدور"
+      eyebrow="قانون‌ساز مدیریتی"
+      subtitle="تعریف شرایط جلوگیری از صدور برگ اجرا"
+    >
+      <main style={{ maxWidth: 1280, margin: '0 auto' }}>
         <section style={heroStyle}>
           <div>
             <p style={eyebrowStyle}>قانون‌ساز مدیریتی</p>
@@ -209,7 +213,7 @@ export default function RuleDashboardPage() {
           )}
         </section>
       </main>
-    </div>
+    </AppShell>
   )
 }
 

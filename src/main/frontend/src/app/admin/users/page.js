@@ -140,7 +140,7 @@ export default function AdminUsersPage() {
 
   return (
     <AppShell
-      active="admin"
+      active="users"
       title="مدیریت کاربران"
       eyebrow="پروفایل‌های محلی"
       subtitle="کاربر ابتدا در Keycloak ساخته می‌شود، سپس UUID او در این صفحه به پروفایل کسب‌وکاری متصل می‌شود."

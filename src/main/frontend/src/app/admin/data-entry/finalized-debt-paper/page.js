@@ -16,6 +16,7 @@ import {
   MoneyFields,
   Select,
   initialDebtPaper,
+  randomDebtPaperSample,
   toDebtPaperPayload
 } from '../form-parts';
 
@@ -67,13 +68,23 @@ export default function FinalizedDebtPaperEntryPage() {
     }
   };
 
+  const fillRandomSample = () => {
+    setForm(randomDebtPaperSample(masterdata));
+    setMessage('فرم با اطلاعات نمونه پر شد. قبل از ثبت، مقادیر را بررسی کنید.');
+  };
+
   return (
     <AppShell
       active="data-entry"
       title="ثبت دستی برگ بدهی قطعی"
       eyebrow="Finalized Debt Paper"
       subtitle="فرم کامل ورود دستی برگ بدهی قطعی، اطلاعات مودی، واحد مالیاتی و ریز مبالغ."
-      actions={<Link className="ghost-action" href="/admin/data-entry">بازگشت به داشبورد داده</Link>}
+      actions={(
+        <div className="row-actions">
+          <button className="ghost-action" type="button" onClick={fillRandomSample}>پر کردن نمونه تصادفی</button>
+          <Link className="ghost-action" href="/admin/data-entry">بازگشت به داشبورد داده</Link>
+        </div>
+      )}
       contextItems={[
         `برگ بدهی ثبت‌شده: ${(summary.finalizedDebtPapers?.length || 0).toLocaleString('fa-IR')}`
       ]}

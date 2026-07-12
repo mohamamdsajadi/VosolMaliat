@@ -3,52 +3,8 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { logoutFromKeycloak } from '../lib/keycloak';
+import { visibleNavItems } from '../lib/navigation';
 import { fetchCurrentUser } from '../lib/security';
-
-const navItems = [
-  {
-    key: "processes",
-    href: "/",
-    label: "داشبورد فرایندها",
-    helper: "شروع پرونده و انتخاب مسیر"
-  },
-  {
-    key: "tasks",
-    href: "/tasks",
-    label: "همه کارهای فعال",
-    helper: "صف مشترک کارشناسان"
-  },
-  {
-    key: "operations",
-    href: "/operations",
-    label: "دید عملیاتی",
-    helper: "کنترل ظرفیت و سلامت"
-  },
-  {
-    key: "admin",
-    href: "/admin",
-    label: "مدیریت سامانه",
-    helper: "کاربران و دسترسی‌ها"
-  },
-  {
-    key: "permissions",
-    href: "/admin/permissions",
-    label: "مجوزها",
-    helper: "اعطا و لغو دسترسی"
-  },
-  {
-    key: "organizations",
-    href: "/admin/organizations",
-    label: "واحدهای سازمانی",
-    helper: "اداره کل، اداره و واحد مالیاتی"
-  },
-  {
-    key: "data-entry",
-    href: "/admin/data-entry",
-    label: "ورود دستی داده",
-    helper: "برگ بدهی و برگ اجرا"
-  }
-];
 
 export default function AppShell({
   active = "processes",
@@ -61,6 +17,7 @@ export default function AppShell({
   contextItems = []
 }) {
   const [currentUser, setCurrentUser] = useState(null);
+  const navItems = visibleNavItems(currentUser);
 
   useEffect(() => {
     fetchCurrentUser()

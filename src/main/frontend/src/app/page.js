@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import AppHeader from "./components/AppHeader";
+import AppShell from "./components/app-shell";
 
 const PieChartComponent = dynamic(() => import("./components/PieChartWidget"), {
   ssr: false,
@@ -14,15 +14,13 @@ const PieChartComponent = dynamic(() => import("./components/PieChartWidget"), {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        color: "#9ca3af",
+        color: "#9ca3af"
       }}
     >
-      در حال بارگذاری نمودار…
+      در حال بارگذاری نمودار...
     </div>
-  ),
+  )
 });
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function toPersianDigits(str) {
   const persianDigits = "۰۱۲۳۴۵۶۷۸۹";
@@ -34,8 +32,6 @@ function formatRial(amount) {
   return toPersianDigits(Number(amount).toLocaleString("en-US")) + " ریال";
 }
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
-
 function Card({ children, style }) {
   return (
     <div
@@ -45,7 +41,7 @@ function Card({ children, style }) {
         boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
         border: "1px solid #e5e7eb",
         padding: "24px",
-        ...style,
+        ...style
       }}
     >
       {children}
@@ -63,7 +59,7 @@ function CardTitle({ children }) {
         marginBottom: 20,
         textAlign: "right",
         paddingBottom: 12,
-        borderBottom: "2px solid #eff6ff",
+        borderBottom: "2px solid #eff6ff"
       }}
     >
       {children}
@@ -80,7 +76,7 @@ function StatRow({ badgeBg, badgeColor, value, label }) {
         gap: "12px",
         direction: "rtl",
         padding: "8px 0",
-        borderBottom: "1px solid #f9fafb",
+        borderBottom: "1px solid #f9fafb"
       }}
     >
       <span
@@ -95,7 +91,7 @@ function StatRow({ badgeBg, badgeColor, value, label }) {
           color: badgeColor,
           fontWeight: 700,
           fontSize: 15,
-          flexShrink: 0,
+          flexShrink: 0
         }}
       >
         {toPersianDigits(value ?? 0)}
@@ -111,7 +107,7 @@ function FinancialRow({ label, value }) {
       style={{
         paddingBottom: 14,
         marginBottom: 14,
-        borderBottom: "1px solid #f3f4f6",
+        borderBottom: "1px solid #f3f4f6"
       }}
     >
       <div
@@ -119,7 +115,7 @@ function FinancialRow({ label, value }) {
           fontSize: 12,
           color: "#6b7280",
           marginBottom: 4,
-          textAlign: "right",
+          textAlign: "right"
         }}
       >
         {label}
@@ -129,7 +125,7 @@ function FinancialRow({ label, value }) {
           fontSize: 17,
           fontWeight: 700,
           color: "#1f2937",
-          textAlign: "right",
+          textAlign: "right"
         }}
       >
         {value}
@@ -153,17 +149,15 @@ function ActionButton({ onClick, children, dark }) {
         width: "100%",
         fontSize: 14,
         fontWeight: 600,
-        transition: "opacity 0.15s",
+        transition: "opacity 0.15s"
       }}
-      onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.85")}
-      onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+      onMouseEnter={(event) => (event.currentTarget.style.opacity = "0.85")}
+      onMouseLeave={(event) => (event.currentTarget.style.opacity = "1")}
     >
       {children}
     </button>
   );
 }
-
-// ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -175,9 +169,9 @@ export default function DashboardPage() {
     setLoading(true);
     setError(null);
     fetch("/api/v1/dashboard/stats")
-      .then((r) => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
+      .then((response) => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.json();
       })
       .then((data) => {
         setStats(data);
@@ -194,40 +188,38 @@ export default function DashboardPage() {
   }, []);
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f9fafb" }}>
-      <AppHeader
-        title="دستیار هوشمند حسابرسی"
-        subtitle="میزکار مامورین مالیاتی"
-      />
-
-      <div style={{ padding: "28px 24px", maxWidth: 1400, margin: "0 auto" }}>
+    <AppShell
+      active="processes"
+      eyebrow="میزکار"
+      title="دستیار هوشمند حسابرسی"
+      subtitle="میزکار مامورین مالیاتی"
+    >
+      <div style={{ maxWidth: 1400, margin: "0 auto" }}>
         <h1
           style={{
             fontSize: 24,
             fontWeight: 800,
             color: "#1e3a5f",
             marginBottom: 24,
-            textAlign: "right",
+            textAlign: "right"
           }}
         >
           میزکار
         </h1>
 
-        {/* ── Loading ── */}
         {loading && (
           <div
             style={{
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
-              height: 240,
+              height: 240
             }}
           >
             <div className="spinner" />
           </div>
         )}
 
-        {/* ── Error ── */}
         {!loading && error && (
           <div
             style={{
@@ -235,10 +227,10 @@ export default function DashboardPage() {
               flexDirection: "column",
               alignItems: "center",
               gap: 16,
-              padding: "60px 40px",
+              padding: "60px 40px"
             }}
           >
-            <div style={{ fontSize: 36 }}>⚠️</div>
+            <div style={{ fontSize: 36 }}>!</div>
             <p style={{ color: "#dc2626", fontSize: 15, textAlign: "center" }}>
               خطا در دریافت اطلاعات: {error}
             </p>
@@ -252,7 +244,7 @@ export default function DashboardPage() {
                 border: "none",
                 cursor: "pointer",
                 fontSize: 14,
-                fontWeight: 600,
+                fontWeight: 600
               }}
             >
               تلاش مجدد
@@ -260,24 +252,19 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* ── Content ── */}
         {!loading && !error && stats && (
           <>
-            {/* ROW 1 */}
             <div
               style={{
                 display: "grid",
                 gridTemplateColumns: "2fr 3fr",
                 gap: 24,
-                marginBottom: 24,
+                marginBottom: 24
               }}
             >
-              {/* Card: Welcome + Stats */}
               <Card>
                 <CardTitle>به میزکار مامورین مالیاتی خوش آمدید.</CardTitle>
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 0 }}
-                >
+                <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
                   <StatRow
                     badgeBg="#ffe4e6"
                     badgeColor="#be123c"
@@ -308,22 +295,19 @@ export default function DashboardPage() {
                 </ActionButton>
               </Card>
 
-              {/* Card: Pie Chart */}
               <Card>
                 <CardTitle>گزارش تخصیص</CardTitle>
                 <PieChartComponent stats={stats} />
               </Card>
             </div>
 
-            {/* ROW 2 */}
             <div
               style={{
                 display: "grid",
                 gridTemplateColumns: "1fr 1fr",
-                gap: 24,
+                gap: 24
               }}
             >
-              {/* Card: وضعیت وصول مطالبات */}
               <Card>
                 <CardTitle>وضعیت وصول مطالبات</CardTitle>
                 <div style={{ direction: "rtl" }}>
@@ -346,12 +330,9 @@ export default function DashboardPage() {
                 </div>
               </Card>
 
-              {/* Card: اقدامات من */}
               <Card>
                 <CardTitle>اقدامات من</CardTitle>
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 0 }}
-                >
+                <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
                   <StatRow
                     badgeBg="#dbeafe"
                     badgeColor="#1d4ed8"
@@ -377,10 +358,7 @@ export default function DashboardPage() {
                     label="لغو شده"
                   />
                 </div>
-                <ActionButton
-                  dark
-                  onClick={() => router.push("/execution-papers")}
-                >
+                <ActionButton dark onClick={() => router.push("/execution-papers")}>
                   مشاهده اقدامات من
                 </ActionButton>
               </Card>
@@ -388,6 +366,6 @@ export default function DashboardPage() {
           </>
         )}
       </div>
-    </div>
+    </AppShell>
   );
 }

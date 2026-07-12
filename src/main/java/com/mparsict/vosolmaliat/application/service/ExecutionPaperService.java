@@ -1,6 +1,7 @@
 package com.mparsict.vosolmaliat.application.service;
 
 import com.mparsict.vosolmaliat.application.dto.request.DebtPaperIssuanceRequest;
+import com.mparsict.vosolmaliat.application.dto.request.ExecutionPaperSearchCriteria;
 import com.mparsict.vosolmaliat.application.dto.response.ExecutionPaperDetailResponse;
 import com.mparsict.vosolmaliat.application.dto.response.ExecutionPaperDto;
 import com.mparsict.vosolmaliat.application.dto.response.ExecutionPaperPageResponse;
@@ -141,23 +142,81 @@ public class ExecutionPaperService {
     }
 
     public ExecutionPaperPageResponse getAll(int page, int size) {
+        return search(null, ExecutionPaperSearchCriteria.empty(), page, size);
+    }
+
+    public ExecutionPaperPageResponse searchAll(ExecutionPaperSearchCriteria criteria, int page, int size) {
+        return search(null, criteria, page, size);
+    }
+
+    public ExecutionPaperPageResponse searchAssigned(ExecutionPaperSearchCriteria criteria, int page, int size) {
+        return search("ASSIGNED", criteria, page, size);
+    }
+
+    public ExecutionPaperPageResponse searchUnassigned(ExecutionPaperSearchCriteria criteria, int page, int size) {
+        return search("UNASSIGNED", criteria, page, size);
+    }
+
+    public ExecutionPaperPageResponse getAll(int page, int size, ExecutionPaperSearchCriteria criteria) {
+        return search(null, criteria, page, size);
+    }
+
+    public ExecutionPaperPageResponse getAssigned(int page, int size, ExecutionPaperSearchCriteria criteria) {
+        return search("ASSIGNED", criteria, page, size);
+    }
+
+    public ExecutionPaperPageResponse getUnassigned(int page, int size, ExecutionPaperSearchCriteria criteria) {
+        return search("UNASSIGNED", criteria, page, size);
+    }
+
+    private ExecutionPaperPageResponse search(String assignmentMode, ExecutionPaperSearchCriteria criteria, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
-        Page<ExecutionPaper> pageResult = executionPaperRepository.findAll(pageable);
+        ExecutionPaperSearchCriteria normalized = normalize(criteria);
+        Page<ExecutionPaper> pageResult = executionPaperRepository.search(
+                assignmentMode,
+                ExecutionPaperState.UNASSIGNED.name(),
+                normalized.uniqueCode(),
+                normalized.taxpayerName(),
+                normalized.taxpayerNationalId(),
+                normalized.currentState(),
+                normalized.notificationStatus(),
+                normalized.taxUnitId(),
+                normalized.minDebt(),
+                normalized.maxDebt(),
+                pageable
+        );
         return toPageResponse(pageResult);
     }
 
     public ExecutionPaperPageResponse getAssigned(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
-        Page<ExecutionPaper> pageResult = executionPaperRepository
-                .findByCurrentStateNot(ExecutionPaperState.UNASSIGNED.name(), pageable);
-        return toPageResponse(pageResult);
+        return search("ASSIGNED", ExecutionPaperSearchCriteria.empty(), page, size);
     }
 
     public ExecutionPaperPageResponse getUnassigned(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
-        Page<ExecutionPaper> pageResult = executionPaperRepository
-                .findByCurrentState(ExecutionPaperState.UNASSIGNED.name(), pageable);
-        return toPageResponse(pageResult);
+        return search("UNASSIGNED", ExecutionPaperSearchCriteria.empty(), page, size);
+    }
+
+    private ExecutionPaperSearchCriteria normalize(ExecutionPaperSearchCriteria criteria) {
+        if (criteria == null) {
+            return ExecutionPaperSearchCriteria.empty();
+        }
+        return new ExecutionPaperSearchCriteria(
+                blankToNull(criteria.uniqueCode()),
+                blankToNull(criteria.taxpayerName()),
+                blankToNull(criteria.taxpayerNationalId()),
+                blankToNull(criteria.currentState()),
+                blankToNull(criteria.notificationStatus()),
+                criteria.taxUnitId(),
+                criteria.minDebt(),
+                criteria.maxDebt()
+        );
+    }
+
+    private String blankToNull(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        return value.trim();
     }
 
 

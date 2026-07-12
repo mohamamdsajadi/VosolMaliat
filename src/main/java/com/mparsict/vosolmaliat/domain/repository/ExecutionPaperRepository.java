@@ -24,6 +24,103 @@ public interface ExecutionPaperRepository extends JpaRepository<ExecutionPaper, 
 
     Page<ExecutionPaper> findByCurrentStateNot(String state, Pageable pageable);
 
+    @Query(value = """
+            SELECT DISTINCT ep
+            FROM ExecutionPaper ep
+            LEFT JOIN Taxpayer taxpayer ON taxpayer.id = ep.taxpayerId
+            LEFT JOIN NaturalPerson np ON np.id = taxpayer.naturalPersonId
+            LEFT JOIN LegalPerson lp ON lp.id = taxpayer.legalPersonId
+            LEFT JOIN DebtInformation debt ON debt.executionPaperId = ep.id
+            LEFT JOIN ExecutionPaperNotification notification ON notification.executionPaperId = ep.id
+            WHERE (:assignmentMode IS NULL
+                OR (:assignmentMode = 'ASSIGNED' AND ep.currentState <> :unassignedState)
+                OR (:assignmentMode = 'UNASSIGNED' AND ep.currentState = :unassignedState))
+              AND (:uniqueCode IS NULL OR LOWER(ep.executionPaperUniqueCode) LIKE LOWER(CONCAT('%', :uniqueCode, '%')))
+              AND (:taxpayerName IS NULL
+                OR LOWER(np.firstName) LIKE LOWER(CONCAT('%', :taxpayerName, '%'))
+                OR LOWER(np.lastName) LIKE LOWER(CONCAT('%', :taxpayerName, '%'))
+                OR LOWER(CONCAT(np.firstName, ' ', np.lastName)) LIKE LOWER(CONCAT('%', :taxpayerName, '%'))
+                OR LOWER(lp.name) LIKE LOWER(CONCAT('%', :taxpayerName, '%')))
+              AND (:taxpayerNationalId IS NULL
+                OR np.nationalCode LIKE CONCAT('%', :taxpayerNationalId, '%')
+                OR lp.nationalId LIKE CONCAT('%', :taxpayerNationalId, '%'))
+              AND (:currentState IS NULL OR ep.currentState = :currentState)
+              AND (:taxUnitId IS NULL OR ep.taxUnitId = :taxUnitId)
+              AND (:notificationStatus IS NULL
+                OR (:notificationStatus = 'NOTIFIED' AND notification.electronicNotificationDate IS NOT NULL)
+                OR (:notificationStatus = 'NOT_NOTIFIED' AND notification.electronicNotificationDate IS NULL))
+              AND (:minDebt IS NULL OR (
+                    COALESCE(debt.taxAmount, 0)
+                  + COALESCE(debt.dutyAmount, 0)
+                  + COALESCE(debt.penaltyArticle22, 0)
+                  + COALESCE(debt.penaltyArticle23, 0)
+                  - COALESCE(debt.taxPaidAmount, 0)
+                  - COALESCE(debt.penaltyPaidAmount, 0)
+              ) >= :minDebt)
+              AND (:maxDebt IS NULL OR (
+                    COALESCE(debt.taxAmount, 0)
+                  + COALESCE(debt.dutyAmount, 0)
+                  + COALESCE(debt.penaltyArticle22, 0)
+                  + COALESCE(debt.penaltyArticle23, 0)
+                  - COALESCE(debt.taxPaidAmount, 0)
+                  - COALESCE(debt.penaltyPaidAmount, 0)
+              ) <= :maxDebt)
+            """,
+            countQuery = """
+            SELECT COUNT(DISTINCT ep)
+            FROM ExecutionPaper ep
+            LEFT JOIN Taxpayer taxpayer ON taxpayer.id = ep.taxpayerId
+            LEFT JOIN NaturalPerson np ON np.id = taxpayer.naturalPersonId
+            LEFT JOIN LegalPerson lp ON lp.id = taxpayer.legalPersonId
+            LEFT JOIN DebtInformation debt ON debt.executionPaperId = ep.id
+            LEFT JOIN ExecutionPaperNotification notification ON notification.executionPaperId = ep.id
+            WHERE (:assignmentMode IS NULL
+                OR (:assignmentMode = 'ASSIGNED' AND ep.currentState <> :unassignedState)
+                OR (:assignmentMode = 'UNASSIGNED' AND ep.currentState = :unassignedState))
+              AND (:uniqueCode IS NULL OR LOWER(ep.executionPaperUniqueCode) LIKE LOWER(CONCAT('%', :uniqueCode, '%')))
+              AND (:taxpayerName IS NULL
+                OR LOWER(np.firstName) LIKE LOWER(CONCAT('%', :taxpayerName, '%'))
+                OR LOWER(np.lastName) LIKE LOWER(CONCAT('%', :taxpayerName, '%'))
+                OR LOWER(CONCAT(np.firstName, ' ', np.lastName)) LIKE LOWER(CONCAT('%', :taxpayerName, '%'))
+                OR LOWER(lp.name) LIKE LOWER(CONCAT('%', :taxpayerName, '%')))
+              AND (:taxpayerNationalId IS NULL
+                OR np.nationalCode LIKE CONCAT('%', :taxpayerNationalId, '%')
+                OR lp.nationalId LIKE CONCAT('%', :taxpayerNationalId, '%'))
+              AND (:currentState IS NULL OR ep.currentState = :currentState)
+              AND (:taxUnitId IS NULL OR ep.taxUnitId = :taxUnitId)
+              AND (:notificationStatus IS NULL
+                OR (:notificationStatus = 'NOTIFIED' AND notification.electronicNotificationDate IS NOT NULL)
+                OR (:notificationStatus = 'NOT_NOTIFIED' AND notification.electronicNotificationDate IS NULL))
+              AND (:minDebt IS NULL OR (
+                    COALESCE(debt.taxAmount, 0)
+                  + COALESCE(debt.dutyAmount, 0)
+                  + COALESCE(debt.penaltyArticle22, 0)
+                  + COALESCE(debt.penaltyArticle23, 0)
+                  - COALESCE(debt.taxPaidAmount, 0)
+                  - COALESCE(debt.penaltyPaidAmount, 0)
+              ) >= :minDebt)
+              AND (:maxDebt IS NULL OR (
+                    COALESCE(debt.taxAmount, 0)
+                  + COALESCE(debt.dutyAmount, 0)
+                  + COALESCE(debt.penaltyArticle22, 0)
+                  + COALESCE(debt.penaltyArticle23, 0)
+                  - COALESCE(debt.taxPaidAmount, 0)
+                  - COALESCE(debt.penaltyPaidAmount, 0)
+              ) <= :maxDebt)
+            """)
+    Page<ExecutionPaper> search(
+            @Param("assignmentMode") String assignmentMode,
+            @Param("unassignedState") String unassignedState,
+            @Param("uniqueCode") String uniqueCode,
+            @Param("taxpayerName") String taxpayerName,
+            @Param("taxpayerNationalId") String taxpayerNationalId,
+            @Param("currentState") String currentState,
+            @Param("notificationStatus") String notificationStatus,
+            @Param("taxUnitId") Long taxUnitId,
+            @Param("minDebt") Double minDebt,
+            @Param("maxDebt") Double maxDebt,
+            Pageable pageable);
+
     @Query("SELECT ep FROM ExecutionPaper ep WHERE ep.currentState = :state")
     List<ExecutionPaper> findAllByState(@Param("state") String state);
 }

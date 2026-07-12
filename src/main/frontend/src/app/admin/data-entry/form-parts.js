@@ -61,6 +61,98 @@ export const initialExecutionPaper = {
   remainingTax: ''
 };
 
+const firstNames = ['علی', 'مریم', 'رضا', 'زهرا', 'حسین', 'فاطمه'];
+const lastNames = ['محمدی', 'کریمی', 'احمدی', 'رضایی', 'حسینی', 'جعفری'];
+const companyNames = ['شرکت پارس تجارت آریا', 'توسعه مالیات مهر', 'بازرگانی سپهر شرق', 'صنایع داده پردازان'];
+const taxSources = ['VAT', 'INCOME_TAX', 'CORPORATE_TAX', 'SALARY_TAX'];
+const finalizationReasons = ['قطعیت پس از رسیدگی', 'عدم اعتراض در مهلت قانونی', 'رای قطعی هیات حل اختلاف', 'ابلاغ قطعی'];
+
+export function randomDebtPaperSample(masterdata = {}) {
+  const natural = randomInt(1, 10) <= 7;
+  const taxAmount = randomAmount(80_000_000, 850_000_000);
+  const dutyAmount = randomAmount(5_000_000, 80_000_000);
+  const penaltyArticle22 = randomAmount(2_000_000, 45_000_000);
+  const penaltyArticle23 = randomAmount(1_000_000, 35_000_000);
+  const taxPaidAmount = randomAmount(0, Math.floor(taxAmount * 0.25));
+  const penaltyPaidAmount = randomAmount(0, Math.floor((penaltyArticle22 + penaltyArticle23) * 0.2));
+  const selected = sampleMasterdata(masterdata);
+
+  return {
+    ...initialDebtPaper,
+    debtPaperUniqueCode: `FDP-${Date.now()}-${randomInt(100, 999)}`,
+    debtPaperIssueDate: randomJalaliDate(),
+    notificationId: `NOT-${randomInt(100000, 999999)}`,
+    finalizationReason: pick(finalizationReasons),
+    taxSource: pick(taxSources),
+    performanceYear: String(randomInt(1399, 1403)),
+    performancePeriod: String(randomInt(1, 4)),
+    activityTypeCode: String(randomInt(1000, 9999)),
+    mainTaxBureauId: selected.generalId,
+    taxBureauId: selected.officeId,
+    taxUnitId: selected.unitId,
+    sendingUnitId: selected.unitId,
+    taxpayerType: natural ? 'NATURAL' : 'LEGAL',
+    nationalCode: natural ? randomNationalCode() : '',
+    firstName: natural ? pick(firstNames) : '',
+    lastName: natural ? pick(lastNames) : '',
+    fatherName: natural ? pick(firstNames) : '',
+    birthDate: natural ? randomJalaliDate(1345, 1379) : '',
+    nationalId: natural ? '' : randomNationalId(),
+    registrationNumber: natural ? '' : String(randomInt(100000, 999999)),
+    registrationDate: natural ? '' : randomJalaliDate(1380, 1402),
+    companyName: natural ? '' : pick(companyNames),
+    taxAmount: String(taxAmount),
+    dutyAmount: String(dutyAmount),
+    penaltyArticle22: String(penaltyArticle22),
+    penaltyArticle23: String(penaltyArticle23),
+    deductiblePenalty: String(randomAmount(0, 15_000_000)),
+    nonDeductiblePenalty: String(randomAmount(0, 30_000_000)),
+    taxPaidAmount: String(taxPaidAmount),
+    penaltyPaidAmount: String(penaltyPaidAmount),
+    taxCredit: String(randomAmount(0, 20_000_000)),
+    remainingTax: String(Math.max(0, taxAmount + dutyAmount + penaltyArticle22 + penaltyArticle23 - taxPaidAmount - penaltyPaidAmount)),
+    municipalityShare: String(randomAmount(0, 10_000_000)),
+    guildShare: String(randomAmount(0, 8_000_000)),
+    complianceBonus: String(randomAmount(0, 5_000_000))
+  };
+}
+
+export function randomExecutionPaperSample(summary = {}, masterdata = {}) {
+  const selected = sampleMasterdata(masterdata);
+  const debtPaper = pick(summary.finalizedDebtPapers || []);
+  const taxpayer = pick(summary.taxpayers || []);
+  const taxAmount = randomAmount(60_000_000, 700_000_000);
+  const dutyAmount = randomAmount(5_000_000, 70_000_000);
+  const penaltyArticle22 = randomAmount(2_000_000, 35_000_000);
+  const penaltyArticle23 = randomAmount(1_000_000, 25_000_000);
+  const taxPaidAmount = randomAmount(0, Math.floor(taxAmount * 0.2));
+  const penaltyPaidAmount = randomAmount(0, Math.floor((penaltyArticle22 + penaltyArticle23) * 0.2));
+
+  return {
+    ...initialExecutionPaper,
+    executionPaperUniqueCode: `EP-${Date.now()}-${randomInt(100, 999)}`,
+    finalizedDebtPaperId: debtPaper?.id ? String(debtPaper.id) : '',
+    taxpayerId: taxpayer?.id ? String(taxpayer.id) : '',
+    mainTaxBureauId: selected.generalId,
+    taxBureauId: selected.officeId,
+    taxUnitId: selected.unitId,
+    sendingUnitId: selected.unitId,
+    finalizationReason: pick(finalizationReasons),
+    taxSource: pick(taxSources),
+    currentState: 'UNASSIGNED',
+    taxAmount: String(taxAmount),
+    dutyAmount: String(dutyAmount),
+    penaltyArticle22: String(penaltyArticle22),
+    penaltyArticle23: String(penaltyArticle23),
+    deductiblePenalty: String(randomAmount(0, 12_000_000)),
+    nonDeductiblePenalty: String(randomAmount(0, 25_000_000)),
+    taxPaidAmount: String(taxPaidAmount),
+    penaltyPaidAmount: String(penaltyPaidAmount),
+    taxCredit: String(randomAmount(0, 16_000_000)),
+    remainingTax: String(Math.max(0, taxAmount + dutyAmount + penaltyArticle22 + penaltyArticle23 - taxPaidAmount - penaltyPaidAmount))
+  };
+}
+
 export function toDebtPaperPayload(form) {
   return {
     debtPaperUniqueCode: form.debtPaperUniqueCode,
@@ -132,6 +224,44 @@ function numberOrNull(value) {
 
 function numberOrZero(value) {
   return value === '' || value == null ? 0 : Number(value);
+}
+
+function sampleMasterdata(masterdata) {
+  const general = pick(masterdata.generals || []);
+  const office = pick(masterdata.offices || []);
+  const unit = pick(masterdata.units || []);
+  return {
+    generalId: general?.id ? String(general.id) : '',
+    officeId: office?.id ? String(office.id) : '',
+    unitId: unit?.id ? String(unit.id) : ''
+  };
+}
+
+function pick(items) {
+  if (!items || items.length === 0) {
+    return undefined;
+  }
+  return items[randomInt(0, items.length - 1)];
+}
+
+function randomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function randomAmount(min, max) {
+  return Math.round(randomInt(min, max) / 10000) * 10000;
+}
+
+function randomJalaliDate(minYear = 1399, maxYear = 1403) {
+  return `${randomInt(minYear, maxYear)}/${String(randomInt(1, 12)).padStart(2, '0')}/${String(randomInt(1, 28)).padStart(2, '0')}`;
+}
+
+function randomNationalCode() {
+  return String(randomInt(1000000000, 9999999999));
+}
+
+function randomNationalId() {
+  return String(randomInt(10000000000, 99999999999));
 }
 
 export function FieldGrid({ children }) {

@@ -1,5 +1,6 @@
 package com.mparsict.vosolmaliat.presentation.api;
 
+import com.mparsict.vosolmaliat.application.dto.request.ExecutionPaperSearchCriteria;
 import com.mparsict.vosolmaliat.application.dto.response.ExecutionPaperDetailResponse;
 import com.mparsict.vosolmaliat.application.dto.response.ExecutionPaperPageResponse;
 import com.mparsict.vosolmaliat.application.service.ExecutionPaperService;
@@ -20,9 +21,19 @@ public class ExecutionPaperController {
     @PreAuthorize("hasAuthority('REPORT_VIEW')")
     public ExecutionPaperPageResponse getAll(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        log.debug("GET /api/v1/execution-papers page={}, size={}", page, size);
-        return executionPaperService.getAll(page, size);
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String uniqueCode,
+            @RequestParam(required = false) String taxpayerName,
+            @RequestParam(required = false) String taxpayerNationalId,
+            @RequestParam(required = false) String currentState,
+            @RequestParam(required = false) String notificationStatus,
+            @RequestParam(required = false) Long taxUnitId,
+            @RequestParam(required = false) Double minDebt,
+            @RequestParam(required = false) Double maxDebt) {
+        ExecutionPaperSearchCriteria criteria = new ExecutionPaperSearchCriteria(
+                uniqueCode, taxpayerName, taxpayerNationalId, currentState, notificationStatus, taxUnitId, minDebt, maxDebt);
+        log.debug("GET /api/v1/execution-papers page={}, size={}, criteria={}", page, size, criteria);
+        return executionPaperService.getAll(page, size, criteria);
     }
 
     @GetMapping("/{id}")
@@ -36,17 +47,37 @@ public class ExecutionPaperController {
     @PreAuthorize("hasAuthority('REPORT_VIEW')")
     public ExecutionPaperPageResponse getAssigned(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        log.debug("GET /api/v1/execution-papers/assigned page={}, size={}", page, size);
-        return executionPaperService.getAssigned(page, size);
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String uniqueCode,
+            @RequestParam(required = false) String taxpayerName,
+            @RequestParam(required = false) String taxpayerNationalId,
+            @RequestParam(required = false) String currentState,
+            @RequestParam(required = false) String notificationStatus,
+            @RequestParam(required = false) Long taxUnitId,
+            @RequestParam(required = false) Double minDebt,
+            @RequestParam(required = false) Double maxDebt) {
+        ExecutionPaperSearchCriteria criteria = new ExecutionPaperSearchCriteria(
+                uniqueCode, taxpayerName, taxpayerNationalId, currentState, notificationStatus, taxUnitId, minDebt, maxDebt);
+        log.debug("GET /api/v1/execution-papers/assigned page={}, size={}, criteria={}", page, size, criteria);
+        return executionPaperService.getAssigned(page, size, criteria);
     }
 
     @GetMapping("/unassigned")
     @PreAuthorize("hasAuthority('REPORT_VIEW')")
     public ExecutionPaperPageResponse getUnassigned(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        log.debug("GET /api/v1/execution-papers/unassigned page={}, size={}", page, size);
-        return executionPaperService.getUnassigned(page, size);
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String uniqueCode,
+            @RequestParam(required = false) String taxpayerName,
+            @RequestParam(required = false) String taxpayerNationalId,
+            @RequestParam(required = false) String currentState,
+            @RequestParam(required = false) String notificationStatus,
+            @RequestParam(required = false) Long taxUnitId,
+            @RequestParam(required = false) Double minDebt,
+            @RequestParam(required = false) Double maxDebt) {
+        ExecutionPaperSearchCriteria criteria = new ExecutionPaperSearchCriteria(
+                uniqueCode, taxpayerName, taxpayerNationalId, currentState, notificationStatus, taxUnitId, minDebt, maxDebt);
+        log.debug("GET /api/v1/execution-papers/unassigned page={}, size={}, criteria={}", page, size, criteria);
+        return executionPaperService.getUnassigned(page, size, criteria);
     }
 }

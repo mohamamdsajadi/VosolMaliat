@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import AppHeader from '../../components/AppHeader'
+import AppShell from '../../components/app-shell'
 import { apiFetch } from '../../lib/api'
 
 function toPersianDigits(str) {
@@ -89,16 +89,20 @@ export default function ExecutionPaperDetailsPage() {
   }, [paperId])
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f9fafb' }} dir="rtl">
-      <AppHeader title="دستیار هوشمند حسابرسی" subtitle="جزئیات برگ اجرا" />
-      <main style={{ padding: '28px 24px', maxWidth: 1200, margin: '0 auto' }}>
+    <AppShell
+      active="execution-papers"
+      title="دستیار هوشمند حسابرسی"
+      eyebrow="برگ‌های اجرا"
+      subtitle="جزئیات برگ اجرا"
+    >
+      <main style={{ maxWidth: 1200, margin: '0 auto' }}>
         <button onClick={() => router.push('/execution-papers')} style={backButtonStyle}>بازگشت به لیست</button>
         <h2 style={{ color: '#1e3a5f', margin: '16px 0 24px', fontSize: 24 }}>مشاهده جزئیات برگ اجرا</h2>
         {loading && <div style={cardStyle}>در حال دریافت اطلاعات...</div>}
         {!loading && error && <div style={{ ...cardStyle, color: '#dc2626' }}>خطا در دریافت اطلاعات: {error}</div>}
         {!loading && !error && data && SECTIONS.map(section => <DetailSection key={section.key} section={section} data={data[section.key]} />)}
       </main>
-    </div>
+    </AppShell>
   )
 }
 
