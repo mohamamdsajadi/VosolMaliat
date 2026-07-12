@@ -125,7 +125,7 @@ public class SecurityDataInitializer {
                 .orElseThrow();
 
         seedSampleUser(
-                "sample-general-head-keycloak-id",
+                "2d7e1db3-7b99-4f5d-99eb-9de9e031dea8",
                 "general_head",
                 "general.head@vosol-maliat.local",
                 "رئیس",
@@ -136,7 +136,7 @@ public class SecurityDataInitializer {
                 null
         );
         seedSampleUser(
-                "sample-tax-office-head-keycloak-id",
+                "eedab29f-d493-44a8-b71a-67a5cb721154",
                 "tax_office_head",
                 "tax.office.head@vosol-maliat.local",
                 "رئیس",
@@ -147,7 +147,7 @@ public class SecurityDataInitializer {
                 null
         );
         seedSampleUser(
-                "sample-tax-unit-head-keycloak-id",
+                "aae48551-addf-478d-9d68-3a1f2a947404",
                 "tax_unit_head",
                 "tax.unit.head@vosol-maliat.local",
                 "رئیس",
@@ -158,7 +158,7 @@ public class SecurityDataInitializer {
                 taxUnit
         );
         seedSampleUser(
-                "sample-tax-expert-keycloak-id",
+                "8c7b79dc-768c-44d6-8f36-fec5e600358b",
                 "tax_expert",
                 "tax.expert@vosol-maliat.local",
                 "کارشناس",

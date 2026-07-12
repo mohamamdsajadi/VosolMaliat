@@ -37,7 +37,11 @@ public class IssueExecutionPaperWorker {
             ExecutionPaper ep = executionPaperService.createFromRequest(request);
 
             Map<String, Object> outputVars = new HashMap<>();
+            outputVars.put(ProcessConstants.VAR_EXECUTION_PAPER_ID, ep.getId());
             outputVars.put(ProcessConstants.VAR_EXECUTION_PAPER_CODE, ep.getExecutionPaperUniqueCode());
+            outputVars.put(ProcessConstants.VAR_GENERAL_DIRECTORATE_ID, ep.getMainTaxBureauId());
+            outputVars.put(ProcessConstants.VAR_TAX_AFFAIRS_OFFICE_ID, ep.getTaxBureauId());
+            outputVars.put(ProcessConstants.VAR_TAX_UNIT_ID, ep.getTaxUnitId());
             outputVars.put(ProcessConstants.VAR_SUCCESS, true);
 
             log.info("ExecutionPaper issued: code={}, requestId={}", ep.getExecutionPaperUniqueCode(), requestId);

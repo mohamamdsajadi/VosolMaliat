@@ -46,14 +46,21 @@ public class CartableService {
             List<UserTask> tasks = searchTasks(filter -> filter.state(UserTaskState.CREATED));
             return toAuthorizedResponses(user, tasks);
         }
-        List<UserTask> tasks = searchTasks(filter -> filter
+        Map<Long, UserTask> tasks = new LinkedHashMap<>();
+        searchTasks(filter -> filter
                 .state(UserTaskState.CREATED)
-                .assignee(identityMappingService.toCamundaAssignee(user)));
-        return toAuthorizedResponses(user, tasks);
+                .assignee(identityMappingService.toCamundaAssignee(user)))
+                .forEach(task -> tasks.put(task.getUserTaskKey(), task));
+        candidateTasksFor(user).forEach((key, task) -> tasks.putIfAbsent(key, task));
+        return toAuthorizedResponses(user, new ArrayList<>(tasks.values()));
     }
 
     public List<CartableTaskResponse> candidateTasks() {
         CurrentUserContext user = securityIdentityService.currentUser();
+        return toAuthorizedResponses(user, new ArrayList<>(candidateTasksFor(user).values()));
+    }
+
+    private Map<Long, UserTask> candidateTasksFor(CurrentUserContext user) {
         Map<Long, UserTask> tasks = new LinkedHashMap<>();
         for (String group : identityMappingService.toCamundaCandidateGroups(user)) {
             searchTasks(filter -> filter.state(UserTaskState.CREATED).candidateGroup(group))
@@ -61,7 +68,7 @@ public class CartableService {
         }
         searchTasks(filter -> filter.state(UserTaskState.CREATED).candidateUser(user.username()))
                 .forEach(task -> tasks.put(task.getUserTaskKey(), task));
-        return toAuthorizedResponses(user, new ArrayList<>(tasks.values()));
+        return tasks;
     }
 
     public CartableTaskResponse getTask(Long taskKey) {

@@ -9,6 +9,13 @@ export function fetchDelegationTargets(taskKey) {
   return apiJson(`/api/v1/cartable/tasks/${taskKey}/delegation-targets`);
 }
 
+export function claimCartableTask(taskKey) {
+  return apiJson(`/api/v1/cartable/tasks/${taskKey}/claim`, {
+    method: 'POST',
+    body: JSON.stringify({})
+  });
+}
+
 export function delegateTask(taskKey, payload) {
   return apiJson(`/api/v1/cartable/tasks/${taskKey}/delegate`, {
     method: 'POST',

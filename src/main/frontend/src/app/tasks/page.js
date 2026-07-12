@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import AppShell from '../components/app-shell';
 import { formatFaNumber, formatCompactId } from '../lib/display';
-import { delegateTask, fetchCartableTasks, fetchDelegationTargets } from '../lib/tasks';
+import { claimCartableTask, delegateTask, fetchCartableTasks, fetchDelegationTargets } from '../lib/tasks';
 import { fetchCurrentUser } from '../lib/security';
 
 export default function AllTasksPage() {
@@ -83,7 +83,22 @@ function CartableTaskCard({ task, order, onChanged, readOnly }) {
   const [target, setTarget] = useState('');
   const [loadingTargets, setLoadingTargets] = useState(false);
   const [message, setMessage] = useState('');
+  const [claiming, setClaiming] = useState(false);
+  const canClaim = task.allowedActions?.claim && !readOnly;
   const canDelegate = task.allowedActions?.delegate && !readOnly;
+
+  const claimTask = async () => {
+    setClaiming(true);
+    setMessage('');
+    try {
+      await claimCartableTask(task.taskKey);
+      await onChanged();
+    } catch (error) {
+      setMessage(error.message || 'دریافت کار ناموفق بود.');
+    } finally {
+      setClaiming(false);
+    }
+  };
 
   const loadTargets = async () => {
     setLoadingTargets(true);
@@ -128,6 +143,11 @@ function CartableTaskCard({ task, order, onChanged, readOnly }) {
       </div>
       <div className="task-summary-side">
         <span className="status-pill status-pill--ready">{readOnly ? 'فقط مشاهده' : 'آماده اقدام'}</span>
+        {canClaim && (
+          <button className="primary-action" type="button" onClick={claimTask} disabled={claiming}>
+            {claiming ? 'در حال دریافت' : 'دریافت کار'}
+          </button>
+        )}
         {canDelegate && (
           <div className="delegate-box">
             <button className="ghost-action" type="button" onClick={loadTargets} disabled={loadingTargets}>
