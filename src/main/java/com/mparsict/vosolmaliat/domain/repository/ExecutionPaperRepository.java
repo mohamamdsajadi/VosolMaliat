@@ -27,11 +27,11 @@ public interface ExecutionPaperRepository extends JpaRepository<ExecutionPaper, 
     @Query(value = """
             SELECT DISTINCT ep
             FROM ExecutionPaper ep
-            LEFT JOIN Taxpayer taxpayer ON taxpayer.id = ep.taxpayerId
-            LEFT JOIN NaturalPerson np ON np.id = taxpayer.naturalPersonId
-            LEFT JOIN LegalPerson lp ON lp.id = taxpayer.legalPersonId
-            LEFT JOIN DebtInformation debt ON debt.executionPaperId = ep.id
-            LEFT JOIN ExecutionPaperNotification notification ON notification.executionPaperId = ep.id
+            LEFT JOIN ep.taxpayer taxpayer
+            LEFT JOIN taxpayer.naturalPerson np
+            LEFT JOIN taxpayer.legalPerson lp
+            LEFT JOIN DebtInformation debt ON debt.executionPaper = ep
+            LEFT JOIN ExecutionPaperNotification notification ON notification.executionPaper = ep
             WHERE (:assignmentMode IS NULL
                 OR (:assignmentMode = 'ASSIGNED' AND ep.currentState <> :unassignedState)
                 OR (:assignmentMode = 'UNASSIGNED' AND ep.currentState = :unassignedState))
@@ -45,7 +45,7 @@ public interface ExecutionPaperRepository extends JpaRepository<ExecutionPaper, 
                 OR np.nationalCode LIKE CONCAT('%', :taxpayerNationalId, '%')
                 OR lp.nationalId LIKE CONCAT('%', :taxpayerNationalId, '%'))
               AND (:currentState IS NULL OR ep.currentState = :currentState)
-              AND (:taxUnitId IS NULL OR ep.taxUnitId = :taxUnitId)
+              AND (:taxUnitId IS NULL OR ep.taxUnit.id = :taxUnitId)
               AND (:notificationStatus IS NULL
                 OR (:notificationStatus = 'NOTIFIED' AND notification.electronicNotificationDate IS NOT NULL)
                 OR (:notificationStatus = 'NOT_NOTIFIED' AND notification.electronicNotificationDate IS NULL))
@@ -69,11 +69,11 @@ public interface ExecutionPaperRepository extends JpaRepository<ExecutionPaper, 
             countQuery = """
             SELECT COUNT(DISTINCT ep)
             FROM ExecutionPaper ep
-            LEFT JOIN Taxpayer taxpayer ON taxpayer.id = ep.taxpayerId
-            LEFT JOIN NaturalPerson np ON np.id = taxpayer.naturalPersonId
-            LEFT JOIN LegalPerson lp ON lp.id = taxpayer.legalPersonId
-            LEFT JOIN DebtInformation debt ON debt.executionPaperId = ep.id
-            LEFT JOIN ExecutionPaperNotification notification ON notification.executionPaperId = ep.id
+            LEFT JOIN ep.taxpayer taxpayer
+            LEFT JOIN taxpayer.naturalPerson np
+            LEFT JOIN taxpayer.legalPerson lp
+            LEFT JOIN DebtInformation debt ON debt.executionPaper = ep
+            LEFT JOIN ExecutionPaperNotification notification ON notification.executionPaper = ep
             WHERE (:assignmentMode IS NULL
                 OR (:assignmentMode = 'ASSIGNED' AND ep.currentState <> :unassignedState)
                 OR (:assignmentMode = 'UNASSIGNED' AND ep.currentState = :unassignedState))
@@ -87,7 +87,7 @@ public interface ExecutionPaperRepository extends JpaRepository<ExecutionPaper, 
                 OR np.nationalCode LIKE CONCAT('%', :taxpayerNationalId, '%')
                 OR lp.nationalId LIKE CONCAT('%', :taxpayerNationalId, '%'))
               AND (:currentState IS NULL OR ep.currentState = :currentState)
-              AND (:taxUnitId IS NULL OR ep.taxUnitId = :taxUnitId)
+              AND (:taxUnitId IS NULL OR ep.taxUnit.id = :taxUnitId)
               AND (:notificationStatus IS NULL
                 OR (:notificationStatus = 'NOTIFIED' AND notification.electronicNotificationDate IS NOT NULL)
                 OR (:notificationStatus = 'NOT_NOTIFIED' AND notification.electronicNotificationDate IS NULL))

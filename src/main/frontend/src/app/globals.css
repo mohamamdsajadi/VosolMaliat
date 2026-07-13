@@ -1178,6 +1178,193 @@ textarea {
     background: #fef2f2;
 }
 
+.execution-print-template {
+    display: none;
+}
+
+.execution-print-page {
+    direction: rtl;
+    box-sizing: border-box;
+    width: 190mm;
+    min-height: 270mm;
+    margin: 0 auto;
+    padding: 6mm 7mm;
+    border: 1.5px solid #111827;
+    background: #ffffff;
+    color: #111827;
+    font-family: "B Nazanin", "BNazanin", "Nazanin", "IRNazanin", Tahoma, serif;
+    font-size: 9px;
+    line-height: 1.45;
+}
+
+.print-header {
+    display: grid;
+    grid-template-columns: 82px 1fr 120px;
+    align-items: start;
+    gap: 12px;
+    margin-bottom: 4px;
+}
+
+.print-logo-block {
+    display: grid;
+    justify-items: center;
+    gap: 2px;
+    text-align: center;
+    font-size: 8px;
+    line-height: 1.35;
+}
+
+.print-logo-block img {
+    width: 48px;
+    height: 44px;
+    object-fit: contain;
+}
+
+.print-title-block {
+    padding-top: 6px;
+}
+
+.print-title-strip {
+    display: flex;
+    justify-content: space-around;
+    min-height: 21px;
+    padding: 2px 16px;
+    border-radius: 999px;
+    background: #d9ded5;
+    color: #111827;
+    font-weight: 700;
+}
+
+.print-heading {
+    display: grid;
+    justify-items: end;
+    gap: 2px;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.print-heading strong {
+    font-size: 16px;
+    line-height: 1.1;
+}
+
+.print-barcode {
+    width: 48px;
+    height: 24px;
+    margin-top: 2px;
+    background: repeating-linear-gradient(90deg, #111827 0 2px, #ffffff 2px 4px, #111827 4px 5px, #ffffff 5px 8px);
+}
+
+.print-meta-table,
+.print-info-table,
+.print-amount-table,
+.print-signature {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 5px;
+}
+
+.print-meta-table th,
+.print-meta-table td,
+.print-info-table th,
+.print-info-table td,
+.print-amount-table th,
+.print-amount-table td {
+    border: 1px solid #111827;
+    padding: 1.5px 4px;
+    vertical-align: middle;
+}
+
+.print-meta-table th,
+.print-info-table th {
+    width: 16%;
+    background: #f1f3f5;
+    font-weight: 800;
+}
+
+.print-info-table caption,
+.print-amount-table caption {
+    caption-side: top;
+    padding: 2px 5px;
+    border: 1px solid #111827;
+    border-bottom: 0;
+    background: #d9d9d9;
+    text-align: right;
+    font-weight: 900;
+}
+
+.print-legal-text {
+    margin: 6px 0 4px;
+    text-align: justify;
+    font-size: 9px;
+    line-height: 1.65;
+}
+
+.print-amount-table th {
+    background: #e5e7eb;
+    font-weight: 900;
+}
+
+.print-amount-table td:last-child,
+.print-amount-table th:last-child {
+    width: 28%;
+    text-align: center;
+}
+
+.print-signature {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    margin-top: 16mm;
+    border: 1px solid #111827;
+}
+
+.print-signature > div {
+    display: grid;
+    min-height: 34px;
+    padding: 4px 7px;
+    border-left: 1px solid #111827;
+}
+
+.print-signature > div:last-child {
+    border-left: 0;
+    align-content: center;
+    text-align: center;
+}
+
+@media print {
+    @page {
+        size: A4 portrait;
+        margin: 8mm;
+    }
+
+    body * {
+        visibility: hidden;
+    }
+
+    .execution-print-template,
+    .execution-print-template * {
+        visibility: visible;
+    }
+
+    .execution-print-template {
+        display: block;
+        position: absolute;
+        inset: 0;
+        background: #ffffff;
+    }
+
+    .execution-print-page {
+        width: 194mm;
+        min-height: 281mm;
+        max-height: 281mm;
+        margin: 0;
+        box-shadow: none;
+        break-inside: avoid;
+        overflow: hidden;
+        font-family: "B Nazanin", "BNazanin", "Nazanin", "IRNazanin", Tahoma, serif;
+    }
+}
+
 .delegate-box {
     display: grid;
     gap: 8px;

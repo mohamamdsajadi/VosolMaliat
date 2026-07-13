@@ -4,13 +4,17 @@ import com.mparsict.vosolmaliat.application.dto.request.DebtPaperIssuanceRequest
 import com.mparsict.vosolmaliat.application.dto.request.admin.ManualExecutionPaperRequest;
 import com.mparsict.vosolmaliat.application.dto.response.ExecutionPaperDetailResponse;
 import com.mparsict.vosolmaliat.application.dto.response.IssuanceResponse;
+import com.mparsict.vosolmaliat.application.dto.response.admin.AdminDataSummaryResponse;
 import com.mparsict.vosolmaliat.application.service.ExecutionPaperService;
 import com.mparsict.vosolmaliat.application.service.IssuanceRequestService;
 import com.mparsict.vosolmaliat.common.exception.BusinessException;
 import com.mparsict.vosolmaliat.common.util.UniqueCodeGenerator;
 import com.mparsict.vosolmaliat.domain.enums.ExecutionPaperState;
+import com.mparsict.vosolmaliat.domain.model.Taxpayer;
 import com.mparsict.vosolmaliat.domain.model.execution.DebtInformation;
 import com.mparsict.vosolmaliat.domain.model.execution.ExecutionPaper;
+import com.mparsict.vosolmaliat.domain.model.execution.FinalizedDebtPaper;
+import com.mparsict.vosolmaliat.domain.model.masterdata.TaxUnit;
 import com.mparsict.vosolmaliat.domain.model.rule.ExecutionPaperIssuanceRequest;
 import com.mparsict.vosolmaliat.domain.repository.DebtInformationRepository;
 import com.mparsict.vosolmaliat.domain.repository.ExecutionPaperRepository;
@@ -20,9 +24,6 @@ import com.mparsict.vosolmaliat.infrastructure.camunda.service.CamundaProcessSer
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -57,21 +58,18 @@ public class AdminDataEntryService {
 
     @Transactional
     public ExecutionPaperDetailResponse createManualExecutionPaper(ManualExecutionPaperRequest request) {
-        finalizedDebtPaperRepository.findById(request.finalizedDebtPaperId())
+        FinalizedDebtPaper finalizedDebtPaper = finalizedDebtPaperRepository.findById(request.finalizedDebtPaperId())
                 .orElseThrow(() -> new BusinessException("FINALIZED_DEBT_PAPER_NOT_FOUND", "برگ بدهی قطعی یافت نشد"));
-        taxpayerRepository.findById(request.taxpayerId())
+        Taxpayer taxpayer = taxpayerRepository.findById(request.taxpayerId())
                 .orElseThrow(() -> new BusinessException("TAXPAYER_NOT_FOUND", "مودی یافت نشد"));
 
         ExecutionPaper saved = executionPaperRepository.save(ExecutionPaper.builder()
                 .executionPaperUniqueCode(blankToNull(request.executionPaperUniqueCode()) == null
                         ? uniqueCodeGenerator.generateExecutionPaperCode()
                         : request.executionPaperUniqueCode())
-                .finalizedDebtPaperId(request.finalizedDebtPaperId())
-                .taxpayerId(request.taxpayerId())
-                .mainTaxBureauId(request.mainTaxBureauId())
-                .taxBureauId(request.taxBureauId())
-                .taxUnitId(request.taxUnitId())
-                .sendingUnitId(request.sendingUnitId())
+                .finalizedDebtPaper(finalizedDebtPaper)
+                .taxpayer(taxpayer)
+                .taxUnit(request.taxUnitId() == null ? null : TaxUnit.builder().id(request.taxUnitId()).build())
                 .finalizationReason(request.finalizationReason())
                 .taxSource(request.taxSource())
                 .currentState(blankToNull(request.currentState()) == null
@@ -86,17 +84,36 @@ public class AdminDataEntryService {
     }
 
     @Transactional(readOnly = true)
-    public Map<String, List<?>> summary() {
-        return Map.of(
-                "finalizedDebtPapers", finalizedDebtPaperRepository.findAll(),
-                "taxpayers", taxpayerRepository.findAll(),
-                "executionPapers", executionPaperRepository.findAll()
+    public AdminDataSummaryResponse summary() {
+        return new AdminDataSummaryResponse(
+                finalizedDebtPaperRepository.findAll().stream()
+                        .map(item -> new AdminDataSummaryResponse.FinalizedDebtPaperSummary(
+                                item.getId(),
+                                item.getDebtPaperUniqueCode(),
+                                item.getTaxSource()
+                        ))
+                        .toList(),
+                taxpayerRepository.findAll().stream()
+                        .map(item -> new AdminDataSummaryResponse.TaxpayerSummary(
+                                item.getId(),
+                                item.getDebtPaperUniqueCode(),
+                                item.getDebtPaperIssueDate(),
+                                item.getType().name()
+                        ))
+                        .toList(),
+                executionPaperRepository.findAll().stream()
+                        .map(item -> new AdminDataSummaryResponse.ExecutionPaperSummary(
+                                item.getId(),
+                                item.getExecutionPaperUniqueCode(),
+                                item.getCurrentState()
+                        ))
+                        .toList()
         );
     }
 
     private DebtInformation toDebtInformation(Long executionPaperId, ManualExecutionPaperRequest.DebtInformationInput input) {
         return DebtInformation.builder()
-                .executionPaperId(executionPaperId)
+                .executionPaper(ExecutionPaper.builder().id(executionPaperId).build())
                 .taxAmount(orZero(input.taxAmount()))
                 .dutyAmount(orZero(input.dutyAmount()))
                 .penaltyArticle22(orZero(input.penaltyArticle22()))

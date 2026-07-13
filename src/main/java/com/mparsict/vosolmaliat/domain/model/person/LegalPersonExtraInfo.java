@@ -18,9 +18,6 @@ public class LegalPersonExtraInfo extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "legal_person_id")
-    private Long legalPersonId;
-
     @Column(name = "arrest_status")
     private Integer arrestStatus;
 
@@ -32,4 +29,16 @@ public class LegalPersonExtraInfo extends BaseEntity {
 
     @Column(name = "date_of_termination")
     private String dateOfTermination;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "legal_person_id")
+    private LegalPerson legalPerson;
+
+    public Long getLegalPersonId() {
+        return legalPerson == null ? null : legalPerson.getId();
+    }
+
+    public void setLegalPersonId(Long legalPersonId) {
+        this.legalPerson = legalPersonId == null ? null : LegalPerson.builder().id(legalPersonId).build();
+    }
 }

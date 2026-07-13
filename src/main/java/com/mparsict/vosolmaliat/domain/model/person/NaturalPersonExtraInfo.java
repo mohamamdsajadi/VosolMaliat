@@ -18,9 +18,6 @@ public class NaturalPersonExtraInfo extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "natural_person_id")
-    private Long naturalPersonId;
-
     @Column(name = "arrest_status")
     private Integer arrestStatus;
 
@@ -44,4 +41,16 @@ public class NaturalPersonExtraInfo extends BaseEntity {
 
     @Column(name = "passport_expiry_date")
     private String passportExpiryDate;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "natural_person_id")
+    private NaturalPerson naturalPerson;
+
+    public Long getNaturalPersonId() {
+        return naturalPerson == null ? null : naturalPerson.getId();
+    }
+
+    public void setNaturalPersonId(Long naturalPersonId) {
+        this.naturalPerson = naturalPersonId == null ? null : NaturalPerson.builder().id(naturalPersonId).build();
+    }
 }

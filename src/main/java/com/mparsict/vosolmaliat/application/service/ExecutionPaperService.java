@@ -10,8 +10,10 @@ import com.mparsict.vosolmaliat.application.dto.response.ExecutionPaperTraceResp
 import com.mparsict.vosolmaliat.application.service.security.AuditLogService;
 import com.mparsict.vosolmaliat.common.util.UniqueCodeGenerator;
 import com.mparsict.vosolmaliat.domain.enums.ExecutionPaperState;
+import com.mparsict.vosolmaliat.domain.model.ContactInfo;
 import com.mparsict.vosolmaliat.domain.model.Taxpayer;
 import com.mparsict.vosolmaliat.domain.model.execution.*;
+import com.mparsict.vosolmaliat.domain.model.masterdata.TaxUnit;
 import com.mparsict.vosolmaliat.domain.model.security.AuditLog;
 import com.mparsict.vosolmaliat.domain.model.person.LegalPerson;
 import com.mparsict.vosolmaliat.domain.model.person.NaturalPerson;
@@ -43,11 +45,15 @@ public class ExecutionPaperService {
     private final ExecutionPaperRepository executionPaperRepository;
     private final FinalizedDebtPaperRepository finalizedDebtPaperRepository;
     private final TaxpayerRepository taxpayerRepository;
+    private final ContactInfoRepository contactInfoRepository;
     private final NaturalPersonRepository naturalPersonRepository;
     private final LegalPersonRepository legalPersonRepository;
     private final DebtInformationRepository debtInformationRepository;
     private final ExecutionPaperStateHistoryRepository stateHistoryRepository;
     private final ExecutionPaperNotificationRepository executionPaperNotificationRepository;
+    private final GeneralDirectorateOfTaxAffairsRepository generalDirectorateRepository;
+    private final TaxAffairsOfficeRepository taxAffairsOfficeRepository;
+    private final TaxUnitRepository taxUnitRepository;
     private final AuditLogRepository auditLogRepository;
     private final AuditLogService auditLogService;
     private final UniqueCodeGenerator uniqueCodeGenerator;
@@ -67,9 +73,9 @@ public class ExecutionPaperService {
                                 .performanceYear(request.performanceYear())
                                 .performancePeriod(request.performancePeriod())
                                 .activityTypeCode(request.activityTypeCode())
-                                .mainTaxBureauId(request.mainTaxBureauId())
-                                .taxBureauId(request.taxBureauId())
-                                .taxUnitId(request.taxUnitId())
+                                .mainTaxBureau(request.mainTaxBureauId() == null ? null : com.mparsict.vosolmaliat.domain.model.masterdata.GeneralDirectorateOfTaxAffairs.builder().id(request.mainTaxBureauId()).build())
+                                .taxBureau(request.taxBureauId() == null ? null : com.mparsict.vosolmaliat.domain.model.masterdata.TaxAffairsOffice.builder().id(request.taxBureauId()).build())
+                                .taxUnit(request.taxUnitId() == null ? null : TaxUnit.builder().id(request.taxUnitId()).build())
                                 .totalFinalizedAmount(computeTotalFinalizedAmount(request.debtInfo()))
                                 .finalizedTaxAndNonDeductibleAmount(computeFinalizedTaxAndNonDeductibleAmount(request.debtInfo()))
                                 .build()
@@ -97,21 +103,20 @@ public class ExecutionPaperService {
                         Taxpayer.builder()
                                 .debtPaperUniqueCode(request.debtPaperUniqueCode())
                                 .debtPaperIssueDate(request.debtPaperIssueDate())
-                                .naturalPersonId(finalNaturalPersonId)
-                                .legalPersonId(finalLegalPersonId)
+                                .naturalPerson(finalNaturalPersonId == null ? null : NaturalPerson.builder().id(finalNaturalPersonId).build())
+                                .legalPerson(finalLegalPersonId == null ? null : LegalPerson.builder().id(finalLegalPersonId).build())
                                 .build()
                 ));
+        taxpayer = taxpayerRepository.save(taxpayer);
+        upsertContactInfo(tpInfo, finalNaturalPersonId, finalLegalPersonId);
 
         // 3. Create ExecutionPaper with UNASSIGNED state
         String epCode = uniqueCodeGenerator.generateExecutionPaperCode();
         ExecutionPaper ep = ExecutionPaper.builder()
                 .executionPaperUniqueCode(epCode)
-                .finalizedDebtPaperId(fdp.getId())
-                .taxpayerId(taxpayer.getId())
-                .mainTaxBureauId(request.mainTaxBureauId())
-                .taxBureauId(request.taxBureauId())
-                .taxUnitId(request.taxUnitId())
-                .sendingUnitId(request.sendingUnitId())
+                .finalizedDebtPaper(fdp)
+                .taxpayer(taxpayer)
+                .taxUnit(request.taxUnitId() == null ? null : TaxUnit.builder().id(request.taxUnitId()).build())
                 .finalizationReason(request.finalizationReason())
                 .taxSource(request.taxSource())
                 .currentState(ExecutionPaperState.UNASSIGNED.name())
@@ -120,7 +125,7 @@ public class ExecutionPaperService {
 
         // 4. Save state history
         ExecutionPaperStateHistory history = ExecutionPaperStateHistory.builder()
-                .executionPaperId(ep.getId())
+                .executionPaper(ep)
                 .state(ExecutionPaperState.UNASSIGNED.name())
                 .stateDate(LocalDate.now().toString())
                 .build();
@@ -130,7 +135,7 @@ public class ExecutionPaperService {
         // 5. Create DebtInformation
         DebtPaperIssuanceRequest.DebtInfo di = request.debtInfo();
         DebtInformation debtInfo = DebtInformation.builder()
-                .executionPaperId(ep.getId())
+                .executionPaper(ep)
                 .taxAmount(orZero(di.taxAmount()))
                 .dutyAmount(orZero(di.dutyAmount()))
                 .penaltyArticle22(orZero(di.penaltyArticle22()))
@@ -238,10 +243,8 @@ public class ExecutionPaperService {
         execution.put("id", ep.getId());
         execution.put("uniqueCode", ep.getExecutionPaperUniqueCode());
         execution.put("currentState", ep.getCurrentState());
-        execution.put("mainTaxBureauId", ep.getMainTaxBureauId());
-        execution.put("taxBureauId", ep.getTaxBureauId());
         execution.put("taxUnitId", ep.getTaxUnitId());
-        execution.put("sendingUnitId", ep.getSendingUnitId());
+        putOrganizationNamesFromTaxUnit(execution, ep.getTaxUnitId());
         execution.put("finalizationReason", ep.getFinalizationReason());
         execution.put("taxSource", ep.getTaxSource());
         execution.put("createdAt", ep.getCreatedAt());
@@ -259,6 +262,7 @@ public class ExecutionPaperService {
             finalized.put("mainTaxBureauId", fdp.getMainTaxBureauId());
             finalized.put("taxBureauId", fdp.getTaxBureauId());
             finalized.put("taxUnitId", fdp.getTaxUnitId());
+            putOrganizationNames(finalized, fdp.getMainTaxBureauId(), fdp.getTaxBureauId(), fdp.getTaxUnitId());
             finalized.put("totalFinalizedAmount", fdp.getTotalFinalizedAmount());
             finalized.put("finalizedTaxAndNonDeductibleAmount", fdp.getFinalizedTaxAndNonDeductibleAmount());
             finalized.put("createdAt", fdp.getCreatedAt());
@@ -270,6 +274,10 @@ public class ExecutionPaperService {
             taxpayerMap.put("type", taxpayer.getType().name());
             taxpayerMap.put("debtPaperUniqueCode", taxpayer.getDebtPaperUniqueCode());
             taxpayerMap.put("debtPaperIssueDate", taxpayer.getDebtPaperIssueDate());
+            findContactInfo(taxpayer).ifPresent(contactInfo -> {
+                taxpayerMap.put("postalCode", contactInfo.getPostalCode());
+                taxpayerMap.put("address", contactInfo.getLegalAddress());
+            });
             if (taxpayer.getNaturalPersonId() != null) {
                 naturalPersonRepository.findById(taxpayer.getNaturalPersonId()).ifPresent(np -> {
                     taxpayerMap.put("nationalCode", np.getNationalCode());
@@ -310,6 +318,99 @@ public class ExecutionPaperService {
         });
 
         return new ExecutionPaperDetailResponse(toDto(ep), execution, finalized, taxpayerMap, debt, notification);
+    }
+
+    private void putOrganizationNames(Map<String, Object> target, Long generalId, Long officeId, Long unitId) {
+        if (generalId != null) {
+            generalDirectorateRepository.findById(generalId).ifPresent(general -> {
+                target.put("mainTaxBureauName", general.getGeneralDirectorateName());
+                target.put("generalDirectorateName", general.getGeneralDirectorateName());
+                target.put("generalDirectorateAddress", general.getAddress());
+                target.put("generalDirectoratePostalCode", general.getPostalCode());
+                target.put("generalDirectoratePhone", general.getPhone());
+            });
+        }
+        if (officeId != null) {
+            taxAffairsOfficeRepository.findById(officeId).ifPresent(office -> {
+                target.put("taxBureauName", office.getOfficeName());
+                target.put("taxAffairsOfficeName", office.getOfficeName());
+                target.put("taxAffairsOfficeAddress", office.getAddress());
+                target.put("taxAffairsOfficePostalCode", office.getPostalCode());
+                target.put("taxAffairsOfficePhone", office.getPhone());
+            });
+        }
+        if (unitId != null) {
+            taxUnitRepository.findById(unitId).ifPresent(unit -> {
+                target.put("taxUnitName", unit.getTaxUnitName());
+                target.put("taxUnitAddress", unit.getAddress());
+                target.put("taxUnitPostalCode", unit.getPostalCode());
+                target.put("taxUnitPhone", unit.getPhone());
+            });
+        }
+    }
+
+    private void putOrganizationNamesFromTaxUnit(Map<String, Object> target, Long unitId) {
+        if (unitId == null) {
+            return;
+        }
+        taxUnitRepository.findById(unitId).ifPresent(unit -> {
+            target.put("taxUnitName", unit.getTaxUnitName());
+            target.put("taxUnitAddress", unit.getAddress());
+            target.put("taxUnitPostalCode", unit.getPostalCode());
+            target.put("taxUnitPhone", unit.getPhone());
+            if (unit.getTaxAffairsOfficeId() != null) {
+                taxAffairsOfficeRepository.findById(unit.getTaxAffairsOfficeId()).ifPresent(office -> {
+                    target.put("taxBureauId", office.getId());
+                    target.put("taxBureauName", office.getOfficeName());
+                    target.put("taxAffairsOfficeName", office.getOfficeName());
+                    target.put("taxAffairsOfficeAddress", office.getAddress());
+                    target.put("taxAffairsOfficePostalCode", office.getPostalCode());
+                    target.put("taxAffairsOfficePhone", office.getPhone());
+                    if (office.getGeneralDirectorateOfTaxAffairsId() != null) {
+                        generalDirectorateRepository.findById(office.getGeneralDirectorateOfTaxAffairsId()).ifPresent(general -> {
+                            target.put("mainTaxBureauId", general.getId());
+                            target.put("mainTaxBureauName", general.getGeneralDirectorateName());
+                            target.put("generalDirectorateName", general.getGeneralDirectorateName());
+                            target.put("generalDirectorateAddress", general.getAddress());
+                            target.put("generalDirectoratePostalCode", general.getPostalCode());
+                            target.put("generalDirectoratePhone", general.getPhone());
+                        });
+                    }
+                });
+            }
+        });
+    }
+
+    private void upsertContactInfo(DebtPaperIssuanceRequest.TaxpayerInfo taxpayerInfo, Long naturalPersonId, Long legalPersonId) {
+        if (!hasText(taxpayerInfo.postalCode()) && !hasText(taxpayerInfo.address())) {
+            return;
+        }
+        ContactInfo contactInfo = naturalPersonId != null
+                ? contactInfoRepository.findFirstByNaturalPersonId(naturalPersonId)
+                        .orElseGet(() -> ContactInfo.builder().naturalPerson(NaturalPerson.builder().id(naturalPersonId).build()).build())
+                : contactInfoRepository.findFirstByLegalPersonId(legalPersonId)
+                        .orElseGet(() -> ContactInfo.builder().legalPerson(LegalPerson.builder().id(legalPersonId).build()).build());
+        if (hasText(taxpayerInfo.postalCode())) {
+            contactInfo.setPostalCode(taxpayerInfo.postalCode());
+        }
+        if (hasText(taxpayerInfo.address())) {
+            contactInfo.setLegalAddress(taxpayerInfo.address());
+        }
+        contactInfoRepository.save(contactInfo);
+    }
+
+    private Optional<ContactInfo> findContactInfo(Taxpayer taxpayer) {
+        if (taxpayer.getNaturalPersonId() != null) {
+            return contactInfoRepository.findFirstByNaturalPersonId(taxpayer.getNaturalPersonId());
+        }
+        if (taxpayer.getLegalPersonId() != null) {
+            return contactInfoRepository.findFirstByLegalPersonId(taxpayer.getLegalPersonId());
+        }
+        return Optional.empty();
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.isBlank();
     }
 
     public ExecutionPaperTraceResponse getTrace(Long id) {

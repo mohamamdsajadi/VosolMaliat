@@ -18,6 +18,15 @@ public class DebtDetectionDocument extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "execution_paper_id")
-    private Long executionPaperId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "execution_paper_id")
+    private ExecutionPaper executionPaper;
+
+    public Long getExecutionPaperId() {
+        return executionPaper == null ? null : executionPaper.getId();
+    }
+
+    public void setExecutionPaperId(Long executionPaperId) {
+        this.executionPaper = executionPaperId == null ? null : ExecutionPaper.builder().id(executionPaperId).build();
+    }
 }

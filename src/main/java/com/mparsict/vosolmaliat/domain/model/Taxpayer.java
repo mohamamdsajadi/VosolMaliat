@@ -1,6 +1,8 @@
 package com.mparsict.vosolmaliat.domain.model;
 
 import com.mparsict.vosolmaliat.domain.enums.TaxpayerType;
+import com.mparsict.vosolmaliat.domain.model.person.LegalPerson;
+import com.mparsict.vosolmaliat.domain.model.person.NaturalPerson;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -23,14 +25,32 @@ public class Taxpayer extends BaseEntity {
     @Column(name = "debt_paper_issue_date")
     private String debtPaperIssueDate;
 
-    @Column(name = "natural_person_id")
-    private Long naturalPersonId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "natural_person_id")
+    private NaturalPerson naturalPerson;
 
-    @Column(name = "legal_person_id")
-    private Long legalPersonId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "legal_person_id")
+    private LegalPerson legalPerson;
 
     @Transient
     public TaxpayerType getType() {
-        return (naturalPersonId != null) ? TaxpayerType.NATURAL : TaxpayerType.LEGAL;
+        return (naturalPerson != null) ? TaxpayerType.NATURAL : TaxpayerType.LEGAL;
+    }
+
+    public Long getNaturalPersonId() {
+        return naturalPerson == null ? null : naturalPerson.getId();
+    }
+
+    public void setNaturalPersonId(Long naturalPersonId) {
+        this.naturalPerson = naturalPersonId == null ? null : NaturalPerson.builder().id(naturalPersonId).build();
+    }
+
+    public Long getLegalPersonId() {
+        return legalPerson == null ? null : legalPerson.getId();
+    }
+
+    public void setLegalPersonId(Long legalPersonId) {
+        this.legalPerson = legalPersonId == null ? null : LegalPerson.builder().id(legalPersonId).build();
     }
 }

@@ -1,6 +1,9 @@
 package com.mparsict.vosolmaliat.domain.model.execution;
 
 import com.mparsict.vosolmaliat.domain.model.BaseEntity;
+import com.mparsict.vosolmaliat.domain.model.masterdata.GeneralDirectorateOfTaxAffairs;
+import com.mparsict.vosolmaliat.domain.model.masterdata.TaxAffairsOffice;
+import com.mparsict.vosolmaliat.domain.model.masterdata.TaxUnit;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -42,18 +45,45 @@ public class FinalizedDebtPaper extends BaseEntity {
     @Column(name = "activity_type_code")
     private String activityTypeCode;
 
-    @Column(name = "main_tax_bureau_id")
-    private Long mainTaxBureauId;
-
-    @Column(name = "tax_bureau_id")
-    private Long taxBureauId;
-
-    @Column(name = "tax_unit_id")
-    private Long taxUnitId;
-
     @Column(name = "total_finalized_amount")
     private Double totalFinalizedAmount;
 
     @Column(name = "finalized_tax_and_non_deductible_amount")
     private Double finalizedTaxAndNonDeductibleAmount;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "main_tax_bureau_id")
+    private GeneralDirectorateOfTaxAffairs mainTaxBureau;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tax_bureau_id")
+    private TaxAffairsOffice taxBureau;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tax_unit_id")
+    private TaxUnit taxUnit;
+
+    public Long getMainTaxBureauId() {
+        return mainTaxBureau == null ? null : mainTaxBureau.getId();
+    }
+
+    public void setMainTaxBureauId(Long mainTaxBureauId) {
+        this.mainTaxBureau = mainTaxBureauId == null ? null : GeneralDirectorateOfTaxAffairs.builder().id(mainTaxBureauId).build();
+    }
+
+    public Long getTaxBureauId() {
+        return taxBureau == null ? null : taxBureau.getId();
+    }
+
+    public void setTaxBureauId(Long taxBureauId) {
+        this.taxBureau = taxBureauId == null ? null : TaxAffairsOffice.builder().id(taxBureauId).build();
+    }
+
+    public Long getTaxUnitId() {
+        return taxUnit == null ? null : taxUnit.getId();
+    }
+
+    public void setTaxUnitId(Long taxUnitId) {
+        this.taxUnit = taxUnitId == null ? null : TaxUnit.builder().id(taxUnitId).build();
+    }
 }

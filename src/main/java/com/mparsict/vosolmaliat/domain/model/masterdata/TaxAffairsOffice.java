@@ -18,9 +18,6 @@ public class TaxAffairsOffice extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "general_directorate_of_tax_affairs_id")
-    private Long generalDirectorateOfTaxAffairsId;
-
     @Column(name = "office_name")
     private String officeName;
 
@@ -32,4 +29,18 @@ public class TaxAffairsOffice extends BaseEntity {
 
     @Column(name = "phone")
     private String phone;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "general_directorate_of_tax_affairs_id")
+    private GeneralDirectorateOfTaxAffairs generalDirectorateOfTaxAffairs;
+
+    public Long getGeneralDirectorateOfTaxAffairsId() {
+        return generalDirectorateOfTaxAffairs == null ? null : generalDirectorateOfTaxAffairs.getId();
+    }
+
+    public void setGeneralDirectorateOfTaxAffairsId(Long generalDirectorateOfTaxAffairsId) {
+        this.generalDirectorateOfTaxAffairs = generalDirectorateOfTaxAffairsId == null
+                ? null
+                : GeneralDirectorateOfTaxAffairs.builder().id(generalDirectorateOfTaxAffairsId).build();
+    }
 }

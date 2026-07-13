@@ -3,6 +3,8 @@ package com.mparsict.vosolmaliat.application.service.security;
 import com.mparsict.vosolmaliat.application.dto.request.security.*;
 import com.mparsict.vosolmaliat.application.dto.response.security.AppUserProfileResponse;
 import com.mparsict.vosolmaliat.common.exception.BusinessException;
+import com.mparsict.vosolmaliat.domain.model.masterdata.GeneralDirectorateOfTaxAffairs;
+import com.mparsict.vosolmaliat.domain.model.masterdata.TaxAffairsOffice;
 import com.mparsict.vosolmaliat.domain.model.masterdata.TaxUnit;
 import com.mparsict.vosolmaliat.domain.model.security.AppUserProfile;
 import com.mparsict.vosolmaliat.domain.repository.TaxUnitRepository;
@@ -34,8 +36,8 @@ public class AppUserProfileService {
                 .lastName(request.lastName())
                 .phoneNumber(request.phoneNumber())
                 .businessRole(request.businessRole())
-                .generalDirectorateId(request.generalDirectorateId())
-                .taxAffairsOfficeId(request.taxAffairsOfficeId())
+                .generalDirectorate(generalReference(request.generalDirectorateId()))
+                .taxAffairsOffice(taxAffairsOfficeReference(request.taxAffairsOfficeId()))
                 .taxUnit(taxUnit)
                 .enabledInBusinessSystem(true)
                 .lockedInBusinessSystem(false)
@@ -72,8 +74,8 @@ public class AppUserProfileService {
         if (request.businessRole() != null) {
             profile.setBusinessRole(request.businessRole());
         }
-        profile.setGeneralDirectorateId(request.generalDirectorateId());
-        profile.setTaxAffairsOfficeId(request.taxAffairsOfficeId());
+        profile.setGeneralDirectorate(generalReference(request.generalDirectorateId()));
+        profile.setTaxAffairsOffice(taxAffairsOfficeReference(request.taxAffairsOfficeId()));
         TaxUnit taxUnit = request.taxUnitId() == null ? null : findTaxUnit(request.taxUnitId());
         profile.setTaxUnit(taxUnit);
         AppUserProfile saved = userProfileRepository.save(profile);
@@ -132,6 +134,14 @@ public class AppUserProfileService {
     private TaxUnit findTaxUnit(Long id) {
         return taxUnitRepository.findById(id)
                 .orElseThrow(() -> new BusinessException("TAX_UNIT_NOT_FOUND", "واحد مالیاتی یافت نشد"));
+    }
+
+    private GeneralDirectorateOfTaxAffairs generalReference(Long id) {
+        return id == null ? null : GeneralDirectorateOfTaxAffairs.builder().id(id).build();
+    }
+
+    private TaxAffairsOffice taxAffairsOfficeReference(Long id) {
+        return id == null ? null : TaxAffairsOffice.builder().id(id).build();
     }
 
     private void validateUniqueForCreate(CreateAppUserProfileRequest request) {

@@ -16,9 +16,18 @@ public class TaxpayerActivityType extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "taxpayer_id")
-    private Long taxpayerId;
-
     @Column(name = "activity_type")
     private String activityType;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "taxpayer_id")
+    private Taxpayer taxpayer;
+
+    public Long getTaxpayerId() {
+        return taxpayer == null ? null : taxpayer.getId();
+    }
+
+    public void setTaxpayerId(Long taxpayerId) {
+        this.taxpayer = taxpayerId == null ? null : Taxpayer.builder().id(taxpayerId).build();
+    }
 }

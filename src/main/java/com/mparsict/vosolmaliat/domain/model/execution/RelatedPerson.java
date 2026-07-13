@@ -1,6 +1,8 @@
 package com.mparsict.vosolmaliat.domain.model.execution;
 
 import com.mparsict.vosolmaliat.domain.model.BaseEntity;
+import com.mparsict.vosolmaliat.domain.model.person.LegalPerson;
+import com.mparsict.vosolmaliat.domain.model.person.NaturalPerson;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -17,15 +19,6 @@ public class RelatedPerson extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(name = "execution_paper_id")
-    private Long executionPaperId;
-
-    @Column(name = "natural_person_id")
-    private Long naturalPersonId;
-
-    @Column(name = "legal_person_id")
-    private Long legalPersonId;
 
     @Column(name = "post_name")
     private String postName;
@@ -50,4 +43,40 @@ public class RelatedPerson extends BaseEntity {
 
     @Column(name = "management_declaration")
     private Integer managementDeclaration;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "execution_paper_id")
+    private ExecutionPaper executionPaper;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "natural_person_id")
+    private NaturalPerson naturalPerson;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "legal_person_id")
+    private LegalPerson legalPerson;
+
+    public Long getExecutionPaperId() {
+        return executionPaper == null ? null : executionPaper.getId();
+    }
+
+    public void setExecutionPaperId(Long executionPaperId) {
+        this.executionPaper = executionPaperId == null ? null : ExecutionPaper.builder().id(executionPaperId).build();
+    }
+
+    public Long getNaturalPersonId() {
+        return naturalPerson == null ? null : naturalPerson.getId();
+    }
+
+    public void setNaturalPersonId(Long naturalPersonId) {
+        this.naturalPerson = naturalPersonId == null ? null : NaturalPerson.builder().id(naturalPersonId).build();
+    }
+
+    public Long getLegalPersonId() {
+        return legalPerson == null ? null : legalPerson.getId();
+    }
+
+    public void setLegalPersonId(Long legalPersonId) {
+        this.legalPerson = legalPersonId == null ? null : LegalPerson.builder().id(legalPersonId).build();
+    }
 }

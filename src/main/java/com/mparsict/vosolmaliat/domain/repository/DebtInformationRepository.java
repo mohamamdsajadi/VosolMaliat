@@ -11,10 +11,11 @@ import java.util.Optional;
 @Repository
 public interface DebtInformationRepository extends JpaRepository<DebtInformation, Long> {
 
-    Optional<DebtInformation> findByExecutionPaperId(Long executionPaperId);
+    @Query("SELECT d FROM DebtInformation d WHERE d.executionPaper.id = :executionPaperId")
+    Optional<DebtInformation> findByExecutionPaperId(@Param("executionPaperId") Long executionPaperId);
 
     @Query("SELECT SUM(d.remainingTax) FROM DebtInformation d " +
-           "JOIN ExecutionPaper ep ON d.executionPaperId = ep.id " +
+           "JOIN d.executionPaper ep " +
            "WHERE ep.currentState = :state")
     Double sumRemainingTaxByState(@Param("state") String state);
 }

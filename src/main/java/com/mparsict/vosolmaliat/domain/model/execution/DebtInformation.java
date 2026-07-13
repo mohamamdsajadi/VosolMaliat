@@ -18,8 +18,9 @@ public class DebtInformation extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "execution_paper_id")
-    private Long executionPaperId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "execution_paper_id")
+    private ExecutionPaper executionPaper;
 
     @Builder.Default
     @Column(name = "tax_amount")
@@ -82,5 +83,13 @@ public class DebtInformation extends BaseEntity {
         double tpa = taxPaidAmount != null ? taxPaidAmount : 0.0;
         double ppa = penaltyPaidAmount != null ? penaltyPaidAmount : 0.0;
         return ta + da + p22 + p23 - tpa - ppa;
+    }
+
+    public Long getExecutionPaperId() {
+        return executionPaper == null ? null : executionPaper.getId();
+    }
+
+    public void setExecutionPaperId(Long executionPaperId) {
+        this.executionPaper = executionPaperId == null ? null : ExecutionPaper.builder().id(executionPaperId).build();
     }
 }

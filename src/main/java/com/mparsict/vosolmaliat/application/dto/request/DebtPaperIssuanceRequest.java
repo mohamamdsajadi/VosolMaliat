@@ -33,6 +33,8 @@ public record DebtPaperIssuanceRequest(
             String lastName,
             String fatherName,
             String birthDate,
+            String postalCode,
+            String address,
             // Legal person fields
             String nationalId,
             String registrationNumber,

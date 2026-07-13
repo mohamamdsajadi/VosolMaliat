@@ -19,6 +19,8 @@ export const initialDebtPaper = {
   lastName: '',
   fatherName: '',
   birthDate: '',
+  postalCode: '',
+  address: '',
   nationalId: '',
   registrationNumber: '',
   registrationDate: '',
@@ -45,7 +47,6 @@ export const initialExecutionPaper = {
   mainTaxBureauId: '',
   taxBureauId: '',
   taxUnitId: '',
-  sendingUnitId: '',
   finalizationReason: '',
   taxSource: '',
   currentState: 'UNASSIGNED',
@@ -66,6 +67,12 @@ const lastNames = ['محمدی', 'کریمی', 'احمدی', 'رضایی', 'حس
 const companyNames = ['شرکت پارس تجارت آریا', 'توسعه مالیات مهر', 'بازرگانی سپهر شرق', 'صنایع داده پردازان'];
 const taxSources = ['VAT', 'INCOME_TAX', 'CORPORATE_TAX', 'SALARY_TAX'];
 const finalizationReasons = ['قطعیت پس از رسیدگی', 'عدم اعتراض در مهلت قانونی', 'رای قطعی هیات حل اختلاف', 'ابلاغ قطعی'];
+const sampleAddresses = [
+  'تهران، خیابان ولیعصر، بالاتر از میدان ونک، پلاک ۲۴',
+  'اصفهان، خیابان چهارباغ بالا، کوچه بهار، پلاک ۱۲',
+  'شیراز، بلوار زند، خیابان رودکی، پلاک ۸',
+  'مشهد، احمدآباد، خیابان عارف، پلاک ۳۱'
+];
 
 export function randomDebtPaperSample(masterdata = {}) {
   const natural = randomInt(1, 10) <= 7;
@@ -97,6 +104,8 @@ export function randomDebtPaperSample(masterdata = {}) {
     lastName: natural ? pick(lastNames) : '',
     fatherName: natural ? pick(firstNames) : '',
     birthDate: natural ? randomJalaliDate(1345, 1379) : '',
+    postalCode: randomPostalCode(),
+    address: pick(sampleAddresses),
     nationalId: natural ? '' : randomNationalId(),
     registrationNumber: natural ? '' : String(randomInt(100000, 999999)),
     registrationDate: natural ? '' : randomJalaliDate(1380, 1402),
@@ -118,7 +127,7 @@ export function randomDebtPaperSample(masterdata = {}) {
 }
 
 export function randomExecutionPaperSample(summary = {}, masterdata = {}) {
-  const selected = sampleMasterdata(masterdata);
+  const selected = sampleHierarchicalMasterdata(masterdata);
   const debtPaper = pick(summary.finalizedDebtPapers || []);
   const taxpayer = pick(summary.taxpayers || []);
   const taxAmount = randomAmount(60_000_000, 700_000_000);
@@ -136,7 +145,6 @@ export function randomExecutionPaperSample(summary = {}, masterdata = {}) {
     mainTaxBureauId: selected.generalId,
     taxBureauId: selected.officeId,
     taxUnitId: selected.unitId,
-    sendingUnitId: selected.unitId,
     finalizationReason: pick(finalizationReasons),
     taxSource: pick(taxSources),
     currentState: 'UNASSIGNED',
@@ -174,6 +182,8 @@ export function toDebtPaperPayload(form) {
       lastName: form.lastName,
       fatherName: form.fatherName,
       birthDate: form.birthDate,
+      postalCode: form.postalCode,
+      address: form.address,
       nationalId: form.nationalId,
       registrationNumber: form.registrationNumber,
       registrationDate: form.registrationDate,
@@ -189,10 +199,7 @@ export function toExecutionPayload(form) {
     executionPaperUniqueCode: form.executionPaperUniqueCode || null,
     finalizedDebtPaperId: numberOrNull(form.finalizedDebtPaperId),
     taxpayerId: numberOrNull(form.taxpayerId),
-    mainTaxBureauId: numberOrNull(form.mainTaxBureauId),
-    taxBureauId: numberOrNull(form.taxBureauId),
     taxUnitId: numberOrNull(form.taxUnitId),
-    sendingUnitId: numberOrNull(form.sendingUnitId),
     finalizationReason: form.finalizationReason,
     taxSource: form.taxSource,
     currentState: form.currentState,
@@ -237,6 +244,21 @@ function sampleMasterdata(masterdata) {
   };
 }
 
+function sampleHierarchicalMasterdata(masterdata) {
+  const unit = pick(masterdata.units || []);
+  const office = unit
+    ? (masterdata.offices || []).find((item) => String(item.id) === String(unit.taxAffairsOfficeId))
+    : pick(masterdata.offices || []);
+  const general = office
+    ? (masterdata.generals || []).find((item) => String(item.id) === String(office.generalDirectorateOfTaxAffairsId))
+    : pick(masterdata.generals || []);
+  return {
+    generalId: general?.id ? String(general.id) : '',
+    officeId: office?.id ? String(office.id) : '',
+    unitId: unit?.id ? String(unit.id) : ''
+  };
+}
+
 function pick(items) {
   if (!items || items.length === 0) {
     return undefined;
@@ -262,6 +284,10 @@ function randomNationalCode() {
 
 function randomNationalId() {
   return String(randomInt(10000000000, 99999999999));
+}
+
+function randomPostalCode() {
+  return String(randomInt(1000000000, 9999999999));
 }
 
 export function FieldGrid({ children }) {

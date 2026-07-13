@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import AppShell from '../../../components/app-shell';
 import { createManualExecutionPaper, fetchAdminDataSummary } from '../../../lib/admin-data-entry';
 import { fetchGeneralDirectorates, fetchTaxAffairsOffices, fetchTaxUnits } from '../../../lib/security';
@@ -46,8 +46,31 @@ export default function ExecutionPaperEntryPage() {
     load();
   }, [load]);
 
+  const filteredOffices = useMemo(() => {
+    if (!form.mainTaxBureauId) {
+      return [];
+    }
+    return masterdata.offices.filter((item) => String(item.generalDirectorateOfTaxAffairsId) === String(form.mainTaxBureauId));
+  }, [form.mainTaxBureauId, masterdata.offices]);
+
+  const filteredUnits = useMemo(() => {
+    if (!form.taxBureauId) {
+      return [];
+    }
+    return masterdata.units.filter((item) => String(item.taxAffairsOfficeId) === String(form.taxBureauId));
+  }, [form.taxBureauId, masterdata.units]);
+
   const updateForm = (event) => {
-    setForm((current) => ({ ...current, [event.target.name]: event.target.value }));
+    const { name, value } = event.target;
+    setForm((current) => {
+      if (name === 'mainTaxBureauId') {
+        return { ...current, mainTaxBureauId: value, taxBureauId: '', taxUnitId: '' };
+      }
+      if (name === 'taxBureauId') {
+        return { ...current, taxBureauId: value, taxUnitId: '' };
+      }
+      return { ...current, [name]: value };
+    });
   };
 
   const submit = async (event) => {
@@ -108,10 +131,9 @@ export default function ExecutionPaperEntryPage() {
           </FieldGrid>
 
           <FieldGrid>
-            <Select label="اداره کل" name="mainTaxBureauId" value={form.mainTaxBureauId} onChange={updateForm} options={masterdata.generals.map((item) => ({ value: item.id, label: item.name }))} />
-            <Select label="اداره مالیات" name="taxBureauId" value={form.taxBureauId} onChange={updateForm} options={masterdata.offices.map((item) => ({ value: item.id, label: item.officeName }))} />
-            <Select label="واحد مالیاتی" name="taxUnitId" value={form.taxUnitId} onChange={updateForm} options={masterdata.units.map((item) => ({ value: item.id, label: item.taxUnitName }))} />
-            <Select label="واحد ارسال‌کننده" name="sendingUnitId" value={form.sendingUnitId} onChange={updateForm} options={masterdata.units.map((item) => ({ value: item.id, label: item.taxUnitName }))} />
+            <Select label="اداره کل امور مالیاتی" name="mainTaxBureauId" value={form.mainTaxBureauId} onChange={updateForm} required options={masterdata.generals.map((item) => ({ value: item.id, label: item.name }))} />
+            <Select label="اداره مالیات" name="taxBureauId" value={form.taxBureauId} onChange={updateForm} required disabled={!form.mainTaxBureauId} options={filteredOffices.map((item) => ({ value: item.id, label: item.officeName }))} />
+            <Select label="واحد مالیاتی" name="taxUnitId" value={form.taxUnitId} onChange={updateForm} required disabled={!form.taxBureauId} options={filteredUnits.map((item) => ({ value: item.id, label: item.taxUnitName }))} />
           </FieldGrid>
 
           <div className="form-subtitle">ریز بدهی اختیاری</div>

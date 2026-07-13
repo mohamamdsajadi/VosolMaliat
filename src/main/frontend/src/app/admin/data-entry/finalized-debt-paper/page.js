@@ -135,6 +135,8 @@ export default function FinalizedDebtPaperEntryPage() {
                 <Input label="نام خانوادگی" name="lastName" value={form.lastName} onChange={updateForm} />
                 <Input label="نام پدر" name="fatherName" value={form.fatherName} onChange={updateForm} />
                 <Input label="تاریخ تولد" name="birthDate" value={form.birthDate} onChange={updateForm} />
+                <Input label="کد پستی مودی" name="postalCode" value={form.postalCode} onChange={updateForm} />
+                <Input label="اقامتگاه قانونی مودی" name="address" value={form.address} onChange={updateForm} />
               </>
             ) : (
               <>
@@ -142,6 +144,8 @@ export default function FinalizedDebtPaperEntryPage() {
                 <Input label="نام شرکت" name="companyName" value={form.companyName} onChange={updateForm} />
                 <Input label="شماره ثبت" name="registrationNumber" value={form.registrationNumber} onChange={updateForm} />
                 <Input label="تاریخ ثبت" name="registrationDate" value={form.registrationDate} onChange={updateForm} />
+                <Input label="کد پستی مودی" name="postalCode" value={form.postalCode} onChange={updateForm} />
+                <Input label="اقامتگاه قانونی مودی" name="address" value={form.address} onChange={updateForm} />
               </>
             )}
           </FieldGrid>

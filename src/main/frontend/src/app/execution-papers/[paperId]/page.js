@@ -16,24 +16,39 @@ function formatValue(value) {
   return toPersianDigits(value)
 }
 
+function formatMoney(value) {
+  if (value == null || value === '') return '۰'
+  const number = Number(value)
+  if (Number.isNaN(number)) return formatValue(value)
+  return toPersianDigits(Math.round(number).toLocaleString('en-US'))
+}
+
+function orgDisplay(name, id) {
+  if (name && id) return `${name} - کد ${id}`
+  if (name) return name
+  if (id) return `کد ${id}`
+  return ''
+}
+
 const SECTIONS = [
   {
     key: 'executionPaper',
     title: 'اطلاعات برگ اجرا',
     labels: {
       uniqueCode: 'شناسه یکتای برگ اجرا', currentState: 'وضعیت فعلی', finalizationReason: 'علت قطعیت', taxSource: 'منبع مالیات',
-      mainTaxBureauId: 'کد اداره کل', taxBureauId: 'کد امور مالیاتی', taxUnitId: 'کد واحد مالیاتی', sendingUnitId: 'کد واحد ارسال‌کننده', createdAt: 'تاریخ ایجاد'
+      mainTaxBureauName: 'اداره کل امور مالیاتی', taxBureauName: 'اداره امور مالیاتی', taxUnitName: 'واحد مالیاتی',
+      mainTaxBureauId: 'کد اداره کل امور مالیاتی', taxBureauId: 'کد اداره مالیات', taxUnitId: 'کد واحد مالیاتی', createdAt: 'تاریخ ایجاد'
     }
   },
   {
     key: 'finalizedDebtPaper',
     title: 'اطلاعات برگ بدهی قطعی',
-    labels: { debtPaperUniqueCode: 'شناسه یکتا/ارجاع پرونده', debtPaperIssueDate: 'تاریخ قطعیت', notificationId: 'شماره ابلاغ', finalizationReason: 'علت قطعیت', taxSource: 'منبع مالیاتی', performanceYear: 'سال عملکرد', performancePeriod: 'دوره عملکرد', activityTypeCode: 'نوع فعالیت', mainTaxBureauId: 'اداره کل', taxBureauId: 'اداره امور مالیاتی', taxUnitId: 'واحد مالیاتی', totalFinalizedAmount: 'کل مبلغ قطعی‌شده', finalizedTaxAndNonDeductibleAmount: 'مبلغ قطعی‌شده بدون جریمه ق.ب', createdAt: 'تاریخ ثبت' }
+    labels: { debtPaperUniqueCode: 'شناسه یکتا/ارجاع پرونده', debtPaperIssueDate: 'تاریخ قطعیت', notificationId: 'شماره ابلاغ', finalizationReason: 'علت قطعیت', taxSource: 'منبع مالیاتی', performanceYear: 'سال عملکرد', performancePeriod: 'دوره عملکرد', activityTypeCode: 'نوع فعالیت', mainTaxBureauName: 'اداره کل امور مالیاتی', taxBureauName: 'اداره امور مالیاتی', taxUnitName: 'واحد مالیاتی', mainTaxBureauId: 'کد اداره کل', taxBureauId: 'کد اداره امور مالیاتی', taxUnitId: 'کد واحد مالیاتی', totalFinalizedAmount: 'کل مبلغ قطعی‌شده', finalizedTaxAndNonDeductibleAmount: 'مبلغ قطعی‌شده بدون جریمه ق.ب', createdAt: 'تاریخ ثبت' }
   },
   {
     key: 'taxpayer',
     title: 'اطلاعات مودی',
-    labels: { type: 'نوع مودی', firstName: 'نام', lastName: 'نام خانوادگی', nationalCode: 'کد ملی', birthDate: 'تاریخ تولد', fatherName: 'نام پدر', nationalId: 'شناسه ملی', companyName: 'نام/شهرت تجاری', registrationNumber: 'شماره ثبت' }
+    labels: { type: 'نوع مودی', firstName: 'نام', lastName: 'نام خانوادگی', nationalCode: 'کد ملی', birthDate: 'تاریخ تولد', fatherName: 'نام پدر', nationalId: 'شناسه ملی', companyName: 'نام/شهرت تجاری', registrationNumber: 'شماره ثبت', postalCode: 'کد پستی', address: 'اقامتگاه قانونی' }
   },
   {
     key: 'debtInformation',
@@ -104,6 +119,179 @@ function TraceSection({ trace, loading, error }) {
   )
 }
 
+function PrintExecutionPaper({ data }) {
+  if (!data) return null
+  const execution = data.executionPaper || {}
+  const finalized = data.finalizedDebtPaper || {}
+  const taxpayer = data.taxpayer || {}
+  const debt = data.debtInformation || {}
+  const fullName = taxpayer.type === 'LEGAL'
+    ? taxpayer.companyName
+    : [taxpayer.firstName, taxpayer.lastName].filter(Boolean).join(' ')
+  const identityCode = taxpayer.type === 'LEGAL' ? taxpayer.nationalId : taxpayer.nationalCode
+  const totalTax = sumValues([
+    debt.taxAmount,
+    debt.dutyAmount,
+    debt.remainingTax
+  ])
+  const totalPenalty = sumValues([
+    debt.penaltyArticle22,
+    debt.penaltyArticle23,
+    debt.nonDeductiblePenalty
+  ])
+  const totalDebt = Number(debt.totalDebt ?? totalTax + totalPenalty)
+  const issueDate = jalaliDate(execution.createdAt || finalized.createdAt)
+  const debtIssueDate = jalaliDate(finalized.debtPaperIssueDate || finalized.createdAt)
+  const legalDeadlineDate = addDaysJalali(execution.createdAt || finalized.createdAt, 10)
+  const generalId = execution.mainTaxBureauId || finalized.mainTaxBureauId
+  const officeId = execution.taxBureauId || finalized.taxBureauId
+  const unitId = execution.taxUnitId || finalized.taxUnitId
+  const generalName = execution.mainTaxBureauName || execution.generalDirectorateName || finalized.mainTaxBureauName || finalized.generalDirectorateName
+  const officeName = execution.taxBureauName || execution.taxAffairsOfficeName || finalized.taxBureauName || finalized.taxAffairsOfficeName
+  const unitName = execution.taxUnitName || finalized.taxUnitName
+  const generalDisplay = orgDisplay(generalName, generalId)
+  const officeDisplay = orgDisplay(officeName, officeId)
+  const unitDisplay = orgDisplay(unitName, unitId)
+  const officePhone = finalized.taxAffairsOfficePhone || execution.taxAffairsOfficePhone || finalized.generalDirectoratePhone || execution.generalDirectoratePhone
+  const officeAddress = finalized.taxAffairsOfficeAddress || execution.taxAffairsOfficeAddress || finalized.generalDirectorateAddress || execution.generalDirectorateAddress
+
+  return (
+    <div className="execution-print-template" dir="rtl">
+      <section className="execution-print-page">
+        <header className="print-header">
+          <div className="print-logo-block">
+            <img src="/images/iran-tax-logo.png" alt="سازمان امور مالیاتی کشور" />
+            <strong>وزارت امور اقتصادی و دارایی</strong>
+            <span>سازمان امور مالیاتی کشور</span>
+          </div>
+          <div className="print-title-block">
+            <div className="print-title-strip">
+              <span>{formatValue(debtIssueDate)}</span>
+              <span>{formatValue(issueDate)}</span>
+            </div>
+          </div>
+          <div className="print-heading">
+            <strong>برگ اجرایی</strong>
+            <span>سال مالیاتی {formatValue(finalized.performanceYear || '-')}</span>
+            <div className="print-barcode" aria-hidden="true" />
+          </div>
+        </header>
+
+        <table className="print-meta-table">
+          <tbody>
+            <tr>
+              <th>شماره</th>
+              <td>{formatValue(execution.uniqueCode)}</td>
+              <th>اداره کل امور مالیاتی</th>
+              <td>{formatValue(generalDisplay)}</td>
+            </tr>
+            <tr>
+              <th>تاریخ</th>
+              <td>{formatValue(issueDate)}</td>
+              <th>اداره امور مالیاتی</th>
+              <td>{formatValue(officeDisplay)}</td>
+            </tr>
+            <tr>
+              <th>صفحه</th>
+              <td>۱ از ۱</td>
+              <th>تلفن</th>
+              <td>{formatValue(officePhone)}</td>
+            </tr>
+            <tr>
+              <th>واحد مالیاتی</th>
+              <td>{formatValue(unitDisplay)}</td>
+              <th>نشانی</th>
+              <td>{formatValue(officeAddress)}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <table className="print-info-table">
+          <caption>مشخصات مؤدی</caption>
+          <tbody>
+            <tr>
+              <th>شناسه مؤدی</th>
+              <td>{formatValue(identityCode)}</td>
+              <th>نوع شخص</th>
+              <td>{taxpayer.type === 'LEGAL' ? 'حقوقی' : 'حقیقی'}</td>
+            </tr>
+            <tr>
+              <th>نام شخص حقوقی / نام و نام خانوادگی</th>
+              <td>{formatValue(fullName)}</td>
+              <th>نام تجاری / شهرت کسبی</th>
+              <td>{formatValue(taxpayer.companyName || fullName)}</td>
+            </tr>
+            <tr>
+              <th>نوع فعالیت</th>
+              <td>{formatValue(finalized.activityTypeCode || finalized.taxSource || execution.taxSource)}</td>
+              <th>شماره پستی</th>
+              <td>{formatValue(taxpayer.postalCode)}</td>
+            </tr>
+            <tr>
+              <th>اقامتگاه قانونی</th>
+              <td colSpan="3">{formatValue(taxpayer.address)}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p className="print-legal-text">
+          به دلیل عدم پرداخت مالیات موضوع برگ قطعی به شماره {formatValue(finalized.debtPaperUniqueCode)} که طی برگ تشخیص/قطعی
+          مربوط به عملکرد {formatValue(finalized.performanceYear || '-')} ابلاغ گردیده است، حسب مقررات قانون مالیات‌های مستقیم
+          اخطار می‌شود چنانچه ظرف مدت ده روز از تاریخ ابلاغ این برگ نسبت به پرداخت / ترتیب پرداخت بدهی مالیاتی خود به شرح
+          جداول زیر اقدام ننمایید، عملیات اجرایی وصول مطالبات مالیاتی شامل توقیف اموال، ممنوع‌الخروجی و سایر اقدامات قانونی
+          برابر مقررات انجام خواهد شد. تاریخ پایان مهلت اقدام: {formatValue(legalDeadlineDate)}.
+        </p>
+
+        <table className="print-amount-table">
+          <caption>جدول محاسبه مالیات متعلقه</caption>
+          <thead>
+            <tr>
+              <th>شرح</th>
+              <th>مبلغ (ریال)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>مالیات متعلقه</td><td>{formatMoney(debt.taxAmount)}</td></tr>
+            <tr><td>عوارض و بدهی‌های مرتبط</td><td>{formatMoney(debt.dutyAmount)}</td></tr>
+            <tr><td>مانده مالیات ارسالی</td><td>{formatMoney(debt.remainingTax)}</td></tr>
+            <tr><td>جمع بدهی مالیاتی به عدد</td><td>{formatMoney(totalTax)}</td></tr>
+            <tr><td>جمع بدهی مالیاتی به حروف</td><td>{numberToPersianWords(totalTax)} ریال</td></tr>
+          </tbody>
+        </table>
+
+        <table className="print-amount-table">
+          <caption>جدول محاسبه جرایم مالیاتی</caption>
+          <thead>
+            <tr>
+              <th>ردیف</th>
+              <th>شرح جریمه</th>
+              <th>مبلغ (ریال)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>۱</td><td>جریمه ثابت موضوع پرونده</td><td>{formatMoney(debt.penaltyArticle22)}</td></tr>
+            <tr><td>۲</td><td>جریمه دیرکرد پرداخت</td><td>{formatMoney(debt.penaltyArticle23)}</td></tr>
+            <tr><td>۳</td><td>جرایم غیرقابل بخشش</td><td>{formatMoney(debt.nonDeductiblePenalty)}</td></tr>
+            <tr><td colSpan="2">جمع جرایم</td><td>{formatMoney(totalPenalty)}</td></tr>
+            <tr><td colSpan="2">جمع کل قابل وصول</td><td>{formatMoney(totalDebt)}</td></tr>
+          </tbody>
+        </table>
+
+        <footer className="print-signature">
+          <div>
+            <strong>مشخصات صادرکننده</strong>
+            <span>نام و نام خانوادگی:</span>
+            <span>سمت:</span>
+          </div>
+          <div>
+            <strong>مهر و امضاء</strong>
+          </div>
+        </footer>
+      </section>
+    </div>
+  )
+}
+
 export default function ExecutionPaperDetailsPage() {
   const { paperId } = useParams()
   const router = useRouter()
@@ -160,6 +348,7 @@ export default function ExecutionPaperDetailsPage() {
       title="دستیار هوشمند حسابرسی"
       eyebrow="برگ‌های اجرا"
       subtitle="جزئیات برگ اجرا"
+      actions={<button className="primary-action" onClick={() => window.print()} disabled={loading || error || !data}>چاپ برگ اجرا</button>}
     >
       <main style={{ maxWidth: 1200, margin: '0 auto' }}>
         <button onClick={() => router.push('/execution-papers')} style={backButtonStyle}>بازگشت به لیست</button>
@@ -169,8 +358,94 @@ export default function ExecutionPaperDetailsPage() {
         {!loading && !error && data && SECTIONS.map(section => <DetailSection key={section.key} section={section} data={data[section.key]} />)}
         {!loading && !error && canViewTrace && <TraceSection trace={trace} loading={traceLoading} error={traceError} />}
       </main>
+      {!loading && !error && data && <PrintExecutionPaper data={data} />}
     </AppShell>
   )
+}
+
+function shortDate(value) {
+  if (!value) return ''
+  const raw = String(value)
+  if (/^\d{4}-\d{2}-\d{2}/.test(raw)) {
+    const [year, month, day] = raw.slice(0, 10).split('-')
+    return `${year}/${month}/${day}`
+  }
+  return raw
+}
+
+function jalaliDate(value) {
+  if (!value) return ''
+  const raw = String(value)
+  if (/^1[34]\d{2}\/\d{1,2}\/\d{1,2}$/.test(raw)) {
+    return normalizeDateSlash(raw)
+  }
+  const date = new Date(raw)
+  if (Number.isNaN(date.getTime())) {
+    return normalizeDateSlash(raw)
+  }
+  return new Intl.DateTimeFormat('fa-IR-u-ca-persian', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).format(date).replace(/\u200e/g, '')
+}
+
+function addDaysJalali(value, days) {
+  const date = value ? new Date(value) : new Date()
+  if (Number.isNaN(date.getTime())) {
+    return ''
+  }
+  date.setDate(date.getDate() + days)
+  return jalaliDate(date.toISOString())
+}
+
+function normalizeDateSlash(value) {
+  return String(value).replaceAll('-', '/')
+}
+
+function sumValues(values) {
+  return values.reduce((sum, value) => {
+    const number = Number(value)
+    return Number.isNaN(number) ? sum : sum + number
+  }, 0)
+}
+
+function numberToPersianWords(value) {
+  const number = Math.round(Number(value || 0))
+  if (number === 0) return 'صفر'
+  const groups = ['', 'هزار', 'میلیون', 'میلیارد', 'هزار میلیارد']
+  const parts = []
+  let remaining = number
+  let index = 0
+  while (remaining > 0 && index < groups.length) {
+    const chunk = remaining % 1000
+    if (chunk) {
+      parts.unshift(`${threeDigitToWords(chunk)}${groups[index] ? ` ${groups[index]}` : ''}`)
+    }
+    remaining = Math.floor(remaining / 1000)
+    index += 1
+  }
+  return parts.join(' و ')
+}
+
+function threeDigitToWords(number) {
+  const ones = ['', 'یک', 'دو', 'سه', 'چهار', 'پنج', 'شش', 'هفت', 'هشت', 'نه']
+  const teens = ['ده', 'یازده', 'دوازده', 'سیزده', 'چهارده', 'پانزده', 'شانزده', 'هفده', 'هجده', 'نوزده']
+  const tens = ['', '', 'بیست', 'سی', 'چهل', 'پنجاه', 'شصت', 'هفتاد', 'هشتاد', 'نود']
+  const hundreds = ['', 'یکصد', 'دویست', 'سیصد', 'چهارصد', 'پانصد', 'ششصد', 'هفتصد', 'هشتصد', 'نهصد']
+  const parts = []
+  const h = Math.floor(number / 100)
+  const rest = number % 100
+  if (h) parts.push(hundreds[h])
+  if (rest >= 10 && rest < 20) {
+    parts.push(teens[rest - 10])
+  } else {
+    const t = Math.floor(rest / 10)
+    const o = rest % 10
+    if (t) parts.push(tens[t])
+    if (o) parts.push(ones[o])
+  }
+  return parts.join(' و ')
 }
 
 function formatDateTime(value) {

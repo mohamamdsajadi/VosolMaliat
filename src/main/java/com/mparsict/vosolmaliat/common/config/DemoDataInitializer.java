@@ -4,6 +4,8 @@ import com.mparsict.vosolmaliat.domain.enums.ExecutionPaperState;
 import com.mparsict.vosolmaliat.domain.model.Taxpayer;
 import com.mparsict.vosolmaliat.domain.model.execution.DebtInformation;
 import com.mparsict.vosolmaliat.domain.model.execution.ExecutionPaper;
+import com.mparsict.vosolmaliat.domain.model.execution.FinalizedDebtPaper;
+import com.mparsict.vosolmaliat.domain.model.masterdata.TaxUnit;
 import com.mparsict.vosolmaliat.domain.model.person.LegalPerson;
 import com.mparsict.vosolmaliat.domain.model.person.NaturalPerson;
 import com.mparsict.vosolmaliat.domain.repository.DebtInformationRepository;
@@ -64,13 +66,13 @@ public class DemoDataInitializer {
         Taxpayer firstTaxpayer = taxpayerRepository.save(Taxpayer.builder()
                 .debtPaperUniqueCode("DEMO-DEBT-001")
                 .debtPaperIssueDate("1403/01/20")
-                .naturalPersonId(naturalPerson.getId())
+                .naturalPerson(naturalPerson)
                 .build());
 
         Taxpayer secondTaxpayer = taxpayerRepository.save(Taxpayer.builder()
                 .debtPaperUniqueCode("DEMO-DEBT-002")
                 .debtPaperIssueDate("1403/02/10")
-                .legalPersonId(legalPerson.getId())
+                .legalPerson(legalPerson)
                 .build());
 
         createExecutionPaper("DEMO-EP-001", firstTaxpayer.getId(), ExecutionPaperState.UNASSIGNED, 1_250_000_000.0);
@@ -87,19 +89,16 @@ public class DemoDataInitializer {
     private void createExecutionPaper(String code, Long taxpayerId, ExecutionPaperState state, Double remainingTax) {
         ExecutionPaper executionPaper = executionPaperRepository.save(ExecutionPaper.builder()
                 .executionPaperUniqueCode(code)
-                .finalizedDebtPaperId(1000L + Math.abs(code.hashCode() % 1000))
-                .taxpayerId(taxpayerId)
-                .mainTaxBureauId(1L)
-                .taxBureauId(11L)
-                .taxUnitId(111L)
-                .sendingUnitId(1111L)
+                .finalizedDebtPaper(FinalizedDebtPaper.builder().id(1000L + Math.abs(code.hashCode() % 1000)).build())
+                .taxpayer(Taxpayer.builder().id(taxpayerId).build())
+                .taxUnit(TaxUnit.builder().id(111L).build())
                 .finalizationReason("داده نمونه برای نمایش داشبورد")
                 .taxSource("مالیات بر ارزش افزوده")
                 .currentState(state.name())
                 .build());
 
         debtInformationRepository.save(DebtInformation.builder()
-                .executionPaperId(executionPaper.getId())
+                .executionPaper(executionPaper)
                 .taxAmount(remainingTax)
                 .dutyAmount(remainingTax * 0.09)
                 .penaltyArticle22(remainingTax * 0.02)

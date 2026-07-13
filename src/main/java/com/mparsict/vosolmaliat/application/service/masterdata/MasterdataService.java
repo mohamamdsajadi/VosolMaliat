@@ -71,9 +71,9 @@ public class MasterdataService {
 
     @Transactional
     public TaxAffairsOfficeResponse createTaxAffairsOffice(TaxAffairsOfficeRequest request) {
-        findGeneralDirectorate(request.generalDirectorateOfTaxAffairsId());
+        GeneralDirectorateOfTaxAffairs general = findGeneralDirectorate(request.generalDirectorateOfTaxAffairsId());
         TaxAffairsOffice saved = taxAffairsOfficeRepository.save(TaxAffairsOffice.builder()
-                .generalDirectorateOfTaxAffairsId(request.generalDirectorateOfTaxAffairsId())
+                .generalDirectorateOfTaxAffairs(general)
                 .officeName(request.officeName())
                 .postalCode(request.postalCode())
                 .address(request.address())
@@ -84,9 +84,9 @@ public class MasterdataService {
 
     @Transactional
     public TaxAffairsOfficeResponse updateTaxAffairsOffice(Long id, TaxAffairsOfficeRequest request) {
-        findGeneralDirectorate(request.generalDirectorateOfTaxAffairsId());
+        GeneralDirectorateOfTaxAffairs general = findGeneralDirectorate(request.generalDirectorateOfTaxAffairsId());
         TaxAffairsOffice existing = findTaxAffairsOffice(id);
-        existing.setGeneralDirectorateOfTaxAffairsId(request.generalDirectorateOfTaxAffairsId());
+        existing.setGeneralDirectorateOfTaxAffairs(general);
         existing.setOfficeName(request.officeName());
         existing.setPostalCode(request.postalCode());
         existing.setAddress(request.address());
@@ -112,9 +112,9 @@ public class MasterdataService {
 
     @Transactional
     public TaxUnitResponse createTaxUnit(TaxUnitRequest request) {
-        findTaxAffairsOffice(request.taxAffairsOfficeId());
+        TaxAffairsOffice office = findTaxAffairsOffice(request.taxAffairsOfficeId());
         TaxUnit saved = taxUnitRepository.save(TaxUnit.builder()
-                .taxAffairsOfficeId(request.taxAffairsOfficeId())
+                .taxAffairsOffice(office)
                 .taxUnitName(request.taxUnitName())
                 .postalCode(request.postalCode())
                 .address(request.address())
@@ -125,9 +125,9 @@ public class MasterdataService {
 
     @Transactional
     public TaxUnitResponse updateTaxUnit(Long id, TaxUnitRequest request) {
-        findTaxAffairsOffice(request.taxAffairsOfficeId());
+        TaxAffairsOffice office = findTaxAffairsOffice(request.taxAffairsOfficeId());
         TaxUnit existing = findTaxUnit(id);
-        existing.setTaxAffairsOfficeId(request.taxAffairsOfficeId());
+        existing.setTaxAffairsOffice(office);
         existing.setTaxUnitName(request.taxUnitName());
         existing.setPostalCode(request.postalCode());
         existing.setAddress(request.address());

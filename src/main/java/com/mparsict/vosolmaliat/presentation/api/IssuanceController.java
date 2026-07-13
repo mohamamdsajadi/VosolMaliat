@@ -85,6 +85,8 @@ public class IssuanceController {
                 text(body, "LName_tbz"),
                 null,
                 text(body, "BirthDate_tbz"),
+                firstText(body, "PostalCode_tbz", "PostCode_tbz", "postalCode"),
+                firstText(body, "Address_tbz", "address", "TaxpayerAddress_tbz"),
                 "LEGAL".equals(taxpayerType) ? nationalId : null,
                 text(body, "SNO_tbz"),
                 null,

@@ -2,6 +2,8 @@ package com.mparsict.vosolmaliat.domain.model.security;
 
 import com.mparsict.vosolmaliat.domain.model.BaseEntity;
 import com.mparsict.vosolmaliat.domain.enums.BusinessRole;
+import com.mparsict.vosolmaliat.domain.model.masterdata.GeneralDirectorateOfTaxAffairs;
+import com.mparsict.vosolmaliat.domain.model.masterdata.TaxAffairsOffice;
 import com.mparsict.vosolmaliat.domain.model.masterdata.TaxUnit;
 import jakarta.persistence.*;
 import lombok.*;
@@ -45,15 +47,17 @@ public class AppUserProfile extends BaseEntity {
     @Column(name = "business_role")
     private BusinessRole businessRole;
 
-    @Column(name = "general_directorate_id")
-    private Long generalDirectorateId;
-
-    @Column(name = "tax_affairs_office_id")
-    private Long taxAffairsOfficeId;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tax_unit_id")
     private TaxUnit taxUnit;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "general_directorate_id")
+    private GeneralDirectorateOfTaxAffairs generalDirectorate;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tax_affairs_office_id")
+    private TaxAffairsOffice taxAffairsOffice;
 
     @Builder.Default
     @Column(name = "enabled_in_business_system", nullable = false)
@@ -62,4 +66,20 @@ public class AppUserProfile extends BaseEntity {
     @Builder.Default
     @Column(name = "locked_in_business_system", nullable = false)
     private Boolean lockedInBusinessSystem = false;
+
+    public Long getGeneralDirectorateId() {
+        return generalDirectorate == null ? null : generalDirectorate.getId();
+    }
+
+    public void setGeneralDirectorateId(Long generalDirectorateId) {
+        this.generalDirectorate = generalDirectorateId == null ? null : GeneralDirectorateOfTaxAffairs.builder().id(generalDirectorateId).build();
+    }
+
+    public Long getTaxAffairsOfficeId() {
+        return taxAffairsOffice == null ? null : taxAffairsOffice.getId();
+    }
+
+    public void setTaxAffairsOfficeId(Long taxAffairsOfficeId) {
+        this.taxAffairsOffice = taxAffairsOfficeId == null ? null : TaxAffairsOffice.builder().id(taxAffairsOfficeId).build();
+    }
 }
