@@ -45,6 +45,9 @@ public class FinalizedDebtPaper extends BaseEntity {
     @Column(name = "activity_type_code")
     private String activityTypeCode;
 
+    @Column(name = "activity_type_title") // TODO m.sjd: what is given by api, code or title  ?
+    private String activityTypeTitle;
+
     @Column(name = "total_finalized_amount")
     private Double totalFinalizedAmount;
 

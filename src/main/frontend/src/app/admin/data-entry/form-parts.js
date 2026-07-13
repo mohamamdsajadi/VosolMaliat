@@ -9,6 +9,7 @@ export const initialDebtPaper = {
   performanceYear: '',
   performancePeriod: '',
   activityTypeCode: '',
+  activityTypeTitle: '',
   mainTaxBureauId: '',
   taxBureauId: '',
   taxUnitId: '',
@@ -66,6 +67,7 @@ const firstNames = ['علی', 'مریم', 'رضا', 'زهرا', 'حسین', 'ف�
 const lastNames = ['محمدی', 'کریمی', 'احمدی', 'رضایی', 'حسینی', 'جعفری'];
 const companyNames = ['شرکت پارس تجارت آریا', 'توسعه مالیات مهر', 'بازرگانی سپهر شرق', 'صنایع داده پردازان'];
 const taxSources = ['VAT', 'INCOME_TAX', 'CORPORATE_TAX', 'SALARY_TAX'];
+const activityTitles = ['خدمات عمومی', 'خرده‌فروشی', 'تولید صنعتی', 'بازرگانی', 'پیمانکاری'];
 const finalizationReasons = ['قطعیت پس از رسیدگی', 'عدم اعتراض در مهلت قانونی', 'رای قطعی هیات حل اختلاف', 'ابلاغ قطعی'];
 const sampleAddresses = [
   'تهران، خیابان ولیعصر، بالاتر از میدان ونک، پلاک ۲۴',
@@ -94,6 +96,7 @@ export function randomDebtPaperSample(masterdata = {}) {
     performanceYear: String(randomInt(1399, 1403)),
     performancePeriod: String(randomInt(1, 4)),
     activityTypeCode: String(randomInt(1000, 9999)),
+    activityTypeTitle: pick(activityTitles),
     mainTaxBureauId: selected.generalId,
     taxBureauId: selected.officeId,
     taxUnitId: selected.unitId,
@@ -171,6 +174,7 @@ export function toDebtPaperPayload(form) {
     performanceYear: form.performanceYear,
     performancePeriod: form.performancePeriod,
     activityTypeCode: form.activityTypeCode,
+    activityTypeTitle: form.activityTypeTitle,
     mainTaxBureauId: numberOrNull(form.mainTaxBureauId),
     taxBureauId: numberOrNull(form.taxBureauId),
     taxUnitId: numberOrNull(form.taxUnitId),

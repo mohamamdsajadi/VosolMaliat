@@ -16,6 +16,21 @@ function formatValue(value) {
   return toPersianDigits(value)
 }
 
+function formatDetailValue(key, value) {
+  if (value == null || value === '') return '—'
+  if (isDateTimeField(key)) return formatPersianDateTime(value)
+  if (isDateOnlyField(key)) return formatPersianDate(value)
+  return formatValue(value)
+}
+
+function isDateTimeField(key) {
+  return ['createdAt', 'updatedAt', 'electronicNotificationDate'].includes(key)
+}
+
+function isDateOnlyField(key) {
+  return ['debtPaperIssueDate', 'birthDate', 'registrationDate'].includes(key)
+}
+
 function formatMoney(value) {
   if (value == null || value === '') return '۰'
   const number = Number(value)
@@ -30,25 +45,56 @@ function orgDisplay(name, id) {
   return ''
 }
 
+function prepareDetailData(sectionKey, data) {
+  if (!data) return data
+  if (sectionKey === 'executionPaper') {
+    return {
+      ...data,
+      currentStateDisplay: data.currentStateDisplay || data.currentState,
+      taxSourceDisplay: data.taxSourceDisplay || data.taxSource,
+      mainTaxBureauDisplay: orgDisplay(data.mainTaxBureauName || data.generalDirectorateName, data.mainTaxBureauId),
+      taxBureauDisplay: orgDisplay(data.taxBureauName || data.taxAffairsOfficeName, data.taxBureauId),
+      taxUnitDisplay: orgDisplay(data.taxUnitName, data.taxUnitId)
+    }
+  }
+  if (sectionKey === 'finalizedDebtPaper') {
+    return {
+      ...data,
+      taxSourceDisplay: data.taxSourceDisplay || data.taxSource,
+      activityTypeDisplay: data.activityTypeDisplay || orgDisplay(data.activityTypeTitle, data.activityTypeCode),
+      mainTaxBureauDisplay: orgDisplay(data.mainTaxBureauName || data.generalDirectorateName, data.mainTaxBureauId),
+      taxBureauDisplay: orgDisplay(data.taxBureauName || data.taxAffairsOfficeName, data.taxBureauId),
+      taxUnitDisplay: orgDisplay(data.taxUnitName, data.taxUnitId)
+    }
+  }
+  if (sectionKey === 'taxpayer') {
+    return {
+      ...data,
+      typeDisplay: data.typeDisplay || data.typeLabel || data.type
+    }
+  }
+  return data
+}
+
 const SECTIONS = [
   {
     key: 'executionPaper',
     title: 'اطلاعات برگ اجرا',
     labels: {
-      uniqueCode: 'شناسه یکتای برگ اجرا', currentState: 'وضعیت فعلی', finalizationReason: 'علت قطعیت', taxSource: 'منبع مالیات',
-      mainTaxBureauName: 'اداره کل امور مالیاتی', taxBureauName: 'اداره امور مالیاتی', taxUnitName: 'واحد مالیاتی',
-      mainTaxBureauId: 'کد اداره کل امور مالیاتی', taxBureauId: 'کد اداره مالیات', taxUnitId: 'کد واحد مالیاتی', createdAt: 'تاریخ ایجاد'
+      uniqueCode: 'شناسه یکتای برگ اجرا', currentStateDisplay: 'وضعیت فعلی', finalizationReason: 'علت قطعیت', taxSourceDisplay: 'منبع مالیات',
+      mainTaxBureauDisplay: 'اداره کل امور مالیاتی', taxBureauDisplay: 'اداره امور مالیاتی', taxUnitDisplay: 'واحد مالیاتی',
+      createdAt: 'تاریخ ایجاد'
     }
   },
   {
     key: 'finalizedDebtPaper',
     title: 'اطلاعات برگ بدهی قطعی',
-    labels: { debtPaperUniqueCode: 'شناسه یکتا/ارجاع پرونده', debtPaperIssueDate: 'تاریخ قطعیت', notificationId: 'شماره ابلاغ', finalizationReason: 'علت قطعیت', taxSource: 'منبع مالیاتی', performanceYear: 'سال عملکرد', performancePeriod: 'دوره عملکرد', activityTypeCode: 'نوع فعالیت', mainTaxBureauName: 'اداره کل امور مالیاتی', taxBureauName: 'اداره امور مالیاتی', taxUnitName: 'واحد مالیاتی', mainTaxBureauId: 'کد اداره کل', taxBureauId: 'کد اداره امور مالیاتی', taxUnitId: 'کد واحد مالیاتی', totalFinalizedAmount: 'کل مبلغ قطعی‌شده', finalizedTaxAndNonDeductibleAmount: 'مبلغ قطعی‌شده بدون جریمه ق.ب', createdAt: 'تاریخ ثبت' }
+    labels: { debtPaperUniqueCode: 'شناسه یکتا/ارجاع پرونده', debtPaperIssueDate: 'تاریخ قطعیت', notificationId: 'شماره ابلاغ', finalizationReason: 'علت قطعیت', taxSourceDisplay: 'منبع مالیاتی', performanceYear: 'سال عملکرد', performancePeriod: 'دوره عملکرد', activityTypeDisplay: 'نوع فعالیت', mainTaxBureauDisplay: 'اداره کل امور مالیاتی', taxBureauDisplay: 'اداره امور مالیاتی', taxUnitDisplay: 'واحد مالیاتی', totalFinalizedAmount: 'کل مبلغ قطعی‌شده', finalizedTaxAndNonDeductibleAmount: 'مبلغ قطعی‌شده بدون جریمه ق.ب', createdAt: 'تاریخ ثبت' }
   },
   {
     key: 'taxpayer',
     title: 'اطلاعات مودی',
-    labels: { type: 'نوع مودی', firstName: 'نام', lastName: 'نام خانوادگی', nationalCode: 'کد ملی', birthDate: 'تاریخ تولد', fatherName: 'نام پدر', nationalId: 'شناسه ملی', companyName: 'نام/شهرت تجاری', registrationNumber: 'شماره ثبت', postalCode: 'کد پستی', address: 'اقامتگاه قانونی' }
+    labels: { typeDisplay: 'نوع مودی', firstName: 'نام', lastName: 'نام خانوادگی', nationalCode: 'کد ملی', birthDate: 'تاریخ تولد', fatherName: 'نام پدر', nationalId: 'شناسه ملی', companyName: 'نام/شهرت تجاری', registrationNumber: 'شماره ثبت', postalCode: 'کد پستی', address: 'اقامتگاه قانونی' }
   },
   {
     key: 'debtInformation',
@@ -63,7 +109,8 @@ const SECTIONS = [
 ]
 
 function DetailSection({ section, data }) {
-  const entries = useMemo(() => Object.entries(section.labels).filter(([key]) => data && Object.prototype.hasOwnProperty.call(data, key)), [section, data])
+  const displayData = useMemo(() => prepareDetailData(section.key, data), [section.key, data])
+  const entries = useMemo(() => Object.entries(section.labels).filter(([key]) => displayData && Object.prototype.hasOwnProperty.call(displayData, key)), [section, displayData])
   return (
     <section style={cardStyle}>
       <h3 style={sectionTitleStyle}>{section.title}</h3>
@@ -72,7 +119,7 @@ function DetailSection({ section, data }) {
           {entries.map(([key, label]) => (
             <div key={key} style={itemStyle}>
               <span style={labelStyle}>{label}</span>
-              <strong style={valueStyle}>{formatValue(data[key])}</strong>
+              <strong style={valueStyle}>{formatDetailValue(key, displayData[key])}</strong>
             </div>
           ))}
         </div>
@@ -103,7 +150,7 @@ function TraceSection({ trace, loading, error }) {
               <div style={timelineContentStyle}>
                 <div style={timelineTopStyle}>
                   <strong style={timelineTitleStyle}>{item.label || item.action}</strong>
-                  <span style={timelineDateStyle}>{formatDateTime(item.occurredAt)}</span>
+                  <span style={timelineDateStyle}>{formatPersianDateTime(item.occurredAt)}</span>
                 </div>
                 <div style={timelineMetaStyle}>
                   <span>انجام‌دهنده: {formatValue(item.actorUsername || 'system')}</span>
@@ -141,7 +188,6 @@ function PrintExecutionPaper({ data }) {
   ])
   const totalDebt = Number(debt.totalDebt ?? totalTax + totalPenalty)
   const issueDate = jalaliDate(execution.createdAt || finalized.createdAt)
-  const debtIssueDate = jalaliDate(finalized.debtPaperIssueDate || finalized.createdAt)
   const legalDeadlineDate = addDaysJalali(execution.createdAt || finalized.createdAt, 10)
   const generalId = execution.mainTaxBureauId || finalized.mainTaxBureauId
   const officeId = execution.taxBureauId || finalized.taxBureauId
@@ -154,25 +200,22 @@ function PrintExecutionPaper({ data }) {
   const unitDisplay = orgDisplay(unitName, unitId)
   const officePhone = finalized.taxAffairsOfficePhone || execution.taxAffairsOfficePhone || finalized.generalDirectoratePhone || execution.generalDirectoratePhone
   const officeAddress = finalized.taxAffairsOfficeAddress || execution.taxAffairsOfficeAddress || finalized.generalDirectorateAddress || execution.generalDirectorateAddress
+  const activityType = finalized.activityTypeDisplay || orgDisplay(finalized.activityTypeTitle, finalized.activityTypeCode) || finalized.taxSourceDisplay || execution.taxSourceDisplay
 
   return (
     <div className="execution-print-template" dir="rtl">
       <section className="execution-print-page">
         <header className="print-header">
+          <div className="print-heading">
+            <strong>برگ اجرایی</strong>
+            <span>سال مالیاتی {formatValue(finalized.performanceYear || '-')}</span>
+          </div>
           <div className="print-logo-block">
             <img src="/images/iran-tax-logo.png" alt="سازمان امور مالیاتی کشور" />
             <strong>وزارت امور اقتصادی و دارایی</strong>
             <span>سازمان امور مالیاتی کشور</span>
           </div>
-          <div className="print-title-block">
-            <div className="print-title-strip">
-              <span>{formatValue(debtIssueDate)}</span>
-              <span>{formatValue(issueDate)}</span>
-            </div>
-          </div>
-          <div className="print-heading">
-            <strong>برگ اجرایی</strong>
-            <span>سال مالیاتی {formatValue(finalized.performanceYear || '-')}</span>
+          <div className="print-barcode-block">
             <div className="print-barcode" aria-hidden="true" />
           </div>
         </header>
@@ -223,7 +266,7 @@ function PrintExecutionPaper({ data }) {
             </tr>
             <tr>
               <th>نوع فعالیت</th>
-              <td>{formatValue(finalized.activityTypeCode || finalized.taxSource || execution.taxSource)}</td>
+              <td>{formatValue(activityType)}</td>
               <th>شماره پستی</th>
               <td>{formatValue(taxpayer.postalCode)}</td>
             </tr>
@@ -342,24 +385,39 @@ export default function ExecutionPaperDetailsPage() {
       .catch(err => { setTraceError(err.message); setTraceLoading(false) })
   }, [paperId])
 
+  const printExecutionPaper = () => {
+    document.body.classList.add('execution-printing')
+    const cleanup = () => {
+      document.body.classList.remove('execution-printing')
+      window.removeEventListener('afterprint', cleanup)
+    }
+    window.addEventListener('afterprint', cleanup)
+    window.setTimeout(() => {
+      window.print()
+      window.setTimeout(cleanup, 500)
+    }, 50)
+  }
+
   return (
-    <AppShell
-      active="execution-papers"
-      title="دستیار هوشمند حسابرسی"
-      eyebrow="برگ‌های اجرا"
-      subtitle="جزئیات برگ اجرا"
-      actions={<button className="primary-action" onClick={() => window.print()} disabled={loading || error || !data}>چاپ برگ اجرا</button>}
-    >
-      <main style={{ maxWidth: 1200, margin: '0 auto' }}>
-        <button onClick={() => router.push('/execution-papers')} style={backButtonStyle}>بازگشت به لیست</button>
-        <h2 style={{ color: '#1e3a5f', margin: '16px 0 24px', fontSize: 24 }}>مشاهده جزئیات برگ اجرا</h2>
-        {loading && <div style={cardStyle}>در حال دریافت اطلاعات...</div>}
-        {!loading && error && <div style={{ ...cardStyle, color: '#dc2626' }}>خطا در دریافت اطلاعات: {error}</div>}
-        {!loading && !error && data && SECTIONS.map(section => <DetailSection key={section.key} section={section} data={data[section.key]} />)}
-        {!loading && !error && canViewTrace && <TraceSection trace={trace} loading={traceLoading} error={traceError} />}
-      </main>
+    <>
+      <AppShell
+        active="execution-papers"
+        title="دستیار هوشمند حسابرسی"
+        eyebrow="برگ‌های اجرا"
+        subtitle="جزئیات برگ اجرا"
+        actions={<button className="primary-action" onClick={printExecutionPaper} disabled={loading || error || !data}>چاپ برگ اجرا</button>}
+      >
+        <main style={{ maxWidth: 1200, margin: '0 auto' }}>
+          <button onClick={() => router.push('/execution-papers')} style={backButtonStyle}>بازگشت به لیست</button>
+          <h2 style={{ color: '#1e3a5f', margin: '16px 0 24px', fontSize: 24 }}>مشاهده جزئیات برگ اجرا</h2>
+          {loading && <div style={cardStyle}>در حال دریافت اطلاعات...</div>}
+          {!loading && error && <div style={{ ...cardStyle, color: '#dc2626' }}>خطا در دریافت اطلاعات: {error}</div>}
+          {!loading && !error && data && SECTIONS.map(section => <DetailSection key={section.key} section={section} data={data[section.key]} />)}
+          {!loading && !error && canViewTrace && <TraceSection trace={trace} loading={traceLoading} error={traceError} />}
+        </main>
+      </AppShell>
       {!loading && !error && data && <PrintExecutionPaper data={data} />}
-    </AppShell>
+    </>
   )
 }
 
@@ -388,6 +446,51 @@ function jalaliDate(value) {
     month: '2-digit',
     day: '2-digit'
   }).format(date).replace(/\u200e/g, '')
+}
+
+function formatPersianDate(value) {
+  if (!value) return '—'
+  const raw = String(value).trim()
+  if (/^1[34]\d{2}[/-]\d{1,2}[/-]\d{1,2}$/.test(raw)) {
+    return toPersianDigits(normalizeDateSlash(raw))
+  }
+  const date = parseDateValue(raw)
+  if (!date) return formatValue(raw)
+  return cleanPersianDateTime(new Intl.DateTimeFormat('fa-IR-u-ca-persian', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).format(date))
+}
+
+function formatPersianDateTime(value) {
+  if (!value) return '—'
+  const raw = String(value).trim()
+  if (/^1[34]\d{2}[/-]\d{1,2}[/-]\d{1,2}$/.test(raw)) {
+    return toPersianDigits(normalizeDateSlash(raw))
+  }
+  const date = parseDateValue(raw)
+  if (!date) return formatValue(raw)
+  return cleanPersianDateTime(new Intl.DateTimeFormat('fa-IR-u-ca-persian', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  }).format(date))
+}
+
+function parseDateValue(value) {
+  const normalized = String(value).includes(' ') && !String(value).includes('T')
+    ? String(value).replace(' ', 'T')
+    : String(value)
+  const date = new Date(normalized)
+  return Number.isNaN(date.getTime()) ? null : date
+}
+
+function cleanPersianDateTime(value) {
+  return toPersianDigits(String(value).replace(/\u200e/g, '').replace(',', ' -'))
 }
 
 function addDaysJalali(value, days) {

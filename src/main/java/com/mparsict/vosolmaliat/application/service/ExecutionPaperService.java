@@ -10,6 +10,8 @@ import com.mparsict.vosolmaliat.application.dto.response.ExecutionPaperTraceResp
 import com.mparsict.vosolmaliat.application.service.security.AuditLogService;
 import com.mparsict.vosolmaliat.common.util.UniqueCodeGenerator;
 import com.mparsict.vosolmaliat.domain.enums.ExecutionPaperState;
+import com.mparsict.vosolmaliat.domain.enums.TaxpayerType;
+import com.mparsict.vosolmaliat.domain.enums.TaxSourceType;
 import com.mparsict.vosolmaliat.domain.model.ContactInfo;
 import com.mparsict.vosolmaliat.domain.model.Taxpayer;
 import com.mparsict.vosolmaliat.domain.model.execution.*;
@@ -73,6 +75,7 @@ public class ExecutionPaperService {
                                 .performanceYear(request.performanceYear())
                                 .performancePeriod(request.performancePeriod())
                                 .activityTypeCode(request.activityTypeCode())
+                                .activityTypeTitle(request.activityTypeTitle())
                                 .mainTaxBureau(request.mainTaxBureauId() == null ? null : com.mparsict.vosolmaliat.domain.model.masterdata.GeneralDirectorateOfTaxAffairs.builder().id(request.mainTaxBureauId()).build())
                                 .taxBureau(request.taxBureauId() == null ? null : com.mparsict.vosolmaliat.domain.model.masterdata.TaxAffairsOffice.builder().id(request.taxBureauId()).build())
                                 .taxUnit(request.taxUnitId() == null ? null : TaxUnit.builder().id(request.taxUnitId()).build())
@@ -243,10 +246,14 @@ public class ExecutionPaperService {
         execution.put("id", ep.getId());
         execution.put("uniqueCode", ep.getExecutionPaperUniqueCode());
         execution.put("currentState", ep.getCurrentState());
+        execution.put("currentStateLabel", ExecutionPaperState.labelOf(ep.getCurrentState()));
+        execution.put("currentStateDisplay", ExecutionPaperState.labelOf(ep.getCurrentState()));
         execution.put("taxUnitId", ep.getTaxUnitId());
         putOrganizationNamesFromTaxUnit(execution, ep.getTaxUnitId());
         execution.put("finalizationReason", ep.getFinalizationReason());
         execution.put("taxSource", ep.getTaxSource());
+        execution.put("taxSourceLabel", TaxSourceType.labelOf(ep.getTaxSource()));
+        execution.put("taxSourceDisplay", TaxSourceType.displayOf(ep.getTaxSource()));
         execution.put("createdAt", ep.getCreatedAt());
 
         Map<String, Object> finalized = new LinkedHashMap<>();
@@ -256,9 +263,13 @@ public class ExecutionPaperService {
             finalized.put("notificationId", fdp.getNotificationId());
             finalized.put("finalizationReason", fdp.getFinalizationReason());
             finalized.put("taxSource", fdp.getTaxSource());
+            finalized.put("taxSourceLabel", TaxSourceType.labelOf(fdp.getTaxSource()));
+            finalized.put("taxSourceDisplay", TaxSourceType.displayOf(fdp.getTaxSource()));
             finalized.put("performanceYear", fdp.getPerformanceYear());
             finalized.put("performancePeriod", fdp.getPerformancePeriod());
             finalized.put("activityTypeCode", fdp.getActivityTypeCode());
+            finalized.put("activityTypeTitle", fdp.getActivityTypeTitle());
+            finalized.put("activityTypeDisplay", activityTypeDisplay(fdp.getActivityTypeTitle(), fdp.getActivityTypeCode()));
             finalized.put("mainTaxBureauId", fdp.getMainTaxBureauId());
             finalized.put("taxBureauId", fdp.getTaxBureauId());
             finalized.put("taxUnitId", fdp.getTaxUnitId());
@@ -272,6 +283,8 @@ public class ExecutionPaperService {
         taxpayerRepository.findById(ep.getTaxpayerId()).ifPresent(taxpayer -> {
             taxpayerMap.put("id", taxpayer.getId());
             taxpayerMap.put("type", taxpayer.getType().name());
+            taxpayerMap.put("typeLabel", TaxpayerType.labelOf(taxpayer.getType().name()));
+            taxpayerMap.put("typeDisplay", TaxpayerType.labelOf(taxpayer.getType().name()));
             taxpayerMap.put("debtPaperUniqueCode", taxpayer.getDebtPaperUniqueCode());
             taxpayerMap.put("debtPaperIssueDate", taxpayer.getDebtPaperIssueDate());
             findContactInfo(taxpayer).ifPresent(contactInfo -> {
@@ -347,6 +360,18 @@ public class ExecutionPaperService {
                 target.put("taxUnitPhone", unit.getPhone());
             });
         }
+    }
+
+    private String activityTypeDisplay(String title, String code) {
+        boolean hasTitle = title != null && !title.isBlank();
+        boolean hasCode = code != null && !code.isBlank();
+        if (hasTitle && hasCode) {
+            return title + " (" + code + ")";
+        }
+        if (hasTitle) {
+            return title;
+        }
+        return hasCode ? code : null;
     }
 
     private void putOrganizationNamesFromTaxUnit(Map<String, Object> target, Long unitId) {

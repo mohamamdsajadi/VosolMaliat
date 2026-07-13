@@ -16,8 +16,11 @@ public class TaxpayerActivityType extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "activity_type")
-    private String activityType;
+    @Column(name = "activity_type_code")
+    private String activityTypeCode;
+
+    @Column(name = "activity_type_title")
+    private String activityTypeTitle;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "taxpayer_id")

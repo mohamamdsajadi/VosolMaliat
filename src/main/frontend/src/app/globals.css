@@ -1199,10 +1199,10 @@ textarea {
 
 .print-header {
     display: grid;
-    grid-template-columns: 82px 1fr 120px;
-    align-items: start;
+    grid-template-columns: 125px 1fr 80px;
+    align-items: center;
     gap: 12px;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
 }
 
 .print-logo-block {
@@ -1220,25 +1220,14 @@ textarea {
     object-fit: contain;
 }
 
-.print-title-block {
-    padding-top: 6px;
-}
-
-.print-title-strip {
-    display: flex;
-    justify-content: space-around;
-    min-height: 21px;
-    padding: 2px 16px;
-    border-radius: 999px;
-    background: #d9ded5;
-    color: #111827;
-    font-weight: 700;
-}
-
 .print-heading {
     display: grid;
-    justify-items: end;
+    justify-items: center;
+    align-content: center;
     gap: 2px;
+    min-height: 46px;
+    border: 1px solid #111827;
+    background: #eef0ec;
     font-size: 11px;
     font-weight: 800;
 }
@@ -1246,6 +1235,11 @@ textarea {
 .print-heading strong {
     font-size: 16px;
     line-height: 1.1;
+}
+
+.print-barcode-block {
+    display: grid;
+    justify-items: end;
 }
 
 .print-barcode {
@@ -1285,11 +1279,11 @@ textarea {
 .print-info-table caption,
 .print-amount-table caption {
     caption-side: top;
-    padding: 2px 5px;
+    padding: 3px 5px;
     border: 1px solid #111827;
     border-bottom: 0;
-    background: #d9d9d9;
-    text-align: right;
+    background: #cfd6cc;
+    text-align: center;
     font-weight: 900;
 }
 
@@ -1315,20 +1309,30 @@ textarea {
     display: grid;
     grid-template-columns: 1fr 1fr;
     margin-top: 16mm;
-    border: 1px solid #111827;
+    border: 0 !important;
+    outline: 0 !important;
+    box-shadow: none !important;
 }
 
 .print-signature > div {
     display: grid;
     min-height: 34px;
     padding: 4px 7px;
-    border-left: 1px solid #111827;
+    border: 0 !important;
+    outline: 0 !important;
+    box-shadow: none !important;
 }
 
 .print-signature > div:last-child {
-    border-left: 0;
+    border: 0 !important;
     align-content: center;
     text-align: center;
+}
+
+.print-signature * {
+    border: 0 !important;
+    outline: 0 !important;
+    box-shadow: none !important;
 }
 
 @media print {
@@ -1337,29 +1341,41 @@ textarea {
         margin: 8mm;
     }
 
-    body * {
-        visibility: hidden;
+    html,
+    body {
+        width: auto !important;
+        height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
     }
 
-    .execution-print-template,
-    .execution-print-template * {
-        visibility: visible;
+    body.execution-printing .app-frame {
+        display: none !important;
     }
 
-    .execution-print-template {
-        display: block;
-        position: absolute;
-        inset: 0;
-        background: #ffffff;
-    }
-
-    .execution-print-page {
+    body.execution-printing .execution-print-template {
+        display: block !important;
+        position: static !important;
         width: 194mm;
-        min-height: 281mm;
+        height: 281mm;
+        margin: 0;
+        padding: 0;
+        background: #ffffff;
+        overflow: hidden;
+    }
+
+    body.execution-printing .execution-print-page {
+        box-sizing: border-box;
+        width: 194mm;
+        height: 281mm;
+        min-height: 0;
         max-height: 281mm;
         margin: 0;
+        padding: 5mm 6mm;
         box-shadow: none;
         break-inside: avoid;
+        page-break-after: avoid;
         overflow: hidden;
         font-family: "B Nazanin", "BNazanin", "Nazanin", "IRNazanin", Tahoma, serif;
     }

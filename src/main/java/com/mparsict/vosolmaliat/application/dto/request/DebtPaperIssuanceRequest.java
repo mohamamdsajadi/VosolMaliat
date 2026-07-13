@@ -15,6 +15,7 @@ public record DebtPaperIssuanceRequest(
         String performanceYear,
         String performancePeriod,
         String activityTypeCode,
+        String activityTypeTitle,
         Long mainTaxBureauId,
         Long taxBureauId,
         Long taxUnitId,

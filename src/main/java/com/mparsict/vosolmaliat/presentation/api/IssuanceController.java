@@ -118,6 +118,7 @@ public class IssuanceController {
                 firstText(body, "tbz_Dore", "tbz_AmalKard"),
                 text(body, "tbz_Dore"),
                 text(body, "CODE_ACTIVITY_tbz"),
+                firstText(body, "ACTIVITY_TITLE_tbz", "ActivityTitle_tbz", "activityTypeTitle"),
                 longNumber(body, "OmurCode_tbz"),
                 longNumber(body, "VahedCode_tbz"),
                 longNumber(body, "KelaseID_tbz"),

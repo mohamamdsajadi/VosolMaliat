@@ -110,6 +110,7 @@ export default function FinalizedDebtPaperEntryPage() {
             <Input label="سال عملکرد" name="performanceYear" value={form.performanceYear} onChange={updateForm} />
             <Input label="دوره عملکرد" name="performancePeriod" value={form.performancePeriod} onChange={updateForm} />
             <Input label="کد فعالیت" name="activityTypeCode" value={form.activityTypeCode} onChange={updateForm} />
+            <Input label="عنوان فعالیت" name="activityTypeTitle" value={form.activityTypeTitle} onChange={updateForm} />
           </FieldGrid>
 
           <FieldGrid>
