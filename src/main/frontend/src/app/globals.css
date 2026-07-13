@@ -927,6 +927,97 @@ textarea {
     color: #1d4ed8;
 }
 
+.permission-editor-card {
+    gap: 16px;
+}
+
+.selected-role-card {
+    display: grid;
+    gap: 4px;
+    padding: 14px;
+    border: 1px solid #dbeafe;
+    border-radius: 8px;
+    background: linear-gradient(180deg, #f8fbff, #ffffff);
+}
+
+.selected-role-card span {
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.selected-role-card strong {
+    color: #14365d;
+    font-size: 18px;
+    line-height: 1.7;
+}
+
+.selected-role-card small {
+    direction: ltr;
+    text-align: left;
+    color: #64748b;
+    font-size: 12px;
+}
+
+.permission-form-grid {
+    display: grid;
+    gap: 12px;
+}
+
+.permission-mapping-list {
+    display: grid;
+    gap: 10px;
+}
+
+.permission-mapping-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+    align-items: center;
+    min-height: 68px;
+    padding: 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #ffffff;
+    transition: border-color 160ms ease, background 160ms ease;
+}
+
+.permission-mapping-row:hover {
+    border-color: #cbd5e1;
+    background: #f8fafc;
+}
+
+.permission-mapping-main {
+    display: grid;
+    gap: 4px;
+}
+
+.permission-mapping-main strong {
+    color: #14365d;
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.permission-mapping-main span {
+    color: #64748b;
+    font-size: 12px;
+}
+
+.permission-mapping-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.permission-mapping-meta code {
+    direction: ltr;
+    padding: 6px 8px;
+    border-radius: 6px;
+    background: #f1f5f9;
+    color: #334155;
+    font-size: 11px;
+}
+
 .permission-reference {
     margin-top: 18px;
 }

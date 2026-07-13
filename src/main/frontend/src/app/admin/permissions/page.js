@@ -10,9 +10,18 @@ import {
 } from '../../lib/security';
 
 const initialForm = {
-  groupName: 'TAX_UNIT_USER',
+  groupName: 'TAX_EXPERT',
   permissionCode: ''
 };
+
+const roleOptions = [
+  { value: 'ADMIN', label: 'مدیر سامانه' },
+  { value: 'GENERAL_OFFICE_HEAD', label: 'رئیس اداره کل' },
+  { value: 'TAX_OFFICE_HEAD', label: 'رئیس اداره مالیات' },
+  { value: 'TAX_UNIT_HEAD', label: 'رئیس واحد مالیاتی' },
+  { value: 'TAX_EXPERT', label: 'کارشناس مالیاتی' },
+  { value: 'TAX_UNIT_USER', label: 'کاربر واحد مالیاتی' }
+];
 
 const permissionLabels = {
   USER_PROFILE_CREATE: 'ایجاد پروفایل کاربر',
@@ -40,6 +49,10 @@ const permissionLabels = {
 
 function permissionLabel(code) {
   return permissionLabels[code] || code;
+}
+
+function roleLabel(groupName) {
+  return roleOptions.find((role) => role.value === groupName)?.label || groupName;
 }
 
 export default function AdminPermissionsPage() {
@@ -113,27 +126,42 @@ export default function AdminPermissionsPage() {
       {message && <div className="notice error">{message}</div>}
 
       <section className="admin-two-column">
-        <form className="admin-form" onSubmit={grant}>
+        <form className="admin-form permission-editor-card" onSubmit={grant}>
           <div className="section-heading compact-heading">
             <div>
               <p className="eyebrow">اعطای مجوز</p>
-              <h2>نقش/گروه Keycloak</h2>
+              <h2>انتخاب نقش و مجوز</h2>
             </div>
           </div>
-          <label>
-            <span>نام نقش یا گروه</span>
-            <input name="groupName" value={form.groupName} onChange={updateForm} required />
-          </label>
-          <label>
-            <span>مجوز</span>
-            <select name="permissionCode" value={form.permissionCode} onChange={updateForm} required>
-              {permissions.map((permission) => (
-                <option value={permission.code} key={permission.id}>
-                  {permissionLabel(permission.code)} - {permission.code}
-                </option>
-              ))}
-            </select>
-          </label>
+
+          <div className="selected-role-card">
+            <span>نقش انتخاب‌شده</span>
+            <strong>{roleLabel(form.groupName)}</strong>
+            <small>{form.groupName}</small>
+          </div>
+
+          <div className="permission-form-grid">
+            <label>
+              <span>نقش یا گروه</span>
+              <select name="groupName" value={form.groupName} onChange={updateForm} required>
+                {roleOptions.map((role) => (
+                  <option value={role.value} key={role.value}>
+                    {role.label} - {role.value}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span>مجوز</span>
+              <select name="permissionCode" value={form.permissionCode} onChange={updateForm} required>
+                {permissions.map((permission) => (
+                  <option value={permission.code} key={permission.id}>
+                    {permissionLabel(permission.code)} - {permission.code}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
           <button className="primary-action">اعطای مجوز</button>
         </form>
 
@@ -141,17 +169,20 @@ export default function AdminPermissionsPage() {
           <div className="section-heading compact-heading">
             <div>
               <p className="eyebrow">مجوزهای فعلی</p>
-              <h2>{form.groupName || 'همه گروه‌ها'}</h2>
+              <h2>{roleLabel(form.groupName)}</h2>
             </div>
           </div>
-          <div className="admin-table">
+          <div className="permission-mapping-list">
             {filteredMappings.map((item) => (
-              <div className="admin-row admin-row--with-actions" key={item.id}>
-                <div>
+              <div className="permission-mapping-row" key={item.id}>
+                <div className="permission-mapping-main">
                   <strong>{permissionLabel(item.permission?.code)}</strong>
-                  <span>{item.groupName} · {item.permission?.code}</span>
+                  <span>{roleLabel(item.groupName)}</span>
                 </div>
-                <button className="ghost-action danger-action" onClick={() => revoke(item)}>لغو</button>
+                <div className="permission-mapping-meta">
+                  <code>{item.permission?.code}</code>
+                  <button className="ghost-action danger-action" onClick={() => revoke(item)}>لغو</button>
+                </div>
               </div>
             ))}
             {!loading && filteredMappings.length === 0 && <div className="empty-state compact">مجوزی برای این نقش/گروه ثبت نشده است.</div>}
