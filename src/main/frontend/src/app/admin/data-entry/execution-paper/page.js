@@ -96,7 +96,6 @@ export default function ExecutionPaperEntryPage() {
       active="data-entry"
       title="ثبت دستی برگ اجرا"
       eyebrow="Execution Paper"
-      subtitle="ایجاد مستقیم برگ اجرا از برگ بدهی قطعی و مودی موجود، همراه با وضعیت و ریز بدهی."
       actions={(
         <div className="row-actions">
           <button className="ghost-action" type="button" onClick={fillRandomSample}>پر کردن نمونه تصادفی</button>

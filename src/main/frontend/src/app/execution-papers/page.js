@@ -285,7 +285,6 @@ export default function ExecutionPapersPage() {
       active="execution-papers"
       title="دستیار هوشمند حسابرسی"
       eyebrow="برگ‌های اجرا"
-      subtitle="میزکار حسابرس"
     >
       <div style={{ maxWidth: 1600, margin: '0 auto' }}>
         {/* Page heading */}

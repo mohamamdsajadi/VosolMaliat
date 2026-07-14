@@ -445,6 +445,20 @@ textarea {
     min-height: 40px;
 }
 
+.formal-header__datetime {
+    direction: rtl;
+    unicode-bidi: plaintext;
+    text-align: right;
+    justify-items: end;
+}
+
+.formal-header__datetime strong,
+.formal-header__datetime span {
+    direction: rtl;
+    unicode-bidi: plaintext;
+    text-align: right;
+}
+
 .formal-header__datetime strong,
 .formal-header__user strong {
     color: #26384d;
@@ -1086,28 +1100,6 @@ textarea {
     font-size: 18px;
     font-weight: 800;
     line-height: 1.7;
-}
-
-.task-state-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 30px;
-    padding: 0 12px;
-    border-radius: 999px;
-    white-space: nowrap;
-    font-size: 12px;
-    font-weight: 800;
-}
-
-.task-state-badge--assigned {
-    background: #e0f2fe;
-    color: #075985;
-}
-
-.task-state-badge--candidate {
-    background: #ecfdf5;
-    color: #166534;
 }
 
 .execution-task-meta {

@@ -32,7 +32,6 @@ export default function AdminDataEntryHubPage() {
       active="data-entry"
       title="داشبورد ورود دستی داده"
       eyebrow="ثبت دستی"
-      subtitle="برای جلوگیری از شلوغی فرم‌ها، ثبت برگ بدهی قطعی و ثبت برگ اجرا در دو صفحه جدا انجام می‌شود."
       actions={<button className="ghost-action" onClick={load} disabled={loading}>بروزرسانی</button>}
       contextItems={[
         `برگ بدهی: ${(summary.finalizedDebtPapers?.length || 0).toLocaleString('fa-IR')}`,

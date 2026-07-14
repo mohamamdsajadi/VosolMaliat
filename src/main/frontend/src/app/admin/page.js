@@ -57,7 +57,6 @@ export default function AdminDashboardPage() {
       active="admin"
       title="داشبورد مدیریت سامانه"
       eyebrow="مدیریت دسترسی"
-      subtitle="نمای متمرکز برای کاربران، نقش‌ها، مجوزها و اتصال پروفایل‌های محلی به Keycloak."
       contextItems={[
         `کاربران: ${users.length.toLocaleString('fa-IR')}`,
         `مجوزها: ${permissions.length.toLocaleString('fa-IR')}`,

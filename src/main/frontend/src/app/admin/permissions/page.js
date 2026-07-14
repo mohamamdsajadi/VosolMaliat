@@ -120,7 +120,6 @@ export default function AdminPermissionsPage() {
       active="permissions"
       title="مدیریت مجوزها"
       eyebrow="کنترل دسترسی"
-      subtitle="مجوزهای کسب‌وکاری را به نام نقش یا گروه Keycloak اعطا یا از آن لغو کنید."
       actions={<button className="ghost-action" onClick={load} disabled={loading}>بروزرسانی</button>}
     >
       {message && <div className="notice error">{message}</div>}

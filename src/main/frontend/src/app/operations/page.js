@@ -58,7 +58,6 @@ export default function OperationsPage() {
       active="operations"
       title="دید عملیاتی کارتابل"
       eyebrow="پایش سبک"
-      subtitle="نمای مدیریتی برای فهمیدن اینکه کدام فرایندها آماده اجرا هستند و کدام‌یک کار باز در صف دارند."
       contextItems={[
         `فرایندها: ${formatFaNumber(processDefinitions.length)}`,
         `کارهای باز: ${formatFaNumber(tasks.length)}`,

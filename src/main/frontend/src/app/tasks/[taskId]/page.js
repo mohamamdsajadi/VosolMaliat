@@ -21,7 +21,6 @@ export default function TaskDetailPage() {
       active="tasks"
       title="تکمیل کار فعال"
       eyebrow="فرم مرحله"
-      subtitle="اطلاعات این مرحله را بررسی کنید، فرم را کامل کنید و نتیجه را برای ادامه فرایند ثبت کنید."
       contextItems={[
         `شناسه کار: ${formatCompactId(taskId)}`,
         processDefinitionKey ? `کلید فرایند: ${formatCompactId(processDefinitionKey)}` : "صف مشترک"

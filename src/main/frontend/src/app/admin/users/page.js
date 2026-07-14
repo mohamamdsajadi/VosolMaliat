@@ -167,7 +167,6 @@ export default function AdminUsersPage() {
       active="users"
       title="مدیریت کاربران"
       eyebrow="پروفایل‌های محلی"
-      subtitle="کاربر ابتدا در Keycloak ساخته می‌شود، سپس UUID او در این صفحه به پروفایل کسب‌وکاری متصل می‌شود."
       actions={<button className="ghost-action" onClick={loadUsers} disabled={loading}>بروزرسانی</button>}
     >
       {message && <div className="notice error">{message}</div>}

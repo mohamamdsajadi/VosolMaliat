@@ -404,7 +404,6 @@ export default function ExecutionPaperDetailsPage() {
         active="execution-papers"
         title="دستیار هوشمند حسابرسی"
         eyebrow="برگ‌های اجرا"
-        subtitle="جزئیات برگ اجرا"
         actions={<button className="primary-action" onClick={printExecutionPaper} disabled={loading || error || !data}>چاپ برگ اجرا</button>}
       >
         <main style={{ maxWidth: 1200, margin: '0 auto' }}>

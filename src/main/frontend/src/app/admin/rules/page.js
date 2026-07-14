@@ -114,7 +114,6 @@ export default function RuleDashboardPage() {
       active="rules"
       title="پنل مدیریت قوانین صدور"
       eyebrow="قانون‌ساز مدیریتی"
-      subtitle="تعریف شرایط جلوگیری از صدور برگ اجرا"
     >
       <main style={{ maxWidth: 1280, margin: '0 auto' }}>
         <section style={heroStyle}>

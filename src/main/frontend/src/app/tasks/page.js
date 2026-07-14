@@ -39,7 +39,6 @@ export default function AllTasksPage() {
       active="tasks"
       title={isAdmin ? "مشاهده همه کارهای فعال" : "کارتابل شخصی"}
       eyebrow="کارتابل"
-      subtitle={isAdmin ? "مدیر سامانه کارها را فقط به صورت خواندنی مشاهده می‌کند." : "فقط کارهای اختصاص‌یافته و مجاز در محدوده سازمانی شما نمایش داده می‌شود."}
       contextItems={[
         `کارهای فعال: ${formatFaNumber(tasks.length)}`,
         currentUser?.businessRole ? `نقش: ${roleLabel(currentUser.businessRole)}` : 'نقش: نامشخص'
@@ -92,12 +91,6 @@ function CartableTaskCard({ task, onChanged, readOnly }) {
   const candidateLabel = task.candidateGroups?.length
     ? task.candidateGroups.map(roleLabel).join('، ')
     : 'بدون گروه کاندید';
-  const statusLabel = readOnly
-    ? 'مشاهده مدیریتی'
-    : task.assignee
-      ? 'اختصاص‌یافته'
-      : 'در انتظار دریافت';
-
   const claimTask = async () => {
     setClaiming(true);
     setMessage('');
@@ -147,9 +140,6 @@ function CartableTaskCard({ task, onChanged, readOnly }) {
             <p className="eyebrow">برگ اجرا</p>
             <h3>{executionPaperCode ? `برگ اجرا ${executionPaperCode}` : task.name || 'برگ اجرای در جریان'}</h3>
           </div>
-          <span className={`task-state-badge ${task.assignee ? 'task-state-badge--assigned' : 'task-state-badge--candidate'}`}>
-            {statusLabel}
-          </span>
         </div>
 
         <div className="execution-task-meta">

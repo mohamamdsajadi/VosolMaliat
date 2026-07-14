@@ -150,7 +150,6 @@ export default function AdminOrganizationsPage() {
       active="organizations"
       title="مدیریت ساختار مالیاتی"
       eyebrow="Masterdata"
-      subtitle="اداره کل امور مالیاتی، اداره مالیات و واحد مالیاتی را با روابط واقعی سیستم ثبت کنید."
       actions={<button className="ghost-action" onClick={load} disabled={loading}>بروزرسانی</button>}
       contextItems={[
         `اداره کل: ${generals.length.toLocaleString('fa-IR')}`,

@@ -7,7 +7,6 @@ import AppShell from '../../../components/app-shell';
 import TaskSummaryCard from '../../../components/task-summary-card';
 import {
   formatFaNumber,
-  getProcessSubtitle,
   getProcessTitle
 } from '../../../lib/display';
 import {
@@ -141,7 +140,6 @@ export default function ProcessTasksPage() {
       active="processes"
       title={title}
       eyebrow="صف کار فرایند"
-      subtitle={getProcessSubtitle(processDefinition)}
       contextItems={[
         `کلید اجرا: ${processDefinitionKey || '-'}`,
         `نسخه: ${processDefinition?.version ? Number(processDefinition.version).toLocaleString('fa-IR') : '-'}`,

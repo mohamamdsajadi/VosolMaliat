@@ -192,7 +192,6 @@ export default function DashboardPage() {
       active="processes"
       eyebrow="میزکار"
       title="دستیار هوشمند حسابرسی"
-      subtitle="میزکار مامورین مالیاتی"
     >
       <div style={{ maxWidth: 1400, margin: "0 auto" }}>
         <h1

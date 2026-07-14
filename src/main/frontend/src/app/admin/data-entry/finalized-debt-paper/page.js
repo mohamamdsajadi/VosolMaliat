@@ -78,7 +78,6 @@ export default function FinalizedDebtPaperEntryPage() {
       active="data-entry"
       title="ثبت دستی برگ بدهی قطعی"
       eyebrow="Finalized Debt Paper"
-      subtitle="فرم کامل ورود دستی برگ بدهی قطعی، اطلاعات مودی، واحد مالیاتی و ریز مبالغ."
       actions={(
         <div className="row-actions">
           <button className="ghost-action" type="button" onClick={fillRandomSample}>پر کردن نمونه تصادفی</button>
