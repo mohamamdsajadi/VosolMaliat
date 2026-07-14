@@ -3,6 +3,9 @@ package com.mparsict.vosolmaliat.domain.enums;
 public enum ExecutionPaperState {
     UNASSIGNED("تخصیص نیافته"),
     ASSIGNED("تخصیص یافته"),
+    INFORM_SENT("ارسال شده برای ابلاغ"),
+    INFORMED("ابلاغ شده"),
+    INFORM_REJECTED("رد شده در ابلاغ"),
     NOTIFIED("ابلاغ شده"),
     NOTIFICATION_FAILED("عدم ابلاغ"),
     AWAITING_ARREST_ORDER("در انتظار صدور دستور بازداشت"),

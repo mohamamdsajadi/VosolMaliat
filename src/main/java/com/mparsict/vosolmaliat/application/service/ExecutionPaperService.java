@@ -327,6 +327,12 @@ public class ExecutionPaperService {
         Map<String, Object> notification = new LinkedHashMap<>();
         executionPaperNotificationRepository.findByExecutionPaperId(ep.getId()).ifPresent(n -> {
             notification.put("electronicNotificationDate", n.getElectronicNotificationDate());
+            notification.put("informStatus", n.getInformStatus());
+            notification.put("informStatusLabel", ExecutionPaperState.labelOf(n.getInformStatus()));
+            notification.put("informRejectionReason", n.getInformRejectionReason());
+            notification.put("informRejectedAt", n.getInformRejectedAt());
+            notification.put("reInformDate", n.getReInformDate());
+            notification.put("nextDebtInquiryDate", n.getNextDebtInquiryDate());
             notification.put("createdAt", n.getCreatedAt());
         });
 
@@ -494,6 +500,9 @@ public class ExecutionPaperService {
         return switch (state == null ? "" : state) {
             case "UNASSIGNED" -> "ایجاد برگ اجرا و ورود به صف ارجاع";
             case "ASSIGNED" -> "اختصاص برگ اجرا";
+            case "INFORM_SENT" -> "ارسال برگ اجرا به سامانه ابلاغ الکترونیک";
+            case "INFORMED" -> "دریافت تاریخ ابلاغ";
+            case "INFORM_REJECTED" -> "رد ابلاغ براساس قوانین";
             case "NOTIFIED" -> "ابلاغ برگ اجرا";
             case "COMPLETED" -> "تکمیل فرایند برگ اجرا";
             case "CANCELLED" -> "لغو برگ اجرا";
@@ -510,6 +519,14 @@ public class ExecutionPaperService {
             case "TASK_ASSIGNED" -> "اختصاص کار";
             case "TASK_DELEGATED_TO_USER" -> "ارجاع به کاربر";
             case "TASK_DELEGATED_TO_GROUP" -> "ارجاع به نقش بعدی";
+            case "INFORM_SENT_TO_ELECTRONIC_NOTIFICATION" -> "ارسال به سامانه ابلاغ الکترونیک";
+            case "ELECTRONIC_NOTIFICATION_CONFIRMED" -> "تایید ابلاغ الکترونیک";
+            case "EXECUTION_PAPER_INFORM_REJECTED" -> "رد ابلاغ برگ اجرا";
+            case "EXECUTION_PAPER_INFORMED" -> "ثبت تاریخ ابلاغ";
+            case "EXECUTION_PAPER_RE_INFORM_SCHEDULED" -> "زمان‌بندی ابلاغ مجدد";
+            case "NEXT_DEBT_INQUIRY_DATE_SET" -> "تنظیم تاریخ استعلام بدهی";
+            case "INFORM_DATE_SENT_TO_SANIM" -> "ارسال تاریخ ابلاغ به سنیم";
+            case "SANIM_INFORM_DATE_CONFIRMED" -> "تایید دریافت سنیم";
             default -> action == null ? "عملیات" : action;
         };
     }

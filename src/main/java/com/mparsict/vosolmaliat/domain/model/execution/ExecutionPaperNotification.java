@@ -27,6 +27,21 @@ public class ExecutionPaperNotification extends BaseEntity {
     @Column(name = "taxpayer_notification_view_date")
     private String taxpayerNotificationViewDate;
 
+    @Column(name = "inform_status")
+    private String informStatus;
+
+    @Column(name = "inform_rejection_reason", columnDefinition = "TEXT")
+    private String informRejectionReason;
+
+    @Column(name = "inform_rejected_at")
+    private String informRejectedAt;
+
+    @Column(name = "re_inform_date")
+    private String reInformDate;
+
+    @Column(name = "next_debt_inquiry_date")
+    private String nextDebtInquiryDate;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "execution_paper_id")
     private ExecutionPaper executionPaper;

@@ -26,7 +26,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/index.html", "/_next/**", "/images/**", "/fonts/**",
                                 "/brand/**", "/favicon.ico", "/login", "/auth/callback",
-                                "/api/v1/dashboard/stats").permitAll()
+                                "/api/v1/dashboard/stats",
+                                "/api/v1/fake-electronic-notification/callback").permitAll()
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter)))
                 .build();

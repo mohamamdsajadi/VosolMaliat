@@ -6,6 +6,14 @@ public final class ProcessConstants {
     public static final String JOB_CHECK_ISSUANCE = "check-issuance-possibility";
     public static final String JOB_ISSUE_PAPER = "issue-execution-paper";
     public static final String JOB_SEND_REJECTION = "inform_sanim_rejection";
+    public static final String JOB_CHECK_INFORM = "check-inform-possibility";
+    public static final String JOB_SEND_TO_ELECTRONIC_NOTIFICATION = "sendExecutionPaperToEB";
+    public static final String JOB_UPDATE_INFORM_STATUS = "update-inform-status";
+    public static final String JOB_SET_RE_INFORM_DATE = "set-re-inform-date";
+    public static final String JOB_SET_INQUIRE = "set-inquire";
+    public static final String JOB_SEND_INFORM_DATA_TO_SANIM = "send-inform-data-to-sanim";
+
+    public static final String MESSAGE_EXECUTION_PAPER_INFORMED = "ExecutionPaperInformed";
 
     public static final String VAR_ISSUANCE_REQUEST_ID = "issuanceRequestId";
     public static final String VAR_DEBT_PAPER_PAYLOAD = "debtPaperPayload";
@@ -19,6 +27,10 @@ public final class ProcessConstants {
     public static final String VAR_TAX_AFFAIRS_OFFICE_ID = "taxAffairsOfficeId";
     public static final String VAR_TAX_UNIT_ID = "taxUnitId";
     public static final String VAR_SUCCESS = "success";
+    public static final String VAR_CAN_INFORM = "canInform";
+    public static final String VAR_INFORM_DATE = "InformDate";
+    public static final String VAR_RE_INFORM_DATE = "reInformDate";
+    public static final String VAR_NEXT_DEBT_INQUIRY_DATE = "nextDebtInquiryDate";
 
     private ProcessConstants() {}
 }

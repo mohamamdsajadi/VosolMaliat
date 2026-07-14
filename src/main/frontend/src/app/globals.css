@@ -295,15 +295,42 @@ textarea {
 }
 
 .side-nav-item {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 10px;
     padding: 12px;
     border-radius: 8px;
     border: 1px solid transparent;
     transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
 }
 
+.side-nav-icon {
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    color: #2563eb;
+    background: #eff6ff;
+    border: 1px solid #dbeafe;
+    transition: color 160ms ease, background 160ms ease, border-color 160ms ease;
+}
+
+.side-nav-icon svg {
+    width: 20px;
+    height: 20px;
+}
+
 .side-nav-item--active {
     background: #ecfdf5;
+    border-color: #bbf7d0;
+}
+
+.side-nav-item--active .side-nav-icon {
+    color: #047857;
+    background: #dff7eb;
     border-color: #bbf7d0;
 }
 
@@ -316,6 +343,11 @@ textarea {
 .side-nav-item--active:hover {
     background: #e7f8ef;
     border-color: #86efac;
+}
+
+.side-nav-item:hover .side-nav-icon {
+    background: #e0f2fe;
+    border-color: #bae6fd;
 }
 
 .sidebar-footer {
