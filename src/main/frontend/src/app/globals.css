@@ -1138,25 +1138,6 @@ textarea {
     line-height: 1.8;
 }
 
-.execution-task-scope {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-.execution-task-scope span {
-    display: inline-flex;
-    align-items: center;
-    min-height: 30px;
-    padding: 0 10px;
-    border-radius: 999px;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    color: #475569;
-    font-size: 12px;
-    font-weight: 700;
-}
-
 .execution-task-actions {
     display: grid;
     align-content: start;
@@ -1166,9 +1147,76 @@ textarea {
 }
 
 .task-detail-action {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
     justify-content: center;
-    min-height: 42px;
-    background: #f8fafc;
+    gap: 10px;
+    min-height: 48px;
+    padding: 0 16px;
+    border: 1px solid #155e75;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #164e63, #2563eb);
+    color: #ffffff;
+    box-shadow: 0 12px 24px rgba(21, 94, 117, 0.22);
+    font-weight: 900;
+    line-height: 1.6;
+    text-decoration: none;
+    overflow: hidden;
+    transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease, filter 160ms ease;
+}
+
+.task-detail-action::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.16), transparent);
+    transform: translateX(110%);
+    transition: transform 220ms ease;
+}
+
+.task-detail-action > span {
+    position: relative;
+    z-index: 1;
+}
+
+.task-detail-action:hover {
+    border-color: #0f766e;
+    box-shadow: 0 16px 30px rgba(37, 99, 235, 0.28);
+    filter: saturate(1.08);
+    transform: translateY(-1px);
+}
+
+.task-detail-action:hover::before {
+    transform: translateX(-110%);
+}
+
+.task-detail-action:focus-visible {
+    outline: 3px solid rgba(37, 99, 235, 0.24);
+    outline-offset: 2px;
+}
+
+.task-detail-action__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.92);
+    color: #ffffff;
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.14);
+}
+
+.task-detail-action__icon svg {
+    width: 19px;
+    height: 19px;
+    fill: none;
+    stroke: #1d4ed8;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
 }
 
 .execution-task-message {

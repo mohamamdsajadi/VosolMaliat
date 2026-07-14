@@ -53,8 +53,7 @@ export default function AllTasksPage() {
       <section className="panel-section">
         <div className="section-heading">
           <div>
-            <p className="eyebrow">Inbox</p>
-            <h2>{isAdmin ? 'همه کارها' : 'کارهای اختصاص‌یافته به من'}</h2>
+            <h2>{isAdmin ? 'کار های فعال' : 'کارهای اختصاص‌یافته به من'}</h2>
           </div>
         </div>
 
@@ -90,14 +89,6 @@ function CartableTaskCard({ task, onChanged, readOnly }) {
   const variables = variableMap(task.variables);
   const executionPaperId = firstValue(variables, ['executionPaperId', 'execution_paper_id']);
   const executionPaperCode = firstValue(variables, ['executionPaperCode', 'executionPaperUniqueCode', 'execution_paper_code']);
-  const hasOrganizationScope = Boolean(firstValue(variables, [
-    'taxUnitId',
-    'tax_unit_id',
-    'taxAffairsOfficeId',
-    'taxBureauId',
-    'generalDirectorateId',
-    'mainTaxBureauId'
-  ]));
   const candidateLabel = task.candidateGroups?.length
     ? task.candidateGroups.map(roleLabel).join('، ')
     : 'بدون گروه کاندید';
@@ -168,17 +159,20 @@ function CartableTaskCard({ task, onChanged, readOnly }) {
           <MetaItem label="تاریخ ایجاد" value={formatDate(task.createdAt)} />
         </div>
 
-        <div className="execution-task-scope">
-          <span>{hasOrganizationScope ? 'محدوده سازمانی پرونده کنترل می‌شود' : 'محدوده سازمانی در پرونده ثبت نشده است'}</span>
-        </div>
-
         {message && <div className="delegate-message execution-task-message">{message}</div>}
       </div>
 
       <div className="execution-task-actions">
         {executionPaperId && (
-          <Link className="ghost-action task-detail-action" href={`/execution-papers/${executionPaperId}`}>
-            مشاهده جزئیات برگ اجرا
+          <Link className="task-detail-action" href={`/execution-papers/${executionPaperId}`}>
+            <span className="task-detail-action__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" role="img">
+                <path d="M7 3.75h6.2L18.25 8.8V20A1.25 1.25 0 0 1 17 21.25H7A1.25 1.25 0 0 1 5.75 20V5A1.25 1.25 0 0 1 7 3.75Z" />
+                <path d="M13 4v5h5" />
+                <path d="M9 13h6M9 16h4" />
+              </svg>
+            </span>
+            <span>مشاهده جزئیات برگ اجرا</span>
           </Link>
         )}
         {canClaim && (
