@@ -7,6 +7,16 @@ import { formatFaNumber } from '../lib/display';
 import { claimCartableTask, delegateTask, fetchCartableTasks, fetchDelegationTargets } from '../lib/tasks';
 import { fetchCurrentUser } from '../lib/security';
 
+const TABLE_HEADERS = [
+  '#',
+  'برگ اجرا',
+  'مرحله فعلی',
+  'مسئول فعلی',
+  'نقش مجاز',
+  'تاریخ ایجاد',
+  'عملیات',
+];
+
 export default function AllTasksPage() {
   const [tasks, setTasks] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
@@ -50,12 +60,6 @@ export default function AllTasksPage() {
       )}
     >
       <section className="panel-section">
-        <div className="section-heading">
-          <div>
-            <h2>{isAdmin ? 'کار های فعال' : 'کارهای اختصاص‌یافته به من'}</h2>
-          </div>
-        </div>
-
         {message && <div className="notice error">{message}</div>}
 
         {loadingTasks ? (
@@ -66,10 +70,37 @@ export default function AllTasksPage() {
             <span>بعد از ایجاد یا ارجاع کار، این فهرست را بروزرسانی کنید.</span>
           </div>
         ) : (
-          <div className="task-list">
-            {tasks.map((task) => (
-              <CartableTaskCard key={task.taskKey} task={task} onChanged={loadTasks} readOnly={isAdmin} />
-            ))}
+          <div className="task-table-card">
+            <div className="task-table-header">
+              <div>
+                <p className="eyebrow">کارتابل</p>
+                <h2>{isAdmin ? 'کارهای فعال' : 'کارهای اختصاص‌یافته به من'}</h2>
+              </div>
+              <span>{formatFaNumber(tasks.length)} مورد</span>
+            </div>
+            <div className="task-table-scroll">
+              <table className="task-grid-table">
+                <thead>
+                  <tr>
+                    {TABLE_HEADERS.map((header) => (
+                      <th key={header}>{header}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {tasks.map((task, index) => (
+                    <CartableTaskRow
+                      key={task.taskKey}
+                      index={index}
+                      task={task}
+                      onChanged={loadTasks}
+                      readOnly={isAdmin}
+                      zebra={index % 2 === 1}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </section>
@@ -77,7 +108,7 @@ export default function AllTasksPage() {
   );
 }
 
-function CartableTaskCard({ task, onChanged, readOnly }) {
+function CartableTaskRow({ task, index, onChanged, readOnly, zebra }) {
   const [targets, setTargets] = useState([]);
   const [target, setTarget] = useState('');
   const [loadingTargets, setLoadingTargets] = useState(false);
@@ -133,70 +164,71 @@ function CartableTaskCard({ task, onChanged, readOnly }) {
   };
 
   return (
-    <article className="execution-task-card">
-      <div className="execution-task-card__content">
-        <div className="execution-task-card__header">
-          <div>
-            <p className="eyebrow">برگ اجرا</p>
-            <h3>{executionPaperCode ? `برگ اجرا ${executionPaperCode}` : task.name || 'برگ اجرای در جریان'}</h3>
-          </div>
-        </div>
-
-        <div className="execution-task-meta">
-          <MetaItem label="مرحله فعلی" value={task.name || 'بررسی سازمانی'} />
-          <MetaItem label="مسئول فعلی" value={task.assignee || 'آماده دریافت توسط نقش مجاز'} />
-          <MetaItem label="نقش مجاز" value={candidateLabel} />
-          <MetaItem label="تاریخ ایجاد" value={formatDate(task.createdAt)} />
-        </div>
-
-        {message && <div className="delegate-message execution-task-message">{message}</div>}
-      </div>
-
-      <div className="execution-task-actions">
-        {executionPaperId && (
-          <Link className="task-detail-action" href={`/execution-papers/${executionPaperId}`}>
-            <span className="task-detail-action__icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" role="img">
-                <path d="M7 3.75h6.2L18.25 8.8V20A1.25 1.25 0 0 1 17 21.25H7A1.25 1.25 0 0 1 5.75 20V5A1.25 1.25 0 0 1 7 3.75Z" />
-                <path d="M13 4v5h5" />
-                <path d="M9 13h6M9 16h4" />
-              </svg>
-            </span>
-            <span>مشاهده جزئیات برگ اجرا</span>
-          </Link>
-        )}
-        {canClaim && (
-          <button className="primary-action" type="button" onClick={claimTask} disabled={claiming}>
-            {claiming ? 'در حال دریافت' : 'دریافت کار'}
-          </button>
-        )}
-        {canDelegate && (
-          <div className="delegate-box">
-            <button className="ghost-action" type="button" onClick={loadTargets} disabled={loadingTargets}>
-              {loadingTargets ? 'در حال دریافت' : 'نمایش مقصدها'}
-            </button>
-            {targets.length > 0 && (
-              <>
-                <select value={target} onChange={(event) => setTarget(event.target.value)}>
-                  {targets.map((item) => <option value={item.username} key={item.username}>{item.fullName} - {roleLabel(item.businessRole)}</option>)}
-                </select>
-                <button className="primary-action" type="button" onClick={delegateToUser}>ارجاع به کاربر</button>
-              </>
+    <>
+      <tr className={`task-grid-row${zebra ? ' task-grid-row--zebra' : ''}`}>
+        <td className="task-grid-cell task-grid-cell--index">{formatFaNumber(index + 1)}</td>
+        <td className="task-grid-cell task-grid-cell--paper">
+          <span>برگ اجرا</span>
+          <strong>{executionPaperCode || 'در جریان'}</strong>
+        </td>
+        <td className="task-grid-cell task-grid-cell--step">
+          <strong>{task.name || 'بررسی سازمانی'}</strong>
+        </td>
+        <td className="task-grid-cell">
+          <span className={task.assignee ? 'task-assignee-pill task-assignee-pill--assigned' : 'task-assignee-pill'}>
+            {task.assignee || 'آماده دریافت'}
+          </span>
+        </td>
+        <td className="task-grid-cell">
+          <span className="task-role-pill">{candidateLabel}</span>
+        </td>
+        <td className="task-grid-cell">{formatDate(task.createdAt)}</td>
+        <td className="task-grid-cell task-grid-cell--actions">
+          <div className="task-table-actions">
+            {executionPaperId && (
+              <Link className="task-table-detail-action" href={`/execution-papers/${executionPaperId}`}>
+                <span className="task-table-detail-action__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" role="img">
+                    <path d="M7 3.75h6.2L18.25 8.8V20A1.25 1.25 0 0 1 17 21.25H7A1.25 1.25 0 0 1 5.75 20V5A1.25 1.25 0 0 1 7 3.75Z" />
+                    <path d="M13 4v5h5" />
+                    <path d="M9 13h6M9 16h4" />
+                  </svg>
+                </span>
+                <span>جزئیات برگ اجرا</span>
+              </Link>
             )}
-            <button className="ghost-action" type="button" onClick={delegateToGroup}>ارجاع به نقش بعدی</button>
+            {canClaim && (
+              <button className="task-table-primary-action" type="button" onClick={claimTask} disabled={claiming}>
+                {claiming ? 'در حال دریافت' : 'دریافت کار'}
+              </button>
+            )}
+            {canDelegate && (
+              <div className="task-table-delegate">
+                <button className="task-table-secondary-action" type="button" onClick={loadTargets} disabled={loadingTargets}>
+                  {loadingTargets ? 'در حال دریافت' : 'نمایش مقصدها'}
+                </button>
+                {targets.length > 0 && (
+                  <>
+                    <select value={target} onChange={(event) => setTarget(event.target.value)}>
+                      {targets.map((item) => <option value={item.username} key={item.username}>{item.fullName} - {roleLabel(item.businessRole)}</option>)}
+                    </select>
+                    <button className="task-table-primary-action" type="button" onClick={delegateToUser}>ارجاع به کاربر</button>
+                  </>
+                )}
+                <button className="task-table-secondary-action" type="button" onClick={delegateToGroup}>ارجاع به نقش بعدی</button>
+              </div>
+            )}
           </div>
-        )}
-      </div>
-    </article>
-  );
-}
-
-function MetaItem({ label, value }) {
-  return (
-    <div className="execution-task-meta__item">
-      <span>{label}</span>
-      <strong>{value || '-'}</strong>
-    </div>
+        </td>
+      </tr>
+      {message && (
+        <tr className="task-grid-message-row">
+          <td colSpan={TABLE_HEADERS.length}>
+            <div className="delegate-message execution-task-message">{message}</div>
+          </td>
+        </tr>
+      )}
+    </>
   );
 }
 
