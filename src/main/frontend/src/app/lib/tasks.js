@@ -1,8 +1,15 @@
 import { apiFetch } from './api';
 import { apiJson } from './api';
 
-export function fetchCartableTasks() {
-  return apiJson('/api/v1/cartable/my-tasks');
+export function fetchCartableTasks(filters = {}) {
+  const params = new URLSearchParams();
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && String(value).trim() !== '') {
+      params.set(key, String(value).trim());
+    }
+  });
+  const query = params.toString();
+  return apiJson(`/api/v1/cartable/my-tasks${query ? `?${query}` : ''}`);
 }
 
 export function fetchDelegationTargets(taskKey) {

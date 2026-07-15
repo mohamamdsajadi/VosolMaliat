@@ -1,6 +1,7 @@
 package com.mparsict.vosolmaliat.presentation.api.cartable;
 
 import com.mparsict.vosolmaliat.application.dto.request.cartable.AssignTaskRequest;
+import com.mparsict.vosolmaliat.application.dto.request.cartable.CartableTaskSearchCriteria;
 import com.mparsict.vosolmaliat.application.dto.request.cartable.ClaimTaskRequest;
 import com.mparsict.vosolmaliat.application.dto.request.cartable.CompleteTaskRequest;
 import com.mparsict.vosolmaliat.application.dto.request.cartable.DelegateTaskRequest;
@@ -26,9 +27,22 @@ public class CartableController {
 
     @GetMapping("/my-tasks")
     @PreAuthorize("hasAuthority('TASK_VIEW_OWN')")
-    public List<CartableTaskResponse> myTasks() {
+    public List<CartableTaskResponse> myTasks(
+            @RequestParam(required = false) String executionPaper,
+            @RequestParam(required = false) String taskName,
+            @RequestParam(required = false) String assignee,
+            @RequestParam(required = false) String candidateGroup,
+            @RequestParam(required = false) String createdFrom,
+            @RequestParam(required = false) String createdTo) {
         log.debug("GET /api/v1/cartable/my-tasks");
-        return cartableService.myTasks();
+        return cartableService.myTasks(new CartableTaskSearchCriteria(
+                executionPaper,
+                taskName,
+                assignee,
+                candidateGroup,
+                createdFrom,
+                createdTo
+        ));
     }
 
     @GetMapping("/candidate-tasks")

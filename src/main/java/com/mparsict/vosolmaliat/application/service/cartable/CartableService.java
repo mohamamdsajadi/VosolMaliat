@@ -3,6 +3,7 @@ package com.mparsict.vosolmaliat.application.service.cartable;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mparsict.vosolmaliat.application.dto.request.cartable.AssignTaskRequest;
+import com.mparsict.vosolmaliat.application.dto.request.cartable.CartableTaskSearchCriteria;
 import com.mparsict.vosolmaliat.application.dto.request.cartable.ClaimTaskRequest;
 import com.mparsict.vosolmaliat.application.dto.request.cartable.CompleteTaskRequest;
 import com.mparsict.vosolmaliat.application.dto.request.cartable.DelegateTaskRequest;
@@ -24,6 +25,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -41,18 +44,25 @@ public class CartableService {
     private final ObjectMapper objectMapper;
 
     public List<CartableTaskResponse> myTasks() {
+        return myTasks(CartableTaskSearchCriteria.empty());
+    }
+
+    public List<CartableTaskResponse> myTasks(CartableTaskSearchCriteria criteria) {
         CurrentUserContext user = securityIdentityService.currentUser();
+        List<CartableTaskResponse> responses;
         if (user.isAdmin()) {
             List<UserTask> tasks = searchTasks(filter -> filter.state(UserTaskState.CREATED));
-            return toAuthorizedResponses(user, tasks);
+            responses = toAuthorizedResponses(user, tasks);
+        } else {
+            Map<Long, UserTask> tasks = new LinkedHashMap<>();
+            searchTasks(filter -> filter
+                    .state(UserTaskState.CREATED)
+                    .assignee(identityMappingService.toCamundaAssignee(user)))
+                    .forEach(task -> tasks.put(task.getUserTaskKey(), task));
+            candidateTasksFor(user).forEach((key, task) -> tasks.putIfAbsent(key, task));
+            responses = toAuthorizedResponses(user, new ArrayList<>(tasks.values()));
         }
-        Map<Long, UserTask> tasks = new LinkedHashMap<>();
-        searchTasks(filter -> filter
-                .state(UserTaskState.CREATED)
-                .assignee(identityMappingService.toCamundaAssignee(user)))
-                .forEach(task -> tasks.put(task.getUserTaskKey(), task));
-        candidateTasksFor(user).forEach((key, task) -> tasks.putIfAbsent(key, task));
-        return toAuthorizedResponses(user, new ArrayList<>(tasks.values()));
+        return filterResponses(responses, criteria);
     }
 
     public List<CartableTaskResponse> candidateTasks() {
@@ -375,6 +385,66 @@ public class CartableService {
                 .filter(entry -> taskAuthorizationService.canView(user, entry.getKey(), entry.getValue()))
                 .map(entry -> toResponse(user, entry.getKey(), entry.getValue()))
                 .toList();
+    }
+
+    private List<CartableTaskResponse> filterResponses(List<CartableTaskResponse> responses, CartableTaskSearchCriteria criteria) {
+        CartableTaskSearchCriteria normalized = criteria == null ? CartableTaskSearchCriteria.empty() : criteria;
+        String executionPaper = normalizeText(normalized.executionPaper());
+        String taskName = normalizeText(normalized.taskName());
+        String assignee = normalizeText(normalized.assignee());
+        String candidateGroup = normalizeText(normalized.candidateGroup());
+        OffsetDateTime createdFrom = startOfDay(normalized.createdFrom());
+        OffsetDateTime createdTo = endOfDay(normalized.createdTo());
+
+        return responses.stream()
+                .filter(task -> executionPaper == null || contains(executionPaperSearchText(task), executionPaper))
+                .filter(task -> taskName == null || contains(task.name(), taskName))
+                .filter(task -> assignee == null || contains(task.assignee(), assignee))
+                .filter(task -> candidateGroup == null || task.candidateGroups().stream().anyMatch(group -> contains(group, candidateGroup)))
+                .filter(task -> createdFrom == null || (task.createdAt() != null && !task.createdAt().isBefore(createdFrom)))
+                .filter(task -> createdTo == null || (task.createdAt() != null && !task.createdAt().isAfter(createdTo)))
+                .toList();
+    }
+
+    private String executionPaperSearchText(CartableTaskResponse task) {
+        StringBuilder builder = new StringBuilder();
+        for (TaskVariableResponse variable : task.variables()) {
+            if (Set.of("executionPaperId", "execution_paper_id", "executionPaperCode", "executionPaperUniqueCode", "execution_paper_code")
+                    .contains(variable.name())) {
+                builder.append(' ').append(variable.value());
+            }
+        }
+        return builder.toString();
+    }
+
+    private boolean contains(String source, String needle) {
+        return source != null && source.toLowerCase(Locale.ROOT).contains(needle);
+    }
+
+    private String normalizeText(String value) {
+        return value == null || value.isBlank() ? null : value.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private OffsetDateTime startOfDay(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        try {
+            return LocalDate.parse(value).atStartOfDay().atOffset(OffsetDateTime.now().getOffset());
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    private OffsetDateTime endOfDay(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        try {
+            return LocalDate.parse(value).plusDays(1).atStartOfDay().minusNanos(1).atOffset(OffsetDateTime.now().getOffset());
+        } catch (Exception ex) {
+            return null;
+        }
     }
 
     private CartableTaskResponse toResponse(CurrentUserContext user, UserTask task, Map<String, Object> variables) {

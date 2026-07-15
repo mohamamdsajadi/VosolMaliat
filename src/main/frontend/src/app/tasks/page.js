@@ -17,17 +17,28 @@ const TABLE_HEADERS = [
   'عملیات',
 ];
 
+const EMPTY_FILTERS = {
+  executionPaper: '',
+  taskName: '',
+  assignee: '',
+  candidateGroup: '',
+  createdFrom: '',
+  createdTo: '',
+};
+
 export default function AllTasksPage() {
   const [tasks, setTasks] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [loadingTasks, setLoadingTasks] = useState(true);
   const [message, setMessage] = useState("");
+  const [filterForm, setFilterForm] = useState(EMPTY_FILTERS);
+  const [filters, setFilters] = useState(EMPTY_FILTERS);
 
   const loadTasks = useCallback(async () => {
     setLoadingTasks(true);
     setMessage("");
     try {
-      const [me, taskResult] = await Promise.all([fetchCurrentUser(), fetchCartableTasks()]);
+      const [me, taskResult] = await Promise.all([fetchCurrentUser(), fetchCartableTasks(filters)]);
       setCurrentUser(me);
       setTasks(taskResult);
     } catch (error) {
@@ -36,13 +47,28 @@ export default function AllTasksPage() {
     } finally {
       setLoadingTasks(false);
     }
-  }, []);
+  }, [filters]);
 
   useEffect(() => {
     loadTasks();
   }, [loadTasks]);
 
   const isAdmin = currentUser?.businessRole === 'ADMIN' || currentUser?.allowedActions?.includes('ADMIN');
+
+  const updateFilter = (event) => {
+    const { name, value } = event.target;
+    setFilterForm((current) => ({ ...current, [name]: value }));
+  };
+
+  const applyFilters = (event) => {
+    event.preventDefault();
+    setFilters(filterForm);
+  };
+
+  const clearFilters = () => {
+    setFilterForm(EMPTY_FILTERS);
+    setFilters(EMPTY_FILTERS);
+  };
 
   return (
     <AppShell
@@ -62,12 +88,65 @@ export default function AllTasksPage() {
       <section className="panel-section">
         {message && <div className="notice error">{message}</div>}
 
+        <form className="task-filter-panel" onSubmit={applyFilters}>
+          <div className="task-filter-header">
+            <div className="task-filter-title">
+              <span aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <circle cx="10.5" cy="10.5" r="5.5" />
+                  <path d="M15 15l4 4" />
+                </svg>
+              </span>
+              <div>
+                <p className="eyebrow">جستجو</p>
+                <h3>فیلتر کارهای فعال</h3>
+              </div>
+            </div>
+            <div className="task-filter-actions">
+              <button type="button" className="task-filter-secondary" onClick={clearFilters}>پاک کردن</button>
+              <button type="submit" className="task-filter-primary">اعمال فیلتر</button>
+            </div>
+          </div>
+          <div className="task-filter-grid">
+            <label>
+              <span>شناسه یا کد برگ اجرا</span>
+              <input name="executionPaper" value={filterForm.executionPaper} onChange={updateFilter} placeholder="مثلاً EXEC یا شناسه عددی" />
+            </label>
+            <label>
+              <span>مرحله فعلی</span>
+              <input name="taskName" value={filterForm.taskName} onChange={updateFilter} placeholder="نام مرحله" />
+            </label>
+            <label>
+              <span>مسئول فعلی</span>
+              <input name="assignee" value={filterForm.assignee} onChange={updateFilter} placeholder="نام کاربری مسئول" />
+            </label>
+            <label>
+              <span>نقش مجاز</span>
+              <select name="candidateGroup" value={filterForm.candidateGroup} onChange={updateFilter}>
+                <option value="">همه نقش‌ها</option>
+                <option value="GENERAL_OFFICE_HEAD">رئیس اداره کل</option>
+                <option value="TAX_OFFICE_HEAD">رئیس اداره مالیات</option>
+                <option value="TAX_UNIT_HEAD">رئیس واحد مالیاتی</option>
+                <option value="TAX_EXPERT">کارشناس مالیاتی</option>
+              </select>
+            </label>
+            <label>
+              <span>از تاریخ ایجاد</span>
+              <input type="date" name="createdFrom" value={filterForm.createdFrom} onChange={updateFilter} />
+            </label>
+            <label>
+              <span>تا تاریخ ایجاد</span>
+              <input type="date" name="createdTo" value={filterForm.createdTo} onChange={updateFilter} />
+            </label>
+          </div>
+        </form>
+
         {loadingTasks ? (
           <div className="empty-state compact">در حال دریافت کارتابل...</div>
         ) : tasks.length === 0 ? (
-          <div className="empty-state">
+          <div className="empty-state task-empty-state">
             <strong>فعلا کاری در کارتابل وجود ندارد.</strong>
-            <span>بعد از ایجاد یا ارجاع کار، این فهرست را بروزرسانی کنید.</span>
+            <span>اگر فیلتر فعال است، آن را پاک کنید یا بازه جستجو را تغییر دهید.</span>
           </div>
         ) : (
           <div className="task-table-card">
