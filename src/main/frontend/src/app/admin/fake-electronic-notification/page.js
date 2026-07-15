@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import AppShell from '../../components/app-shell'
 import { apiJson } from '../../lib/api'
+import { formatJalaliDateTime } from '../../lib/display'
 
 function statusLabel(status) {
   return {
@@ -11,8 +12,26 @@ function statusLabel(status) {
   }[status] || status || 'نامشخص'
 }
 
-function today() {
-  return new Date().toISOString().slice(0, 10)
+function currentDateTimeLocal() {
+  const date = new Date()
+  date.setMinutes(date.getMinutes() - date.getTimezoneOffset())
+  return date.toISOString().slice(0, 16)
+}
+
+function toDateTimeInputValue(value) {
+  if (!value) return currentDateTimeLocal()
+  const normalized = String(value).trim().replace(' ', 'T')
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(normalized)) {
+    return normalized.slice(0, 16)
+  }
+  if (/^\d{4}-\d{2}-\d{2}$/.test(normalized)) {
+    return `${normalized}T${currentDateTimeLocal().slice(11, 16)}`
+  }
+  return currentDateTimeLocal()
+}
+
+function countByStatus(items, status) {
+  return items.filter(item => item.status === status).length
 }
 
 export default function FakeElectronicNotificationPage() {
@@ -25,7 +44,7 @@ export default function FakeElectronicNotificationPage() {
     setLoading(true)
     const data = await apiJson('/api/v1/fake-electronic-notification/requests')
     setItems(data)
-    setInformDates(Object.fromEntries(data.map(item => [item.id, item.informDate || today()])))
+    setInformDates(Object.fromEntries(data.map(item => [item.id, toDateTimeInputValue(item.informDate)])))
     setLoading(false)
   }
 
@@ -37,7 +56,7 @@ export default function FakeElectronicNotificationPage() {
     setMessage('')
     await apiJson(`/api/v1/fake-electronic-notification/requests/${item.id}/confirm`, {
       method: 'POST',
-      body: JSON.stringify({ InformDate: informDates[item.id] || today() })
+      body: JSON.stringify({ InformDate: informDates[item.id] || currentDateTimeLocal() })
     })
     setMessage('تایید دریافت ابلاغ ثبت و پیام Camunda ارسال شد.')
     await load()
@@ -50,36 +69,56 @@ export default function FakeElectronicNotificationPage() {
       eyebrow="Fake External System"
       actions={<button className="ghost-action" onClick={load} disabled={loading}>بروزرسانی</button>}
     >
-      <main style={{ maxWidth: 1280, margin: '0 auto' }}>
+      <main className="fake-service-page">
+        <section className="fake-service-hero">
+          <div>
+            <p className="eyebrow">سامانه بیرونی آزمایشی</p>
+            <h2>درخواست‌های ابلاغ الکترونیک</h2>
+          </div>
+          <div className="fake-service-stats">
+            <span>کل: {items.length.toLocaleString('fa-IR')}</span>
+            <span>در انتظار: {countByStatus(items, 'SENT').toLocaleString('fa-IR')}</span>
+            <span>تایید شده: {countByStatus(items, 'CONFIRMED').toLocaleString('fa-IR')}</span>
+          </div>
+        </section>
+
         {message && <div className="notice">{message}</div>}
-        {loading ? <p>در حال دریافت درخواست‌ها...</p> : items.length === 0 ? (
+        {loading ? <div className="empty-state compact">در حال دریافت درخواست‌ها...</div> : items.length === 0 ? (
           <section className="empty-state">درخواستی برای ابلاغ الکترونیک ثبت نشده است.</section>
         ) : (
-          <div style={gridStyle}>
+          <div className="fake-service-grid">
             {items.map(item => (
-              <article key={item.id} style={cardStyle}>
-                <div style={cardHeaderStyle}>
+              <article key={item.id} className="fake-service-card">
+                <div className="fake-service-card__header">
                   <div>
-                    <strong style={codeStyle}>{item.executionPaperCode || `#${item.executionPaperId}`}</strong>
-                    <p style={mutedStyle}>کد رهگیری: {item.externalTrackingCode || '-'}</p>
+                    <span className="fake-service-card__eyebrow">برگ اجرا</span>
+                    <strong>{item.executionPaperCode || `#${item.executionPaperId}`}</strong>
                   </div>
-                  <span style={badgeStyle(item.status)}>{statusLabel(item.status)}</span>
+                  <span className={`fake-service-badge fake-service-badge--${item.status === 'CONFIRMED' ? 'confirmed' : 'sent'}`}>
+                    {statusLabel(item.status)}
+                  </span>
                 </div>
-                <div style={metaGridStyle}>
-                  <span>زمان ارسال: {item.sentAt || '-'}</span>
-                  <span>تایید خودکار: {item.autoConfirmAt || '-'}</span>
-                  <span>تاریخ ابلاغ: {item.informDate || '-'}</span>
-                  <span>زمان تایید: {item.confirmedAt || '-'}</span>
+
+                <div className="fake-service-meta">
+                  <Info label="کد رهگیری" value={item.externalTrackingCode || '-'} ltr />
+                  <Info label="زمان ارسال" value={formatJalaliDateTime(item.sentAt)} />
+                  <Info label="تایید خودکار" value={formatJalaliDateTime(item.autoConfirmAt)} />
+                  <Info label="تاریخ ابلاغ" value={formatJalaliDateTime(item.informDate)} />
+                  <Info label="زمان تایید" value={formatJalaliDateTime(item.confirmedAt)} />
+                  <Info label="ارسال پیام به Camunda" value={formatJalaliDateTime(item.callbackDeliveredAt)} />
                 </div>
+
                 {item.status !== 'CONFIRMED' && (
-                  <div style={actionRowStyle}>
-                    <input
-                      type="date"
-                      value={informDates[item.id] || today()}
-                      onChange={event => setInformDates(current => ({ ...current, [item.id]: event.target.value }))}
-                      style={inputStyle}
-                    />
-                    <button style={primaryButtonStyle} onClick={() => confirm(item)}>تایید دریافت ابلاغ</button>
+                  <div className="fake-service-action-bar">
+                    <label>
+                      <span>تاریخ و زمان ابلاغ</span>
+                      <input
+                        type="datetime-local"
+                        value={informDates[item.id] || currentDateTimeLocal()}
+                        onChange={event => setInformDates(current => ({ ...current, [item.id]: event.target.value }))}
+                      />
+                    </label>
+                    <button className="fake-service-primary" onClick={() => confirm(item)}>تایید دریافت ابلاغ</button>
                   </div>
                 )}
               </article>
@@ -91,24 +130,11 @@ export default function FakeElectronicNotificationPage() {
   )
 }
 
-const gridStyle = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16 }
-const cardStyle = { background: '#fff', border: '1px solid #dbe4ee', borderRadius: 14, padding: 18, boxShadow: '0 14px 34px rgba(15, 35, 52, .08)' }
-const cardHeaderStyle = { display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start', marginBottom: 14 }
-const codeStyle = { color: '#123b63', fontSize: 18 }
-const mutedStyle = { margin: '6px 0 0', color: '#64748b' }
-const metaGridStyle = { display: 'grid', gap: 8, color: '#334155', lineHeight: 1.8, marginBottom: 14 }
-const actionRowStyle = { display: 'flex', gap: 10, alignItems: 'center', borderTop: '1px solid #e2e8f0', paddingTop: 14 }
-const inputStyle = { border: '1px solid #cbd5e1', borderRadius: 10, padding: '10px 12px', font: 'inherit' }
-const primaryButtonStyle = { border: 0, borderRadius: 10, background: '#0f4c81', color: '#fff', padding: '11px 16px', fontWeight: 800, cursor: 'pointer' }
-
-function badgeStyle(status) {
-  return {
-    borderRadius: 999,
-    padding: '6px 10px',
-    fontSize: 12,
-    fontWeight: 800,
-    color: status === 'CONFIRMED' ? '#047857' : '#92400e',
-    background: status === 'CONFIRMED' ? '#ecfdf5' : '#fffbeb',
-    border: `1px solid ${status === 'CONFIRMED' ? '#a7f3d0' : '#fde68a'}`
-  }
+function Info({ label, value, ltr = false }) {
+  return (
+    <div className="fake-service-info">
+      <span>{label}</span>
+      <strong className={ltr ? 'fake-service-ltr' : ''}>{value}</strong>
+    </div>
+  )
 }

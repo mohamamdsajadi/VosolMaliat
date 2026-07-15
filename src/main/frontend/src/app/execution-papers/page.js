@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import AppShell from '../components/app-shell'
 import { apiFetch } from '../lib/api'
+import { formatJalaliDateTime } from '../lib/display'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -580,7 +581,7 @@ export default function ExecutionPapersPage() {
 
                           {/* تاریخ ابلاغ */}
                           <td style={tdStyle}>
-                            {paper.notificationDate || '—'}
+                            {formatJalaliDateTime(paper.notificationDate)}
                           </td>
 
                           {/* وضعیت مهلت پرداخت */}

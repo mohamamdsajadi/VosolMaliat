@@ -265,28 +265,28 @@ export default function DashboardPage() {
                 <CardTitle>به میزکار مامورین مالیاتی خوش آمدید.</CardTitle>
                 <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
                   <StatRow
-                    badgeBg="#ffe4e6"
-                    badgeColor="#be123c"
-                    value={stats.unassignedExecutionPapers}
-                    label="برگ اجرا تخصیص نیافته"
+                    badgeBg="#ffedd5"
+                    badgeColor="#c2410c"
+                    value={stats.notInformedExecutionPapers}
+                    label="برگ اجرا ابلاغ نشده"
                   />
                   <StatRow
                     badgeBg="#dcfce7"
                     badgeColor="#15803d"
-                    value={stats.arrestOrderIssued}
-                    label="دستور بازداشت صادر شده"
+                    value={stats.informedExecutionPapers}
+                    label="برگ اجرا ابلاغ شده"
                   />
                   <StatRow
-                    badgeBg="#f3f4f6"
-                    badgeColor="#374151"
-                    value={stats.arrestOrderNotIssued}
-                    label="دستور بازداشت صادر نشده"
+                    badgeBg="#ffe4e6"
+                    badgeColor="#be123c"
+                    value={stats.rejectedDebtPapers}
+                    label="برگ بدهی رد شده"
                   />
                   <StatRow
-                    badgeBg="#ffedd5"
-                    badgeColor="#c2410c"
-                    value={stats.awaitingArrestOrder}
-                    label="در انتظار صدور دستور بازداشت"
+                    badgeBg="#f1f5f9"
+                    badgeColor="#475569"
+                    value={stats.totalIssuedExecutionPapers}
+                    label="کل برگ اجرا صادر شده"
                   />
                 </div>
                 <ActionButton onClick={() => router.push("/execution-papers")}>
@@ -295,7 +295,7 @@ export default function DashboardPage() {
               </Card>
 
               <Card>
-                <CardTitle>گزارش تخصیص</CardTitle>
+                <CardTitle>گزارش برگ‌های اجرا</CardTitle>
                 <PieChartComponent stats={stats} />
               </Card>
             </div>
@@ -303,7 +303,7 @@ export default function DashboardPage() {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "1fr 1fr",
+                gridTemplateColumns: "1fr",
                 gap: 24
               }}
             >
@@ -329,38 +329,6 @@ export default function DashboardPage() {
                 </div>
               </Card>
 
-              <Card>
-                <CardTitle>اقدامات من</CardTitle>
-                <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-                  <StatRow
-                    badgeBg="#dbeafe"
-                    badgeColor="#1d4ed8"
-                    value={stats.myActionsNew}
-                    label="جدید"
-                  />
-                  <StatRow
-                    badgeBg="#ffedd5"
-                    badgeColor="#c2410c"
-                    value={stats.myActionsAwaitingCompletion}
-                    label="در انتظار تکمیل"
-                  />
-                  <StatRow
-                    badgeBg="#dcfce7"
-                    badgeColor="#15803d"
-                    value={stats.myActionsCompleted}
-                    label="تکمیل شده"
-                  />
-                  <StatRow
-                    badgeBg="#ffe4e6"
-                    badgeColor="#be123c"
-                    value={stats.myActionsCancelled}
-                    label="لغو شده"
-                  />
-                </div>
-                <ActionButton dark onClick={() => router.push("/execution-papers")}>
-                  مشاهده اقدامات من
-                </ActionButton>
-              </Card>
             </div>
           </>
         )}

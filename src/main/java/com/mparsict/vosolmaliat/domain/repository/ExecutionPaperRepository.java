@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,6 +20,24 @@ public interface ExecutionPaperRepository extends JpaRepository<ExecutionPaper, 
     List<ExecutionPaper> findByCurrentState(String state);
 
     long countByCurrentState(String state);
+
+    long countByCurrentStateNotIn(Collection<String> states);
+
+    @Query("""
+            SELECT COUNT(DISTINCT ep)
+            FROM ExecutionPaper ep
+            LEFT JOIN ExecutionPaperNotification notification ON notification.executionPaper = ep
+            WHERE notification.electronicNotificationDate IS NOT NULL
+            """)
+    long countNotified();
+
+    @Query("""
+            SELECT COUNT(DISTINCT ep)
+            FROM ExecutionPaper ep
+            LEFT JOIN ExecutionPaperNotification notification ON notification.executionPaper = ep
+            WHERE notification.electronicNotificationDate IS NULL
+            """)
+    long countNotNotified();
 
     Page<ExecutionPaper> findByCurrentState(String state, Pageable pageable);
 

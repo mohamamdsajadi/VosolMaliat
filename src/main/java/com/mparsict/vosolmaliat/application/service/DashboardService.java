@@ -3,10 +3,13 @@ package com.mparsict.vosolmaliat.application.service;
 import com.mparsict.vosolmaliat.application.dto.response.DashboardStatsResponse;
 import com.mparsict.vosolmaliat.domain.enums.ExecutionPaperState;
 import com.mparsict.vosolmaliat.domain.repository.DebtInformationRepository;
+import com.mparsict.vosolmaliat.domain.repository.ExecutionPaperIssuanceRequestRepository;
 import com.mparsict.vosolmaliat.domain.repository.ExecutionPaperRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Slf4j
 @Service
@@ -15,8 +18,19 @@ public class DashboardService {
 
     private final ExecutionPaperRepository executionPaperRepository;
     private final DebtInformationRepository debtInformationRepository;
+    private final ExecutionPaperIssuanceRequestRepository issuanceRequestRepository;
 
     public DashboardStatsResponse getStats() {
+        // Execution paper report counts
+        long notInformedExecutionPapers = executionPaperRepository.countNotNotified();
+        long informedExecutionPapers = executionPaperRepository.countNotified();
+        long activeExecutionPapers = executionPaperRepository.countByCurrentStateNotIn(List.of(
+                ExecutionPaperState.COMPLETED.name(),
+                ExecutionPaperState.CANCELLED.name()
+        ));
+        long rejectedDebtPapers = issuanceRequestRepository.countByRejectionReasonIsNotNull();
+        long totalIssuedExecutionPapers = executionPaperRepository.count();
+
         // Assignment report counts
         long unassigned = executionPaperRepository.countByCurrentState(ExecutionPaperState.UNASSIGNED.name());
         long arrestOrderIssued = executionPaperRepository.countByCurrentState(ExecutionPaperState.ARREST_ORDER_ISSUED.name());
@@ -44,6 +58,11 @@ public class DashboardService {
                 debtInformationRepository.sumRemainingTaxByState(ExecutionPaperState.CANCELLED.name()));
 
         return new DashboardStatsResponse(
+                notInformedExecutionPapers,
+                informedExecutionPapers,
+                activeExecutionPapers,
+                rejectedDebtPapers,
+                totalIssuedExecutionPapers,
                 unassigned,
                 arrestOrderIssued,
                 arrestOrderNotIssued,

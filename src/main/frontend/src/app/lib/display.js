@@ -86,6 +86,37 @@ export function formatFaNumber(value) {
   return Number(value || 0).toLocaleString("fa-IR");
 }
 
+export function formatJalaliDate(value) {
+  const date = parseDisplayDate(value);
+  if (!date) {
+    return value ? toPersianDigits(String(value).replace(/-/g, "/")) : "-";
+  }
+  return cleanDateText(new Intl.DateTimeFormat("fa-IR-u-ca-persian", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).format(date));
+}
+
+export function formatJalaliDateTime(value) {
+  const date = parseDisplayDate(value);
+  if (!date) {
+    return value ? toPersianDigits(String(value).replace(/-/g, "/")) : "-";
+  }
+  return cleanDateText(new Intl.DateTimeFormat("fa-IR-u-ca-persian", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false
+  }).format(date));
+}
+
+export function toPersianDigits(value) {
+  return String(value ?? "").replace(/\d/g, digit => "۰۱۲۳۴۵۶۷۸۹"[digit]);
+}
+
 export function groupTasksByProcess(tasks = []) {
   return tasks.reduce((acc, task) => {
     const key = task?.processDefinitionKey || "unknown";
@@ -114,4 +145,28 @@ export function sanitizeDisplayText(value) {
 
 function containsAny(value, tokens) {
   return tokens.some((token) => value.includes(token));
+}
+
+function parseDisplayDate(value) {
+  if (!value) {
+    return null;
+  }
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? null : value;
+  }
+  const raw = String(value).trim();
+  const dateOnly = raw.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
+  if (dateOnly) {
+    if (Number(dateOnly[1]) < 1700) {
+      return null;
+    }
+    return new Date(Number(dateOnly[1]), Number(dateOnly[2]) - 1, Number(dateOnly[3]));
+  }
+  const normalized = raw.includes("T") ? raw : raw.replace(" ", "T");
+  const date = new Date(normalized);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function cleanDateText(value) {
+  return toPersianDigits(String(value).replace(/\u200e/g, ""));
 }

@@ -12,4 +12,6 @@ public interface ExecutionPaperIssuanceRequestRepository extends JpaRepository<E
     Optional<ExecutionPaperIssuanceRequest> findByHash(String hash);
 
     Optional<ExecutionPaperIssuanceRequest> findByDebtPaperUniqueCode(String code);
+
+    long countByRejectionReasonIsNotNull();
 }

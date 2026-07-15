@@ -24,7 +24,15 @@ function formatDetailValue(key, value) {
 }
 
 function isDateTimeField(key) {
-  return ['createdAt', 'updatedAt', 'electronicNotificationDate'].includes(key)
+  return [
+    'createdAt',
+    'updatedAt',
+    'electronicNotificationDate',
+    'informRejectedAt',
+    'reInformDate',
+    'nextDebtInquiryDate',
+    'rejectedAt'
+  ].includes(key)
 }
 
 function isDateOnlyField(key) {
@@ -104,13 +112,22 @@ const SECTIONS = [
   {
     key: 'notification',
     title: 'اطلاعات ابلاغ',
-    labels: { electronicNotificationDate: 'تاریخ ابلاغ الکترونیکی', createdAt: 'تاریخ ثبت ابلاغ' }
+    labels: {
+      informStatusLabel: 'وضعیت ابلاغ',
+      electronicNotificationDate: 'تاریخ ابلاغ الکترونیکی',
+      informRejectionReason: 'علت رد ابلاغ',
+      informRejectedAt: 'زمان رد ابلاغ',
+      reInformDate: 'زمان بررسی مجدد ابلاغ',
+      nextDebtInquiryDate: 'زمان استعلام بعدی بدهی',
+      createdAt: 'تاریخ ثبت ابلاغ'
+    }
   },
 ]
 
 function DetailSection({ section, data }) {
   const displayData = useMemo(() => prepareDetailData(section.key, data), [section.key, data])
   const entries = useMemo(() => Object.entries(section.labels).filter(([key]) => displayData && Object.prototype.hasOwnProperty.call(displayData, key)), [section, displayData])
+  if (section.hideWhenEmpty && entries.length === 0) return null
   return (
     <section style={cardStyle}>
       <h3 style={sectionTitleStyle}>{section.title}</h3>
@@ -154,8 +171,6 @@ function TraceSection({ trace, loading, error }) {
                 </div>
                 <div style={timelineMetaStyle}>
                   <span>انجام‌دهنده: {formatValue(item.actorUsername || 'system')}</span>
-                  {item.oldValue && <span>قبلی: {formatAuditValue(item.oldValue)}</span>}
-                  {item.newValue && <span>جدید: {formatAuditValue(item.newValue)}</span>}
                 </div>
               </div>
             </div>
@@ -163,6 +178,25 @@ function TraceSection({ trace, loading, error }) {
         </div>
       )}
     </section>
+  )
+}
+
+function PrintIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M7 8V4h10v4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M7 17H5a2 2 0 0 1-2-2v-4a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v4a2 2 0 0 1-2 2h-2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M7 14h10v6H7z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M17 11.5h.01" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function BackIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   )
 }
 
@@ -404,11 +438,29 @@ export default function ExecutionPaperDetailsPage() {
         active="execution-papers"
         title="دستیار هوشمند حسابرسی"
         eyebrow="برگ‌های اجرا"
-        actions={<button className="primary-action" onClick={printExecutionPaper} disabled={loading || error || !data}>چاپ برگ اجرا</button>}
       >
         <main style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <button onClick={() => router.push('/execution-papers')} style={backButtonStyle}>بازگشت به لیست</button>
-          <h2 style={{ color: '#1e3a5f', margin: '16px 0 24px', fontSize: 24 }}>مشاهده جزئیات برگ اجرا</h2>
+          <div style={pageTitleRowStyle}>
+            <h2 style={pageTitleStyle}>مشاهده جزئیات برگ اجرا</h2>
+            <div style={pageActionGroupStyle}>
+              <button type="button" onClick={() => router.push('/execution-papers')} style={backButtonStyle}>
+                <BackIcon />
+                <span>بازگشت به لیست</span>
+              </button>
+              <button
+                type="button"
+                onClick={printExecutionPaper}
+                disabled={loading || error || !data}
+                style={{
+                  ...printButtonStyle,
+                  ...((loading || error || !data) ? printButtonDisabledStyle : {})
+                }}
+              >
+                <PrintIcon />
+                <span>چاپ برگ اجرا</span>
+              </button>
+            </div>
+          </div>
           {loading && <div style={cardStyle}>در حال دریافت اطلاعات...</div>}
           {!loading && error && <div style={{ ...cardStyle, color: '#dc2626' }}>خطا در دریافت اطلاعات: {error}</div>}
           {!loading && !error && data && SECTIONS.map(section => <DetailSection key={section.key} section={section} data={data[section.key]} />)}
@@ -481,9 +533,15 @@ function formatPersianDateTime(value) {
 }
 
 function parseDateValue(value) {
-  const normalized = String(value).includes(' ') && !String(value).includes('T')
-    ? String(value).replace(' ', 'T')
-    : String(value)
+  const raw = String(value).trim()
+  const dateOnly = raw.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/)
+  if (dateOnly) {
+    if (Number(dateOnly[1]) < 1700) return null
+    return new Date(Number(dateOnly[1]), Number(dateOnly[2]) - 1, Number(dateOnly[3]))
+  }
+  const normalized = raw.includes(' ') && !raw.includes('T')
+    ? raw.replace(' ', 'T')
+    : raw
   const date = new Date(normalized)
   return Number.isNaN(date.getTime()) ? null : date
 }
@@ -553,7 +611,7 @@ function threeDigitToWords(number) {
 function formatDateTime(value) {
   if (!value) return '—'
   try {
-    return new Intl.DateTimeFormat('fa-IR', {
+    return new Intl.DateTimeFormat('fa-IR-u-ca-persian', {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
@@ -567,16 +625,60 @@ function formatDateTime(value) {
 
 function formatAuditValue(value) {
   if (!value) return '—'
-  return formatValue(String(value).replace(/taskKey=\d+;\s*/g, '').replace('value=', ''))
+  const cleaned = String(value)
+    .replace(/taskKey=\d+;\s*/g, '')
+    .replace('value=', '')
+    .trim()
+
+  if (/^\d{4}-\d{2}-\d{2}(?:$|[T\s])/.test(cleaned)) {
+    return formatPersianDateTime(cleaned)
+  }
+
+  return formatValue(cleaned)
 }
 
 const cardStyle = { background: 'white', border: '1px solid #e5e7eb', borderRadius: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', padding: 20, marginBottom: 18 }
+const pageTitleRowStyle = { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', margin: '16px 0 24px' }
+const pageTitleStyle = { color: '#1e3a5f', margin: 0, fontSize: 24 }
+const pageActionGroupStyle = { display: 'inline-flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }
 const sectionTitleStyle = { margin: '0 0 16px', color: '#1f2937', fontSize: 18 }
 const gridStyle = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }
 const itemStyle = { border: '1px solid #eef2ff', borderRadius: 10, background: '#f8fafc', padding: 12 }
 const labelStyle = { display: 'block', color: '#6b7280', fontSize: 12, marginBottom: 6 }
 const valueStyle = { color: '#111827', fontSize: 14, wordBreak: 'break-word' }
-const backButtonStyle = { background: '#2563eb', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 14, fontWeight: 700, padding: '10px 18px' }
+const backButtonStyle = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 8,
+  minHeight: 40,
+  padding: '9px 14px',
+  borderRadius: 8,
+  border: '1px solid #d6dde8',
+  background: '#ffffff',
+  color: '#334155',
+  cursor: 'pointer',
+  fontSize: 14,
+  fontWeight: 800,
+  boxShadow: '0 1px 2px rgba(15, 23, 42, 0.04)'
+}
+const printButtonStyle = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 8,
+  minHeight: 40,
+  padding: '9px 16px',
+  borderRadius: 8,
+  border: '1px solid #b6c9e4',
+  background: '#f8fbff',
+  color: '#14365d',
+  cursor: 'pointer',
+  fontSize: 14,
+  fontWeight: 800,
+  boxShadow: '0 1px 2px rgba(15, 23, 42, 0.05)'
+}
+const printButtonDisabledStyle = { opacity: 0.55, cursor: 'not-allowed' }
 const traceCardStyle = { ...cardStyle, borderColor: '#dbeafe', background: 'linear-gradient(180deg, #ffffff, #f8fbff)' }
 const traceHeaderStyle = { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 16 }
 const traceEyebrowStyle = { margin: 0, color: '#15803d', fontSize: 12, fontWeight: 800 }

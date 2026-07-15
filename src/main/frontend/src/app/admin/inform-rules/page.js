@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import AppShell from '../../components/app-shell'
 import { apiJson } from '../../lib/api'
+import { formatJalaliDate } from '../../lib/display'
 
 const FIELD_OPTIONS = [
   { value: 'performanceYear', label: 'سال (و دوره) عملکرد', type: 'text', placeholder: 'مثلاً 1403' },
@@ -217,7 +218,7 @@ export default function InformRuleDashboardPage() {
                   <div style={{ minWidth: 0 }}>
                     <strong>{rule.description || 'قانون بدون شرح'}</strong>
                     <p style={{ margin: '8px 0', color: '#4b5563', lineHeight: 1.8 }}>{describeRule(rule)}</p>
-                    <small>{rule.startDate} تا {rule.endDate} {rule.documentNo ? ` | مستند: ${rule.documentNo}` : ''}</small>
+                      <small>{formatJalaliDate(rule.startDate)} تا {formatJalaliDate(rule.endDate)} {rule.documentNo ? ` | مستند: ${rule.documentNo}` : ''}</small>
                   </div>
                   <button
                     type="button"

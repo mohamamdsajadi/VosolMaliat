@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import AppShell from '../components/app-shell';
-import { formatFaNumber } from '../lib/display';
+import { formatFaNumber, formatJalaliDateTime } from '../lib/display';
 import { claimCartableTask, delegateTask, fetchCartableTasks, fetchDelegationTargets } from '../lib/tasks';
 import { fetchCurrentUser } from '../lib/security';
 
@@ -331,20 +331,7 @@ function firstValue(values, keys) {
 }
 
 function formatDate(value) {
-  if (!value) {
-    return '-';
-  }
-  try {
-    return new Intl.DateTimeFormat('fa-IR', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    }).format(new Date(value));
-  } catch {
-    return value;
-  }
+  return formatJalaliDateTime(value);
 }
 
 function roleLabel(value) {

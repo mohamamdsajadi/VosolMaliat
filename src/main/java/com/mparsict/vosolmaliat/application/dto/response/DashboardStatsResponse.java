@@ -1,6 +1,12 @@
 package com.mparsict.vosolmaliat.application.dto.response;
 
 public record DashboardStatsResponse(
+        // Execution paper report (for pie chart)
+        long notInformedExecutionPapers,
+        long informedExecutionPapers,
+        long activeExecutionPapers,
+        long rejectedDebtPapers,
+        long totalIssuedExecutionPapers,
         // Assignment report (for pie chart)
         long unassignedExecutionPapers,
         long arrestOrderIssued,

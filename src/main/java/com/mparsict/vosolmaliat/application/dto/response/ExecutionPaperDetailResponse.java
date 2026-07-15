@@ -8,5 +8,6 @@ public record ExecutionPaperDetailResponse(
         Map<String, Object> finalizedDebtPaper,
         Map<String, Object> taxpayer,
         Map<String, Object> debtInformation,
-        Map<String, Object> notification
+        Map<String, Object> notification,
+        Map<String, Object> ruleRejection
 ) {}

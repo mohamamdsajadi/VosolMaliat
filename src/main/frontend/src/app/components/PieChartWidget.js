@@ -9,24 +9,24 @@ function toPersianDigits(str) {
 
 const SEGMENTS = [
   {
-    key: 'unassignedExecutionPapers',
-    label: 'برگ اجرا تخصیص نیافته',
-    color: '#ef4444',
-  },
-  {
-    key: 'arrestOrderIssued',
-    label: 'دستور بازداشت صادر شده',
-    color: '#22c55e',
-  },
-  {
-    key: 'arrestOrderNotIssued',
-    label: 'دستور بازداشت صادر نشده',
+    key: 'notInformedExecutionPapers',
+    label: 'برگ اجرا ابلاغ نشده',
     color: '#f97316',
   },
   {
-    key: 'awaitingArrestOrder',
-    label: 'در انتظار صدور دستور بازداشت',
-    color: '#9ca3af',
+    key: 'informedExecutionPapers',
+    label: 'برگ اجرا ابلاغ شده',
+    color: '#22c55e',
+  },
+  {
+    key: 'rejectedDebtPapers',
+    label: 'برگ بدهی رد شده',
+    color: '#ef4444',
+  },
+  {
+    key: 'totalIssuedExecutionPapers',
+    label: 'کل برگ اجرا صادر شده',
+    color: '#64748b',
   },
 ]
 

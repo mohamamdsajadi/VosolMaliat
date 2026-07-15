@@ -59,6 +59,7 @@ public class ExecutionPaperService {
     private final AuditLogRepository auditLogRepository;
     private final AuditLogService auditLogService;
     private final UniqueCodeGenerator uniqueCodeGenerator;
+    private final ExecutionPaperIssuanceRequestRepository issuanceRequestRepository;
 
     @Transactional
     public ExecutionPaper createFromRequest(DebtPaperIssuanceRequest request) {
@@ -336,7 +337,32 @@ public class ExecutionPaperService {
             notification.put("createdAt", n.getCreatedAt());
         });
 
-        return new ExecutionPaperDetailResponse(toDto(ep), execution, finalized, taxpayerMap, debt, notification);
+        Map<String, Object> ruleRejection = new LinkedHashMap<>();
+        String debtPaperUniqueCode = stringValue(finalized.get("debtPaperUniqueCode"));
+        if (debtPaperUniqueCode != null) {
+            issuanceRequestRepository.findByDebtPaperUniqueCode(debtPaperUniqueCode)
+                    .filter(request -> request.getRejectionReason() != null && !request.getRejectionReason().isBlank())
+                    .ifPresent(request -> {
+                        ruleRejection.put("rejectionType", "ISSUANCE_RULE");
+                        ruleRejection.put("rejectionTypeLabel", "رد صدور برگ اجرا توسط موتور قوانین");
+                        ruleRejection.put("rejectionReason", request.getRejectionReason());
+                        ruleRejection.put("rejectionReasonId", request.getRejectionReasonId());
+                        ruleRejection.put("rejectedAt", request.getUpdatedAt() != null ? request.getUpdatedAt() : request.getCreatedAt());
+                    });
+        }
+        if (notification.get("informRejectionReason") != null) {
+            ruleRejection.put("informRejectionType", "INFORM_RULE");
+            ruleRejection.put("informRejectionTypeLabel", "رد ابلاغ برگ اجرا توسط موتور قوانین");
+            ruleRejection.put("informRejectionReason", notification.get("informRejectionReason"));
+            ruleRejection.put("informRejectedAt", notification.get("informRejectedAt"));
+            ruleRejection.put("reInformDate", notification.get("reInformDate"));
+        }
+
+        return new ExecutionPaperDetailResponse(toDto(ep), execution, finalized, taxpayerMap, debt, notification, ruleRejection);
+    }
+
+    private String stringValue(Object value) {
+        return value == null || value.toString().isBlank() ? null : value.toString();
     }
 
     private void putOrganizationNames(Map<String, Object> target, Long generalId, Long officeId, Long unitId) {

@@ -79,9 +79,15 @@ export default function FinalizedDebtPaperEntryPage() {
       title="ثبت دستی برگ بدهی قطعی"
       eyebrow="Finalized Debt Paper"
       actions={(
-        <div className="row-actions">
-          <button className="ghost-action" type="button" onClick={fillRandomSample}>پر کردن نمونه تصادفی</button>
-          <Link className="ghost-action" href="/admin/data-entry">بازگشت به داشبورد داده</Link>
+        <div className="row-actions debt-entry-top-actions">
+          <button className="debt-entry-action debt-entry-action--sample" type="button" onClick={fillRandomSample}>
+            <span aria-hidden="true">✦</span>
+            پر کردن نمونه تصادفی
+          </button>
+          <Link className="debt-entry-action debt-entry-action--back" href="/admin/data-entry">
+            <span aria-hidden="true">↩</span>
+            بازگشت به داشبورد داده
+          </Link>
         </div>
       )}
       contextItems={[
@@ -96,7 +102,10 @@ export default function FinalizedDebtPaperEntryPage() {
             <p className="eyebrow">اطلاعات اصلی</p>
             <h2>برگ بدهی قطعی</h2>
           </div>
-          <button className="ghost-action" onClick={load} disabled={loading}>بروزرسانی داده‌های مرجع</button>
+          <button className="debt-entry-action debt-entry-action--refresh" onClick={load} disabled={loading}>
+            <span aria-hidden="true">↻</span>
+            بروزرسانی داده‌های مرجع
+          </button>
         </div>
 
         <form className="admin-form wide-form" onSubmit={(event) => { event.preventDefault(); submit(false); }}>
@@ -153,9 +162,15 @@ export default function FinalizedDebtPaperEntryPage() {
           <div className="form-subtitle">ریز بدهی</div>
           <MoneyFields form={form} onChange={updateForm} />
 
-          <div className="row-actions">
-            <button className="primary-action">ثبت بدون ارسال به فرایند</button>
-            <button className="ghost-action" type="button" onClick={() => submit(true)}>ثبت و ارسال به Camunda</button>
+          <div className="debt-entry-command-bar">
+            <button className="debt-entry-submit debt-entry-submit--save">
+              <span aria-hidden="true">✓</span>
+              ثبت بدون ارسال به فرایند
+            </button>
+            <button className="debt-entry-submit debt-entry-submit--workflow" type="button" onClick={() => submit(true)}>
+              <span aria-hidden="true">↗</span>
+              ثبت و ارسال به Camunda
+            </button>
           </div>
         </form>
       </section>

@@ -19,7 +19,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,6 +33,7 @@ public class FakeElectronicNotificationService {
 
     private static final String STATUS_SENT = "SENT";
     private static final String STATUS_CONFIRMED = "CONFIRMED";
+    private static final ZoneId TEHRAN = ZoneId.of("Asia/Tehran");
 
     private final FakeElectronicNotificationRequestRepository repository;
     private final ExecutionPaperRepository executionPaperRepository;
@@ -91,7 +95,7 @@ public class FakeElectronicNotificationService {
             try {
                 LocalDateTime autoConfirmAt = LocalDateTime.parse(request.getAutoConfirmAt());
                 if (!autoConfirmAt.isAfter(now)) {
-                    confirmRequest(request, now.toLocalDate().toString());
+                    confirmRequest(request, now.toString());
                 }
             } catch (Exception ex) {
                 log.warn("Could not auto-confirm fake EB request id={}: {}", request.getId(), ex.getMessage());
@@ -103,9 +107,7 @@ public class FakeElectronicNotificationService {
         if (STATUS_CONFIRMED.equals(request.getStatus())) {
             return toResponse(request);
         }
-        String normalizedInformDate = informDate == null || informDate.isBlank()
-                ? LocalDateTime.now().toLocalDate().toString()
-                : informDate;
+        String normalizedInformDate = normalizeInformDateTime(informDate);
         request.setInformDate(normalizedInformDate);
         request.setConfirmedAt(LocalDateTime.now().toString());
         request.setStatus(STATUS_CONFIRMED);
@@ -115,6 +117,39 @@ public class FakeElectronicNotificationService {
         auditLogService.record(null, "ELECTRONIC_NOTIFICATION_CONFIRMED", "EXECUTION_PAPER",
                 request.getExecutionPaperId().toString(), null, normalizedInformDate);
         return toResponse(saved);
+    }
+
+    private String normalizeInformDateTime(String informDate) {
+        LocalDateTime now = LocalDateTime.now().withSecond(0).withNano(0);
+        if (informDate == null || informDate.isBlank()) {
+            return now.toString();
+        }
+
+        String raw = informDate.trim();
+        String normalized = raw.contains("T") ? raw : raw.replace(" ", "T");
+        try {
+            return OffsetDateTime.parse(normalized)
+                    .atZoneSameInstant(TEHRAN)
+                    .toLocalDateTime()
+                    .withSecond(0)
+                    .withNano(0)
+                    .toString();
+        } catch (Exception ignored) {
+            // Fall through to local date-time or date-only parsing.
+        }
+        try {
+            return LocalDateTime.parse(normalized)
+                    .withSecond(0)
+                    .withNano(0)
+                    .toString();
+        } catch (Exception ignored) {
+            // Fall through to legacy date-only parsing.
+        }
+        try {
+            return LocalDate.parse(raw.substring(0, Math.min(raw.length(), 10))).atTime(now.toLocalTime()).toString();
+        } catch (Exception ignored) {
+            return now.toString();
+        }
     }
 
     private String toPayload(Long executionPaperId) {

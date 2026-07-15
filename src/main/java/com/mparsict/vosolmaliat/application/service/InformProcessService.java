@@ -72,12 +72,13 @@ public class InformProcessService {
             return;
         }
 
+        String normalizedInformDate = normalizeInformDateTime(informDate);
         notification.setInformStatus(ExecutionPaperState.INFORMED.name());
-        notification.setElectronicNotificationDate(informDate);
+        notification.setElectronicNotificationDate(normalizedInformDate);
         notificationRepository.save(notification);
         changeState(executionPaper, ExecutionPaperState.INFORMED.name());
         auditLogService.record(null, "EXECUTION_PAPER_INFORMED", "EXECUTION_PAPER",
-                executionPaperId.toString(), null, informDate);
+                executionPaperId.toString(), null, normalizedInformDate);
     }
 
     @Transactional
@@ -148,6 +149,39 @@ public class InformProcessService {
             return LocalDate.parse(value.length() >= 10 ? value.substring(0, 10) : value);
         } catch (Exception ex) {
             return LocalDate.now();
+        }
+    }
+
+    private String normalizeInformDateTime(String informDate) {
+        LocalDateTime now = LocalDateTime.now().withSecond(0).withNano(0);
+        if (informDate == null || informDate.isBlank()) {
+            return now.toString();
+        }
+
+        String raw = informDate.trim();
+        String normalized = raw.contains("T") ? raw : raw.replace(" ", "T");
+        try {
+            return OffsetDateTime.parse(normalized)
+                    .atZoneSameInstant(TEHRAN)
+                    .toLocalDateTime()
+                    .withSecond(0)
+                    .withNano(0)
+                    .toString();
+        } catch (Exception ignored) {
+            // Fall through to local date-time or date-only parsing.
+        }
+        try {
+            return LocalDateTime.parse(normalized)
+                    .withSecond(0)
+                    .withNano(0)
+                    .toString();
+        } catch (Exception ignored) {
+            // Fall through to legacy date-only parsing.
+        }
+        try {
+            return LocalDate.parse(raw.substring(0, Math.min(raw.length(), 10))).atTime(now.toLocalTime()).toString();
+        } catch (Exception ignored) {
+            return now.toString();
         }
     }
 }
