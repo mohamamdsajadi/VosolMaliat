@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import AppShell from '../../components/app-shell';
+import RefreshButton from '../../components/refresh-button';
 import {
   createGeneralDirectorate,
   createTaxAffairsOffice,
@@ -150,7 +151,7 @@ export default function AdminOrganizationsPage() {
       active="organizations"
       title="مدیریت ساختار مالیاتی"
       eyebrow="Masterdata"
-      actions={<button className="ghost-action" onClick={load} disabled={loading}>بروزرسانی</button>}
+      actions={<RefreshButton onClick={load} loading={loading} />}
       contextItems={[
         `اداره کل: ${generals.length.toLocaleString('fa-IR')}`,
         `اداره مالیات: ${offices.length.toLocaleString('fa-IR')}`,

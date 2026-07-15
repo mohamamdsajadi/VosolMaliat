@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import AppShell from '../../components/app-shell';
+import RefreshButton from '../../components/refresh-button';
 import { fetchAdminDataSummary } from '../../lib/admin-data-entry';
 import { DataList } from './form-parts';
 
@@ -32,7 +33,7 @@ export default function AdminDataEntryHubPage() {
       active="data-entry"
       title="داشبورد ورود دستی داده"
       eyebrow="ثبت دستی"
-      actions={<button className="ghost-action" onClick={load} disabled={loading}>بروزرسانی</button>}
+      actions={<RefreshButton onClick={load} loading={loading} />}
       contextItems={[
         `برگ بدهی: ${(summary.finalizedDebtPapers?.length || 0).toLocaleString('fa-IR')}`,
         `مودیان: ${(summary.taxpayers?.length || 0).toLocaleString('fa-IR')}`,

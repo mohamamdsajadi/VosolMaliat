@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import AppShell from '../../../components/app-shell';
+import RefreshButton from '../../../components/refresh-button';
 import {
   createFinalizedDebtPaper,
   fetchAdminDataSummary,
@@ -102,10 +103,7 @@ export default function FinalizedDebtPaperEntryPage() {
             <p className="eyebrow">اطلاعات اصلی</p>
             <h2>برگ بدهی قطعی</h2>
           </div>
-          <button className="debt-entry-action debt-entry-action--refresh" onClick={load} disabled={loading}>
-            <span aria-hidden="true">↻</span>
-            بروزرسانی داده‌های مرجع
-          </button>
+          <RefreshButton onClick={load} loading={loading}>بروزرسانی داده‌های مرجع</RefreshButton>
         </div>
 
         <form className="admin-form wide-form" onSubmit={(event) => { event.preventDefault(); submit(false); }}>

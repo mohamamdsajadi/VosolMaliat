@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import AppShell from '../../components/app-shell';
+import RefreshButton from '../../components/refresh-button';
 import {
   createUserProfile,
   deleteUserProfile,
@@ -167,7 +168,7 @@ export default function AdminUsersPage() {
       active="users"
       title="مدیریت کاربران"
       eyebrow="پروفایل‌های محلی"
-      actions={<button className="ghost-action" onClick={loadUsers} disabled={loading}>بروزرسانی</button>}
+      actions={<RefreshButton onClick={loadUsers} loading={loading} />}
     >
       {message && <div className="notice error">{message}</div>}
 

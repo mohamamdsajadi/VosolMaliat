@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import AppShell from '../components/app-shell';
+import RefreshButton from '../components/refresh-button';
 import { formatFaNumber, formatJalaliDateTime } from '../lib/display';
 import { claimCartableTask, delegateTask, fetchCartableTasks, fetchDelegationTargets } from '../lib/tasks';
 import { fetchCurrentUser } from '../lib/security';
@@ -80,9 +81,7 @@ export default function AllTasksPage() {
         currentUser?.businessRole ? `نقش: ${roleLabel(currentUser.businessRole)}` : 'نقش: نامشخص'
       ]}
       actions={(
-        <button className="ghost-action" onClick={loadTasks} disabled={loadingTasks}>
-          {loadingTasks ? 'در حال بروزرسانی' : 'بروزرسانی صف'}
-        </button>
+        <RefreshButton onClick={loadTasks} loading={loadingTasks}>بروزرسانی صف</RefreshButton>
       )}
     >
       <section className="panel-section">

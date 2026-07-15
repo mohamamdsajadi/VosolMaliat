@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import AppShell from '../../components/app-shell';
+import RefreshButton from '../../components/refresh-button';
 import {
   assignGroupPermission,
   fetchGroupPermissions,
@@ -120,7 +121,7 @@ export default function AdminPermissionsPage() {
       active="permissions"
       title="مدیریت مجوزها"
       eyebrow="کنترل دسترسی"
-      actions={<button className="ghost-action" onClick={load} disabled={loading}>بروزرسانی</button>}
+      actions={<RefreshButton onClick={load} loading={loading} />}
     >
       {message && <div className="notice error">{message}</div>}
 

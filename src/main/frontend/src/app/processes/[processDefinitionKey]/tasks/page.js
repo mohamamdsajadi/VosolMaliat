@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import AppShell from '../../../components/app-shell';
+import RefreshButton from '../../../components/refresh-button';
 import TaskSummaryCard from '../../../components/task-summary-card';
 import {
   formatFaNumber,
@@ -150,9 +151,7 @@ export default function ProcessTasksPage() {
           <button className="primary-action" onClick={startProcess} disabled={starting || !processDefinitionKey}>
             {starting ? 'در حال شروع...' : 'شروع پرونده جدید'}
           </button>
-          <button className="ghost-action" onClick={loadTasks} disabled={loadingTasks || !processDefinitionKey}>
-            {loadingTasks ? 'در حال بروزرسانی' : 'بروزرسانی صف'}
-          </button>
+          <RefreshButton onClick={loadTasks} loading={loadingTasks} disabled={!processDefinitionKey}>بروزرسانی صف</RefreshButton>
         </>
       )}
     >

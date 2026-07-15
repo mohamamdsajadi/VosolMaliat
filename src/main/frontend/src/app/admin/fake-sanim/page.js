@@ -2,8 +2,19 @@
 
 import { useEffect, useState } from 'react'
 import AppShell from '../../components/app-shell'
+import RefreshButton from '../../components/refresh-button'
 import { apiJson } from '../../lib/api'
 import { formatJalaliDateTime } from '../../lib/display'
+
+const TABLE_HEADERS = [
+  '#',
+  'برگ اجرا',
+  'وضعیت',
+  'تاریخ ابلاغ ارسال‌شده',
+  'زمان ارسال',
+  'زمان تایید',
+  'عملیات'
+]
 
 function statusLabel(status) {
   return {
@@ -43,7 +54,7 @@ export default function FakeSanimPage() {
       active="fake-sanim"
       title="سامانه عملیاتی سنیم آزمایشی"
       eyebrow="Fake External System"
-      actions={<button className="ghost-action" onClick={load} disabled={loading}>بروزرسانی</button>}
+      actions={<RefreshButton onClick={load} loading={loading} />}
     >
       <main className="fake-service-page">
         <section className="fake-service-hero">
@@ -62,42 +73,50 @@ export default function FakeSanimPage() {
         {loading ? <div className="empty-state compact">در حال دریافت درخواست‌ها...</div> : items.length === 0 ? (
           <section className="empty-state">هنوز تاریخ ابلاغی به سنیم آزمایشی ارسال نشده است.</section>
         ) : (
-          <div className="fake-service-grid">
-            {items.map(item => (
-              <article key={item.id} className="fake-service-card">
-                <div className="fake-service-card__header">
-                  <div>
-                    <span className="fake-service-card__eyebrow">برگ اجرا</span>
-                    <strong>{item.executionPaperCode || `#${item.executionPaperId}`}</strong>
-                  </div>
-                  <span className={`fake-service-badge fake-service-badge--${item.status === 'CONFIRMED' ? 'confirmed' : 'sent'}`}>
-                    {statusLabel(item.status)}
-                  </span>
-                </div>
-                <div className="fake-service-meta">
-                  <Info label="تاریخ ابلاغ ارسال‌شده" value={formatJalaliDateTime(item.informDate)} />
-                  <Info label="زمان ارسال" value={formatJalaliDateTime(item.sentAt)} />
-                  <Info label="زمان تایید" value={formatJalaliDateTime(item.confirmedAt)} />
-                </div>
-                {item.status !== 'CONFIRMED' && (
-                  <div className="fake-service-action-bar">
-                    <button className="fake-service-primary" onClick={() => confirm(item.id)}>تایید دریافت در سنیم</button>
-                  </div>
-                )}
-              </article>
-            ))}
+          <div className="task-table-card fake-service-table-card">
+            <div className="task-table-header">
+              <div>
+                <p className="eyebrow">درخواست‌ها</p>
+                <h2>فهرست ارسال به سنیم</h2>
+              </div>
+              <span>{items.length.toLocaleString('fa-IR')} مورد</span>
+            </div>
+            <div className="task-table-scroll">
+              <table className="task-grid-table fake-service-table fake-service-table--sanim">
+                <thead>
+                  <tr>{TABLE_HEADERS.map(header => <th key={header}>{header}</th>)}</tr>
+                </thead>
+                <tbody>
+                  {items.map((item, index) => (
+                    <tr key={item.id} className={`task-grid-row ${index % 2 ? 'task-grid-row--zebra' : ''}`}>
+                      <td className="task-grid-cell task-grid-cell--index">{(index + 1).toLocaleString('fa-IR')}</td>
+                      <td className="task-grid-cell task-grid-cell--paper">
+                        <span>شناسه برگ اجرا</span>
+                        <strong>{item.executionPaperCode || `#${item.executionPaperId}`}</strong>
+                      </td>
+                      <td className="task-grid-cell">
+                        <span className={`fake-service-badge fake-service-badge--${item.status === 'CONFIRMED' ? 'confirmed' : 'sent'}`}>
+                          {statusLabel(item.status)}
+                        </span>
+                      </td>
+                      <td className="task-grid-cell">{formatJalaliDateTime(item.informDate)}</td>
+                      <td className="task-grid-cell">{formatJalaliDateTime(item.sentAt)}</td>
+                      <td className="task-grid-cell">{formatJalaliDateTime(item.confirmedAt)}</td>
+                      <td className="task-grid-cell task-grid-cell--actions">
+                        {item.status !== 'CONFIRMED' ? (
+                          <button className="task-table-primary-action" onClick={() => confirm(item.id)}>تایید دریافت در سنیم</button>
+                        ) : (
+                          <span className="task-assignee-pill task-assignee-pill--assigned">تکمیل شده</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </main>
     </AppShell>
-  )
-}
-
-function Info({ label, value }) {
-  return (
-    <div className="fake-service-info">
-      <span>{label}</span>
-      <strong>{value}</strong>
-    </div>
   )
 }

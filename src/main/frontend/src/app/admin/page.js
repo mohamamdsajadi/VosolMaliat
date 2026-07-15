@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import AppShell from '../components/app-shell';
+import RefreshButton from '../components/refresh-button';
 import { fetchCurrentUser, fetchGroupPermissions, fetchPermissions, fetchTaxUnits, fetchUsers } from '../lib/security';
 
 export default function AdminDashboardPage() {
@@ -62,7 +63,7 @@ export default function AdminDashboardPage() {
         `مجوزها: ${permissions.length.toLocaleString('fa-IR')}`,
         `واحدها: ${taxUnits.length.toLocaleString('fa-IR')}`
       ]}
-      actions={<button className="ghost-action" onClick={loadAdmin} disabled={loading}>{loading ? 'در حال بروزرسانی' : 'بروزرسانی'}</button>}
+      actions={<RefreshButton onClick={loadAdmin} loading={loading} />}
     >
       {message && <div className="notice error">{message}</div>}
 

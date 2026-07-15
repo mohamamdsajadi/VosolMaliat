@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import AppShell from '../../../components/app-shell';
+import RefreshButton from '../../../components/refresh-button';
 import { createManualExecutionPaper, fetchAdminDataSummary } from '../../../lib/admin-data-entry';
 import { fetchGeneralDirectorates, fetchTaxAffairsOffices, fetchTaxUnits } from '../../../lib/security';
 import {
@@ -116,7 +117,7 @@ export default function ExecutionPaperEntryPage() {
             <p className="eyebrow">اطلاعات اصلی</p>
             <h2>برگ اجرا</h2>
           </div>
-          <button className="ghost-action" onClick={load} disabled={loading}>بروزرسانی داده‌های مرجع</button>
+          <RefreshButton onClick={load} loading={loading}>بروزرسانی داده‌های مرجع</RefreshButton>
         </div>
 
         <form className="admin-form wide-form" onSubmit={submit}>

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import AppShell from '../components/app-shell';
+import RefreshButton from '../components/refresh-button';
 import {
   formatFaNumber,
   getProcessSubtitle,
@@ -64,9 +65,7 @@ export default function OperationsPage() {
         `فرایندهای درگیر: ${formatFaNumber(busyProcesses)}`
       ]}
       actions={(
-        <button className="ghost-action" onClick={loadOperations} disabled={loading}>
-          {loading ? 'در حال بروزرسانی' : 'بروزرسانی دید عملیاتی'}
-        </button>
+        <RefreshButton onClick={loadOperations} loading={loading}>بروزرسانی دید عملیاتی</RefreshButton>
       )}
     >
       <section className="ops-summary-grid">
