@@ -79,7 +79,16 @@ export default function Task({ taskId, order, onDone }) {
     <article className={`task-card task-card--${state}`}>
       <div className="task-card-header">
         <div className="task-title-block">
-          <span className="task-index">{Number(order || 1).toLocaleString('fa-IR')}</span>
+          <span className="task-index" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M8 6h8" />
+              <path d="M8 12h8" />
+              <path d="M8 18h5" />
+              <path d="M5 6h.01" />
+              <path d="M5 12h.01" />
+              <path d="M5 18h.01" />
+            </svg>
+          </span>
           <div>
             <p className="eyebrow">{state === "error" ? "وضعیت درخواست" : "مرحله فعال"}</p>
             <h3>{title}</h3>
@@ -89,12 +98,6 @@ export default function Task({ taskId, order, onDone }) {
           </div>
         </div>
         <span className={`status-pill status-pill--${state}`}>{statusLabel}</span>
-      </div>
-
-      <div className="task-workflow-note">
-        <span>۱. دریافت اطلاعات</span>
-        <span>۲. تکمیل فرم مرحله</span>
-        <span>۳. ثبت نتیجه و بازگشت به صف</span>
       </div>
 
       {error && <div className="notice error">{error}</div>}

@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import AppShell from "./components/app-shell";
+import { fetchCurrentUser } from "./lib/security";
+import { isAdminUser } from "./lib/navigation";
 
 const PieChartComponent = dynamic(() => import("./components/PieChartWidget"), {
   ssr: false,
@@ -163,6 +165,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [checkingAccess, setCheckingAccess] = useState(true);
   const [error, setError] = useState(null);
 
   const fetchStats = () => {
@@ -184,8 +187,23 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
-    fetchStats();
-  }, []);
+    fetchCurrentUser()
+      .then((user) => {
+        if (!isAdminUser(user)) {
+          router.replace("/tasks");
+          return;
+        }
+        setCheckingAccess(false);
+        fetchStats();
+      })
+      .catch(() => {
+        router.replace("/login");
+      });
+  }, [router]);
+
+  if (checkingAccess) {
+    return null;
+  }
 
   return (
     <AppShell
@@ -311,20 +329,20 @@ export default function DashboardPage() {
                 <CardTitle>وضعیت وصول مطالبات</CardTitle>
                 <div style={{ direction: "rtl" }}>
                   <FinancialRow
-                    label="جمع بدهی در انتظار دستور بازداشت اموال"
-                    value={formatRial(stats.totalDebtAwaitingSeizure)}
+                    label="جمع بدهی برگ اجرا ابلاغ نشده"
+                    value={formatRial(stats.debtSumNotInformedExecutionPapers)}
                   />
                   <FinancialRow
-                    label="جمع بدهی صدور دستور بازداشت اموال"
-                    value={formatRial(stats.totalDebtWithSeizureOrder)}
+                    label="جمع بدهی برگ اجرا ابلاغ شده"
+                    value={formatRial(stats.debtSumInformedExecutionPapers)}
                   />
                   <FinancialRow
-                    label="مبالغ وصول شده"
-                    value={formatRial(stats.collectedAmounts)}
+                    label="جمع بدهی برگ بدهی رد شده"
+                    value={formatRial(stats.debtSumRejectedDebtPapers)}
                   />
                   <FinancialRow
-                    label="مبالغ وصول نشده"
-                    value={formatRial(stats.uncollectedAmounts)}
+                    label="جمع بدهی کل برگ اجرا صادر شده"
+                    value={formatRial(stats.debtSumTotalIssuedExecutionPapers)}
                   />
                 </div>
               </Card>

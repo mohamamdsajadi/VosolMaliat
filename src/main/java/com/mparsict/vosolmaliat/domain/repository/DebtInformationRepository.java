@@ -18,4 +18,49 @@ public interface DebtInformationRepository extends JpaRepository<DebtInformation
            "JOIN d.executionPaper ep " +
            "WHERE ep.currentState = :state")
     Double sumRemainingTaxByState(@Param("state") String state);
+
+    @Query("""
+            SELECT SUM(
+                COALESCE(d.taxAmount, 0)
+              + COALESCE(d.dutyAmount, 0)
+              + COALESCE(d.penaltyArticle22, 0)
+              + COALESCE(d.penaltyArticle23, 0)
+              - COALESCE(d.taxPaidAmount, 0)
+              - COALESCE(d.penaltyPaidAmount, 0)
+            )
+            FROM DebtInformation d
+            JOIN d.executionPaper ep
+            LEFT JOIN ExecutionPaperNotification notification ON notification.executionPaper = ep
+            WHERE notification.electronicNotificationDate IS NULL
+            """)
+    Double sumTotalDebtForNotInformedExecutionPapers();
+
+    @Query("""
+            SELECT SUM(
+                COALESCE(d.taxAmount, 0)
+              + COALESCE(d.dutyAmount, 0)
+              + COALESCE(d.penaltyArticle22, 0)
+              + COALESCE(d.penaltyArticle23, 0)
+              - COALESCE(d.taxPaidAmount, 0)
+              - COALESCE(d.penaltyPaidAmount, 0)
+            )
+            FROM DebtInformation d
+            JOIN d.executionPaper ep
+            LEFT JOIN ExecutionPaperNotification notification ON notification.executionPaper = ep
+            WHERE notification.electronicNotificationDate IS NOT NULL
+            """)
+    Double sumTotalDebtForInformedExecutionPapers();
+
+    @Query("""
+            SELECT SUM(
+                COALESCE(d.taxAmount, 0)
+              + COALESCE(d.dutyAmount, 0)
+              + COALESCE(d.penaltyArticle22, 0)
+              + COALESCE(d.penaltyArticle23, 0)
+              - COALESCE(d.taxPaidAmount, 0)
+              - COALESCE(d.penaltyPaidAmount, 0)
+            )
+            FROM DebtInformation d
+            """)
+    Double sumTotalDebtForIssuedExecutionPapers();
 }

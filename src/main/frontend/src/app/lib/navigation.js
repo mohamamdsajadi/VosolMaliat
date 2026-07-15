@@ -97,6 +97,9 @@ export function visibleNavItems(currentUser) {
 }
 
 export function canSeeNavItem(currentUser, item) {
+  if (item.key === "processes") {
+    return isAdminUser(currentUser);
+  }
   if (!item.permissions || item.permissions.length === 0) {
     return true;
   }
@@ -114,6 +117,9 @@ export function canSeeNavItem(currentUser, item) {
 }
 
 export function isAdminUser(currentUser) {
+  if (currentUser?.businessRole === "ADMIN") {
+    return true;
+  }
   const markers = [
     ...(currentUser?.keycloakRoles || []),
     ...(currentUser?.keycloakGroups || []),

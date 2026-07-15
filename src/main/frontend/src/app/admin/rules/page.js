@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import AppShell from '../../components/app-shell'
+import JalaliInput from '../../components/jalali-input'
 import { apiJson } from '../../lib/api'
 import { formatJalaliDate } from '../../lib/display'
 
@@ -172,10 +173,10 @@ export default function RuleDashboardPage() {
 
             <div style={toolbarStyle}>
               <label style={fieldStyle}>تاریخ شروع
-                <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} style={inputStyle} required />
+                <JalaliInput value={startDate} onChangeValue={setStartDate} style={inputStyle} required />
               </label>
               <label style={fieldStyle}>تاریخ پایان
-                <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} style={inputStyle} required />
+                <JalaliInput value={endDate} onChangeValue={setEndDate} style={inputStyle} required />
               </label>
               <label style={fieldStyle}>شماره مستند
                 <input value={documentNo} onChange={e => setDocumentNo(e.target.value)} style={inputStyle} />

@@ -11,6 +11,7 @@ public record CartableTaskResponse(
         String processDefinitionId,
         String taskDefinitionId,
         String assignee,
+        String assigneeFullName,
         List<String> candidateUsers,
         List<String> candidateGroups,
         OffsetDateTime createdAt,

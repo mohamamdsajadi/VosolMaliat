@@ -49,6 +49,7 @@ public class SecurityDataInitializer {
     private final TaxAffairsOfficeRepository taxAffairsOfficeRepository;
     private final TaxUnitRepository taxUnitRepository;
     private final TransactionTemplate transactionTemplate;
+    private final KeycloakAdminBootstrapService keycloakAdminBootstrapService;
 
     @Value("${app.security.bootstrap-admin.keycloak-user-id:${ADMIN_KEYCLOAK_USER_ID:dev-admin-keycloak-user-id}}")
     private String bootstrapAdminKeycloakUserId;
@@ -61,7 +62,11 @@ public class SecurityDataInitializer {
 
     @Bean
     CommandLineRunner seedSecurityData() {
-        return args -> transactionTemplate.executeWithoutResult(status -> {
+        return args -> initializeSecurityData();
+    }
+
+    public void initializeSecurityData() {
+        transactionTemplate.executeWithoutResult(status -> {
             for (String code : PERMISSIONS) {
                 permissionRepository.findByCode(code).orElseGet(() -> permissionRepository.save(Permission.builder()
                         .code(code)
@@ -119,56 +124,106 @@ public class SecurityDataInitializer {
     }
 
     private void seedSampleOperationalUsers() {
-        TaxUnit taxUnit = sampleTaxUnit();
-        TaxAffairsOffice office = taxAffairsOfficeRepository.findById(taxUnit.getTaxAffairsOfficeId()).orElseThrow();
-        GeneralDirectorateOfTaxAffairs general = generalDirectorateRepository
-                .findById(office.getGeneralDirectorateOfTaxAffairsId())
-                .orElseThrow();
+        List<ProvinceSample> samples = List.of(
+                new ProvinceSample("tehran", "تهران", "تهرانی", "021"),
+                new ProvinceSample("isfahan", "اصفهان", "اصفهانی", "031"),
+                new ProvinceSample("fars", "فارس", "شیرازی", "071"),
+                new ProvinceSample("khorasan", "خراسان رضوی", "مشهدی", "051"),
+                new ProvinceSample("azarbayjan", "آذربایجان شرقی", "تبریزی", "041")
+        );
+        samples.forEach(this::seedProvinceOperationalUsers);
+    }
+
+    private void seedProvinceOperationalUsers(ProvinceSample sample) {
+        GeneralDirectorateOfTaxAffairs general = findOrCreateGeneralDirectorate(sample);
+        TaxAffairsOffice office = findOrCreateTaxAffairsOffice(sample, general);
+        TaxUnit taxUnit = findOrCreateTaxUnit(sample, office);
 
         seedSampleUser(
-                "2d7e1db3-7b99-4f5d-99eb-9de9e031dea8",
-                "general_head",
-                "general.head@vosol-maliat.local",
-                "رئیس",
-                "اداره کل",
+                "sample-" + sample.slug() + "-general-office-head",
+                sample.slug() + "_general_office_head",
+                sample.slug() + ".general.office.head@vosol-maliat.local",
+                "مدیرکل",
+                sample.lastName(),
                 BusinessRole.GENERAL_OFFICE_HEAD,
                 general.getId(),
                 null,
                 null
         );
         seedSampleUser(
-                "eedab29f-d493-44a8-b71a-67a5cb721154",
-                "tax_office_head",
-                "tax.office.head@vosol-maliat.local",
-                "رئیس",
-                "اداره مالیات",
+                "sample-" + sample.slug() + "-tax-office-head",
+                sample.slug() + "_tax_office_head",
+                sample.slug() + ".tax.office.head@vosol-maliat.local",
+                "رئیس اداره",
+                sample.lastName(),
                 BusinessRole.TAX_OFFICE_HEAD,
                 general.getId(),
                 office.getId(),
                 null
         );
         seedSampleUser(
-                "aae48551-addf-478d-9d68-3a1f2a947404",
-                "tax_unit_head",
-                "tax.unit.head@vosol-maliat.local",
-                "رئیس",
-                "واحد مالیاتی",
+                "sample-" + sample.slug() + "-tax-unit-head",
+                sample.slug() + "_tax_unit_head",
+                sample.slug() + ".tax.unit.head@vosol-maliat.local",
+                "رئیس واحد",
+                sample.lastName(),
                 BusinessRole.TAX_UNIT_HEAD,
                 general.getId(),
                 office.getId(),
                 taxUnit
         );
         seedSampleUser(
-                "8c7b79dc-768c-44d6-8f36-fec5e600358b",
-                "tax_expert",
-                "tax.expert@vosol-maliat.local",
+                "sample-" + sample.slug() + "-tax-expert",
+                sample.slug() + "_tax_expert",
+                sample.slug() + ".tax.expert@vosol-maliat.local",
                 "کارشناس",
-                "مالیاتی",
+                sample.lastName(),
                 BusinessRole.TAX_EXPERT,
                 general.getId(),
                 office.getId(),
                 taxUnit
         );
+    }
+
+    private GeneralDirectorateOfTaxAffairs findOrCreateGeneralDirectorate(ProvinceSample sample) {
+        String name = "اداره کل امور مالیاتی استان " + sample.provinceName();
+        return generalDirectorateRepository.findAll().stream()
+                .filter(item -> name.equals(item.getGeneralDirectorateName()))
+                .findFirst()
+                .orElseGet(() -> generalDirectorateRepository.save(GeneralDirectorateOfTaxAffairs.builder()
+                        .generalDirectorateName(name)
+                        .postalCode(sample.postalCode("100"))
+                        .address("مرکز استان " + sample.provinceName() + "، ساختمان اداره کل امور مالیاتی")
+                        .phone(sample.phonePrefix() + "0000100")
+                        .build()));
+    }
+
+    private TaxAffairsOffice findOrCreateTaxAffairsOffice(ProvinceSample sample, GeneralDirectorateOfTaxAffairs general) {
+        String name = "اداره امور مالیاتی مرکز " + sample.provinceName();
+        return taxAffairsOfficeRepository.findByGeneralDirectorateOfTaxAffairsId(general.getId()).stream()
+                .filter(item -> name.equals(item.getOfficeName()))
+                .findFirst()
+                .orElseGet(() -> taxAffairsOfficeRepository.save(TaxAffairsOffice.builder()
+                        .generalDirectorateOfTaxAffairs(general)
+                        .officeName(name)
+                        .postalCode(sample.postalCode("200"))
+                        .address("مرکز استان " + sample.provinceName() + "، اداره امور مالیاتی مرکزی")
+                        .phone(sample.phonePrefix() + "0000200")
+                        .build()));
+    }
+
+    private TaxUnit findOrCreateTaxUnit(ProvinceSample sample, TaxAffairsOffice office) {
+        String name = "واحد مالیاتی نمونه " + sample.provinceName();
+        return taxUnitRepository.findByTaxAffairsOfficeId(office.getId()).stream()
+                .filter(item -> name.equals(item.getTaxUnitName()))
+                .findFirst()
+                .orElseGet(() -> taxUnitRepository.save(TaxUnit.builder()
+                        .taxAffairsOffice(office)
+                        .taxUnitName(name)
+                        .postalCode(sample.postalCode("300"))
+                        .address("مرکز استان " + sample.provinceName() + "، واحد مالیاتی نمونه")
+                        .phone(sample.phonePrefix() + "0000300")
+                        .build()));
     }
 
     private TaxUnit sampleTaxUnit() {
@@ -207,13 +262,24 @@ public class SecurityDataInitializer {
             Long generalDirectorateId,
             Long taxAffairsOfficeId,
             TaxUnit taxUnit) {
-        if (userProfileRepository.existsByKeycloakUserId(keycloakUserId)
-                || userProfileRepository.existsByUsername(username)
+        String effectiveKeycloakUserId = keycloakAdminBootstrapService
+                .ensureUser(username, email, firstName, lastName, businessRole)
+                .orElse(keycloakUserId);
+
+        AppUserProfile existingByUsername = userProfileRepository.findByUsername(username).orElse(null);
+        if (existingByUsername != null) {
+            updateSampleUser(existingByUsername, effectiveKeycloakUserId, email, firstName, lastName,
+                    businessRole, generalDirectorateId, taxAffairsOfficeId, taxUnit);
+            return;
+        }
+
+        if (userProfileRepository.existsByKeycloakUserId(effectiveKeycloakUserId)
                 || userProfileRepository.existsByEmail(email)) {
             return;
         }
+
         userProfileRepository.save(AppUserProfile.builder()
-                .keycloakUserId(keycloakUserId)
+                .keycloakUserId(effectiveKeycloakUserId)
                 .username(username)
                 .email(email)
                 .firstName(firstName)
@@ -226,5 +292,47 @@ public class SecurityDataInitializer {
                 .enabledInBusinessSystem(true)
                 .lockedInBusinessSystem(false)
                 .build());
+    }
+
+    private void updateSampleUser(
+            AppUserProfile profile,
+            String keycloakUserId,
+            String email,
+            String firstName,
+            String lastName,
+            BusinessRole businessRole,
+            Long generalDirectorateId,
+            Long taxAffairsOfficeId,
+            TaxUnit taxUnit) {
+        userProfileRepository.findByKeycloakUserId(keycloakUserId)
+                .filter(other -> !other.getId().equals(profile.getId()))
+                .ifPresent(other -> {
+                    throw new IllegalStateException("Keycloak user id already belongs to another profile: " + keycloakUserId);
+                });
+        profile.setKeycloakUserId(keycloakUserId);
+        profile.setEmail(email);
+        profile.setFirstName(firstName);
+        profile.setLastName(lastName);
+        profile.setPhoneNumber("09120000000");
+        profile.setBusinessRole(businessRole);
+        profile.setGeneralDirectorate(generalDirectorateId == null ? null : GeneralDirectorateOfTaxAffairs.builder().id(generalDirectorateId).build());
+        profile.setTaxAffairsOffice(taxAffairsOfficeId == null ? null : TaxAffairsOffice.builder().id(taxAffairsOfficeId).build());
+        profile.setTaxUnit(taxUnit);
+        profile.setEnabledInBusinessSystem(true);
+        profile.setLockedInBusinessSystem(false);
+        userProfileRepository.save(profile);
+    }
+
+    private record ProvinceSample(String slug, String provinceName, String lastName, String phonePrefix) {
+        private String postalCode(String suffix) {
+            return switch (slug) {
+                case "tehran" -> "1111111" + suffix;
+                case "isfahan" -> "2222222" + suffix;
+                case "fars" -> "3333333" + suffix;
+                case "khorasan" -> "4444444" + suffix;
+                case "azarbayjan" -> "5555555" + suffix;
+                default -> "9999999" + suffix;
+            };
+        }
     }
 }

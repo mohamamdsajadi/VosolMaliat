@@ -32,6 +32,9 @@ public class CheckInformPossibilityWorker {
 
     private Long requiredLong(ActivatedJob job, String variable) {
         Object value = job.getVariablesAsMap().get(variable);
+        if (value == null || "null".equals(String.valueOf(value)) || String.valueOf(value).isBlank()) {
+            throw new IllegalStateException("Required process variable is missing: " + variable);
+        }
         if (value instanceof Number number) {
             return number.longValue();
         }
@@ -39,6 +42,10 @@ public class CheckInformPossibilityWorker {
     }
 
     private void fail(JobClient client, ActivatedJob job, Exception ex) {
-        client.newFailCommand(job.getKey()).retries(job.getRetries() - 1).errorMessage(ex.getMessage()).send().join();
+        try {
+            client.newFailCommand(job.getKey()).retries(job.getRetries() - 1).errorMessage(ex.getMessage()).send().join();
+        } catch (Exception failEx) {
+            log.warn("Could not send fail command for job key={}: {}", job.getKey(), failEx.getMessage());
+        }
     }
 }

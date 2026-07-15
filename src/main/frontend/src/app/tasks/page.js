@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import AppShell from '../components/app-shell';
+import JalaliInput from '../components/jalali-input';
 import RefreshButton from '../components/refresh-button';
 import { formatFaNumber, formatJalaliDateTime } from '../lib/display';
 import { claimCartableTask, delegateTask, fetchCartableTasks, fetchDelegationTargets } from '../lib/tasks';
@@ -131,11 +132,19 @@ export default function AllTasksPage() {
             </label>
             <label>
               <span>از تاریخ ایجاد</span>
-              <input type="date" name="createdFrom" value={filterForm.createdFrom} onChange={updateFilter} />
+              <JalaliInput
+                name="createdFrom"
+                value={filterForm.createdFrom}
+                onChangeValue={value => setFilterForm(current => ({ ...current, createdFrom: value }))}
+              />
             </label>
             <label>
               <span>تا تاریخ ایجاد</span>
-              <input type="date" name="createdTo" value={filterForm.createdTo} onChange={updateFilter} />
+              <JalaliInput
+                name="createdTo"
+                value={filterForm.createdTo}
+                onChangeValue={value => setFilterForm(current => ({ ...current, createdTo: value }))}
+              />
             </label>
           </div>
         </form>
@@ -192,6 +201,7 @@ function CartableTaskRow({ task, index, onChanged, readOnly, zebra }) {
   const [loadingTargets, setLoadingTargets] = useState(false);
   const [message, setMessage] = useState('');
   const [claiming, setClaiming] = useState(false);
+  const [delegating, setDelegating] = useState(false);
   const canClaim = task.allowedActions?.claim && !readOnly;
   const canDelegate = task.allowedActions?.delegate && !readOnly;
   const variables = variableMap(task.variables);
@@ -232,13 +242,16 @@ function CartableTaskRow({ task, index, onChanged, readOnly, zebra }) {
       setMessage('ابتدا کاربر مقصد را انتخاب کنید.');
       return;
     }
-    await delegateTask(task.taskKey, { assignee: target });
-    await onChanged();
-  };
-
-  const delegateToGroup = async () => {
-    await delegateTask(task.taskKey, {});
-    await onChanged();
+    setDelegating(true);
+    setMessage('');
+    try {
+      await delegateTask(task.taskKey, { assignee: target });
+      await onChanged();
+    } catch (error) {
+      setMessage(error.message || 'ارجاع کاربر ناموفق بود.');
+    } finally {
+      setDelegating(false);
+    }
   };
 
   return (
@@ -254,7 +267,7 @@ function CartableTaskRow({ task, index, onChanged, readOnly, zebra }) {
         </td>
         <td className="task-grid-cell">
           <span className={task.assignee ? 'task-assignee-pill task-assignee-pill--assigned' : 'task-assignee-pill'}>
-            {task.assignee || 'آماده دریافت'}
+            {task.assigneeFullName || task.assignee || 'آماده دریافت'}
           </span>
         </td>
         <td className="task-grid-cell">
@@ -290,10 +303,11 @@ function CartableTaskRow({ task, index, onChanged, readOnly, zebra }) {
                     <select value={target} onChange={(event) => setTarget(event.target.value)}>
                       {targets.map((item) => <option value={item.username} key={item.username}>{item.fullName} - {roleLabel(item.businessRole)}</option>)}
                     </select>
-                    <button className="task-table-primary-action" type="button" onClick={delegateToUser}>ارجاع به کاربر</button>
+                    <button className="task-table-primary-action" type="button" onClick={delegateToUser} disabled={delegating}>
+                      {delegating ? 'در حال ارجاع' : 'ارجاع به کاربر'}
+                    </button>
                   </>
                 )}
-                <button className="task-table-secondary-action" type="button" onClick={delegateToGroup}>ارجاع به نقش بعدی</button>
               </div>
             )}
           </div>

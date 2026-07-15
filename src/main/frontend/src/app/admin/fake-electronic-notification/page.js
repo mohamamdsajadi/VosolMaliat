@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import AppShell from '../../components/app-shell'
+import JalaliInput from '../../components/jalali-input'
 import RefreshButton from '../../components/refresh-button'
 import { apiJson } from '../../lib/api'
 import { formatJalaliDateTime } from '../../lib/display'
@@ -135,10 +136,10 @@ export default function FakeElectronicNotificationPage() {
                       <td className="task-grid-cell task-grid-cell--actions">
                         {item.status !== 'CONFIRMED' ? (
                           <div className="fake-service-row-actions">
-                            <input
-                              type="datetime-local"
+                            <JalaliInput
+                              mode="datetime"
                               value={informDates[item.id] || currentDateTimeLocal()}
-                              onChange={event => setInformDates(current => ({ ...current, [item.id]: event.target.value }))}
+                              onChangeValue={value => setInformDates(current => ({ ...current, [item.id]: value }))}
                             />
                             <button className="task-table-primary-action" onClick={() => confirm(item)}>تایید دریافت ابلاغ</button>
                           </div>

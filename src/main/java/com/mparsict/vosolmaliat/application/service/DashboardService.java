@@ -1,7 +1,10 @@
 package com.mparsict.vosolmaliat.application.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mparsict.vosolmaliat.application.dto.request.DebtPaperIssuanceRequest;
 import com.mparsict.vosolmaliat.application.dto.response.DashboardStatsResponse;
 import com.mparsict.vosolmaliat.domain.enums.ExecutionPaperState;
+import com.mparsict.vosolmaliat.domain.model.rule.ExecutionPaperIssuanceRequest;
 import com.mparsict.vosolmaliat.domain.repository.DebtInformationRepository;
 import com.mparsict.vosolmaliat.domain.repository.ExecutionPaperIssuanceRequestRepository;
 import com.mparsict.vosolmaliat.domain.repository.ExecutionPaperRepository;
@@ -19,6 +22,7 @@ public class DashboardService {
     private final ExecutionPaperRepository executionPaperRepository;
     private final DebtInformationRepository debtInformationRepository;
     private final ExecutionPaperIssuanceRequestRepository issuanceRequestRepository;
+    private final ObjectMapper objectMapper;
 
     public DashboardStatsResponse getStats() {
         // Execution paper report counts
@@ -36,6 +40,12 @@ public class DashboardService {
         long arrestOrderIssued = executionPaperRepository.countByCurrentState(ExecutionPaperState.ARREST_ORDER_ISSUED.name());
         long arrestOrderNotIssued = executionPaperRepository.countByCurrentState(ExecutionPaperState.ARREST_ORDER_NOT_ISSUED.name());
         long awaitingArrestOrder = executionPaperRepository.countByCurrentState(ExecutionPaperState.AWAITING_ARREST_ORDER.name());
+
+        // Debt totals aligned with the visible pie chart groups
+        Double debtSumNotInformedExecutionPapers = orZero(debtInformationRepository.sumTotalDebtForNotInformedExecutionPapers());
+        Double debtSumInformedExecutionPapers = orZero(debtInformationRepository.sumTotalDebtForInformedExecutionPapers());
+        Double debtSumRejectedDebtPapers = sumRejectedDebtPapers();
+        Double debtSumTotalIssuedExecutionPapers = orZero(debtInformationRepository.sumTotalDebtForIssuedExecutionPapers());
 
         // My actions
         long myActionsNew = unassigned;
@@ -67,6 +77,10 @@ public class DashboardService {
                 arrestOrderIssued,
                 arrestOrderNotIssued,
                 awaitingArrestOrder,
+                debtSumNotInformedExecutionPapers,
+                debtSumInformedExecutionPapers,
+                debtSumRejectedDebtPapers,
+                debtSumTotalIssuedExecutionPapers,
                 myActionsNew,
                 myActionsAwaitingCompletion,
                 myActionsCompleted,
@@ -80,5 +94,36 @@ public class DashboardService {
 
     private Double orZero(Double val) {
         return val != null ? val : 0.0;
+    }
+
+    private Double sumRejectedDebtPapers() {
+        return issuanceRequestRepository.findByRejectionReasonIsNotNull().stream()
+                .mapToDouble(this::rejectedDebtAmount)
+                .sum();
+    }
+
+    private double rejectedDebtAmount(ExecutionPaperIssuanceRequest request) {
+        if (request.getPayload() == null || request.getPayload().isBlank()) {
+            return 0.0;
+        }
+        try {
+            DebtPaperIssuanceRequest payload = objectMapper.readValue(request.getPayload(), DebtPaperIssuanceRequest.class);
+            return totalDebt(payload.debtInfo());
+        } catch (Exception ex) {
+            log.warn("Could not parse rejected issuance payload id={}: {}", request.getId(), ex.getMessage());
+            return 0.0;
+        }
+    }
+
+    private double totalDebt(DebtPaperIssuanceRequest.DebtInfo debtInfo) {
+        if (debtInfo == null) {
+            return 0.0;
+        }
+        return orZero(debtInfo.taxAmount())
+                + orZero(debtInfo.dutyAmount())
+                + orZero(debtInfo.penaltyArticle22())
+                + orZero(debtInfo.penaltyArticle23())
+                - orZero(debtInfo.taxPaidAmount())
+                - orZero(debtInfo.penaltyPaidAmount());
     }
 }

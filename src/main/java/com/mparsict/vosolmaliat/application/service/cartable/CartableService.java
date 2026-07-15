@@ -238,18 +238,15 @@ public class CartableService {
                     .send()
                     .join();
             if (targetAssignee != null) {
-                UserTask nextTask = waitForNextDelegationTask(task.getProcessInstanceKey(), nextRole)
-                        .orElseThrow(() -> new BusinessException(
-                                "NEXT_DELEGATION_TASK_NOT_FOUND",
-                                "کار بعدی فرایند برای ارجاع مستقیم یافت نشد"
-                        ));
-                camundaClient.newAssignUserTaskCommand(nextTask.getUserTaskKey())
-                        .assignee(targetAssignee)
-                        .allowOverride(true)
-                        .action("delegate")
-                        .requestTimeout(Duration.ofSeconds(20))
-                        .send()
-                        .join();
+                waitForNextDelegationTask(task.getProcessInstanceKey(), nextRole, targetAssignee)
+                        .filter(nextTask -> !targetAssignee.equals(nextTask.getAssignee()))
+                        .ifPresent(nextTask -> camundaClient.newAssignUserTaskCommand(nextTask.getUserTaskKey())
+                                .assignee(targetAssignee)
+                                .allowOverride(true)
+                                .action("delegate")
+                                .requestTimeout(Duration.ofSeconds(20))
+                                .send()
+                                .join());
             }
         } catch (BusinessException ex) {
             throw ex;
@@ -332,14 +329,25 @@ public class CartableService {
         return "taskKey=" + taskKey + "; value=" + normalized;
     }
 
-    private Optional<UserTask> waitForNextDelegationTask(Long processInstanceKey, BusinessRole nextRole) {
-        for (int attempt = 0; attempt < 5; attempt++) {
-            Optional<UserTask> task = searchTasks(filter -> filter
-                    .state(UserTaskState.CREATED)
-                    .processInstanceKey(processInstanceKey)
-                    .candidateGroup(nextRole.name()))
-                    .stream()
-                    .findFirst();
+    private Optional<UserTask> waitForNextDelegationTask(Long processInstanceKey, BusinessRole nextRole, String targetAssignee) {
+        for (int attempt = 0; attempt < 10; attempt++) {
+            Optional<UserTask> task = Optional.empty();
+            if (targetAssignee != null) {
+                task = searchTasks(filter -> filter
+                        .state(UserTaskState.CREATED)
+                        .processInstanceKey(processInstanceKey)
+                        .assignee(targetAssignee))
+                        .stream()
+                        .findFirst();
+            }
+            if (task.isEmpty()) {
+                task = searchTasks(filter -> filter
+                        .state(UserTaskState.CREATED)
+                        .processInstanceKey(processInstanceKey)
+                        .candidateGroup(nextRole.name()))
+                        .stream()
+                        .findFirst();
+            }
             if (task.isPresent()) {
                 return task;
             }
@@ -456,6 +464,7 @@ public class CartableService {
                 task.getBpmnProcessId(),
                 task.getElementId(),
                 task.getAssignee(),
+                fullNameForUsername(task.getAssignee()),
                 safeList(task.getCandidateUsers()),
                 safeList(task.getCandidateGroups()),
                 task.getCreationDate(),
@@ -468,6 +477,15 @@ public class CartableService {
                         .toList(),
                 taskAuthorizationService.allowedActions(user, task, variables)
         );
+    }
+
+    private String fullNameForUsername(String username) {
+        if (username == null || username.isBlank()) {
+            return null;
+        }
+        return userProfileRepository.findByUsername(username)
+                .map(this::fullName)
+                .orElse(username);
     }
 
     private Map<String, Object> fetchVariablesMap(Long taskKey) {

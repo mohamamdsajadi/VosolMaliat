@@ -12,6 +12,11 @@ public record DashboardStatsResponse(
         long arrestOrderIssued,
         long arrestOrderNotIssued,
         long awaitingArrestOrder,
+        // Debt totals aligned with pie chart groups
+        Double debtSumNotInformedExecutionPapers,
+        Double debtSumInformedExecutionPapers,
+        Double debtSumRejectedDebtPapers,
+        Double debtSumTotalIssuedExecutionPapers,
         // My actions
         long myActionsNew,
         long myActionsAwaitingCompletion,

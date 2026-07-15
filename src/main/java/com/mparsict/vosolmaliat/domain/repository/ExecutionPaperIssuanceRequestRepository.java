@@ -4,6 +4,7 @@ import com.mparsict.vosolmaliat.domain.model.rule.ExecutionPaperIssuanceRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -14,4 +15,6 @@ public interface ExecutionPaperIssuanceRequestRepository extends JpaRepository<E
     Optional<ExecutionPaperIssuanceRequest> findByDebtPaperUniqueCode(String code);
 
     long countByRejectionReasonIsNotNull();
+
+    List<ExecutionPaperIssuanceRequest> findByRejectionReasonIsNotNull();
 }

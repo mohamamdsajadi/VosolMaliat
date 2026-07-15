@@ -5,6 +5,7 @@ import com.mparsict.vosolmaliat.application.dto.request.DebtPaperIssuanceRequest
 import com.mparsict.vosolmaliat.application.service.ExecutionPaperService;
 import com.mparsict.vosolmaliat.application.service.IssuanceRequestService;
 import com.mparsict.vosolmaliat.domain.model.execution.ExecutionPaper;
+import com.mparsict.vosolmaliat.domain.repository.TaxUnitRepository;
 import com.mparsict.vosolmaliat.infrastructure.camunda.ProcessConstants;
 import io.camunda.client.api.response.ActivatedJob;
 import io.camunda.client.api.worker.JobClient;
@@ -23,6 +24,7 @@ public class IssueExecutionPaperWorker {
 
     private final ExecutionPaperService executionPaperService;
     private final IssuanceRequestService issuanceRequestService;
+    private final TaxUnitRepository taxUnitRepository;
     private final ObjectMapper objectMapper;
 
     @JobWorker(type = ProcessConstants.JOB_ISSUE_PAPER)
@@ -39,9 +41,8 @@ public class IssueExecutionPaperWorker {
             Map<String, Object> outputVars = new HashMap<>();
             outputVars.put(ProcessConstants.VAR_EXECUTION_PAPER_ID, ep.getId());
             outputVars.put(ProcessConstants.VAR_EXECUTION_PAPER_CODE, ep.getExecutionPaperUniqueCode());
-            outputVars.put(ProcessConstants.VAR_GENERAL_DIRECTORATE_ID, request.mainTaxBureauId());
-            outputVars.put(ProcessConstants.VAR_TAX_AFFAIRS_OFFICE_ID, request.taxBureauId());
             outputVars.put(ProcessConstants.VAR_TAX_UNIT_ID, ep.getTaxUnitId());
+            addOrganizationVariables(outputVars, ep.getTaxUnitId());
             outputVars.put(ProcessConstants.VAR_SUCCESS, true);
 
             log.info("ExecutionPaper issued: code={}, requestId={}", ep.getExecutionPaperUniqueCode(), requestId);
@@ -54,5 +55,15 @@ public class IssueExecutionPaperWorker {
                     .send()
                     .join();
         }
+    }
+
+    private void addOrganizationVariables(Map<String, Object> outputVars, Long taxUnitId) {
+        if (taxUnitId == null) {
+            return;
+        }
+        taxUnitRepository.findTaxAffairsOfficeIdByTaxUnitId(taxUnitId)
+                .ifPresent(id -> outputVars.put(ProcessConstants.VAR_TAX_AFFAIRS_OFFICE_ID, id));
+        taxUnitRepository.findGeneralDirectorateIdByTaxUnitId(taxUnitId)
+                .ifPresent(id -> outputVars.put(ProcessConstants.VAR_GENERAL_DIRECTORATE_ID, id));
     }
 }
