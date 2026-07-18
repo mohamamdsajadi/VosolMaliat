@@ -59,6 +59,12 @@ CREATE TABLE IF NOT EXISTS fake_sanim_inform_request (
     CONSTRAINT fk_fake_sanim_execution_paper FOREIGN KEY (execution_paper_id) REFERENCES execution_paper(id)
 );
 
+ALTER TABLE fake_sanim_inform_request ADD COLUMN message_type VARCHAR(255);
+ALTER TABLE fake_sanim_inform_request ADD COLUMN debt_paper_id VARCHAR(255);
+ALTER TABLE fake_sanim_inform_request ADD COLUMN rejection_reason_code VARCHAR(255);
+ALTER TABLE fake_sanim_inform_request ADD COLUMN rejection_reason_description TEXT;
+ALTER TABLE fake_sanim_inform_request ADD COLUMN restriction_removal_date VARCHAR(255);
+
 ALTER TABLE execution_paper_notification ADD COLUMN inform_status VARCHAR(255);
 ALTER TABLE execution_paper_notification ADD COLUMN inform_rejection_reason TEXT;
 ALTER TABLE execution_paper_notification ADD COLUMN inform_rejected_at VARCHAR(255);

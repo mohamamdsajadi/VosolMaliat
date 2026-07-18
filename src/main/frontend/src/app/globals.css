@@ -1178,6 +1178,12 @@ textarea {
     white-space: nowrap;
 }
 
+.fake-service-stats .fake-service-stat--danger {
+    color: #b91c1c;
+    background: #fef2f2;
+    border-color: #fecaca;
+}
+
 .fake-service-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
@@ -1242,6 +1248,18 @@ textarea {
     color: #92400e;
     background: #fffbeb;
     border: 1px solid #fde68a;
+}
+
+.fake-service-badge--inform {
+    color: #1d4ed8;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+}
+
+.fake-service-badge--rejection {
+    color: #b91c1c;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
 }
 
 .fake-service-meta {
@@ -1329,6 +1347,120 @@ textarea {
     border-color: #1e40af;
 }
 
+.fake-service-random-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 40px;
+    border: 1px solid #155e75;
+    border-radius: 8px;
+    background: linear-gradient(180deg, #0e7490, #155e75);
+    color: #ffffff;
+    padding: 0 16px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 900;
+    cursor: pointer;
+    white-space: nowrap;
+    box-shadow: 0 12px 24px rgba(14, 116, 144, 0.18);
+}
+
+.fake-service-random-action:hover:not(:disabled) {
+    background: linear-gradient(180deg, #155e75, #164e63);
+    border-color: #164e63;
+    transform: translateY(-1px);
+}
+
+.fake-service-random-action:disabled {
+    cursor: wait;
+    opacity: 0.65;
+}
+
+.fake-sanim-chart-card {
+    display: grid;
+    gap: 14px;
+    margin-bottom: 16px;
+    padding: 18px 20px;
+    border: 1px solid #dbe4ee;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 12px 28px rgba(15, 35, 52, 0.06);
+}
+
+.fake-sanim-chart-card__heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #edf2f7;
+}
+
+.fake-sanim-chart-card__heading h2 {
+    margin: 4px 0 0;
+    color: #1e3a5f;
+    font-size: 17px;
+    font-weight: 900;
+}
+
+.fake-sanim-chart-card__heading > span {
+    display: inline-flex;
+    min-height: 34px;
+    align-items: center;
+    padding: 0 12px;
+    border: 1px solid #c7d2fe;
+    border-radius: 999px;
+    background: #eef2ff;
+    color: #3730a3;
+    font-size: 12px;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.fake-sanim-chart-layout {
+    display: grid;
+    grid-template-columns: 270px minmax(0, 1fr);
+    align-items: center;
+    gap: 18px;
+}
+
+.fake-sanim-chart-legend {
+    display: grid;
+    gap: 9px;
+}
+
+.fake-sanim-chart-legend div {
+    display: grid;
+    grid-template-columns: 12px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 9px;
+    min-height: 38px;
+    padding: 8px 10px;
+    border: 1px solid #edf2f7;
+    border-radius: 8px;
+    background: #f8fafc;
+}
+
+.fake-sanim-chart-legend span {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+}
+
+.fake-sanim-chart-legend strong {
+    color: #334155;
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.fake-sanim-chart-legend em {
+    color: #0f172a;
+    font-size: 13px;
+    font-style: normal;
+    font-weight: 900;
+}
+
 .fake-service-table-card {
     margin-top: 6px;
 }
@@ -1338,7 +1470,45 @@ textarea {
 }
 
 .fake-service-table--sanim {
-    min-width: 980px;
+    min-width: 1240px;
+}
+
+.fake-service-row--rejection {
+    background: #fff7f7;
+}
+
+.fake-service-row--rejection .task-grid-cell {
+    border-bottom-color: #fee2e2;
+}
+
+.fake-service-rejection-detail {
+    display: grid;
+    gap: 3px;
+    max-width: 320px;
+}
+
+.fake-service-rejection-detail strong {
+    color: #991b1b;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.fake-service-rejection-detail span {
+    color: #7f1d1d;
+    font-size: 12px;
+    line-height: 1.8;
+    overflow-wrap: anywhere;
+}
+
+.fake-service-table .task-table-primary-action--danger {
+    background: #b91c1c;
+    border-color: #b91c1c;
+    box-shadow: 0 10px 20px rgba(185, 28, 28, 0.16);
+}
+
+.fake-service-table .task-table-primary-action--danger:hover {
+    background: #991b1b;
+    border-color: #991b1b;
 }
 
 .fake-service-row-actions {
@@ -1375,6 +1545,153 @@ textarea {
 
 .fake-service-row-actions .task-table-primary-action {
     width: 100%;
+}
+
+.fake-sanim-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(15, 23, 42, 0.46);
+    backdrop-filter: blur(4px);
+}
+
+.fake-sanim-modal {
+    width: min(980px, 100%);
+    max-height: min(86vh, 860px);
+    overflow: auto;
+    border: 1px solid #dbe4ee;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 30px 80px rgba(15, 23, 42, 0.26);
+}
+
+.fake-sanim-modal__header {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 20px;
+    border-bottom: 1px solid #edf2f7;
+    background: #ffffff;
+}
+
+.fake-sanim-modal__header h2 {
+    margin: 4px 0 0;
+    color: #1e3a5f;
+    font-size: 18px;
+    font-weight: 900;
+}
+
+.fake-sanim-modal__close {
+    width: 36px;
+    height: 36px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #f8fafc;
+    color: #334155;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.fake-sanim-sample-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    padding: 18px 20px;
+}
+
+.fake-sanim-sample-section-title {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 4px;
+    padding: 10px 12px;
+    border: 1px solid #dbeafe;
+    border-radius: 8px;
+    background: #eff6ff;
+    color: #1e3a8a;
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.fake-sanim-sample-section-title:first-child {
+    margin-top: 0;
+}
+
+.fake-sanim-sample-grid label {
+    display: grid;
+    gap: 6px;
+    min-width: 0;
+}
+
+.fake-sanim-sample-grid span {
+    color: #52657a;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.fake-sanim-sample-grid input,
+.fake-sanim-sample-grid select {
+    width: 100%;
+    min-height: 40px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #1f2937;
+    padding: 8px 10px;
+    font: inherit;
+    font-size: 13px;
+    box-sizing: border-box;
+}
+
+.fake-sanim-sample-grid input:focus,
+.fake-sanim-sample-grid select:focus {
+    outline: 2px solid rgba(14, 116, 144, 0.18);
+    border-color: #0e7490;
+}
+
+.fake-sanim-sample-grid__wide {
+    grid-column: span 2;
+}
+
+.fake-sanim-modal__summary {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 0 20px 16px;
+}
+
+.fake-sanim-modal__summary span {
+    display: inline-flex;
+    min-height: 32px;
+    align-items: center;
+    padding: 0 10px;
+    border: 1px solid #dbe4ee;
+    border-radius: 999px;
+    background: #f8fafc;
+    color: #334155;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.fake-sanim-modal__actions {
+    position: sticky;
+    bottom: 0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 14px 20px;
+    border-top: 1px solid #edf2f7;
+    background: #ffffff;
 }
 
 .metric-card span {
@@ -3099,7 +3416,37 @@ textarea {
         grid-template-columns: 1fr;
     }
 
+    .fake-sanim-chart-card__heading,
+    .fake-sanim-chart-layout,
+    .fake-sanim-modal__actions {
+        grid-template-columns: 1fr;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .fake-sanim-chart-layout {
+        justify-items: center;
+    }
+
+    .fake-sanim-sample-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .fake-sanim-sample-grid__wide {
+        grid-column: auto;
+    }
+
+    .fake-sanim-modal-backdrop {
+        padding: 12px;
+        align-items: stretch;
+    }
+
+    .fake-sanim-modal {
+        max-height: calc(100vh - 24px);
+    }
+
     .fake-service-primary,
+    .fake-service-random-action,
     .fake-service-action-bar input {
         width: 100%;
     }

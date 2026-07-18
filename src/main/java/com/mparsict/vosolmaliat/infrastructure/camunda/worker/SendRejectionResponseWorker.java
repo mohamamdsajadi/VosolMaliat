@@ -1,5 +1,6 @@
 package com.mparsict.vosolmaliat.infrastructure.camunda.worker;
 
+import com.mparsict.vosolmaliat.application.service.FakeSanimInformService;
 import com.mparsict.vosolmaliat.application.service.IssuanceRequestService;
 import com.mparsict.vosolmaliat.infrastructure.camunda.ProcessConstants;
 import io.camunda.client.api.response.ActivatedJob;
@@ -18,6 +19,7 @@ import java.util.Map;
 public class SendRejectionResponseWorker {
 
     private final IssuanceRequestService issuanceRequestService;
+    private final FakeSanimInformService fakeSanimInformService;
 
     @JobWorker(type = ProcessConstants.JOB_SEND_REJECTION)
     public void handle(final JobClient client, final ActivatedJob job) {
@@ -34,11 +36,17 @@ public class SendRejectionResponseWorker {
                 rejectionReason += " (restriction removal date: " + restrictionRemovalDate + ")";
             }
             issuanceRequestService.markAsRejected(requestId, rejectionReason, null);
+            fakeSanimInformService.sendIssuanceRejection(
+                    requestId,
+                    rejectionCode,
+                    rejectionDesc,
+                    restrictionRemovalDate
+            );
 
             Map<String, Object> outputVars = new HashMap<>();
             outputVars.put(ProcessConstants.VAR_SUCCESS, false);
 
-            log.info("Rejection recorded for requestId={}, code={}", requestId, rejectionCode);
+            log.info("Rejection recorded and sent to fake SANIM for requestId={}, code={}", requestId, rejectionCode);
             client.newCompleteCommand(job.getKey()).variables(outputVars).send().join();
         } catch (Exception e) {
             log.error("Error in SendRejectionResponseWorker", e);

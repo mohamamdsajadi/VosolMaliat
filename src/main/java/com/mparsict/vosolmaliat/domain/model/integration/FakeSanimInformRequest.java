@@ -23,11 +23,26 @@ public class FakeSanimInformRequest extends BaseEntity {
     @JoinColumn(name = "execution_paper_id")
     private ExecutionPaper executionPaper;
 
+    @Column(name = "message_type")
+    private String messageType;
+
+    @Column(name = "debt_paper_id")
+    private String debtPaperId;
+
     @Column(name = "status")
     private String status;
 
     @Column(name = "inform_date")
     private String informDate;
+
+    @Column(name = "rejection_reason_code")
+    private String rejectionReasonCode;
+
+    @Column(name = "rejection_reason_description", columnDefinition = "TEXT")
+    private String rejectionReasonDescription;
+
+    @Column(name = "restriction_removal_date")
+    private String restrictionRemovalDate;
 
     @Column(name = "payload", columnDefinition = "TEXT")
     private String payload;
