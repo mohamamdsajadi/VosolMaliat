@@ -3,6 +3,7 @@ package com.mparsict.vosolmaliat.application.service.cartable;
 import com.mparsict.vosolmaliat.application.dto.response.security.MasterdataOrganizationResponse;
 import com.mparsict.vosolmaliat.application.security.CurrentUserContext;
 import com.mparsict.vosolmaliat.application.service.security.OrganizationScopeService;
+import com.mparsict.vosolmaliat.domain.enums.BusinessRole;
 import io.camunda.client.api.search.enums.UserTaskState;
 import io.camunda.client.api.search.response.UserTask;
 import org.junit.jupiter.api.Test;
@@ -33,8 +34,8 @@ class TaskAuthorizationServiceTest {
     void userCanCompleteOnlyOwnAssignedTaskUnlessAdmin() {
         CurrentUserContext user = user(Set.of("TAX_UNIT_USER"), Set.of(), Set.of("TASK_COMPLETE"), organization(10L));
 
-        assertThat(service.canComplete(user, task("ali", List.of(), List.of()))).isTrue();
-        assertThat(service.canComplete(user, task("sara", List.of(), List.of()))).isFalse();
+        assertThat(service.canComplete(user, task("ali", List.of(), List.of()), Map.of("taxUnitId", 10L))).isTrue();
+        assertThat(service.canComplete(user, task("sara", List.of(), List.of()), Map.of("taxUnitId", 10L))).isFalse();
     }
 
     @Test
@@ -53,6 +54,7 @@ class TaskAuthorizationServiceTest {
                 "ali@example.com",
                 "Ali",
                 "Ahmadi",
+                roles.contains("ADMIN") ? BusinessRole.ADMIN : BusinessRole.TAX_EXPERT,
                 roles,
                 groups,
                 permissions,

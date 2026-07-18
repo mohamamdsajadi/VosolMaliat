@@ -56,6 +56,7 @@ public class RuleEngineService extends AbstractRuleEngineService<ExecutionPaperR
             case "performancePeriod" -> request.performancePeriod();
             case "mainTaxBureauId" -> request.mainTaxBureauId();
             case "taxBureauId" -> request.taxBureauId();
+            case "taxUnitId" -> request.taxUnitId();
             case "taxOffice" -> request.taxBureauId() != null ? request.taxBureauId() : request.mainTaxBureauId();
             case "taxSource" -> request.taxSource();
             case "activityTypeCode" -> request.activityTypeCode();

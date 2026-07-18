@@ -2,8 +2,8 @@ export const NAV_ITEMS = [
   {
     key: "processes",
     href: "/",
-    label: "داشبورد فرایندها",
-    helper: "شروع پرونده و انتخاب مسیر",
+    label: "میزکار مدیریتی",
+    helper: "",
     permissions: []
   },
   {

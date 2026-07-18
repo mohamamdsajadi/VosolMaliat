@@ -9,6 +9,7 @@ import com.mparsict.vosolmaliat.domain.model.execution.ExecutionPaperStateHistor
 import com.mparsict.vosolmaliat.domain.repository.ExecutionPaperNotificationRepository;
 import com.mparsict.vosolmaliat.domain.repository.ExecutionPaperRepository;
 import com.mparsict.vosolmaliat.domain.repository.ExecutionPaperStateHistoryRepository;
+import com.mparsict.vosolmaliat.infrastructure.camunda.ProcessConstants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,11 +38,11 @@ public class InformProcessService {
     public Map<String, Object> checkInformPossibility(Long executionPaperId) {
         InformRuleEngineService.InformRuleEvaluationResult result = informRuleEngineService.evaluate(executionPaperId);
         Map<String, Object> variables = new HashMap<>();
-        variables.put("canInform", result.canInform());
+        variables.put(ProcessConstants.VAR_CAN_INFORM, result.canInform());
         if (!result.canInform()) {
-            variables.put("rejectionReasonCode", result.rejectionReasonCode());
-            variables.put("rejectionReasonDesc", result.rejectionReasonDescription());
-            variables.put("restrictionRemovalDate", result.restrictionRemovalDate());
+            variables.put(ProcessConstants.VAR_REJECTION_CODE, result.rejectionReasonCode());
+            variables.put(ProcessConstants.VAR_REJECTION_DESC, result.rejectionReasonDescription());
+            variables.put(ProcessConstants.VAR_RESTRICTION_REMOVAL_DATE, result.restrictionRemovalDate());
         }
         return variables;
     }
