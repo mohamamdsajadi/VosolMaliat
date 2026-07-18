@@ -31,42 +31,14 @@ export const NAV_ITEMS = [
     key: "admin",
     href: "/admin",
     label: "مدیریت سامانه",
-    helper: "کاربران و دسترسی‌ها",
-    permissions: ["USER_PROFILE_VIEW", "PERMISSION_VIEW", "GROUP_PERMISSION_VIEW"]
+    helper: "کاربران، مجوزها و سازمان",
+    permissions: ["USER_PROFILE_VIEW", "PERMISSION_VIEW", "GROUP_PERMISSION_VIEW", "USER_PROFILE_ASSIGN_ORGANIZATION"]
   },
   {
-    key: "users",
-    href: "/admin/users",
-    label: "مدیریت کاربران",
-    helper: "پروفایل و وضعیت کاربران",
-    permissions: ["USER_PROFILE_VIEW"]
-  },
-  {
-    key: "permissions",
-    href: "/admin/permissions",
-    label: "مجوزها",
-    helper: "اعطا و لغو دسترسی",
-    permissions: ["PERMISSION_VIEW", "PERMISSION_ASSIGN", "GROUP_PERMISSION_VIEW", "GROUP_PERMISSION_UPDATE"]
-  },
-  {
-    key: "organizations",
-    href: "/admin/organizations",
-    label: "واحدهای سازمانی",
-    helper: "اداره کل، اداره و واحد مالیاتی",
-    permissions: ["USER_PROFILE_ASSIGN_ORGANIZATION"]
-  },
-  {
-    key: "rules",
-    href: "/admin/rules",
-    label: "قوانین صدور",
-    helper: "شرایط جلوگیری از صدور",
-    permissions: ["PERMISSION_ASSIGN"]
-  },
-  {
-    key: "inform-rules",
-    href: "/admin/inform-rules",
-    label: "قوانین ابلاغ",
-    helper: "شرایط جلوگیری از ابلاغ",
+    key: "rule-management",
+    href: "/admin/rule-management",
+    label: "مدیریت قوانین سامانه",
+    helper: "قوانین صدور و موتور ابلاغ",
     permissions: ["PERMISSION_ASSIGN"]
   },
   {

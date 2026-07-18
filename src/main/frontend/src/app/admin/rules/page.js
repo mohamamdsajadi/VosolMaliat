@@ -113,7 +113,7 @@ export default function RuleDashboardPage() {
 
   return (
     <AppShell
-      active="rules"
+      active="rule-management"
       title="پنل مدیریت قوانین صدور"
       eyebrow="قانون‌ساز مدیریتی"
     >

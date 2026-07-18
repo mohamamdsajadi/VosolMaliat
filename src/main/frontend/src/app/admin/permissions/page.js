@@ -118,7 +118,7 @@ export default function AdminPermissionsPage() {
 
   return (
     <AppShell
-      active="permissions"
+      active="admin"
       title="مدیریت مجوزها"
       eyebrow="کنترل دسترسی"
       actions={<RefreshButton onClick={load} loading={loading} />}

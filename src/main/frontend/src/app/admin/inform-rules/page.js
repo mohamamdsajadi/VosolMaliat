@@ -124,7 +124,7 @@ export default function InformRuleDashboardPage() {
   }
 
   return (
-    <AppShell active="inform-rules" title="پنل مدیریت قوانین ابلاغ" eyebrow="قانون‌ساز ابلاغ">
+    <AppShell active="rule-management" title="پنل مدیریت قوانین ابلاغ" eyebrow="قانون‌ساز ابلاغ">
       <main style={{ maxWidth: 1280, margin: '0 auto' }}>
         {message && <div style={noticeStyle}>{message}</div>}
         <section style={heroStyle}>

@@ -148,7 +148,7 @@ export default function AdminOrganizationsPage() {
 
   return (
     <AppShell
-      active="organizations"
+      active="admin"
       title="مدیریت ساختار مالیاتی"
       eyebrow="Masterdata"
       actions={<RefreshButton onClick={load} loading={loading} />}

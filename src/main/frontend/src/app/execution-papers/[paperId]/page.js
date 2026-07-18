@@ -145,6 +145,45 @@ function DetailSection({ section, data }) {
   )
 }
 
+const CRITICAL_TRACE_FIELD_LABELS = {
+  TASK_CLAIMED: 'مسئول فعلی',
+  TASK_UNCLAIMED: 'مسئول فعلی',
+  TASK_ASSIGNED: 'مسئول فعلی',
+  TASK_DELEGATED_TO_USER: 'مسئول فعلی',
+  TASK_DELEGATED_TO_GROUP: 'گروه/نقش مقصد',
+  ELECTRONIC_NOTIFICATION_CONFIRMED: 'تاریخ ابلاغ الکترونیکی',
+  EXECUTION_PAPER_INFORM_REJECTED: 'وضعیت و علت رد ابلاغ',
+  EXECUTION_PAPER_INFORMED: 'تاریخ ابلاغ',
+  EXECUTION_PAPER_RE_INFORM_SCHEDULED: 'تاریخ بررسی مجدد ابلاغ',
+  NEXT_DEBT_INQUIRY_DATE_SET: 'تاریخ استعلام بعدی بدهی',
+  INFORM_DATE_SENT_TO_SANIM: 'تاریخ ابلاغ ارسال‌شده به سنیم',
+  SANIM_MESSAGE_CONFIRMED: 'وضعیت دریافت سنیم',
+  SANIM_INFORM_DATE_CONFIRMED: 'وضعیت دریافت سنیم'
+}
+
+function extractTraceValue(value) {
+  if (value == null || value === '') return ''
+  const text = String(value)
+  const match = text.match(/(?:^|;\s*)value=(.*)$/)
+  return match ? match[1] : text
+}
+
+function hasTraceChange(item) {
+  if (!item || item.type !== 'AUDIT') return false
+  if (!CRITICAL_TRACE_FIELD_LABELS[item.action]) return false
+  const oldValue = extractTraceValue(item.oldValue)
+  const newValue = extractTraceValue(item.newValue)
+  return oldValue !== '' || newValue !== ''
+}
+
+function traceFieldLabel(item) {
+  return CRITICAL_TRACE_FIELD_LABELS[item.action] || 'داده حساس'
+}
+
+function formatTraceChangeValue(value) {
+  return formatAuditValue(extractTraceValue(value))
+}
+
 function TraceSection({ trace, loading, error }) {
   return (
     <section style={traceCardStyle}>
@@ -172,6 +211,22 @@ function TraceSection({ trace, loading, error }) {
                 <div style={timelineMetaStyle}>
                   <span>انجام‌دهنده: {formatValue(item.actorUsername || 'system')}</span>
                 </div>
+                {hasTraceChange(item) && (
+                  <div style={traceChangeBoxStyle}>
+                    <span style={traceChangeFieldStyle}>{traceFieldLabel(item)}</span>
+                    <div style={traceChangeValuesStyle}>
+                      <div style={traceChangeValueStyle}>
+                        <span style={traceChangeLabelStyle}>مقدار قبلی</span>
+                        <strong>{formatTraceChangeValue(item.oldValue)}</strong>
+                      </div>
+                      <div style={traceChangeArrowStyle}>←</div>
+                      <div style={traceChangeValueStyle}>
+                        <span style={traceChangeLabelStyle}>مقدار جدید</span>
+                        <strong>{formatTraceChangeValue(item.newValue)}</strong>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           ))}
@@ -692,3 +747,40 @@ const timelineTopStyle = { display: 'flex', justifyContent: 'space-between', gap
 const timelineTitleStyle = { color: '#14365d', fontSize: 14 }
 const timelineDateStyle = { color: '#64748b', fontSize: 12, whiteSpace: 'nowrap' }
 const timelineMetaStyle = { display: 'flex', flexWrap: 'wrap', gap: 8, color: '#475569', fontSize: 12, lineHeight: 1.8 }
+const traceChangeBoxStyle = {
+  display: 'grid',
+  gap: 8,
+  marginTop: 12,
+  padding: 10,
+  border: '1px solid #dbeafe',
+  borderRadius: 8,
+  background: '#f8fbff'
+}
+const traceChangeFieldStyle = { color: '#1e3a8a', fontSize: 12, fontWeight: 900 }
+const traceChangeValuesStyle = {
+  display: 'grid',
+  gridTemplateColumns: 'minmax(0, 1fr) auto minmax(0, 1fr)',
+  alignItems: 'stretch',
+  gap: 8
+}
+const traceChangeValueStyle = {
+  display: 'grid',
+  gap: 4,
+  minWidth: 0,
+  padding: '8px 10px',
+  border: '1px solid #e2e8f0',
+  borderRadius: 7,
+  background: '#ffffff',
+  color: '#0f172a',
+  fontSize: 12,
+  lineHeight: 1.8,
+  overflowWrap: 'anywhere'
+}
+const traceChangeLabelStyle = { color: '#64748b', fontSize: 11, fontWeight: 800 }
+const traceChangeArrowStyle = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  color: '#2563eb',
+  fontWeight: 900
+}

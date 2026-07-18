@@ -217,6 +217,7 @@ function MenuIcon({ name }) {
           <path d="M9.5 12l1.8 1.8 3.5-4" />
         </svg>
       );
+    case "admin":
     case "users":
       return (
         <svg viewBox="0 0 24 24" {...common}>
@@ -239,6 +240,7 @@ function MenuIcon({ name }) {
           <path d="M9 20v-6h6v6M9 10h.01M12 10h.01M15 10h.01" />
         </svg>
       );
+    case "rule-management":
     case "rules":
       return (
         <svg viewBox="0 0 24 24" {...common}>

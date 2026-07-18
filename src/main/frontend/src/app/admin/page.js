@@ -6,6 +6,39 @@ import AppShell from '../components/app-shell';
 import RefreshButton from '../components/refresh-button';
 import { fetchCurrentUser, fetchGroupPermissions, fetchPermissions, fetchTaxUnits, fetchUsers } from '../lib/security';
 
+function enabledUsers(users) {
+  return users.filter((user) => user.enabledInBusinessSystem).length;
+}
+
+function moduleCards(users, permissions, taxUnits) {
+  return [
+    {
+      href: '/admin/users',
+      eyebrow: 'کاربران',
+      title: 'مدیریت کاربران',
+      description: 'ایجاد و ویرایش پروفایل‌های متصل به Keycloak، نقش کسب‌وکاری و وضعیت دسترسی.',
+      stat: users.length,
+      statLabel: 'پروفایل'
+    },
+    {
+      href: '/admin/permissions',
+      eyebrow: 'دسترسی',
+      title: 'مجوزها',
+      description: 'اعطا و لغو مجوزهای کسب‌وکاری برای نقش‌ها و گروه‌های سامانه.',
+      stat: permissions.length,
+      statLabel: 'مجوز'
+    },
+    {
+      href: '/admin/organizations',
+      eyebrow: 'سازمان',
+      title: 'واحدهای سازمانی',
+      description: 'مدیریت اداره کل، اداره مالیات و واحدهای مالیاتی مرتبط با کاربران و پرونده‌ها.',
+      stat: taxUnits.length,
+      statLabel: 'واحد'
+    }
+  ];
+}
+
 export default function AdminDashboardPage() {
   const [currentUser, setCurrentUser] = useState(null);
   const [users, setUsers] = useState([]);
@@ -67,95 +100,114 @@ export default function AdminDashboardPage() {
     >
       {message && <div className="notice error">{message}</div>}
 
-      <section className="admin-grid">
-        <article className="metric-card">
+      <section className="admin-control-hero">
+        <div className="admin-control-hero__main">
+          <p className="eyebrow">کنترل دسترسی و ساختار</p>
+          <h2>مدیریت سامانه</h2>
+          <span>نمای متمرکز برای کاربران، مجوزها و واحدهای سازمانی سامانه وصول و اجرا.</span>
+        </div>
+        <div className="admin-control-hero__profile">
           <span>کاربر جاری</span>
-          <strong>{currentUser?.username || 'نامشخص'}</strong>
-          <small>{currentUser?.fullName || 'اطلاعات پروفایل در دسترس نیست'}</small>
+          <strong>{currentUser?.fullName || currentUser?.username || 'نامشخص'}</strong>
+          <small>{currentUser?.businessRole || currentUser?.keycloakRoles?.join('، ') || 'بدون نقش'}</small>
+        </div>
+      </section>
+
+      <section className="admin-control-stats">
+        <article>
+          <span>کاربران فعال</span>
+          <strong>{enabledUsers(users).toLocaleString('fa-IR')}</strong>
+          <small>از {users.length.toLocaleString('fa-IR')} پروفایل</small>
         </article>
-        <article className="metric-card metric-card--success">
-          <span>دسترسی‌های کاربر جاری</span>
-          <strong>{(currentUser?.localBusinessPermissions?.length || 0).toLocaleString('fa-IR')}</strong>
-          <small>{currentUser?.keycloakRoles?.join('، ') || 'بدون نقش'}</small>
+        <article>
+          <span>مجوزهای تعریف‌شده</span>
+          <strong>{permissions.length.toLocaleString('fa-IR')}</strong>
+          <small>{groupPermissions.length.toLocaleString('fa-IR')} نگاشت نقش/گروه</small>
         </article>
-        <article className="metric-card metric-card--warning">
+        <article>
           <span>واحدهای مالیاتی</span>
           <strong>{taxUnits.length.toLocaleString('fa-IR')}</strong>
-          <small>اداره کل، اداره مالیات و واحد مالیاتی</small>
+          <small>متصل به ساختار اداری</small>
         </article>
       </section>
 
-      <section className="panel-section">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">ورود دستی داده</p>
-            <h2>ثبت برگ بدهی قطعی و برگ اجرا</h2>
-          </div>
-          <Link className="text-action" href="/admin/data-entry">رفتن به داشبورد داده</Link>
-        </div>
-        <div className="empty-state compact">
-          <strong>ثبت دستی موجودیت‌های عملیاتی</strong>
-          <span>از این بخش می‌توانید برگ بدهی قطعی را با فرم کامل وارد کنید، آن را به Camunda ارسال کنید، یا برگ اجرا را مستقیما از داده‌های موجود بسازید.</span>
-        </div>
-      </section>
-
-      <section className="panel-section">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">کاربران</p>
-            <h2>پروفایل‌های متصل به Keycloak</h2>
-          </div>
-          <Link className="text-action" href="/admin/users">مدیریت کاربران</Link>
-        </div>
-        <div className="admin-table">
-          {users.slice(0, 8).map((user) => (
-            <div className="admin-row" key={user.id}>
-              <div>
-                <strong>{user.fullName || user.username}</strong>
-                <span>{user.username} · {user.email || 'بدون ایمیل'}</span>
-              </div>
-              <span className={`status-pill ${user.enabledInBusinessSystem ? 'status-pill--ready' : 'status-pill--loading'}`}>
-                {user.enabledInBusinessSystem ? 'فعال' : 'غیرفعال'}
-              </span>
+      <section className="admin-module-grid">
+        {moduleCards(users, permissions, taxUnits).map((card) => (
+          <Link className="admin-module-card" href={card.href} key={card.href}>
+            <div>
+              <p className="eyebrow">{card.eyebrow}</p>
+              <h2>{card.title}</h2>
+              <span>{card.description}</span>
             </div>
-          ))}
-          {!loading && users.length === 0 && <div className="empty-state compact">هنوز پروفایل کاربری ثبت نشده است.</div>}
+            <footer>
+              <strong>{card.stat.toLocaleString('fa-IR')}</strong>
+              <span>{card.statLabel}</span>
+            </footer>
+          </Link>
+        ))}
+      </section>
+
+      <section className="admin-preview-grid">
+        <div className="admin-preview-panel">
+          <div className="admin-preview-panel__header">
+            <div>
+              <p className="eyebrow">کاربران</p>
+              <h2>آخرین پروفایل‌ها</h2>
+            </div>
+            <Link href="/admin/users">مشاهده همه</Link>
+          </div>
+          <div className="admin-preview-list">
+            {users.slice(0, 6).map((user) => (
+              <div className="admin-preview-row" key={user.id}>
+                <div>
+                  <strong>{user.fullName || user.username}</strong>
+                  <span>{user.username} · {user.email || 'بدون ایمیل'}</span>
+                </div>
+                <em className={user.enabledInBusinessSystem ? 'admin-preview-status admin-preview-status--ok' : 'admin-preview-status'}>
+                  {user.enabledInBusinessSystem ? 'فعال' : 'غیرفعال'}
+                </em>
+              </div>
+            ))}
+            {!loading && users.length === 0 && <div className="empty-state compact">هنوز پروفایل کاربری ثبت نشده است.</div>}
+          </div>
+        </div>
+
+        <div className="admin-preview-panel">
+          <div className="admin-preview-panel__header">
+            <div>
+              <p className="eyebrow">سازمان</p>
+              <h2>واحدهای مالیاتی</h2>
+            </div>
+            <Link href="/admin/organizations">مدیریت واحدها</Link>
+          </div>
+          <div className="admin-preview-list">
+            {taxUnits.slice(0, 6).map((unit) => (
+              <div className="admin-preview-row" key={unit.id}>
+                <div>
+                  <strong>{unit.taxUnitName}</strong>
+                  <span>{unit.taxAffairsOfficeName || 'بدون اداره مالیات'} · {unit.generalDirectorateName || 'بدون اداره کل'}</span>
+                </div>
+                <em className="admin-preview-status admin-preview-status--ok">ثبت‌شده</em>
+              </div>
+            ))}
+            {!loading && taxUnits.length === 0 && <div className="empty-state compact">هنوز واحد مالیاتی ثبت نشده است.</div>}
+          </div>
         </div>
       </section>
 
-      <section className="panel-section">
-        <div className="section-heading">
+      <section className="admin-access-panel">
+        <div className="admin-preview-panel__header">
           <div>
             <p className="eyebrow">مجوزها</p>
-            <h2>نگاشت نقش/گروه به مجوزهای کسب‌وکاری</h2>
+            <h2>نگاشت‌های فعال نقش/گروه</h2>
           </div>
-          <Link className="text-action" href="/admin/permissions">مدیریت مجوزها</Link>
+          <Link href="/admin/permissions">مدیریت مجوزها</Link>
         </div>
-        <div className="permission-cloud">
-          {groupPermissions.slice(0, 24).map((item) => (
+        <div className="admin-access-cloud">
+          {groupPermissions.slice(0, 18).map((item) => (
             <span key={item.id}>{item.groupName}: {item.permission?.code}</span>
           ))}
-        </div>
-      </section>
-
-      <section className="panel-section">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">سازمان</p>
-            <h2>ساختار واحدهای مالیاتی</h2>
-          </div>
-          <Link className="text-action" href="/admin/organizations">مدیریت واحدها</Link>
-        </div>
-        <div className="admin-table">
-          {taxUnits.slice(0, 8).map((unit) => (
-            <div className="admin-row" key={unit.id}>
-              <div>
-                <strong>{unit.taxUnitName}</strong>
-                <span>{unit.taxAffairsOfficeName || 'بدون اداره مالیات'} · {unit.generalDirectorateName || 'بدون اداره کل'}</span>
-              </div>
-              <span className="status-pill status-pill--ready">ثبت‌شده</span>
-            </div>
-          ))}
+          {!loading && groupPermissions.length === 0 && <div className="empty-state compact">هنوز نگاشت مجوزی ثبت نشده است.</div>}
         </div>
       </section>
     </AppShell>

@@ -165,7 +165,7 @@ export default function AdminUsersPage() {
 
   return (
     <AppShell
-      active="users"
+      active="admin"
       title="مدیریت کاربران"
       eyebrow="پروفایل‌های محلی"
       actions={<RefreshButton onClick={loadUsers} loading={loading} />}
