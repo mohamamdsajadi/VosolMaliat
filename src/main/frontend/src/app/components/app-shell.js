@@ -211,13 +211,6 @@ function MenuIcon({ name }) {
         </svg>
       );
     case "admin":
-      return (
-        <svg viewBox="0 0 24 24" {...common}>
-          <path d="M12 3l7 3v5c0 4.2-2.8 7.8-7 10-4.2-2.2-7-5.8-7-10V6z" />
-          <path d="M9.5 12l1.8 1.8 3.5-4" />
-        </svg>
-      );
-    case "admin":
     case "users":
       return (
         <svg viewBox="0 0 24 24" {...common}>

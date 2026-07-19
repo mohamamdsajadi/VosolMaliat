@@ -11,7 +11,6 @@ import {
 } from '../../../lib/admin-data-entry';
 import { fetchGeneralDirectorates, fetchTaxAffairsOffices, fetchTaxUnits } from '../../../lib/security';
 import {
-  DataList,
   FieldGrid,
   Input,
   MoneyFields,
@@ -173,11 +172,6 @@ export default function FinalizedDebtPaperEntryPage() {
         </form>
       </section>
 
-      <DataList
-        title="آخرین برگ‌های بدهی قطعی"
-        items={summary.finalizedDebtPapers || []}
-        render={(item) => `${item.debtPaperUniqueCode} · ${item.taxSource || '-'}`}
-      />
     </AppShell>
   );
 }
