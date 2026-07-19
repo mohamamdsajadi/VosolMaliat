@@ -159,12 +159,17 @@ export default function ProcessTasksPage() {
         `کارهای فعال: ${formatFaNumber(tasks.length)}`
       ]}
       actions={(
-        <>
-          <button className="primary-action" onClick={startProcess} disabled={starting || !processDefinitionKey}>
+        <div className="process-page-actions">
+          <button className="primary-action process-start-action" onClick={startProcess} disabled={starting || !processDefinitionKey}>
+            <span aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M8 5.5v13l10-6.5Z" />
+              </svg>
+            </span>
             {starting ? 'در حال شروع...' : 'شروع پرونده جدید'}
           </button>
           <RefreshButton onClick={loadTasks} loading={loadingTasks} disabled={!processDefinitionKey}>بروزرسانی صف</RefreshButton>
-        </>
+        </div>
       )}
     >
       <section className="workflow-panel">
@@ -191,7 +196,15 @@ export default function ProcessTasksPage() {
             <p className="eyebrow">صف کارشناسان</p>
             <h2>کارهای فعال این فرایند</h2>
           </div>
-          <Link className="text-action" href="/">بازگشت به داشبورد فرایندها</Link>
+          <Link className="process-back-action" href="/">
+            <span aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M15 6l-6 6 6 6" />
+                <path d="M9 12h11" />
+              </svg>
+            </span>
+            بازگشت به داشبورد
+          </Link>
         </div>
 
         {message && <div className="notice error">{message}</div>}
