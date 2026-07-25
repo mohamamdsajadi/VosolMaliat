@@ -21,7 +21,7 @@ public class SendRejectionResponseWorker {
     private final IssuanceRequestService issuanceRequestService;
     private final FakeSanimInformService fakeSanimInformService;
 
-    @JobWorker(type = ProcessConstants.JOB_SEND_REJECTION)
+    @JobWorker(type = ProcessConstants.JOB_SEND_REJECTION, autoComplete = false)
     public void handle(final JobClient client, final ActivatedJob job) {
         log.debug("Processing job: inform_sanim_rejection, key={}", job.getKey());
         try {
@@ -50,11 +50,7 @@ public class SendRejectionResponseWorker {
             client.newCompleteCommand(job.getKey()).variables(outputVars).send().join();
         } catch (Exception e) {
             log.error("Error in SendRejectionResponseWorker", e);
-            client.newFailCommand(job.getKey())
-                    .retries(job.getRetries() - 1)
-                    .errorMessage(e.getMessage())
-                    .send()
-                    .join();
+            WorkerFailureHandler.failSafely(client, job, e, log);
         }
     }
 }

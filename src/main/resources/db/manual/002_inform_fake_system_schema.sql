@@ -25,7 +25,6 @@ CREATE TABLE IF NOT EXISTS fake_electronic_notification_request (
     status VARCHAR(255),
     payload TEXT,
     sent_at VARCHAR(255),
-    auto_confirm_at VARCHAR(255),
     inform_date VARCHAR(255),
     confirmed_at VARCHAR(255),
     callback_delivered_at VARCHAR(255),

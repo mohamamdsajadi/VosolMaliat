@@ -1,6 +1,7 @@
 package com.mparsict.vosolmaliat.application.service.security;
 
 import com.mparsict.vosolmaliat.application.security.CurrentUserContext;
+import com.mparsict.vosolmaliat.domain.enums.BusinessRole;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -9,23 +10,31 @@ import java.util.Map;
 public class OrganizationScopeService {
 
     public boolean canAccessTaskVariables(CurrentUserContext user, Map<String, Object> variables) {
-        if (user.isAdmin() || variables == null || variables.isEmpty() || user.organization() == null) {
+        if (user.isAdmin()) {
             return true;
         }
-        Object generalDirectorateId = firstPresent(variables, "generalDirectorateId", "mainTaxBureauId", "general_directorate_id", "main_tax_bureau_id");
-        if (generalDirectorateId != null && user.organization().generalDirectorateId() != null) {
-            return user.organization().generalDirectorateId().toString().equals(generalDirectorateId.toString());
+        if (variables == null || variables.isEmpty() || user.organization() == null || user.businessRole() == null) {
+            return false;
         }
-        Object taxAffairsOfficeId = firstPresent(variables, "taxAffairsOfficeId", "taxBureauId", "tax_affairs_office_id", "tax_bureau_id");
-        if (taxAffairsOfficeId != null && user.organization().taxAffairsOfficeId() != null) {
-            return user.organization().taxAffairsOfficeId().toString().equals(taxAffairsOfficeId.toString());
-        }
-        Object taxUnitId = firstPresent(variables, "taxUnitId", "tax_unit_id");
-        if (taxUnitId == null) {
-            return true;
-        }
-        return user.organization().taxUnitId() != null
-                && user.organization().taxUnitId().toString().equals(taxUnitId.toString());
+        BusinessRole role = user.businessRole();
+        return switch (role) {
+            case GENERAL_OFFICE_HEAD -> matches(
+                    user.organization().generalDirectorateId(),
+                    firstPresent(variables, "generalDirectorateId", "mainTaxBureauId", "general_directorate_id", "main_tax_bureau_id"));
+            case TAX_OFFICE_HEAD -> matches(
+                    user.organization().taxAffairsOfficeId(),
+                    firstPresent(variables, "taxAffairsOfficeId", "taxBureauId", "tax_affairs_office_id", "tax_bureau_id"));
+            case TAX_UNIT_HEAD, TAX_EXPERT -> matches(
+                    user.organization().taxUnitId(),
+                    firstPresent(variables, "taxUnitId", "tax_unit_id"));
+            case ADMIN -> true;
+        };
+    }
+
+    private boolean matches(Long userOrganizationId, Object taskOrganizationId) {
+        return userOrganizationId != null
+                && taskOrganizationId != null
+                && userOrganizationId.toString().equals(taskOrganizationId.toString());
     }
 
     private Object firstPresent(Map<String, Object> variables, String... keys) {

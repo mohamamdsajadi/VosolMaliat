@@ -18,7 +18,7 @@ public class UpdateInformStatusWorker {
 
     private final InformProcessService informProcessService;
 
-    @JobWorker(type = ProcessConstants.JOB_UPDATE_INFORM_STATUS)
+    @JobWorker(type = ProcessConstants.JOB_UPDATE_INFORM_STATUS, autoComplete = false)
     public void handle(JobClient client, ActivatedJob job) {
         try {
             Map<String, Object> variables = job.getVariablesAsMap();
@@ -36,12 +36,15 @@ public class UpdateInformStatusWorker {
             client.newCompleteCommand(job.getKey()).send().join();
         } catch (Exception ex) {
             log.error("Error in UpdateInformStatusWorker", ex);
-            client.newFailCommand(job.getKey()).retries(job.getRetries() - 1).errorMessage(ex.getMessage()).send().join();
+            WorkerFailureHandler.failSafely(client, job, ex, log);
         }
     }
 
     private Long requiredLong(Map<String, Object> variables, String variable) {
         Object value = variables.get(variable);
+        if (value == null) {
+            throw new IllegalStateException("Required process variable is missing: " + variable);
+        }
         if (value instanceof Number number) {
             return number.longValue();
         }

@@ -238,7 +238,7 @@ public class CartableService {
                     .send()
                     .join();
             if (targetAssignee != null) {
-                waitForNextDelegationTask(task.getProcessInstanceKey(), nextRole, targetAssignee)
+                waitForNextDelegationTask(task.getProcessInstanceKey(), nextRole, targetAssignee, variables)
                         .filter(nextTask -> !targetAssignee.equals(nextTask.getAssignee()))
                         .ifPresent(nextTask -> camundaClient.newAssignUserTaskCommand(nextTask.getUserTaskKey())
                                 .assignee(targetAssignee)
@@ -329,7 +329,13 @@ public class CartableService {
         return "taskKey=" + taskKey + "; value=" + normalized;
     }
 
-    private Optional<UserTask> waitForNextDelegationTask(Long processInstanceKey, BusinessRole nextRole, String targetAssignee) {
+    private Optional<UserTask> waitForNextDelegationTask(
+            Long processInstanceKey,
+            BusinessRole nextRole,
+            String targetAssignee,
+            Map<String, Object> variables) {
+        String scopedCandidateGroup = OrganizationCandidateGroup.forOrganization(
+                nextRole, organizationIdForRole(nextRole, variables));
         for (int attempt = 0; attempt < 10; attempt++) {
             Optional<UserTask> task = Optional.empty();
             if (targetAssignee != null) {
@@ -341,10 +347,11 @@ public class CartableService {
                         .findFirst();
             }
             if (task.isEmpty()) {
+                String candidateGroup = scopedCandidateGroup == null ? nextRole.name() : scopedCandidateGroup;
                 task = searchTasks(filter -> filter
                         .state(UserTaskState.CREATED)
                         .processInstanceKey(processInstanceKey)
-                        .candidateGroup(nextRole.name()))
+                        .candidateGroup(candidateGroup))
                         .stream()
                         .findFirst();
             }
@@ -354,6 +361,26 @@ public class CartableService {
             sleepBriefly();
         }
         return Optional.empty();
+    }
+
+    private Long organizationIdForRole(BusinessRole role, Map<String, Object> variables) {
+        Object value = switch (role) {
+            case GENERAL_OFFICE_HEAD -> firstPresent(variables, "generalDirectorateId", "mainTaxBureauId", "general_directorate_id", "main_tax_bureau_id");
+            case TAX_OFFICE_HEAD -> firstPresent(variables, "taxAffairsOfficeId", "taxBureauId", "tax_affairs_office_id", "tax_bureau_id");
+            case TAX_UNIT_HEAD, TAX_EXPERT -> firstPresent(variables, "taxUnitId", "tax_unit_id");
+            case ADMIN -> null;
+        };
+        if (value instanceof Number number) {
+            return number.longValue();
+        }
+        if (value == null) {
+            return null;
+        }
+        try {
+            return Long.valueOf(value.toString());
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
     }
 
     private void sleepBriefly() {

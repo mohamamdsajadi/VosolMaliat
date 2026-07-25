@@ -18,7 +18,7 @@ public class SetDebtInquiryDateWorker {
 
     private final InformProcessService informProcessService;
 
-    @JobWorker(type = ProcessConstants.JOB_SET_INQUIRE)
+    @JobWorker(type = ProcessConstants.JOB_SET_INQUIRE, autoComplete = false)
     public void handle(JobClient client, ActivatedJob job) {
         try {
             Map<String, Object> variables = job.getVariablesAsMap();
@@ -33,7 +33,7 @@ public class SetDebtInquiryDateWorker {
                     .join();
         } catch (Exception ex) {
             log.error("Error in SetDebtInquiryDateWorker", ex);
-            client.newFailCommand(job.getKey()).retries(job.getRetries() - 1).errorMessage(ex.getMessage()).send().join();
+            WorkerFailureHandler.failSafely(client, job, ex, log);
         }
     }
 

@@ -13,7 +13,6 @@ const TABLE_HEADERS = [
   'کد رهگیری',
   'وضعیت',
   'زمان ارسال',
-  'تایید خودکار',
   'تاریخ ابلاغ',
   'زمان تایید',
   'ارسال پیام',
@@ -129,7 +128,6 @@ export default function FakeElectronicNotificationPage() {
                         </span>
                       </td>
                       <td className="task-grid-cell">{formatJalaliDateTime(item.sentAt)}</td>
-                      <td className="task-grid-cell">{formatJalaliDateTime(item.autoConfirmAt)}</td>
                       <td className="task-grid-cell">{formatJalaliDateTime(item.informDate)}</td>
                       <td className="task-grid-cell">{formatJalaliDateTime(item.confirmedAt)}</td>
                       <td className="task-grid-cell">{formatJalaliDateTime(item.callbackDeliveredAt)}</td>

@@ -16,6 +16,10 @@ public class CamundaIdentityMappingService {
     public Set<String> toCamundaCandidateGroups(CurrentUserContext user) {
         Set<String> groups = new TreeSet<>(user.roles());
         groups.addAll(user.groups());
+        String organizationGroup = OrganizationCandidateGroup.forUser(user.businessRole(), user.organization());
+        if (organizationGroup != null) {
+            groups.add(organizationGroup);
+        }
         return groups;
     }
 }

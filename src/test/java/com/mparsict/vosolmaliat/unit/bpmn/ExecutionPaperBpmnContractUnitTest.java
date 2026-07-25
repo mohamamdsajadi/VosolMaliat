@@ -1,6 +1,5 @@
 package com.mparsict.vosolmaliat.unit.bpmn;
 
-import com.mparsict.vosolmaliat.domain.enums.BusinessRole;
 import com.mparsict.vosolmaliat.infrastructure.camunda.ProcessConstants;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
@@ -31,6 +30,8 @@ class ExecutionPaperBpmnContractUnitTest {
         assertThat(zeebeTaskType("Activity_1ahtl92")).isEqualTo(ProcessConstants.JOB_CHECK_ISSUANCE);
         assertThat(zeebeTaskType("Activity_0rwz3ak")).isEqualTo(ProcessConstants.JOB_ISSUE_PAPER);
         assertThat(zeebeTaskType("Activity_010iyzn")).isEqualTo(ProcessConstants.JOB_SEND_REJECTION);
+        assertThat(zeebeTaskType("Activity_1f7l5yj"))
+                .isEqualTo(ProcessConstants.JOB_SEND_EXECUTION_PAPER_ID_TO_SANIM);
     }
 
     @Test
@@ -46,15 +47,15 @@ class ExecutionPaperBpmnContractUnitTest {
 
     @Test
     void operationalUserTasksFollowTheBusinessRoleDelegationHierarchy() {
-        Map<String, BusinessRole> expectedCandidateGroups = Map.of(
-                "Activity_0generalHeadReview", BusinessRole.GENERAL_OFFICE_HEAD,
-                "Activity_0taxOfficeHeadReview", BusinessRole.TAX_OFFICE_HEAD,
-                "Activity_0taxUnitHeadReview", BusinessRole.TAX_UNIT_HEAD,
-                "Activity_0taxExpertProcess", BusinessRole.TAX_EXPERT
+        Map<String, String> expectedCandidateGroups = Map.of(
+                "Activity_0generalHeadReview", ProcessConstants.VAR_GENERAL_OFFICE_HEAD_CANDIDATE_GROUPS,
+                "Activity_0taxOfficeHeadReview", ProcessConstants.VAR_TAX_OFFICE_HEAD_CANDIDATE_GROUPS,
+                "Activity_0taxUnitHeadReview", ProcessConstants.VAR_TAX_UNIT_HEAD_CANDIDATE_GROUPS,
+                "Activity_0taxExpertProcess", ProcessConstants.VAR_TAX_EXPERT_CANDIDATE_GROUPS
         );
 
-        expectedCandidateGroups.forEach((taskId, role) ->
-                assertThat(candidateGroups(taskId)).isEqualTo(role.name()));
+        expectedCandidateGroups.forEach((taskId, variable) ->
+                assertThat(candidateGroups(taskId)).isEqualTo("=" + variable));
 
         assertThat(sequenceSourceAndTarget("Flow_0generalHeadDone"))
                 .containsEntry("sourceRef", "Activity_0generalHeadReview")

@@ -16,7 +16,7 @@ public class SendExecutionPaperToElectronicNotificationWorker {
 
     private final InformProcessService informProcessService;
 
-    @JobWorker(type = ProcessConstants.JOB_SEND_TO_ELECTRONIC_NOTIFICATION)
+    @JobWorker(type = ProcessConstants.JOB_SEND_TO_ELECTRONIC_NOTIFICATION, autoComplete = false)
     public void handle(JobClient client, ActivatedJob job) {
         try {
             Long executionPaperId = requiredLong(job, ProcessConstants.VAR_EXECUTION_PAPER_ID);
@@ -24,7 +24,7 @@ public class SendExecutionPaperToElectronicNotificationWorker {
             client.newCompleteCommand(job.getKey()).send().join();
         } catch (Exception ex) {
             log.error("Error in SendExecutionPaperToElectronicNotificationWorker", ex);
-            client.newFailCommand(job.getKey()).retries(job.getRetries() - 1).errorMessage(ex.getMessage()).send().join();
+            WorkerFailureHandler.failSafely(client, job, ex, log);
         }
     }
 

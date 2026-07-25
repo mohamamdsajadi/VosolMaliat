@@ -24,6 +24,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class FakeSanimInformService {
 
+    private static final String MESSAGE_TYPE_EXECUTION_PAPER_ID = "EXECUTION_PAPER_ID";
     private static final String MESSAGE_TYPE_INFORM_DATE = "INFORM_DATE";
     private static final String MESSAGE_TYPE_ISSUANCE_REJECTION = "ISSUANCE_REJECTION";
     private static final String STATUS_SENT = "SENT";
@@ -34,6 +35,23 @@ public class FakeSanimInformService {
     private final ExecutionPaperIssuanceRequestRepository issuanceRequestRepository;
     private final AuditLogService auditLogService;
     private final ObjectMapper objectMapper;
+
+    @Transactional
+    public FakeSanimInformResponse sendExecutionPaperId(Long executionPaperId) {
+        ExecutionPaper executionPaper = executionPaperRepository.findById(executionPaperId)
+                .orElseThrow(() -> new BusinessException("EXECUTION_PAPER_NOT_FOUND", "برگ اجرا یافت نشد"));
+        FakeSanimInformRequest request = FakeSanimInformRequest.builder()
+                .executionPaper(executionPaper)
+                .messageType(MESSAGE_TYPE_EXECUTION_PAPER_ID)
+                .status(STATUS_SENT)
+                .payload(toExecutionPaperIdPayload(executionPaper))
+                .sentAt(LocalDateTime.now().toString())
+                .build();
+        FakeSanimInformRequest saved = repository.save(request);
+        auditLogService.record(null, "EXECUTION_PAPER_ID_SENT_TO_SANIM", "EXECUTION_PAPER",
+                executionPaperId.toString(), null, executionPaper.getExecutionPaperUniqueCode());
+        return toResponse(saved);
+    }
 
     @Transactional
     public FakeSanimInformResponse sendInformDate(Long executionPaperId, String informDate) {
@@ -111,6 +129,18 @@ public class FakeSanimInformService {
         }
     }
 
+    private String toExecutionPaperIdPayload(ExecutionPaper executionPaper) {
+        try {
+            Map<String, Object> payload = new LinkedHashMap<>();
+            payload.put("messageType", MESSAGE_TYPE_EXECUTION_PAPER_ID);
+            payload.put("executionPaperId", executionPaper.getId());
+            payload.put("executionPaperCode", executionPaper.getExecutionPaperUniqueCode());
+            return objectMapper.writeValueAsString(payload);
+        } catch (JsonProcessingException ex) {
+            throw new BusinessException("FAKE_SANIM_PAYLOAD_ERROR", "خطا در ساخت payload سنیم: " + ex.getMessage(), ex);
+        }
+    }
+
     private String toRejectionPayload(
             String debtPaperId,
             String rejectionReasonCode,
@@ -134,6 +164,7 @@ public class FakeSanimInformService {
                 request.getId(),
                 request.getExecutionPaperId(),
                 request.getExecutionPaper() == null ? null : request.getExecutionPaper().getExecutionPaperUniqueCode(),
+                request.getExecutionPaper() == null ? null : request.getExecutionPaper().getCreatedAt(),
                 request.getMessageType(),
                 request.getDebtPaperId(),
                 request.getStatus(),

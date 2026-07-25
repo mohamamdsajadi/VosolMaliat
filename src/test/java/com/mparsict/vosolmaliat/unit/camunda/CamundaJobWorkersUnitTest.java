@@ -13,6 +13,7 @@ import com.mparsict.vosolmaliat.infrastructure.camunda.ProcessConstants;
 import com.mparsict.vosolmaliat.infrastructure.camunda.worker.CheckInformPossibilityWorker;
 import com.mparsict.vosolmaliat.infrastructure.camunda.worker.CheckIssuancePossibilityWorker;
 import com.mparsict.vosolmaliat.infrastructure.camunda.worker.IssueExecutionPaperWorker;
+import com.mparsict.vosolmaliat.infrastructure.camunda.worker.SendExecutionPaperIdToSanimWorker;
 import com.mparsict.vosolmaliat.infrastructure.camunda.worker.SendExecutionPaperToElectronicNotificationWorker;
 import com.mparsict.vosolmaliat.infrastructure.camunda.worker.SendInformDataToSanimWorker;
 import com.mparsict.vosolmaliat.infrastructure.camunda.worker.SendRejectionResponseWorker;
@@ -21,9 +22,11 @@ import com.mparsict.vosolmaliat.infrastructure.camunda.worker.SetReInformDateWor
 import com.mparsict.vosolmaliat.infrastructure.camunda.worker.UpdateInformStatusWorker;
 import io.camunda.client.api.response.ActivatedJob;
 import io.camunda.client.api.worker.JobClient;
+import io.camunda.client.annotation.JobWorker;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Proxy;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -32,6 +35,34 @@ import static org.assertj.core.api.Assertions.assertThat;
 class CamundaJobWorkersUnitTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @Test
+    void manuallyCompletedWorkersDisableFrameworkAutoCompletion() throws Exception {
+        List<Class<?>> workers = List.of(
+                CheckIssuancePossibilityWorker.class,
+                IssueExecutionPaperWorker.class,
+                SendRejectionResponseWorker.class,
+                SendExecutionPaperIdToSanimWorker.class,
+                CheckInformPossibilityWorker.class,
+                SendExecutionPaperToElectronicNotificationWorker.class,
+                UpdateInformStatusWorker.class,
+                SetReInformDateWorker.class,
+                SetDebtInquiryDateWorker.class,
+                SendInformDataToSanimWorker.class
+        );
+
+        for (Class<?> worker : workers) {
+            JobWorker annotation = worker
+                    .getMethod("handle", JobClient.class, ActivatedJob.class)
+                    .getAnnotation(JobWorker.class);
+            assertThat(annotation)
+                    .as("%s handle method must be a job worker", worker.getSimpleName())
+                    .isNotNull();
+            assertThat(annotation.autoComplete())
+                    .as("%s manually completes jobs", worker.getSimpleName())
+                    .isFalse();
+        }
+    }
 
     @Test
     void checkIssuancePossibilityCompletesJobWithRuleEngineResult() throws Exception {
@@ -79,6 +110,10 @@ class CamundaJobWorkersUnitTest {
                 .containsEntry(ProcessConstants.VAR_TAX_UNIT_ID, 7L)
                 .containsEntry(ProcessConstants.VAR_TAX_AFFAIRS_OFFICE_ID, 70L)
                 .containsEntry(ProcessConstants.VAR_GENERAL_DIRECTORATE_ID, 700L)
+                .containsEntry(ProcessConstants.VAR_GENERAL_OFFICE_HEAD_CANDIDATE_GROUPS, List.of("GENERAL_OFFICE_HEAD:700"))
+                .containsEntry(ProcessConstants.VAR_TAX_OFFICE_HEAD_CANDIDATE_GROUPS, List.of("TAX_OFFICE_HEAD:70"))
+                .containsEntry(ProcessConstants.VAR_TAX_UNIT_HEAD_CANDIDATE_GROUPS, List.of("TAX_UNIT_HEAD:7"))
+                .containsEntry(ProcessConstants.VAR_TAX_EXPERT_CANDIDATE_GROUPS, List.of("TAX_EXPERT:7"))
                 .containsEntry(ProcessConstants.VAR_SUCCESS, true);
     }
 
@@ -102,6 +137,18 @@ class CamundaJobWorkersUnitTest {
         assertThat(fakeSanimInformService.issuanceRejectionRequestId).isEqualTo(123L);
         assertThat(client.completed).isTrue();
         assertThat(client.completeVariables).containsEntry(ProcessConstants.VAR_SUCCESS, false);
+    }
+
+    @Test
+    void sendExecutionPaperIdToSanimDelegatesToFakeSanimAndCompletesJob() {
+        StubFakeSanimInformService fakeSanimInformService = new StubFakeSanimInformService();
+        SendExecutionPaperIdToSanimWorker worker = new SendExecutionPaperIdToSanimWorker(fakeSanimInformService);
+        CamundaJobClientStub client = new CamundaJobClientStub();
+
+        worker.handle(client.proxy(), job(Map.of(ProcessConstants.VAR_EXECUTION_PAPER_ID, 99L)));
+
+        assertThat(fakeSanimInformService.executionPaperId).isEqualTo(99L);
+        assertThat(client.completed).isTrue();
     }
 
     @Test
@@ -455,9 +502,17 @@ class CamundaJobWorkersUnitTest {
 
     private static class StubFakeSanimInformService extends FakeSanimInformService {
         private Long issuanceRejectionRequestId;
+        private Long executionPaperId;
 
         private StubFakeSanimInformService() {
             super(null, null, null, null, new ObjectMapper());
+        }
+
+        @Override
+        public com.mparsict.vosolmaliat.application.dto.response.FakeSanimInformResponse sendExecutionPaperId(
+                Long executionPaperId) {
+            this.executionPaperId = executionPaperId;
+            return null;
         }
 
         @Override

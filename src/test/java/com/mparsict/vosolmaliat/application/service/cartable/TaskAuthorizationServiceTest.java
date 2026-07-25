@@ -47,14 +47,72 @@ class TaskAuthorizationServiceTest {
         assertThat(service.canView(admin, task, Map.of("taxUnitId", 99L))).isTrue();
     }
 
+    @Test
+    void generalOfficeHeadOnlySeesTasksForOwnGeneralDirectorate() {
+        CurrentUserContext tehranHead = user(
+                BusinessRole.GENERAL_OFFICE_HEAD,
+                Set.of("GENERAL_OFFICE_HEAD"),
+                Set.of("TASK_CLAIM"),
+                new MasterdataOrganizationResponse(700L, "Tehran", null, null, null, null));
+        UserTask task = task(null, List.of("GENERAL_OFFICE_HEAD:700"), List.of());
+
+        assertThat(service.canClaim(tehranHead, task, Map.of("generalDirectorateId", 700L))).isTrue();
+        assertThat(service.canClaim(tehranHead, task, Map.of("generalDirectorateId", 701L))).isFalse();
+    }
+
+    @Test
+    void taxOfficeHeadMustMatchOfficeEvenWhenGeneralDirectorateMatches() {
+        CurrentUserContext officeHead = user(
+                BusinessRole.TAX_OFFICE_HEAD,
+                Set.of("TAX_OFFICE_HEAD"),
+                Set.of("TASK_CLAIM"),
+                new MasterdataOrganizationResponse(700L, "Tehran", 70L, "Office 70", null, null));
+        UserTask task = task(null, List.of("TAX_OFFICE_HEAD:70"), List.of());
+
+        assertThat(service.canClaim(officeHead, task,
+                Map.of("generalDirectorateId", 700L, "taxAffairsOfficeId", 70L))).isTrue();
+        assertThat(service.canClaim(officeHead, task,
+                Map.of("generalDirectorateId", 700L, "taxAffairsOfficeId", 71L))).isFalse();
+    }
+
+    @Test
+    void identityMappingAddsUsersOrganizationScopedCandidateGroup() {
+        CurrentUserContext user = user(
+                BusinessRole.GENERAL_OFFICE_HEAD,
+                Set.of("GENERAL_OFFICE_HEAD"),
+                Set.of(),
+                new MasterdataOrganizationResponse(700L, "Tehran", null, null, null, null));
+
+        assertThat(new CamundaIdentityMappingService().toCamundaCandidateGroups(user))
+                .contains("GENERAL_OFFICE_HEAD", "GENERAL_OFFICE_HEAD:700");
+    }
+
     private CurrentUserContext user(Set<String> roles, Set<String> groups, Set<String> permissions, MasterdataOrganizationResponse organization) {
+        return user(roles.contains("ADMIN") ? BusinessRole.ADMIN : BusinessRole.TAX_EXPERT,
+                roles, permissions, organization, groups);
+    }
+
+    private CurrentUserContext user(
+            BusinessRole businessRole,
+            Set<String> roles,
+            Set<String> permissions,
+            MasterdataOrganizationResponse organization) {
+        return user(businessRole, roles, permissions, organization, Set.of());
+    }
+
+    private CurrentUserContext user(
+            BusinessRole businessRole,
+            Set<String> roles,
+            Set<String> permissions,
+            MasterdataOrganizationResponse organization,
+            Set<String> groups) {
         return new CurrentUserContext(
                 "kc-1",
                 "ali",
                 "ali@example.com",
                 "Ali",
                 "Ahmadi",
-                roles.contains("ADMIN") ? BusinessRole.ADMIN : BusinessRole.TAX_EXPERT,
+                businessRole,
                 roles,
                 groups,
                 permissions,

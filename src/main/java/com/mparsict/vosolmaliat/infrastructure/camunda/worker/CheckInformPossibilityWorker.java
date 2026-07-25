@@ -16,7 +16,7 @@ public class CheckInformPossibilityWorker {
 
     private final InformProcessService informProcessService;
 
-    @JobWorker(type = ProcessConstants.JOB_CHECK_INFORM)
+    @JobWorker(type = ProcessConstants.JOB_CHECK_INFORM, autoComplete = false)
     public void handle(JobClient client, ActivatedJob job) {
         try {
             Long executionPaperId = requiredLong(job, ProcessConstants.VAR_EXECUTION_PAPER_ID);
@@ -26,7 +26,7 @@ public class CheckInformPossibilityWorker {
                     .join();
         } catch (Exception ex) {
             log.error("Error in CheckInformPossibilityWorker", ex);
-            fail(client, job, ex);
+            WorkerFailureHandler.failSafely(client, job, ex, log);
         }
     }
 
@@ -41,11 +41,4 @@ public class CheckInformPossibilityWorker {
         return Long.valueOf(String.valueOf(value));
     }
 
-    private void fail(JobClient client, ActivatedJob job, Exception ex) {
-        try {
-            client.newFailCommand(job.getKey()).retries(job.getRetries() - 1).errorMessage(ex.getMessage()).send().join();
-        } catch (Exception failEx) {
-            log.warn("Could not send fail command for job key={}: {}", job.getKey(), failEx.getMessage());
-        }
-    }
 }

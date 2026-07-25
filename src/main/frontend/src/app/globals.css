@@ -1718,6 +1718,19 @@ textarea {
     margin: 0 auto;
 }
 
+.fake-service-page--sanim {
+    width: 100%;
+    max-width: none;
+    margin-right: 0;
+    margin-left: 0;
+}
+
+.fake-service-page--sanim .fake-service-table-card,
+.fake-service-page--sanim .task-table-scroll {
+    width: 100%;
+    max-width: none;
+}
+
 .fake-service-hero {
     display: flex;
     align-items: center;
@@ -2053,7 +2066,7 @@ textarea {
 }
 
 .fake-service-table--sanim {
-    min-width: 1240px;
+    min-width: 1420px;
 }
 
 .fake-service-row--rejection {
@@ -2128,6 +2141,75 @@ textarea {
 
 .fake-service-row-actions .task-table-primary-action {
     width: 100%;
+}
+
+.fake-service-table-card .task-table-scroll {
+    direction: ltr;
+    scrollbar-gutter: stable;
+}
+
+.fake-service-table--sanim {
+    direction: rtl;
+}
+
+.fake-service-table--sanim th:nth-child(2),
+.fake-service-table--sanim td:nth-child(2) {
+    width: 165px;
+    min-width: 165px;
+    padding-right: 8px;
+    padding-left: 8px;
+}
+
+.fake-service-table--sanim td:nth-child(2) .fake-service-badge {
+    max-width: 149px;
+    padding: 5px 7px;
+    white-space: normal;
+    line-height: 1.45;
+}
+
+.fake-service-table--sanim th:nth-child(4),
+.fake-service-table--sanim td:nth-child(4) {
+    width: 125px;
+    min-width: 125px;
+    max-width: 125px;
+    padding-right: 8px;
+    padding-left: 8px;
+}
+
+.fake-service-table--sanim td:nth-child(4) .fake-service-badge {
+    max-width: 109px;
+    padding: 5px 7px;
+    white-space: normal;
+    line-height: 1.45;
+}
+
+.fake-service-table--sanim th:last-child,
+.fake-service-table--sanim td:last-child {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    box-sizing: border-box;
+    width: 180px;
+    min-width: 180px;
+    background: #ffffff;
+    box-shadow: 8px 0 18px rgba(15, 35, 52, 0.12);
+}
+
+.fake-service-table--sanim th:last-child {
+    z-index: 3;
+    background: #f1f7ff;
+}
+
+.fake-service-table--sanim .task-table-primary-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: auto;
+    min-width: 0;
+    min-height: 30px;
+    padding: 4px 8px;
+    font-size: 11px;
 }
 
 .fake-sanim-modal-backdrop {

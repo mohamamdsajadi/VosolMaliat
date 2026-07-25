@@ -12,13 +12,9 @@ import com.mparsict.vosolmaliat.domain.repository.ExecutionPaperRepository;
 import com.mparsict.vosolmaliat.domain.repository.FakeElectronicNotificationRequestRepository;
 import com.mparsict.vosolmaliat.infrastructure.camunda.service.CamundaMessageService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -26,7 +22,6 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FakeElectronicNotificationService {
@@ -42,9 +37,6 @@ public class FakeElectronicNotificationService {
     private final AuditLogService auditLogService;
     private final ObjectMapper objectMapper;
 
-    @Value("${app.fake-electronic-notification.auto-confirm-delay:PT30S}")
-    private Duration autoConfirmDelay;
-
     @Transactional
     public FakeElectronicNotificationResponse send(Long executionPaperId) {
         ExecutionPaper executionPaper = executionPaperRepository.findById(executionPaperId)
@@ -57,7 +49,6 @@ public class FakeElectronicNotificationService {
                 .status(STATUS_SENT)
                 .payload(toPayload(executionPaperId))
                 .sentAt(now.toString())
-                .autoConfirmAt(now.plus(autoConfirmDelay).toString())
                 .build();
         FakeElectronicNotificationRequest saved = repository.save(request);
         auditLogService.record(null, "INFORM_SENT_TO_ELECTRONIC_NOTIFICATION", "EXECUTION_PAPER",
@@ -82,25 +73,6 @@ public class FakeElectronicNotificationService {
         FakeElectronicNotificationRequest request = repository.findFirstByExecutionPaper_IdOrderByIdDesc(executionPaperId)
                 .orElseThrow(() -> new BusinessException("FAKE_EB_REQUEST_NOT_FOUND", "درخواست ابلاغ الکترونیک برای این برگ اجرا یافت نشد"));
         return confirmRequest(request, informDate);
-    }
-
-    @Scheduled(fixedDelayString = "${app.fake-electronic-notification.auto-confirm-poll-ms:10000}")
-    @Transactional
-    public void autoConfirmDueRequests() {
-        LocalDateTime now = LocalDateTime.now();
-        for (FakeElectronicNotificationRequest request : repository.findByStatusOrderByIdAsc(STATUS_SENT)) {
-            if (request.getAutoConfirmAt() == null) {
-                continue;
-            }
-            try {
-                LocalDateTime autoConfirmAt = LocalDateTime.parse(request.getAutoConfirmAt());
-                if (!autoConfirmAt.isAfter(now)) {
-                    confirmRequest(request, now.toString());
-                }
-            } catch (Exception ex) {
-                log.warn("Could not auto-confirm fake EB request id={}: {}", request.getId(), ex.getMessage());
-            }
-        }
     }
 
     private FakeElectronicNotificationResponse confirmRequest(FakeElectronicNotificationRequest request, String informDate) {
@@ -169,7 +141,6 @@ public class FakeElectronicNotificationService {
                 request.getExternalTrackingCode(),
                 request.getStatus(),
                 request.getSentAt(),
-                request.getAutoConfirmAt(),
                 request.getInformDate(),
                 request.getConfirmedAt(),
                 request.getCallbackDeliveredAt(),

@@ -7,7 +7,6 @@ public record FakeElectronicNotificationResponse(
         String externalTrackingCode,
         String status,
         String sentAt,
-        String autoConfirmAt,
         String informDate,
         String confirmedAt,
         String callbackDeliveredAt,

@@ -22,7 +22,7 @@ public class CheckIssuancePossibilityWorker {
     private final RuleEngineService ruleEngineService;
     private final ObjectMapper objectMapper;
 
-    @JobWorker(type = ProcessConstants.JOB_CHECK_ISSUANCE)
+    @JobWorker(type = ProcessConstants.JOB_CHECK_ISSUANCE, autoComplete = false)
     public void handle(final JobClient client, final ActivatedJob job) {
         log.debug("Processing job: check-issuance-possibility, key={}", job.getKey());
         try {
@@ -47,11 +47,7 @@ public class CheckIssuancePossibilityWorker {
             client.newCompleteCommand(job.getKey()).variables(outputVars).send().join();
         } catch (Exception e) {
             log.error("Error in CheckIssuancePossibilityWorker", e);
-            client.newFailCommand(job.getKey())
-                    .retries(job.getRetries() - 1)
-                    .errorMessage(e.getMessage())
-                    .send()
-                    .join();
+            WorkerFailureHandler.failSafely(client, job, e, log);
         }
     }
 }

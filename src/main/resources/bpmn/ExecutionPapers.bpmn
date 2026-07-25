@@ -60,6 +60,7 @@
       <bpmn:incoming>Flow_0pf5o1c</bpmn:incoming>
       <bpmn:outgoing>Flow_11dgpnv</bpmn:outgoing>
       <bpmn:outgoing>Flow_07fwfdh</bpmn:outgoing>
+      <bpmn:outgoing>Flow_07yuaef</bpmn:outgoing>
     </bpmn:parallelGateway>
     <bpmn:sequenceFlow id="Flow_0tajbqi" sourceRef="Activity_1ahtl92" targetRef="Gateway_1uchrac" />
     <bpmn:sequenceFlow id="Flow_0eioah5" name="امکان صدور وجود دارد" sourceRef="Gateway_1uchrac" targetRef="Activity_0rwz3ak">
@@ -79,38 +80,15 @@
     <bpmn:sequenceFlow id="Flow_0jnz16g" sourceRef="Activity_0taxExpertProcess" targetRef="Gateway_0e7ujls" />
     <bpmn:sequenceFlow id="Flow_15l2v1o" sourceRef="Gateway_0e7ujls" targetRef="Event_0executionPaperCartableEnd" />
     <bpmn:sequenceFlow id="Flow_0aj7mt3" sourceRef="Activity_0xodqlk" targetRef="Gateway_0e7ujls" />
-    <bpmn:userTask id="Activity_0taxExpertProcess" name="رسیدگی برگ اجرا توسط کارشناس مالیاتی">
-      <bpmn:extensionElements>
-        <zeebe:userTask />
-        <zeebe:assignmentDefinition candidateGroups="TAX_EXPERT" />
-      </bpmn:extensionElements>
-      <bpmn:incoming>Flow_0taxUnitHeadDone</bpmn:incoming>
-      <bpmn:outgoing>Flow_0jnz16g</bpmn:outgoing>
-    </bpmn:userTask>
     <bpmn:parallelGateway id="Gateway_0e7ujls">
       <bpmn:incoming>Flow_0jnz16g</bpmn:incoming>
       <bpmn:incoming>Flow_0aj7mt3</bpmn:incoming>
+      <bpmn:incoming>Flow_19yszz7</bpmn:incoming>
       <bpmn:outgoing>Flow_15l2v1o</bpmn:outgoing>
     </bpmn:parallelGateway>
-    <bpmn:userTask id="Activity_0taxUnitHeadReview" name="بررسی و ارجاع برگ اجرا توسط رئیس واحد مالیاتی">
-      <bpmn:extensionElements>
-        <zeebe:userTask />
-        <zeebe:assignmentDefinition candidateGroups="TAX_UNIT_HEAD" />
-      </bpmn:extensionElements>
-      <bpmn:incoming>Flow_0taxOfficeHeadDone</bpmn:incoming>
-      <bpmn:outgoing>Flow_0taxUnitHeadDone</bpmn:outgoing>
-    </bpmn:userTask>
-    <bpmn:userTask id="Activity_0taxOfficeHeadReview" name="بررسی و ارجاع برگ اجرا توسط رئیس اداره مالیات">
-      <bpmn:extensionElements>
-        <zeebe:userTask />
-        <zeebe:assignmentDefinition candidateGroups="TAX_OFFICE_HEAD" />
-      </bpmn:extensionElements>
-      <bpmn:incoming>Flow_0generalHeadDone</bpmn:incoming>
-      <bpmn:outgoing>Flow_0taxOfficeHeadDone</bpmn:outgoing>
-    </bpmn:userTask>
     <bpmn:callActivity id="Activity_0xodqlk" name="ابلاغ برگه اجرا از طریق سامانه ابلاغ الکترونیک">
       <bpmn:extensionElements>
-        <zeebe:calledElement processId="Process_0lt64q4" propagateAllChildVariables="true" />
+        <zeebe:calledElement processId="Process_0lt64q4" propagateAllChildVariables="false" />
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_11dgpnv</bpmn:incoming>
       <bpmn:outgoing>Flow_0aj7mt3</bpmn:outgoing>
@@ -126,11 +104,44 @@
       <bpmn:incoming>Flow_07fwfdh</bpmn:incoming>
       <bpmn:outgoing>Flow_0generalHeadDone</bpmn:outgoing>
     </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_07yuaef" sourceRef="Gateway_0fw9zja" targetRef="Activity_1f7l5yj" />
+    <bpmn:userTask id="Activity_0taxOfficeHeadReview" name="بررسی و ارجاع برگ اجرا توسط رئیس اداره مالیات">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+        <zeebe:assignmentDefinition candidateGroups="TAX_OFFICE_HEAD" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0generalHeadDone</bpmn:incoming>
+      <bpmn:outgoing>Flow_0taxOfficeHeadDone</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Activity_0taxExpertProcess" name="رسیدگی برگ اجرا توسط کارشناس مالیاتی">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+        <zeebe:assignmentDefinition candidateGroups="TAX_EXPERT" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0taxUnitHeadDone</bpmn:incoming>
+      <bpmn:outgoing>Flow_0jnz16g</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Activity_0taxUnitHeadReview" name="بررسی و ارجاع برگ اجرا توسط رئیس واحد مالیاتی">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+        <zeebe:assignmentDefinition candidateGroups="TAX_UNIT_HEAD" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0taxOfficeHeadDone</bpmn:incoming>
+      <bpmn:outgoing>Flow_0taxUnitHeadDone</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_19yszz7" sourceRef="Activity_1f7l5yj" targetRef="Gateway_0e7ujls" />
+    <bpmn:sendTask id="Activity_1f7l5yj" name="ارسال شناسه یکتای برگه اجرا به سامانه عملیاتی">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="send_execution_paper_id_to_sanim" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_07yuaef</bpmn:incoming>
+      <bpmn:outgoing>Flow_19yszz7</bpmn:outgoing>
+    </bpmn:sendTask>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_0blcya1">
       <bpmndi:BPMNShape id="Participant_0zo8zrs_di" bpmnElement="Participant_0zo8zrs" isHorizontal="true">
-        <dc:Bounds x="160" y="80" width="2820" height="610" />
+        <dc:Bounds x="160" y="80" width="2820" height="1000" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_1uchrac_di" bpmnElement="Gateway_1uchrac" isMarkerVisible="true">
@@ -157,20 +168,8 @@
       <bpmndi:BPMNShape id="Gateway_0fw9zja_di" bpmnElement="Gateway_0fw9zja">
         <dc:Bounds x="1335" y="315" width="50" height="50" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0taxExpertProcess_di" bpmnElement="Activity_0taxExpertProcess">
-        <dc:Bounds x="2220" y="300" width="160" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_1tyo9zx_di" bpmnElement="Gateway_0e7ujls">
         <dc:Bounds x="2465" y="315" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0taxUnitHeadReview_di" bpmnElement="Activity_0taxUnitHeadReview">
-        <dc:Bounds x="1970" y="500" width="160" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0taxOfficeHeadReview_di" bpmnElement="Activity_0taxOfficeHeadReview">
-        <dc:Bounds x="1730" y="300" width="160" height="80" />
-        <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0xodqlk_di" bpmnElement="Activity_0xodqlk">
         <dc:Bounds x="1830" y="110" width="100" height="80" />
@@ -181,6 +180,22 @@
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0generalHeadReview_di" bpmnElement="Activity_0generalHeadReview">
         <dc:Bounds x="1480" y="500" width="160" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0taxOfficeHeadReview_di" bpmnElement="Activity_0taxOfficeHeadReview">
+        <dc:Bounds x="1750" y="690" width="160" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0taxExpertProcess_di" bpmnElement="Activity_0taxExpertProcess">
+        <dc:Bounds x="2280" y="480" width="160" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0taxUnitHeadReview_di" bpmnElement="Activity_0taxUnitHeadReview">
+        <dc:Bounds x="1930" y="540" width="160" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1i6zmn4_di" bpmnElement="Activity_1f7l5yj">
+        <dc:Bounds x="1820" y="300" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_0tajbqi_di" bpmnElement="Flow_0tajbqi">
@@ -228,24 +243,23 @@
       <bpmndi:BPMNEdge id="Flow_0generalHeadDone_di" bpmnElement="Flow_0generalHeadDone">
         <di:waypoint x="1640" y="540" />
         <di:waypoint x="1695" y="540" />
-        <di:waypoint x="1695" y="340" />
-        <di:waypoint x="1730" y="340" />
+        <di:waypoint x="1695" y="730" />
+        <di:waypoint x="1750" y="730" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0taxOfficeHeadDone_di" bpmnElement="Flow_0taxOfficeHeadDone">
-        <di:waypoint x="1890" y="340" />
-        <di:waypoint x="1935" y="340" />
-        <di:waypoint x="1935" y="540" />
-        <di:waypoint x="1970" y="540" />
+        <di:waypoint x="1910" y="730" />
+        <di:waypoint x="2010" y="730" />
+        <di:waypoint x="2010" y="620" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0taxUnitHeadDone_di" bpmnElement="Flow_0taxUnitHeadDone">
-        <di:waypoint x="2130" y="540" />
-        <di:waypoint x="2175" y="540" />
-        <di:waypoint x="2175" y="340" />
-        <di:waypoint x="2220" y="340" />
+        <di:waypoint x="2010" y="540" />
+        <di:waypoint x="2010" y="520" />
+        <di:waypoint x="2280" y="520" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0jnz16g_di" bpmnElement="Flow_0jnz16g">
-        <di:waypoint x="2380" y="340" />
-        <di:waypoint x="2465" y="340" />
+        <di:waypoint x="2440" y="520" />
+        <di:waypoint x="2490" y="520" />
+        <di:waypoint x="2490" y="365" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_15l2v1o_di" bpmnElement="Flow_15l2v1o">
         <di:waypoint x="2515" y="340" />
@@ -255,6 +269,14 @@
         <di:waypoint x="1930" y="150" />
         <di:waypoint x="2490" y="150" />
         <di:waypoint x="2490" y="315" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_07yuaef_di" bpmnElement="Flow_07yuaef">
+        <di:waypoint x="1385" y="340" />
+        <di:waypoint x="1820" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_19yszz7_di" bpmnElement="Flow_19yszz7">
+        <di:waypoint x="1920" y="340" />
+        <di:waypoint x="2465" y="340" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="Group_1old2zo_di" bpmnElement="Group_1old2zo">
         <dc:Bounds x="430" y="250" width="870" height="340" />

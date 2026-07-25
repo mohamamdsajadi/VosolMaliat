@@ -35,9 +35,6 @@ public class FakeElectronicNotificationRequest extends BaseEntity {
     @Column(name = "sent_at")
     private String sentAt;
 
-    @Column(name = "auto_confirm_at")
-    private String autoConfirmAt;
-
     @Column(name = "inform_date")
     private String informDate;
 

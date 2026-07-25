@@ -28,10 +28,10 @@ Last Updated: 2026-07-15
 | `Gateway_1uchrac` | تصمیم امکان صدور | Exclusive Gateway | BPMN | `canIssue` |
 | `Activity_0rwz3ak` | صدور برگ اجرا با شناسه یکتا | Service Task | `IssueExecutionPaperWorker`, type `issue-execution-paper` | خروجی `executionPaperId`, `executionPaperCode`, org vars |
 | `Activity_010iyzn` | ارسال پاسخ عدم امکان صدور | Send Task | `SendRejectionResponseWorker`, type `inform_sanim_rejection` | rejection vars |
-| `Activity_0generalHeadReview` | بررسی و ارجاع توسط رئیس اداره کل | User Task | candidate `GENERAL_OFFICE_HEAD` | complete/delegate |
-| `Activity_0taxOfficeHeadReview` | بررسی و ارجاع توسط رئیس اداره مالیات | User Task | candidate `TAX_OFFICE_HEAD` | complete/delegate |
-| `Activity_0taxUnitHeadReview` | بررسی و ارجاع توسط رئیس واحد مالیاتی | User Task | candidate `TAX_UNIT_HEAD` | complete/delegate |
-| `Activity_0taxExpertProcess` | رسیدگی توسط کارشناس مالیاتی | User Task | candidate `TAX_EXPERT` | complete |
+| `Activity_0generalHeadReview` | بررسی و ارجاع توسط رئیس اداره کل | User Task | candidate `GENERAL_OFFICE_HEAD:{generalDirectorateId}` | complete/delegate |
+| `Activity_0taxOfficeHeadReview` | بررسی و ارجاع توسط رئیس اداره مالیات | User Task | candidate `TAX_OFFICE_HEAD:{taxAffairsOfficeId}` | complete/delegate |
+| `Activity_0taxUnitHeadReview` | بررسی و ارجاع توسط رئیس واحد مالیاتی | User Task | candidate `TAX_UNIT_HEAD:{taxUnitId}` | complete/delegate |
+| `Activity_0taxExpertProcess` | رسیدگی توسط کارشناس مالیاتی | User Task | candidate `TAX_EXPERT:{taxUnitId}` | complete |
 | `Activity_0xodqlk` | ابلاغ برگ اجرا | Call Activity | `Process_0lt64q4` | propagate child variables |
 
 ## نمای Mermaid
@@ -53,7 +53,7 @@ flowchart TD
 
 ## نقش‌ها و assignment
 
-نقش‌ها در BPMN به صورت candidateGroups تعریف شده‌اند و در backend با `CamundaIdentityMappingService.toCamundaCandidateGroups` و `TaskAuthorizationService` کنترل می‌شوند.
+نقش‌ها در BPMN به صورت candidateGroups وابسته به شناسه سازمان تعریف شده‌اند. برای نمونه برگ اجرای متعلق به اداره کل تهران فقط در گروهی مانند `GENERAL_OFFICE_HEAD:700` قرار می‌گیرد. backend همان گروه سازمانی را از نقش و محل سازمانی پروفایل کاربر در `CamundaIdentityMappingService.toCamundaCandidateGroups` تولید می‌کند و `TaskAuthorizationService` نیز محدوده را دوباره کنترل می‌کند.
 
 ## ریسک‌ها
 
@@ -68,4 +68,3 @@ flowchart TD
 ## سوالات باز
 
 - فرم یا تصمیم نهایی کارشناس مالیاتی در BPMN دقیقاً چه داده‌ای باید تولید کند؟
-

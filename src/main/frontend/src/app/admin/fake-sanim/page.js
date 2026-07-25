@@ -17,8 +17,9 @@ const TABLE_HEADERS = [
   'نوع پیام',
   'شناسه مرجع',
   'وضعیت',
-  'اطلاعات ارسالی',
+  'اطلاعات ابلاغ',
   'تاریخ رفع محدودیت',
+  'زمان صدور برگه اجرا',
   'زمان ارسال',
   'زمان تایید',
   'عملیات'
@@ -29,7 +30,11 @@ function isRejection(item) {
 }
 
 function messageTypeLabel(item) {
-  return isRejection(item) ? 'رد صدور برگ اجرا' : 'ارسال تاریخ ابلاغ'
+  return {
+    EXECUTION_PAPER_ID: 'ارسال شناسه یکتا برگه اجرا',
+    INFORM_DATE: 'ارسال تاریخ ابلاغ',
+    ISSUANCE_REJECTION: 'رد صدور برگ اجرا'
+  }[item.messageType] || item.messageType || 'نوع پیام نامشخص'
 }
 
 function statusLabel(status) {
@@ -190,7 +195,7 @@ export default function FakeSanimPage() {
         </div>
       )}
     >
-      <main className="fake-service-page">
+      <main className="fake-service-page fake-service-page--sanim">
         <section className="fake-service-hero">
           <div>
             <p className="eyebrow">سامانه بیرونی آزمایشی</p>
@@ -251,6 +256,7 @@ export default function FakeSanimPage() {
                         )}
                       </td>
                       <td className="task-grid-cell">{isRejection(item) ? formatJalaliDateTime(item.restrictionRemovalDate) : '-'}</td>
+                      <td className="task-grid-cell">{formatJalaliDateTime(item.executionPaperCreatedAt)}</td>
                       <td className="task-grid-cell">{formatJalaliDateTime(item.sentAt)}</td>
                       <td className="task-grid-cell">{formatJalaliDateTime(item.confirmedAt)}</td>
                       <td className="task-grid-cell task-grid-cell--actions">
