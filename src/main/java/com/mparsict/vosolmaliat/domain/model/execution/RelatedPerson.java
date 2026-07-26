@@ -1,6 +1,8 @@
 package com.mparsict.vosolmaliat.domain.model.execution;
 
 import com.mparsict.vosolmaliat.domain.model.BaseEntity;
+import com.mparsict.vosolmaliat.domain.enums.RelatedPersonRole;
+import com.mparsict.vosolmaliat.domain.enums.RelatedPersonType;
 import com.mparsict.vosolmaliat.domain.model.person.LegalPerson;
 import com.mparsict.vosolmaliat.domain.model.person.NaturalPerson;
 
@@ -19,6 +21,14 @@ public class RelatedPerson extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_legal_person_id")
+    private LegalPerson ownerLegalPerson;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role")
+    private RelatedPersonRole role;
 
     @Column(name = "post_name")
     private String postName;
@@ -44,6 +54,15 @@ public class RelatedPerson extends BaseEntity {
     @Column(name = "management_declaration")
     private Integer managementDeclaration;
 
+    @Column(name = "source_system")
+    private String sourceSystem;
+
+    @Column(name = "source_record_id")
+    private String sourceRecordId;
+
+    @Column(name = "last_synced_at")
+    private String lastSyncedAt;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "execution_paper_id")
     private ExecutionPaper executionPaper;
@@ -55,6 +74,16 @@ public class RelatedPerson extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "legal_person_id")
     private LegalPerson legalPerson;
+
+    public Long getOwnerLegalPersonId() {
+        return ownerLegalPerson == null ? null : ownerLegalPerson.getId();
+    }
+
+    public void setOwnerLegalPersonId(Long ownerLegalPersonId) {
+        this.ownerLegalPerson = ownerLegalPersonId == null
+                ? null
+                : LegalPerson.builder().id(ownerLegalPersonId).build();
+    }
 
     public Long getExecutionPaperId() {
         return executionPaper == null ? null : executionPaper.getId();
@@ -78,5 +107,22 @@ public class RelatedPerson extends BaseEntity {
 
     public void setLegalPersonId(Long legalPersonId) {
         this.legalPerson = legalPersonId == null ? null : LegalPerson.builder().id(legalPersonId).build();
+    }
+
+    @PrePersist
+    @PreUpdate
+    private void validateRelationship() {
+        if (ownerLegalPerson == null) {
+            throw new IllegalStateException("Related person must belong to an owner legal person");
+        }
+        if ((naturalPerson == null) == (legalPerson == null)) {
+            throw new IllegalStateException("Related person must reference exactly one natural or legal person");
+        }
+        RelatedPersonType personType = naturalPerson != null
+                ? RelatedPersonType.NATURAL
+                : RelatedPersonType.LEGAL;
+        if (role == null || !role.supports(personType)) {
+            throw new IllegalStateException("Related person role is not allowed for target person type");
+        }
     }
 }

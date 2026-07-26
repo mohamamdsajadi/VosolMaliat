@@ -64,6 +64,7 @@ Last Updated: 2026-07-15
 - [بک‌اند](technical/backend.md)
 - [فرانت‌اند](technical/frontend.md)
 - [پایگاه داده](technical/database.md)
+- [رابطه اشخاص مرتبط](technical/related-persons.md)
 - [API](technical/api.md)
 - [امنیت فنی](technical/security.md)
 - [پیکربندی](technical/configuration.md)
@@ -137,4 +138,3 @@ Last Updated: 2026-07-15
 - سیاست نهایی sync کاربران Keycloak.
 - مرزهای سازمانی استان/اداره/واحد برای مشاهده و ارجاع.
 - تبدیل SQLite و `ddl-auto=update` به migration و PostgreSQL.
-

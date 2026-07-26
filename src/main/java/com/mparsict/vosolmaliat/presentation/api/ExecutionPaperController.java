@@ -3,8 +3,10 @@ package com.mparsict.vosolmaliat.presentation.api;
 import com.mparsict.vosolmaliat.application.dto.request.ExecutionPaperSearchCriteria;
 import com.mparsict.vosolmaliat.application.dto.response.ExecutionPaperDetailResponse;
 import com.mparsict.vosolmaliat.application.dto.response.ExecutionPaperPageResponse;
+import com.mparsict.vosolmaliat.application.dto.response.ExecutionPaperRelatedPersonsResponse;
 import com.mparsict.vosolmaliat.application.dto.response.ExecutionPaperTraceResponse;
 import com.mparsict.vosolmaliat.application.service.ExecutionPaperService;
+import com.mparsict.vosolmaliat.application.service.RelatedPersonService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 public class ExecutionPaperController {
 
     private final ExecutionPaperService executionPaperService;
+    private final RelatedPersonService relatedPersonService;
 
     @GetMapping
     @PreAuthorize("hasAuthority('REPORT_VIEW')")
@@ -49,6 +52,20 @@ public class ExecutionPaperController {
     public ExecutionPaperTraceResponse getTrace(@PathVariable Long id) {
         log.debug("GET /api/v1/execution-papers/{}/trace", id);
         return executionPaperService.getTrace(id);
+    }
+
+    @GetMapping("/{id}/related-persons")
+    @PreAuthorize("hasAnyAuthority('REPORT_VIEW','EXECUTION_PAPER_DETAIL_VIEW')")
+    public ExecutionPaperRelatedPersonsResponse getRelatedPersons(@PathVariable Long id) {
+        log.debug("GET /api/v1/execution-papers/{}/related-persons", id);
+        return relatedPersonService.getForExecutionPaper(id);
+    }
+
+    @PostMapping("/{id}/related-persons/refresh")
+    @PreAuthorize("hasAnyAuthority('REPORT_VIEW','EXECUTION_PAPER_DETAIL_VIEW')")
+    public ExecutionPaperRelatedPersonsResponse refreshRelatedPersons(@PathVariable Long id) {
+        log.info("POST /api/v1/execution-papers/{}/related-persons/refresh", id);
+        return relatedPersonService.refreshForExecutionPaper(id);
     }
 
     @GetMapping("/assigned")

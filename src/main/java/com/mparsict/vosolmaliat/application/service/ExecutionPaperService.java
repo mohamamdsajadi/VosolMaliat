@@ -553,6 +553,8 @@ public class ExecutionPaperService {
             case "NEXT_DEBT_INQUIRY_DATE_SET" -> "تنظیم تاریخ استعلام بدهی";
             case "INFORM_DATE_SENT_TO_SANIM" -> "ارسال تاریخ ابلاغ به سنیم";
             case "SANIM_INFORM_DATE_CONFIRMED" -> "تایید دریافت سنیم";
+            case "RELATED_PERSONS_REFRESHED_FROM_COMPANY_REGISTRY" ->
+                    "بروزرسانی اشخاص مرتبط از سامانه ثبت شرکت‌ها";
             default -> action == null ? "عملیات" : action;
         };
     }

@@ -158,7 +158,8 @@ const CRITICAL_TRACE_FIELD_LABELS = {
   NEXT_DEBT_INQUIRY_DATE_SET: 'تاریخ استعلام بعدی بدهی',
   INFORM_DATE_SENT_TO_SANIM: 'تاریخ ابلاغ ارسال‌شده به سنیم',
   SANIM_MESSAGE_CONFIRMED: 'وضعیت دریافت سنیم',
-  SANIM_INFORM_DATE_CONFIRMED: 'وضعیت دریافت سنیم'
+  SANIM_INFORM_DATE_CONFIRMED: 'وضعیت دریافت سنیم',
+  RELATED_PERSONS_REFRESHED_FROM_COMPANY_REGISTRY: 'اطلاعات اشخاص مرتبط دریافت‌شده'
 }
 
 function extractTraceValue(value) {
@@ -230,6 +231,71 @@ function TraceSection({ trace, loading, error }) {
               </div>
             </div>
           ))}
+        </div>
+      )}
+    </section>
+  )
+}
+
+function RelatedPersonsSection({ data, loading, refreshing, error, onRefresh }) {
+  const items = data?.relatedPersons || []
+  return (
+    <section style={relatedPersonsCardStyle}>
+      <div style={relatedPersonsHeaderStyle}>
+        <div>
+          <p style={traceEyebrowStyle}>سامانه ثبت شرکت‌ها</p>
+          <h3 style={{ ...sectionTitleStyle, marginBottom: 4 }}>اشخاص مرتبط مودی حقوقی</h3>
+          <span style={mutedMetaStyle}>
+            سال عملکرد: {formatValue(data?.debtYear)} · آخرین بروزرسانی: {formatPersianDateTime(data?.lastSyncedAt)}
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={onRefresh}
+          disabled={refreshing}
+          style={{ ...refreshRelatedButtonStyle, ...(refreshing ? printButtonDisabledStyle : {}) }}
+        >
+          {refreshing ? 'در حال دریافت...' : 'دریافت اطلاعات تازه'}
+        </button>
+      </div>
+
+      {loading && <p style={mutedTextStyle}>در حال دریافت اشخاص مرتبط...</p>}
+      {!loading && error && <p style={errorTextStyle}>خطا در دریافت اشخاص مرتبط: {error}</p>}
+      {!loading && !error && items.length === 0 && (
+        <p style={mutedTextStyle}>برای سال عملکرد این برگ بدهی، شخص مرتبطی ثبت نشده است.</p>
+      )}
+      {!loading && !error && items.length > 0 && (
+        <div style={relatedPersonsTableScrollStyle}>
+          <table style={relatedPersonsTableStyle}>
+            <thead>
+              <tr>
+                <th style={relatedPersonHeaderCellStyle}>نوع شخص</th>
+                <th style={relatedPersonHeaderCellStyle}>نام</th>
+                <th style={relatedPersonHeaderCellStyle}>شناسه</th>
+                <th style={relatedPersonHeaderCellStyle}>سمت</th>
+                <th style={relatedPersonHeaderCellStyle}>تاریخ شروع</th>
+                <th style={relatedPersonHeaderCellStyle}>تاریخ پایان</th>
+                <th style={relatedPersonHeaderCellStyle}>حق امضا</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map(item => (
+                <tr key={item.relationshipId}>
+                  <td style={relatedPersonCellStyle}>{item.personType === 'NATURAL' ? 'حقیقی' : 'حقوقی'}</td>
+                  <td style={relatedPersonCellStyle}>
+                    <strong>{item.personType === 'NATURAL'
+                      ? formatValue([item.firstName, item.lastName].filter(Boolean).join(' '))
+                      : formatValue(item.companyName)}</strong>
+                  </td>
+                  <td style={relatedPersonCellStyle}>{formatValue(item.nationalCode || item.fida || item.nationalId)}</td>
+                  <td style={relatedPersonCellStyle}>{formatValue(item.roleLabel)}</td>
+                  <td style={relatedPersonCellStyle}>{formatPersianDate(item.startDate)}</td>
+                  <td style={relatedPersonCellStyle}>{formatPersianDate(item.endDate)}</td>
+                  <td style={relatedPersonCellStyle}>{item.hasSignatoryAuthority ? 'دارد' : 'ندارد'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </section>
@@ -434,6 +500,33 @@ export default function ExecutionPaperDetailsPage() {
   const [traceLoading, setTraceLoading] = useState(true)
   const [error, setError] = useState(null)
   const [traceError, setTraceError] = useState(null)
+  const [relatedPersons, setRelatedPersons] = useState(null)
+  const [relatedPersonsLoading, setRelatedPersonsLoading] = useState(false)
+  const [relatedPersonsRefreshing, setRelatedPersonsRefreshing] = useState(false)
+  const [relatedPersonsError, setRelatedPersonsError] = useState(null)
+
+  const loadRelatedPersons = () => {
+    setRelatedPersonsLoading(true)
+    setRelatedPersonsError(null)
+    return apiFetch(`/api/v1/execution-papers/${paperId}/related-persons`)
+      .then(async response => {
+        if (!response.ok) {
+          const details = await response.text()
+          throw new Error(details || `HTTP ${response.status}`)
+        }
+        return response.json()
+      })
+      .then(json => {
+        setRelatedPersons(json)
+        setRelatedPersonsLoading(false)
+        return json
+      })
+      .catch(error => {
+        setRelatedPersonsError(error.message)
+        setRelatedPersonsLoading(false)
+        throw error
+      })
+  }
 
   useEffect(() => {
     setLoading(true)
@@ -450,7 +543,16 @@ export default function ExecutionPaperDetailsPage() {
         }
         return r.json()
       })
-      .then(json => { setData(json); setLoading(false) })
+      .then(json => {
+        setData(json)
+        setLoading(false)
+        if (json?.taxpayer?.type === 'LEGAL') {
+          loadRelatedPersons().catch(() => {})
+        } else {
+          setRelatedPersons(null)
+          setRelatedPersonsLoading(false)
+        }
+      })
       .catch(err => { setError(err.message); setLoading(false) })
 
     apiFetch(`/api/v1/execution-papers/${paperId}/trace`)
@@ -473,6 +575,30 @@ export default function ExecutionPaperDetailsPage() {
       })
       .catch(err => { setTraceError(err.message); setTraceLoading(false) })
   }, [paperId])
+
+  const refreshRelatedPersons = () => {
+    setRelatedPersonsRefreshing(true)
+    setRelatedPersonsError(null)
+    apiFetch(`/api/v1/execution-papers/${paperId}/related-persons/refresh`, { method: 'POST' })
+      .then(async response => {
+        if (!response.ok) {
+          const details = await response.text()
+          throw new Error(details || `HTTP ${response.status}`)
+        }
+        return response.json()
+      })
+      .then(json => {
+        setRelatedPersons(json)
+        setRelatedPersonsRefreshing(false)
+        return apiFetch(`/api/v1/execution-papers/${paperId}/trace`)
+      })
+      .then(response => response.ok ? response.json() : null)
+      .then(json => { if (json) setTrace(json) })
+      .catch(error => {
+        setRelatedPersonsError(error.message)
+        setRelatedPersonsRefreshing(false)
+      })
+  }
 
   const printExecutionPaper = () => {
     document.body.classList.add('execution-printing')
@@ -519,6 +645,15 @@ export default function ExecutionPaperDetailsPage() {
           {loading && <div style={cardStyle}>در حال دریافت اطلاعات...</div>}
           {!loading && error && <div style={{ ...cardStyle, color: '#dc2626' }}>خطا در دریافت اطلاعات: {error}</div>}
           {!loading && !error && data && SECTIONS.map(section => <DetailSection key={section.key} section={section} data={data[section.key]} />)}
+          {!loading && !error && data?.taxpayer?.type === 'LEGAL' && (
+            <RelatedPersonsSection
+              data={relatedPersons}
+              loading={relatedPersonsLoading}
+              refreshing={relatedPersonsRefreshing}
+              error={relatedPersonsError}
+              onRefresh={refreshRelatedPersons}
+            />
+          )}
           {!loading && !error && canViewTrace && <TraceSection trace={trace} loading={traceLoading} error={traceError} />}
         </main>
       </AppShell>
@@ -784,3 +919,21 @@ const traceChangeArrowStyle = {
   color: '#2563eb',
   fontWeight: 900
 }
+const relatedPersonsCardStyle = { ...cardStyle, borderColor: '#bbf7d0', background: 'linear-gradient(180deg, #ffffff, #f7fff9)' }
+const relatedPersonsHeaderStyle = { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap', marginBottom: 16 }
+const mutedMetaStyle = { color: '#64748b', fontSize: 12, lineHeight: 1.8 }
+const refreshRelatedButtonStyle = {
+  minHeight: 38,
+  padding: '7px 13px',
+  border: '1px solid #86efac',
+  borderRadius: 8,
+  background: '#15803d',
+  color: '#ffffff',
+  cursor: 'pointer',
+  fontSize: 12,
+  fontWeight: 900
+}
+const relatedPersonsTableScrollStyle = { overflowX: 'auto', border: '1px solid #dcfce7', borderRadius: 9 }
+const relatedPersonsTableStyle = { width: '100%', minWidth: 850, borderCollapse: 'collapse', background: '#ffffff' }
+const relatedPersonHeaderCellStyle = { padding: '10px 12px', color: '#166534', background: '#f0fdf4', borderBottom: '1px solid #bbf7d0', fontSize: 12, whiteSpace: 'nowrap', textAlign: 'center' }
+const relatedPersonCellStyle = { padding: '11px 12px', color: '#334155', borderBottom: '1px solid #ecfdf5', fontSize: 12, lineHeight: 1.7, textAlign: 'center', whiteSpace: 'nowrap' }
