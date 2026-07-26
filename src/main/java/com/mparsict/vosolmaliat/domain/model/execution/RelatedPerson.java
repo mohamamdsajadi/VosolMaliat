@@ -70,6 +70,10 @@ public class RelatedPerson extends BaseEntity {
     @JoinColumn(name = "legal_person_id")
     private LegalPerson legalPerson;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "legal_representative_natural_person_id")
+    private NaturalPerson legalRepresentativeNaturalPerson;
+
     public Long getOwnerLegalPersonId() {
         return ownerLegalPerson == null ? null : ownerLegalPerson.getId();
     }
@@ -104,6 +108,12 @@ public class RelatedPerson extends BaseEntity {
         }
         if ((naturalPerson == null) == (legalPerson == null)) {
             throw new IllegalStateException("Related person must reference exactly one natural or legal person");
+        }
+        if (legalPerson != null && legalRepresentativeNaturalPerson == null) {
+            throw new IllegalStateException("A related legal person must have a natural-person representative");
+        }
+        if (legalPerson == null && legalRepresentativeNaturalPerson != null) {
+            throw new IllegalStateException("A natural related person cannot have a legal-person representative");
         }
         RelatedPersonType personType = naturalPerson != null
                 ? RelatedPersonType.NATURAL

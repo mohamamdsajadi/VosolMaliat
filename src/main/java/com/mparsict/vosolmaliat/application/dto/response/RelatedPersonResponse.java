@@ -20,6 +20,13 @@ public record RelatedPersonResponse(
         String nationalId,
         String registrationNumber,
         String registrationDate,
-        String companyName
+        String companyName,
+        Long legalRepresentativeNaturalPersonId,
+        String legalRepresentativeNationalCode,
+        String legalRepresentativeFida,
+        String legalRepresentativeFirstName,
+        String legalRepresentativeLastName,
+        String legalRepresentativeFatherName,
+        String legalRepresentativeBirthDate
 ) {
 }

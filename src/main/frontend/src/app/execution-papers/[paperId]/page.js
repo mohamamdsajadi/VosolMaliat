@@ -273,6 +273,7 @@ function RelatedPersonsSection({ data, loading, refreshing, error, onRefresh }) 
                 <th style={relatedPersonHeaderCellStyle}>نام</th>
                 <th style={relatedPersonHeaderCellStyle}>شناسه</th>
                 <th style={relatedPersonHeaderCellStyle}>سمت</th>
+                <th style={relatedPersonHeaderCellStyle}>نماینده حقیقی شخص حقوقی</th>
                 <th style={relatedPersonHeaderCellStyle}>تاریخ شروع</th>
                 <th style={relatedPersonHeaderCellStyle}>تاریخ پایان</th>
                 <th style={relatedPersonHeaderCellStyle}>حق امضا</th>
@@ -289,6 +290,13 @@ function RelatedPersonsSection({ data, loading, refreshing, error, onRefresh }) 
                   </td>
                   <td style={relatedPersonCellStyle}>{formatValue(item.nationalCode || item.fida || item.nationalId)}</td>
                   <td style={relatedPersonCellStyle}>{formatValue(item.postLabel)}</td>
+                  <td style={relatedPersonCellStyle}>
+                    {item.personType === 'LEGAL'
+                      ? formatValue(
+                          `${[item.legalRepresentativeFirstName, item.legalRepresentativeLastName].filter(Boolean).join(' ')} (${item.legalRepresentativeNationalCode || item.legalRepresentativeFida || '-'})`
+                        )
+                      : '-'}
+                  </td>
                   <td style={relatedPersonCellStyle}>{formatPersianDate(item.startDate)}</td>
                   <td style={relatedPersonCellStyle}>{formatPersianDate(item.endDate)}</td>
                   <td style={relatedPersonCellStyle}>{item.hasSignatoryAuthority ? 'دارد' : 'ندارد'}</td>
@@ -934,6 +942,6 @@ const refreshRelatedButtonStyle = {
   fontWeight: 900
 }
 const relatedPersonsTableScrollStyle = { overflowX: 'auto', border: '1px solid #dcfce7', borderRadius: 9 }
-const relatedPersonsTableStyle = { width: '100%', minWidth: 850, borderCollapse: 'collapse', background: '#ffffff' }
+const relatedPersonsTableStyle = { width: '100%', minWidth: 1050, borderCollapse: 'collapse', background: '#ffffff' }
 const relatedPersonHeaderCellStyle = { padding: '10px 12px', color: '#166534', background: '#f0fdf4', borderBottom: '1px solid #bbf7d0', fontSize: 12, whiteSpace: 'nowrap', textAlign: 'center' }
 const relatedPersonCellStyle = { padding: '11px 12px', color: '#334155', borderBottom: '1px solid #ecfdf5', fontSize: 12, lineHeight: 1.7, textAlign: 'center', whiteSpace: 'nowrap' }

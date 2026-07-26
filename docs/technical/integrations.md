@@ -17,7 +17,7 @@ Last Updated: 2026-07-15
 | SQLite | persistence فعلی | entity tables | JDBC | پیاده‌سازی‌شده | `application.yaml`, repositories |
 | سامانه ابلاغ الکترونیک fake | دریافت برگ اجرا و callback InformDate | execution paper payload | در fake بدون احراز جداگانه؛ callback permitAll | آزمایشی | `FakeElectronicNotificationService` |
 | سنیم fake | دریافت تاریخ ابلاغ | executionPaperId, informDate | endpoint امن برای پنل | آزمایشی | `FakeSanimInformService` |
-| سامانه ثبت شرکت‌ها fake | دریافت اشخاص حقیقی/حقوقی مرتبط با مودی حقوقی | nationalId, post codes, Jalali validity dates, signatory authority | endpoint داخلی امن | آزمایشی | `FakeCompanyRegistryService`, `RelatedPersonService` |
+| سامانه ثبت شرکت‌ها fake | دریافت اشخاص حقیقی/حقوقی مرتبط با مودی حقوقی | nationalId, post codes, Jalali validity dates, signatory authority, natural representative of legal targets | endpoint داخلی امن | آزمایشی | `FakeCompanyRegistryService`, `RelatedPersonService` |
 | Rule engine داخلی | ارزیابی قوانین | rule_json, request/execution data | داخلی | پیاده‌سازی‌شده | `RuleEngineService`, `InformRuleEngineService` |
 
 ## Failure Handling

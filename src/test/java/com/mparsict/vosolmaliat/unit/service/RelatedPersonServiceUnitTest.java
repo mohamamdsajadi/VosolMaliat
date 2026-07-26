@@ -62,6 +62,15 @@ class RelatedPersonServiceUnitTest {
                 .extracting(item -> item.postCode())
                 .containsExactly(RelatedPersonPostCode.SHAREHOLDER.name());
         assertThat(firstRefresh.relatedPersons())
+                .filteredOn(item -> item.personType().equals(RelatedPersonType.LEGAL.name()))
+                .allSatisfy(item -> {
+                    assertThat(item.legalRepresentativeNaturalPersonId()).isNotNull();
+                    assertThat(item.legalRepresentativeNationalCode()).isNotBlank();
+                });
+        assertThat(firstRefresh.relatedPersons())
+                .filteredOn(item -> item.personType().equals(RelatedPersonType.NATURAL.name()))
+                .allSatisfy(item -> assertThat(item.legalRepresentativeNaturalPersonId()).isNull());
+        assertThat(firstRefresh.relatedPersons())
                 .extracting(item -> item.postId())
                 .doesNotContainNull();
         assertThat(auditLogService.action)

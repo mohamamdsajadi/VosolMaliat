@@ -15,6 +15,7 @@ erDiagram
     LEGAL_PERSON ||--o{ RELATED_PERSON : "ownerLegalPerson"
     RELATED_PERSON_POST ||--o{ RELATED_PERSON : "post"
     NATURAL_PERSON ||--o{ RELATED_PERSON : "naturalPerson target"
+    NATURAL_PERSON ||--o{ RELATED_PERSON : "legal target representative"
     LEGAL_PERSON ||--o{ RELATED_PERSON : "legalPerson target"
 
     RELATED_PERSON {
@@ -22,6 +23,7 @@ erDiagram
         long owner_legal_person_id FK
         long natural_person_id FK
         long legal_person_id FK
+        long legal_representative_natural_person_id FK
         long post_id FK
         string start_date
         string end_date
@@ -46,9 +48,11 @@ erDiagram
 1. `ownerLegalPerson` الزامی است.
 2. دقیقاً یکی از `naturalPerson` یا `legalPerson` باید مقدار داشته باشد.
 3. `post` الزامی است و enum ذخیره‌شده در آن باید برای نوع شخص مقصد مجاز باشد.
-4. شخص حقیقی باید حداقل `nationalCode` یا `fida` داشته باشد.
-5. شخص حقوقی مقصد باید حداقل `nationalId` یا `registrationNumber` داشته باشد.
-6. تاریخ‌ها شمسی و با قالب متعارف `yyyy-MM-dd` نگهداری می‌شوند. ورودی ارقام فارسی به انگلیسی و `/` به `-` تبدیل می‌شود.
+4. اگر مقصد شخص حقوقی باشد، `legalRepresentativeNaturalPerson` الزامی و مرتبط با جدول `natural_person` است.
+5. اگر مقصد شخص حقیقی باشد، `legalRepresentativeNaturalPerson` باید خالی باشد.
+6. شخص حقیقی باید حداقل `nationalCode` یا `fida` داشته باشد.
+7. شخص حقوقی مقصد باید حداقل `nationalId` یا `registrationNumber` داشته باشد.
+8. تاریخ‌ها شمسی و با قالب متعارف `yyyy-MM-dd` نگهداری می‌شوند. ورودی ارقام فارسی به انگلیسی و `/` به `-` تبدیل می‌شود.
 
 سه قاعده اول هنگام `persist/update` نیز با callback موجودیت کنترل می‌شوند.
 
@@ -131,7 +135,7 @@ AND
 }
 ```
 
-برای مقصد حقوقی، فیلدهای شخص حقیقی `null` و فیلدهای `legalPersonId`، `nationalId`، `registrationNumber`، `registrationDate` و `companyName` مقداردهی می‌شوند.
+برای مقصد حقوقی، فیلدهای شخص حقیقی مقصد `null` و فیلدهای `legalPersonId`، `nationalId`، `registrationNumber`، `registrationDate` و `companyName` مقداردهی می‌شوند. مشخصات نماینده حقیقی نیز در فیلدهای `legalRepresentativeNaturalPersonId`، `legalRepresentativeNationalCode`، `legalRepresentativeFida`، `legalRepresentativeFirstName`، `legalRepresentativeLastName`، `legalRepresentativeFatherName` و `legalRepresentativeBirthDate` بازگردانده می‌شود.
 
 ## همگام‌سازی با ثبت شرکت‌ها
 
@@ -167,6 +171,7 @@ POST /api/v1/execution-papers/{id}/related-persons/refresh
 | `firstName`, `lastName`, `fatherName`, `birthDate` | مشخصات شخص حقیقی |
 | `nationalId`, `registrationNumber` | شناسه‌های شخص حقوقی |
 | `registrationDate`, `companyName` | مشخصات شخص حقوقی |
+| `legalRepresentative` | اطلاعات هویتی نماینده حقیقی؛ برای مقصد حقوقی الزامی |
 
 ## خطاهای کسب‌وکاری
 
@@ -183,6 +188,8 @@ POST /api/v1/execution-papers/{id}/related-persons/refresh
 | `RELATED_PERSON_POST_NOT_CONFIGURED` | enum سمت در جدول مرجع سمت‌ها وجود ندارد |
 | `RELATED_NATURAL_PERSON_IDENTIFIER_REQUIRED` | شناسه شخص حقیقی موجود نیست |
 | `RELATED_LEGAL_PERSON_IDENTIFIER_REQUIRED` | شناسه شخص حقوقی موجود نیست |
+| `RELATED_LEGAL_PERSON_REPRESENTATIVE_REQUIRED` | نماینده حقیقی شخص حقوقی ارسال نشده یا شناسه ندارد |
+| `RELATED_NATURAL_PERSON_REPRESENTATIVE_NOT_ALLOWED` | برای مقصد حقیقی نماینده جداگانه ارسال شده است |
 | `RELATED_PERSON_AUDIT_PAYLOAD_ERROR` | ساخت payload رخداد audit ناموفق است |
 
 ## پایگاه داده و قیود
@@ -192,6 +199,8 @@ POST /api/v1/execution-papers/{id}/related-persons/refresh
 - index روی `owner_legal_person_id`
 - index روی `post_id`
 - unique index روی `(owner_legal_person_id, source_system, source_record_id)`
+
+اسکریپت `004_related_legal_person_representative.sql` ستون `legal_representative_natural_person_id`، کلید خارجی، index و triggerهای قاعده اجباری بودن نماینده برای مقصد حقوقی را اضافه می‌کند. داده legacy مربوط به fake با اولویت مدیرعامل همان مالک backfill می‌شود و اگر رابطه حقوقی بدون نماینده باقی بماند migration rollback می‌شود.
 
 پروژه فعلاً از Hibernate `ddl-auto=update` استفاده می‌کند و migration رسمی Flyway/Liquibase ندارد.
 
@@ -213,4 +222,5 @@ POST /api/v1/execution-papers/{id}/related-persons/refresh
 - `application/service/FakeCompanyRegistryService.java`
 - `presentation/api/ExecutionPaperController.java`
 - `resources/db/manual/003_company_registry_related_persons_schema.sql`
+- `resources/db/manual/004_related_legal_person_representative.sql`
 - `unit/service/RelatedPersonServiceUnitTest.java`

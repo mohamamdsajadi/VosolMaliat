@@ -19,6 +19,7 @@ public record CompanyRegistryRelatedPersonData(
         String nationalId,
         String registrationNumber,
         String registrationDate,
-        String companyName
+        String companyName,
+        CompanyRegistryNaturalPersonData legalRepresentative
 ) {
 }

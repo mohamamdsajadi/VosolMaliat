@@ -1,6 +1,7 @@
 package com.mparsict.vosolmaliat.application.service;
 
 import com.mparsict.vosolmaliat.application.dto.integration.CompanyRegistryRelatedPersonData;
+import com.mparsict.vosolmaliat.application.dto.integration.CompanyRegistryNaturalPersonData;
 import com.mparsict.vosolmaliat.common.exception.BusinessException;
 import com.mparsict.vosolmaliat.domain.enums.RelatedPersonPostCode;
 import com.mparsict.vosolmaliat.domain.enums.RelatedPersonType;
@@ -40,6 +41,7 @@ public class FakeCompanyRegistryService {
                         null,
                         null,
                         null,
+                        null,
                         null
                 ),
                 new CompanyRegistryRelatedPersonData(
@@ -55,6 +57,7 @@ public class FakeCompanyRegistryService {
                         LAST_NAMES[firstIndex],
                         "محمد",
                         "1365-04-12",
+                        null,
                         null,
                         null,
                         null,
@@ -76,6 +79,7 @@ public class FakeCompanyRegistryService {
                         null,
                         null,
                         null,
+                        null,
                         null
                 ),
                 new CompanyRegistryRelatedPersonData(
@@ -94,7 +98,15 @@ public class FakeCompanyRegistryService {
                         relatedLegalNationalId,
                         "ث-" + lastSixDigits(seed),
                         "1390-03-10",
-                        "شرکت سرمایه‌گذاری نمونه " + lastFourDigits(seed)
+                        "شرکت سرمایه‌گذاری نمونه " + lastFourDigits(seed),
+                        new CompanyRegistryNaturalPersonData(
+                                firstNationalCode,
+                                null,
+                                FIRST_NAMES[firstIndex],
+                                LAST_NAMES[firstIndex],
+                                "محمد",
+                                "1365-04-12"
+                        )
                 )
         );
     }

@@ -3,6 +3,7 @@ package com.mparsict.vosolmaliat.application.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mparsict.vosolmaliat.application.dto.integration.CompanyRegistryRelatedPersonData;
+import com.mparsict.vosolmaliat.application.dto.integration.CompanyRegistryNaturalPersonData;
 import com.mparsict.vosolmaliat.application.dto.response.ExecutionPaperRelatedPersonsResponse;
 import com.mparsict.vosolmaliat.application.dto.response.RelatedPersonResponse;
 import com.mparsict.vosolmaliat.application.service.security.AuditLogService;
@@ -81,9 +82,13 @@ public class RelatedPersonService {
             if (item.personType() == RelatedPersonType.NATURAL) {
                 relationship.setNaturalPerson(resolveNaturalPerson(item));
                 relationship.setLegalPerson(null);
+                relationship.setLegalRepresentativeNaturalPerson(null);
             } else {
                 relationship.setLegalPerson(resolveLegalPerson(item));
                 relationship.setNaturalPerson(null);
+                relationship.setLegalRepresentativeNaturalPerson(
+                        resolveNaturalPerson(item.legalRepresentative())
+                );
             }
             relatedPersonRepository.save(relationship);
         }
@@ -146,7 +151,18 @@ public class RelatedPersonService {
     }
 
     private NaturalPerson resolveNaturalPerson(CompanyRegistryRelatedPersonData item) {
-        NaturalPerson person = item.nationalCode() == null
+        return resolveNaturalPerson(new CompanyRegistryNaturalPersonData(
+                item.nationalCode(),
+                item.fida(),
+                item.firstName(),
+                item.lastName(),
+                item.fatherName(),
+                item.birthDate()
+        ));
+    }
+
+    private NaturalPerson resolveNaturalPerson(CompanyRegistryNaturalPersonData item) {
+        NaturalPerson person = !hasText(item.nationalCode())
                 ? naturalPersonRepository.findByFida(item.fida()).orElseGet(NaturalPerson::new)
                 : naturalPersonRepository.findByNationalCode(item.nationalCode()).orElseGet(NaturalPerson::new);
         person.setNationalCode(blankToNull(item.nationalCode()));
@@ -187,6 +203,22 @@ public class RelatedPersonService {
         if (item.personType() == RelatedPersonType.LEGAL && !legalIdentifierPresent) {
             throw new BusinessException("RELATED_LEGAL_PERSON_IDENTIFIER_REQUIRED", "شناسه شخص حقوقی مرتبط الزامی است");
         }
+        if (item.personType() == RelatedPersonType.NATURAL && item.legalRepresentative() != null) {
+            throw new BusinessException(
+                    "RELATED_NATURAL_PERSON_REPRESENTATIVE_NOT_ALLOWED",
+                    "نماینده حقیقی فقط برای شخص حقوقی مرتبط قابل ثبت است"
+            );
+        }
+        if (item.personType() == RelatedPersonType.LEGAL) {
+            CompanyRegistryNaturalPersonData representative = item.legalRepresentative();
+            if (representative == null
+                    || (!hasText(representative.nationalCode()) && !hasText(representative.fida()))) {
+                throw new BusinessException(
+                        "RELATED_LEGAL_PERSON_REPRESENTATIVE_REQUIRED",
+                        "نماینده حقیقی شخص حقوقی مرتبط الزامی است"
+                );
+            }
+        }
     }
 
     private RelatedPersonPost resolvePost(CompanyRegistryRelatedPersonData item) {
@@ -212,6 +244,7 @@ public class RelatedPersonService {
     private RelatedPersonResponse toResponse(RelatedPerson relationship) {
         NaturalPerson naturalPerson = relationship.getNaturalPerson();
         LegalPerson legalPerson = relationship.getLegalPerson();
+        NaturalPerson legalRepresentative = relationship.getLegalRepresentativeNaturalPerson();
         RelatedPersonPost post = relationship.getPost();
         String personType = naturalPerson != null ? RelatedPersonType.NATURAL.name() : RelatedPersonType.LEGAL.name();
         return new RelatedPersonResponse(
@@ -234,7 +267,14 @@ public class RelatedPersonService {
                 legalPerson == null ? null : legalPerson.getNationalId(),
                 legalPerson == null ? null : legalPerson.getRegistrationNumber(),
                 legalPerson == null ? null : legalPerson.getRegistrationDate(),
-                legalPerson == null ? null : legalPerson.getName()
+                legalPerson == null ? null : legalPerson.getName(),
+                legalRepresentative == null ? null : legalRepresentative.getId(),
+                legalRepresentative == null ? null : legalRepresentative.getNationalCode(),
+                legalRepresentative == null ? null : legalRepresentative.getFida(),
+                legalRepresentative == null ? null : legalRepresentative.getFirstName(),
+                legalRepresentative == null ? null : legalRepresentative.getLastName(),
+                legalRepresentative == null ? null : legalRepresentative.getFatherName(),
+                legalRepresentative == null ? null : legalRepresentative.getBirthDate()
         );
     }
 
