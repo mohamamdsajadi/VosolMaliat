@@ -1,7 +1,6 @@
 package com.mparsict.vosolmaliat.domain.model.execution;
 
 import com.mparsict.vosolmaliat.domain.model.BaseEntity;
-import com.mparsict.vosolmaliat.domain.enums.RelatedPersonRole;
 import com.mparsict.vosolmaliat.domain.enums.RelatedPersonType;
 import com.mparsict.vosolmaliat.domain.model.person.LegalPerson;
 import com.mparsict.vosolmaliat.domain.model.person.NaturalPerson;
@@ -26,12 +25,12 @@ public class RelatedPerson extends BaseEntity {
     @JoinColumn(name = "owner_legal_person_id")
     private LegalPerson ownerLegalPerson;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "role")
-    private RelatedPersonRole role;
-
-    @Column(name = "post_name")
-    private String postName;
+    // Kept nullable in the Hibernate mapping so ddl-auto=update can add post_id
+    // to an existing non-empty SQLite table. The entity callback below and the
+    // production migration both enforce that new normalized rows have a post.
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "post_id")
+    private RelatedPersonPost post;
 
     @Column(name = "start_date")
     private String startDate;
@@ -64,10 +63,6 @@ public class RelatedPerson extends BaseEntity {
     private String lastSyncedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "execution_paper_id")
-    private ExecutionPaper executionPaper;
-
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "natural_person_id")
     private NaturalPerson naturalPerson;
 
@@ -83,14 +78,6 @@ public class RelatedPerson extends BaseEntity {
         this.ownerLegalPerson = ownerLegalPersonId == null
                 ? null
                 : LegalPerson.builder().id(ownerLegalPersonId).build();
-    }
-
-    public Long getExecutionPaperId() {
-        return executionPaper == null ? null : executionPaper.getId();
-    }
-
-    public void setExecutionPaperId(Long executionPaperId) {
-        this.executionPaper = executionPaperId == null ? null : ExecutionPaper.builder().id(executionPaperId).build();
     }
 
     public Long getNaturalPersonId() {
@@ -121,8 +108,8 @@ public class RelatedPerson extends BaseEntity {
         RelatedPersonType personType = naturalPerson != null
                 ? RelatedPersonType.NATURAL
                 : RelatedPersonType.LEGAL;
-        if (role == null || !role.supports(personType)) {
-            throw new IllegalStateException("Related person role is not allowed for target person type");
+        if (post == null || post.getCode() == null || !post.getCode().supports(personType)) {
+            throw new IllegalStateException("Related person post is not allowed for target person type");
         }
     }
 }

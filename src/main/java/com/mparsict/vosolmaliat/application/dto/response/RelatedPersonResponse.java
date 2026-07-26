@@ -3,8 +3,9 @@ package com.mparsict.vosolmaliat.application.dto.response;
 public record RelatedPersonResponse(
         Long relationshipId,
         String personType,
-        String role,
-        String roleLabel,
+        Long postId,
+        String postCode,
+        String postLabel,
         String startDate,
         String endDate,
         boolean hasSignatoryAuthority,

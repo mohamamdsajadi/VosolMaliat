@@ -1,12 +1,12 @@
 package com.mparsict.vosolmaliat.application.dto.integration;
 
-import com.mparsict.vosolmaliat.domain.enums.RelatedPersonRole;
+import com.mparsict.vosolmaliat.domain.enums.RelatedPersonPostCode;
 import com.mparsict.vosolmaliat.domain.enums.RelatedPersonType;
 
 public record CompanyRegistryRelatedPersonData(
         String sourceRecordId,
         RelatedPersonType personType,
-        RelatedPersonRole role,
+        RelatedPersonPostCode postCode,
         String startDate,
         String endDate,
         boolean hasSignatoryAuthority,

@@ -5,12 +5,13 @@ import com.mparsict.vosolmaliat.application.security.CurrentUserContext;
 import com.mparsict.vosolmaliat.application.service.FakeCompanyRegistryService;
 import com.mparsict.vosolmaliat.application.service.RelatedPersonService;
 import com.mparsict.vosolmaliat.application.service.security.AuditLogService;
-import com.mparsict.vosolmaliat.domain.enums.RelatedPersonRole;
+import com.mparsict.vosolmaliat.domain.enums.RelatedPersonPostCode;
 import com.mparsict.vosolmaliat.domain.enums.RelatedPersonType;
 import com.mparsict.vosolmaliat.domain.model.Taxpayer;
 import com.mparsict.vosolmaliat.domain.model.execution.ExecutionPaper;
 import com.mparsict.vosolmaliat.domain.model.execution.FinalizedDebtPaper;
 import com.mparsict.vosolmaliat.domain.model.execution.RelatedPerson;
+import com.mparsict.vosolmaliat.domain.model.execution.RelatedPersonPost;
 import com.mparsict.vosolmaliat.domain.model.person.LegalPerson;
 import com.mparsict.vosolmaliat.domain.model.person.NaturalPerson;
 import com.mparsict.vosolmaliat.domain.repository.ExecutionPaperRepository;
@@ -18,6 +19,7 @@ import com.mparsict.vosolmaliat.domain.repository.FinalizedDebtPaperRepository;
 import com.mparsict.vosolmaliat.domain.repository.LegalPersonRepository;
 import com.mparsict.vosolmaliat.domain.repository.NaturalPersonRepository;
 import com.mparsict.vosolmaliat.domain.repository.RelatedPersonRepository;
+import com.mparsict.vosolmaliat.domain.repository.RelatedPersonPostRepository;
 import com.mparsict.vosolmaliat.domain.repository.TaxpayerRepository;
 import org.junit.jupiter.api.Test;
 
@@ -49,16 +51,19 @@ class RelatedPersonServiceUnitTest {
         assertThat(state.legalPeopleByNationalId).hasSize(2);
         assertThat(firstRefresh.relatedPersons())
                 .filteredOn(item -> item.personType().equals(RelatedPersonType.NATURAL.name()))
-                .extracting(item -> item.role())
+                .extracting(item -> item.postCode())
                 .contains(
-                        RelatedPersonRole.CEO.name(),
-                        RelatedPersonRole.BOARD_MEMBER.name(),
-                        RelatedPersonRole.BOARD_CHAIR.name()
+                        RelatedPersonPostCode.CEO.name(),
+                        RelatedPersonPostCode.BOARD_MEMBER.name(),
+                        RelatedPersonPostCode.BOARD_CHAIR.name()
                 );
         assertThat(firstRefresh.relatedPersons())
                 .filteredOn(item -> item.personType().equals(RelatedPersonType.LEGAL.name()))
-                .extracting(item -> item.role())
-                .containsExactly(RelatedPersonRole.SHAREHOLDER.name());
+                .extracting(item -> item.postCode())
+                .containsExactly(RelatedPersonPostCode.SHAREHOLDER.name());
+        assertThat(firstRefresh.relatedPersons())
+                .extracting(item -> item.postId())
+                .doesNotContainNull();
         assertThat(auditLogService.action)
                 .isEqualTo("RELATED_PERSONS_REFRESHED_FROM_COMPANY_REGISTRY");
         assertThat(auditLogService.newValue).contains("\"debtYear\":\"1405\"");
@@ -73,21 +78,21 @@ class RelatedPersonServiceUnitTest {
         var response = service.getForExecutionPaper(100L);
 
         assertThat(response.relatedPersons())
-                .extracting(item -> item.role())
+                .extracting(item -> item.postCode())
                 .containsExactlyInAnyOrder(
-                        RelatedPersonRole.BOARD_MEMBER.name(),
-                        RelatedPersonRole.SHAREHOLDER.name()
+                        RelatedPersonPostCode.BOARD_MEMBER.name(),
+                        RelatedPersonPostCode.SHAREHOLDER.name()
                 );
     }
 
     @Test
-    void rolesAreRestrictedByRelatedPersonType() {
-        assertThat(RelatedPersonRole.CEO.supports(RelatedPersonType.NATURAL)).isTrue();
-        assertThat(RelatedPersonRole.CEO.supports(RelatedPersonType.LEGAL)).isFalse();
-        assertThat(RelatedPersonRole.PARENT_COMPANY.supports(RelatedPersonType.NATURAL)).isFalse();
-        assertThat(RelatedPersonRole.PARENT_COMPANY.supports(RelatedPersonType.LEGAL)).isTrue();
-        assertThat(RelatedPersonRole.SHAREHOLDER.supports(RelatedPersonType.NATURAL)).isTrue();
-        assertThat(RelatedPersonRole.SHAREHOLDER.supports(RelatedPersonType.LEGAL)).isTrue();
+    void postsAreRestrictedByRelatedPersonType() {
+        assertThat(RelatedPersonPostCode.CEO.supports(RelatedPersonType.NATURAL)).isTrue();
+        assertThat(RelatedPersonPostCode.CEO.supports(RelatedPersonType.LEGAL)).isFalse();
+        assertThat(RelatedPersonPostCode.PARENT_COMPANY.supports(RelatedPersonType.NATURAL)).isFalse();
+        assertThat(RelatedPersonPostCode.PARENT_COMPANY.supports(RelatedPersonType.LEGAL)).isTrue();
+        assertThat(RelatedPersonPostCode.SHAREHOLDER.supports(RelatedPersonType.NATURAL)).isTrue();
+        assertThat(RelatedPersonPostCode.SHAREHOLDER.supports(RelatedPersonType.LEGAL)).isTrue();
     }
 
     private static class RepositoryState {
@@ -103,12 +108,17 @@ class RelatedPersonServiceUnitTest {
         private final Taxpayer taxpayer;
         private final Map<String, NaturalPerson> naturalPeopleByNationalCode = new HashMap<>();
         private final Map<String, LegalPerson> legalPeopleByNationalId = new HashMap<>();
+        private final Map<RelatedPersonPostCode, RelatedPersonPost> postsByCode = new HashMap<>();
         private final List<RelatedPerson> relationships = new ArrayList<>();
         private long nextNaturalId = 20;
         private long nextLegalId = 30;
         private long nextRelationshipId = 40;
 
         private RepositoryState(String debtYear) {
+            long postId = 1;
+            for (RelatedPersonPostCode code : RelatedPersonPostCode.values()) {
+                postsByCode.put(code, RelatedPersonPost.builder().id(postId++).code(code).build());
+            }
             legalPeopleByNationalId.put(owner.getNationalId(), owner);
             finalizedDebtPaper = FinalizedDebtPaper.builder()
                     .id(2L)
@@ -129,11 +139,17 @@ class RelatedPersonServiceUnitTest {
                     finalizedDebtPaperRepository(),
                     naturalPersonRepository(),
                     legalPersonRepository(),
+                    relatedPersonPostRepository(),
                     relatedPersonRepository(),
                     new FakeCompanyRegistryService(),
                     auditLogService,
                     new ObjectMapper()
             );
+        }
+
+        private RelatedPersonPostRepository relatedPersonPostRepository() {
+            return proxy(RelatedPersonPostRepository.class, (method, args) ->
+                    "findByCode".equals(method) ? Optional.ofNullable(postsByCode.get(args[0])) : null);
         }
 
         private ExecutionPaperRepository executionPaperRepository() {

@@ -288,7 +288,7 @@ function RelatedPersonsSection({ data, loading, refreshing, error, onRefresh }) 
                       : formatValue(item.companyName)}</strong>
                   </td>
                   <td style={relatedPersonCellStyle}>{formatValue(item.nationalCode || item.fida || item.nationalId)}</td>
-                  <td style={relatedPersonCellStyle}>{formatValue(item.roleLabel)}</td>
+                  <td style={relatedPersonCellStyle}>{formatValue(item.postLabel)}</td>
                   <td style={relatedPersonCellStyle}>{formatPersianDate(item.startDate)}</td>
                   <td style={relatedPersonCellStyle}>{formatPersianDate(item.endDate)}</td>
                   <td style={relatedPersonCellStyle}>{item.hasSignatoryAuthority ? 'دارد' : 'ندارد'}</td>

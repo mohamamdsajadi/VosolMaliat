@@ -2,7 +2,7 @@ package com.mparsict.vosolmaliat.application.service;
 
 import com.mparsict.vosolmaliat.application.dto.integration.CompanyRegistryRelatedPersonData;
 import com.mparsict.vosolmaliat.common.exception.BusinessException;
-import com.mparsict.vosolmaliat.domain.enums.RelatedPersonRole;
+import com.mparsict.vosolmaliat.domain.enums.RelatedPersonPostCode;
 import com.mparsict.vosolmaliat.domain.enums.RelatedPersonType;
 import org.springframework.stereotype.Service;
 
@@ -27,7 +27,7 @@ public class FakeCompanyRegistryService {
                 new CompanyRegistryRelatedPersonData(
                         normalizedNationalId + "-N1-CEO",
                         RelatedPersonType.NATURAL,
-                        RelatedPersonRole.CEO,
+                        RelatedPersonPostCode.CEO,
                         "1400-01-01",
                         null,
                         true,
@@ -45,7 +45,7 @@ public class FakeCompanyRegistryService {
                 new CompanyRegistryRelatedPersonData(
                         normalizedNationalId + "-N1-BOARD",
                         RelatedPersonType.NATURAL,
-                        RelatedPersonRole.BOARD_MEMBER,
+                        RelatedPersonPostCode.BOARD_MEMBER,
                         "1399-06-15",
                         null,
                         true,
@@ -63,7 +63,7 @@ public class FakeCompanyRegistryService {
                 new CompanyRegistryRelatedPersonData(
                         normalizedNationalId + "-N2-CHAIR",
                         RelatedPersonType.NATURAL,
-                        RelatedPersonRole.BOARD_CHAIR,
+                        RelatedPersonPostCode.BOARD_CHAIR,
                         "1401-02-01",
                         null,
                         false,
@@ -81,7 +81,7 @@ public class FakeCompanyRegistryService {
                 new CompanyRegistryRelatedPersonData(
                         normalizedNationalId + "-L1-SHAREHOLDER",
                         RelatedPersonType.LEGAL,
-                        RelatedPersonRole.SHAREHOLDER,
+                        RelatedPersonPostCode.SHAREHOLDER,
                         "1398-01-01",
                         null,
                         false,

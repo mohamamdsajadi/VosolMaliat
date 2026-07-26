@@ -1,6 +1,6 @@
 package com.mparsict.vosolmaliat.domain.enums;
 
-public enum RelatedPersonRole {
+public enum RelatedPersonPostCode {
     CEO("مدیرعامل", true, false),
     BOARD_CHAIR("رئیس هیئت‌مدیره", true, false),
     BOARD_VICE_CHAIR("نایب‌رئیس هیئت‌مدیره", true, false),
@@ -22,7 +22,7 @@ public enum RelatedPersonRole {
     private final boolean naturalPersonAllowed;
     private final boolean legalPersonAllowed;
 
-    RelatedPersonRole(String label, boolean naturalPersonAllowed, boolean legalPersonAllowed) {
+    RelatedPersonPostCode(String label, boolean naturalPersonAllowed, boolean legalPersonAllowed) {
         this.label = label;
         this.naturalPersonAllowed = naturalPersonAllowed;
         this.legalPersonAllowed = legalPersonAllowed;

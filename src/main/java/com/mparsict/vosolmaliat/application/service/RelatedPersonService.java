@@ -12,6 +12,7 @@ import com.mparsict.vosolmaliat.domain.model.Taxpayer;
 import com.mparsict.vosolmaliat.domain.model.execution.ExecutionPaper;
 import com.mparsict.vosolmaliat.domain.model.execution.FinalizedDebtPaper;
 import com.mparsict.vosolmaliat.domain.model.execution.RelatedPerson;
+import com.mparsict.vosolmaliat.domain.model.execution.RelatedPersonPost;
 import com.mparsict.vosolmaliat.domain.model.person.LegalPerson;
 import com.mparsict.vosolmaliat.domain.model.person.NaturalPerson;
 import com.mparsict.vosolmaliat.domain.repository.ExecutionPaperRepository;
@@ -19,6 +20,7 @@ import com.mparsict.vosolmaliat.domain.repository.FinalizedDebtPaperRepository;
 import com.mparsict.vosolmaliat.domain.repository.LegalPersonRepository;
 import com.mparsict.vosolmaliat.domain.repository.NaturalPersonRepository;
 import com.mparsict.vosolmaliat.domain.repository.RelatedPersonRepository;
+import com.mparsict.vosolmaliat.domain.repository.RelatedPersonPostRepository;
 import com.mparsict.vosolmaliat.domain.repository.TaxpayerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -38,6 +40,7 @@ public class RelatedPersonService {
     private final FinalizedDebtPaperRepository finalizedDebtPaperRepository;
     private final NaturalPersonRepository naturalPersonRepository;
     private final LegalPersonRepository legalPersonRepository;
+    private final RelatedPersonPostRepository relatedPersonPostRepository;
     private final RelatedPersonRepository relatedPersonRepository;
     private final FakeCompanyRegistryService fakeCompanyRegistryService;
     private final AuditLogService auditLogService;
@@ -67,9 +70,7 @@ public class RelatedPersonService {
                     .orElseGet(RelatedPerson::new);
 
             relationship.setOwnerLegalPerson(context.owner());
-            relationship.setExecutionPaper(null);
-            relationship.setRole(item.role());
-            relationship.setPostName(item.role().label());
+            relationship.setPost(resolvePost(item));
             relationship.setStartDate(normalizeJalaliDate(item.startDate()));
             relationship.setEndDate(normalizeJalaliDate(item.endDate()));
             relationship.setHasSignatoryAuthority(item.hasSignatoryAuthority() ? 1 : 0);
@@ -169,13 +170,13 @@ public class RelatedPersonService {
     }
 
     private void validateExternalItem(CompanyRegistryRelatedPersonData item) {
-        if (item.personType() == null || item.role() == null) {
+        if (item.personType() == null || item.postCode() == null) {
             throw new BusinessException("COMPANY_REGISTRY_DATA_INVALID", "نوع شخص یا سمت شخص مرتبط نامعتبر است");
         }
-        if (!item.role().supports(item.personType())) {
+        if (!item.postCode().supports(item.personType())) {
             throw new BusinessException(
-                    "RELATED_PERSON_ROLE_NOT_ALLOWED",
-                    "سمت " + item.role().label() + " برای این نوع شخص مرتبط مجاز نیست"
+                    "RELATED_PERSON_POST_NOT_ALLOWED",
+                    "سمت " + item.postCode().label() + " برای این نوع شخص مرتبط مجاز نیست"
             );
         }
         boolean naturalIdentifierPresent = hasText(item.nationalCode()) || hasText(item.fida());
@@ -188,27 +189,37 @@ public class RelatedPersonService {
         }
     }
 
+    private RelatedPersonPost resolvePost(CompanyRegistryRelatedPersonData item) {
+        return relatedPersonPostRepository.findByCode(item.postCode())
+                .orElseThrow(() -> new BusinessException(
+                        "RELATED_PERSON_POST_NOT_CONFIGURED",
+                        "سمت " + item.postCode().label() + " در جدول سمت‌ها تعریف نشده است"
+                ));
+    }
+
     private boolean overlapsDebtYear(RelatedPerson relationship, String debtYear) {
         if (!hasText(debtYear)) {
             return true;
         }
         String yearStart = debtYear + "-01-01";
-        String yearEnd = debtYear + "-12-30";
+        String nextYearStart = (Integer.parseInt(debtYear) + 1) + "-01-01";
         String startDate = normalizeJalaliDate(relationship.getStartDate());
         String endDate = normalizeJalaliDate(relationship.getEndDate());
-        return (!hasText(startDate) || startDate.compareTo(yearEnd) <= 0)
+        return (!hasText(startDate) || startDate.compareTo(nextYearStart) < 0)
                 && (!hasText(endDate) || endDate.compareTo(yearStart) >= 0);
     }
 
     private RelatedPersonResponse toResponse(RelatedPerson relationship) {
         NaturalPerson naturalPerson = relationship.getNaturalPerson();
         LegalPerson legalPerson = relationship.getLegalPerson();
+        RelatedPersonPost post = relationship.getPost();
         String personType = naturalPerson != null ? RelatedPersonType.NATURAL.name() : RelatedPersonType.LEGAL.name();
         return new RelatedPersonResponse(
                 relationship.getId(),
                 personType,
-                relationship.getRole() == null ? null : relationship.getRole().name(),
-                relationship.getRole() == null ? relationship.getPostName() : relationship.getRole().label(),
+                post == null ? null : post.getId(),
+                post == null || post.getCode() == null ? null : post.getCode().name(),
+                post == null || post.getCode() == null ? null : post.getCode().label(),
                 relationship.getStartDate(),
                 relationship.getEndDate(),
                 Integer.valueOf(1).equals(relationship.getHasSignatoryAuthority()),

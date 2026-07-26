@@ -30,6 +30,8 @@ Last Updated: 2026-07-15
 | `DebtInformation` | `debt_information` | مبالغ بدهی | execution paper |
 | `ExecutionPaperNotification` | `execution_paper_notification` | وضعیت ابلاغ | execution paper |
 | `ExecutionPaperStateHistory` | `execution_paper_state_history` | تاریخچه وضعیت | execution paper |
+| `RelatedPerson` | `related_persons` | رابطه زمان‌دار اشخاص حقیقی/حقوقی با شخص حقوقی مودی | owner legal person, natural/legal target |
+| `RelatedPersonPost` | `related_person_post` | جدول مرجع enum سمت اشخاص مرتبط | referenced by related persons |
 | `FakeElectronicNotificationRequest` | `fake_electronic_notification_request` | fake ابلاغ | execution paper |
 | `FakeSanimInformRequest` | `fake_sanim_inform_request` | fake سنیم | execution paper |
 
@@ -46,6 +48,10 @@ erDiagram
     EXECUTION_PAPER ||--o{ DEBT_INFORMATION : has
     EXECUTION_PAPER ||--o{ EXECUTION_PAPER_NOTIFICATION : has
     EXECUTION_PAPER ||--o{ EXECUTION_PAPER_STATE_HISTORY : has
+    LEGAL_PERSON ||--o{ RELATED_PERSONS : owns
+    RELATED_PERSON_POST ||--o{ RELATED_PERSONS : classifies
+    NATURAL_PERSON ||--o{ RELATED_PERSONS : natural_target
+    LEGAL_PERSON ||--o{ RELATED_PERSONS : legal_target
     PERMISSION ||--o{ GROUP_PERMISSION : maps
 ```
 
@@ -66,4 +72,3 @@ erDiagram
 
 - پایگاه داده هدف production PostgreSQL است یا محصول دیگر؟
 - استراتژی migration و indexگذاری چیست؟
-

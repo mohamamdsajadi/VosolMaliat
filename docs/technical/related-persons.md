@@ -8,11 +8,12 @@ Last Updated: 2026-07-26
 
 ## تعریف رابطه
 
-`RelatedPerson` خودِ شخص نیست؛ یک رابطه زمان‌دار میان یک شخص حقوقیِ مالک و دقیقاً یک شخص حقیقی یا حقوقیِ مرتبط است. بنابراین اطلاعات هویتی در `NaturalPerson` یا `LegalPerson` نگهداری می‌شود و سمت، بازه اعتبار و حق امضا در `RelatedPerson` قرار می‌گیرد.
+`RelatedPerson` خودِ شخص نیست؛ یک رابطه زمان‌دار میان یک شخص حقوقیِ مالک و دقیقاً یک شخص حقیقی یا حقوقیِ مرتبط است. بنابراین اطلاعات هویتی در `NaturalPerson` یا `LegalPerson` نگهداری می‌شود. سمت در جدول مرجع `RelatedPersonPost` و بازه اعتبار و حق امضا در `RelatedPerson` قرار می‌گیرد.
 
 ```mermaid
 erDiagram
     LEGAL_PERSON ||--o{ RELATED_PERSON : "ownerLegalPerson"
+    RELATED_PERSON_POST ||--o{ RELATED_PERSON : "post"
     NATURAL_PERSON ||--o{ RELATED_PERSON : "naturalPerson target"
     LEGAL_PERSON ||--o{ RELATED_PERSON : "legalPerson target"
 
@@ -21,7 +22,7 @@ erDiagram
         long owner_legal_person_id FK
         long natural_person_id FK
         long legal_person_id FK
-        string role
+        long post_id FK
         string start_date
         string end_date
         integer has_signatory_authority
@@ -29,9 +30,14 @@ erDiagram
         string source_record_id
         string last_synced_at
     }
+
+    RELATED_PERSON_POST {
+        long id PK
+        string code UK
+    }
 ```
 
-رابطه به شخص حقوقی مودی تعلق دارد و برای همه برگ‌های اجرای آن مودی قابل استفاده مجدد است. در داده‌های همگام‌شده، `execution_paper_id` عمداً `null` است؛ برگ اجرا فقط زمینه بازیابی و تعیین سال بدهی را فراهم می‌کند.
+رابطه به شخص حقوقی مودی تعلق دارد و برای همه برگ‌های اجرای آن مودی قابل استفاده مجدد است. جدول رابطه ستون `execution_paper_id` ندارد؛ برگ اجرا فقط زمینه بازیابی و تعیین سال بدهی را فراهم می‌کند.
 
 ## قواعد دامنه
 
@@ -39,7 +45,7 @@ erDiagram
 
 1. `ownerLegalPerson` الزامی است.
 2. دقیقاً یکی از `naturalPerson` یا `legalPerson` باید مقدار داشته باشد.
-3. `role` الزامی و برای نوع شخص مقصد مجاز باشد.
+3. `post` الزامی است و enum ذخیره‌شده در آن باید برای نوع شخص مقصد مجاز باشد.
 4. شخص حقیقی باید حداقل `nationalCode` یا `fida` داشته باشد.
 5. شخص حقوقی مقصد باید حداقل `nationalId` یا `registrationNumber` داشته باشد.
 6. تاریخ‌ها شمسی و با قالب متعارف `yyyy-MM-dd` نگهداری می‌شوند. ورودی ارقام فارسی به انگلیسی و `/` به `-` تبدیل می‌شود.
@@ -82,12 +88,12 @@ GET /api/v1/execution-papers/{id}/related-persons
 فقط رابطه‌هایی بازگردانده می‌شوند که بازه اعتبارشان با سال عملکرد برگ بدهی هم‌پوشانی داشته باشد:
 
 ```text
-(startDate is empty OR startDate <= debtYear-12-30)
+(startDate is empty OR startDate < (debtYear + 1)-01-01)
 AND
 (endDate is empty OR endDate >= debtYear-01-01)
 ```
 
-تاریخ شروع خالی به معنی بدون کران شروع و تاریخ پایان خالی به معنی رابطه جاری است. اگر سال بدهی خالی باشد، همه روابط بازگردانده می‌شوند.
+استفاده از ابتدای سال بعد به صورت exclusive نیاز به محاسبه ۲۹ یا ۳۰ روزه بودن اسفند را حذف می‌کند. تاریخ شروع خالی به معنی بدون کران شروع و تاریخ پایان خالی به معنی رابطه جاری است. اگر سال بدهی خالی باشد، همه روابط بازگردانده می‌شوند.
 
 نمونه پاسخ:
 
@@ -102,8 +108,9 @@ AND
     {
       "relationshipId": 40,
       "personType": "NATURAL",
-      "role": "CEO",
-      "roleLabel": "مدیرعامل",
+      "postId": 1,
+      "postCode": "CEO",
+      "postLabel": "مدیرعامل",
       "startDate": "1400-01-01",
       "endDate": null,
       "hasSignatoryAuthority": true,
@@ -138,7 +145,7 @@ POST /api/v1/execution-papers/{id}/related-persons/refresh
 
 1. شناسه ملی شخص حقوقی مودی از روی برگ اجرا پیدا می‌شود.
 2. سرویس `FakeCompanyRegistryService` اشخاص مرتبط را برمی‌گرداند.
-3. داده ورودی از نظر نوع شخص، سمت و شناسه هویتی اعتبارسنجی می‌شود.
+3. داده ورودی از نظر نوع شخص، سمت و شناسه هویتی اعتبارسنجی می‌شود و سمت از جدول `related_person_post` resolve می‌شود.
 4. شخص حقیقی با `nationalCode` و در نبود آن با `fida` پیدا یا ایجاد می‌شود.
 5. شخص حقوقی با `nationalId` و در نبود آن با `registrationNumber` پیدا یا ایجاد می‌شود.
 6. رابطه با کلید `(ownerLegalPersonId, sourceSystem, sourceRecordId)` درج یا به‌روزرسانی می‌شود.
@@ -153,7 +160,7 @@ POST /api/v1/execution-papers/{id}/related-persons/refresh
 |---|---|
 | `sourceRecordId` | شناسه پایدار رکورد در سامانه مبدأ |
 | `personType` | `NATURAL` یا `LEGAL` |
-| `role` | کد سمت |
+| `postCode` | enum کد سمت |
 | `startDate`, `endDate` | بازه اعتبار شمسی |
 | `hasSignatoryAuthority` | داشتن حق امضا |
 | `nationalCode`, `fida` | شناسه‌های شخص حقیقی |
@@ -172,16 +179,18 @@ POST /api/v1/execution-papers/{id}/related-persons/refresh
 | `FINALIZED_DEBT_PAPER_NOT_FOUND` | برگ بدهی قطعی مرتبط وجود ندارد |
 | `LEGAL_PERSON_NATIONAL_ID_REQUIRED` | شناسه ملی مالک برای استعلام موجود نیست |
 | `COMPANY_REGISTRY_DATA_INVALID` | نوع شخص یا سمت در ورودی نامعتبر است |
-| `RELATED_PERSON_ROLE_NOT_ALLOWED` | سمت برای نوع شخص مقصد مجاز نیست |
+| `RELATED_PERSON_POST_NOT_ALLOWED` | سمت برای نوع شخص مقصد مجاز نیست |
+| `RELATED_PERSON_POST_NOT_CONFIGURED` | enum سمت در جدول مرجع سمت‌ها وجود ندارد |
 | `RELATED_NATURAL_PERSON_IDENTIFIER_REQUIRED` | شناسه شخص حقیقی موجود نیست |
 | `RELATED_LEGAL_PERSON_IDENTIFIER_REQUIRED` | شناسه شخص حقوقی موجود نیست |
 | `RELATED_PERSON_AUDIT_PAYLOAD_ERROR` | ساخت payload رخداد audit ناموفق است |
 
 ## پایگاه داده و قیود
 
-اسکریپت دستی `003_company_registry_related_persons_schema.sql` ستون‌های مالک، سمت و اطلاعات منبع را اضافه می‌کند و این indexها را می‌سازد:
+اسکریپت دستی `003_company_registry_related_persons_schema.sql` جدول enum سمت‌ها را می‌سازد، داده‌های قبلی `role` را به `post_id` تبدیل می‌کند و ستون‌های `execution_paper_id`، `post_name` و `role` را با بازسازی جدول حذف می‌کند. indexهای زیر نیز ایجاد می‌شوند:
 
 - index روی `owner_legal_person_id`
+- index روی `post_id`
 - unique index روی `(owner_legal_person_id, source_system, source_record_id)`
 
 پروژه فعلاً از Hibernate `ddl-auto=update` استفاده می‌کند و migration رسمی Flyway/Liquibase ندارد.
@@ -190,7 +199,7 @@ POST /api/v1/execution-papers/{id}/related-persons/refresh
 
 - integration فعلی fake و deterministic است؛ قرارداد و احراز هویت سامانه واقعی ثبت شرکت‌ها هنوز تعریف نشده است.
 - refresh فقط رکوردهای دریافت‌شده را upsert می‌کند و رابطه‌هایی را که دیگر در پاسخ مبدأ نیستند حذف یا منقضی نمی‌کند.
-- قیود «مالک الزامی»، «دقیقاً یک مقصد» و «سمت مجاز» در سطح برنامه کنترل می‌شوند و در اسکریپت فعلی database constraint متناظر ندارند.
+- قیود «مالک الزامی»، «دقیقاً یک مقصد» و وجود `post_id` در اسکریپت migration نیز اعمال می‌شوند؛ مجاز بودن enum سمت برای نوع مقصد در سطح برنامه کنترل می‌شود.
 - مقایسه بازه‌ها رشته‌ای است و به تاریخ‌های صفرگذاری‌شده با قالب `yyyy-MM-dd` وابسته است.
 - `lastSyncedAt` به صورت رشته `LocalDateTime` بدون timezone ذخیره می‌شود.
 - endpoint همگام‌سازی عملیات تغییردهنده است، اما در حال حاضر مجوز مجزایی برای refresh ندارد.
@@ -198,7 +207,8 @@ POST /api/v1/execution-papers/{id}/related-persons/refresh
 ## فایل‌های مرجع
 
 - `domain/model/execution/RelatedPerson.java`
-- `domain/enums/RelatedPersonRole.java`
+- `domain/model/execution/RelatedPersonPost.java`
+- `domain/enums/RelatedPersonPostCode.java`
 - `application/service/RelatedPersonService.java`
 - `application/service/FakeCompanyRegistryService.java`
 - `presentation/api/ExecutionPaperController.java`
