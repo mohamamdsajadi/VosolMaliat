@@ -2,6 +2,7 @@ package com.mparsict.vosolmaliat.infrastructure.camunda.worker;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mparsict.vosolmaliat.application.service.RelatedPersonService;
+import com.mparsict.vosolmaliat.domain.repository.ExecutionPaperRepository;
 import com.mparsict.vosolmaliat.infrastructure.camunda.ProcessConstants;
 import io.camunda.client.annotation.JobWorker;
 import io.camunda.client.api.response.ActivatedJob;
@@ -18,6 +19,7 @@ import java.util.Map;
 public class StoreRelatedPersonsWorker {
 
     private final RelatedPersonService relatedPersonService;
+    private final ExecutionPaperRepository executionPaperRepository;
     private final ObjectMapper objectMapper;
 
     @JobWorker(type = ProcessConstants.JOB_STORE_RELATED_PERSONS, autoComplete = false)
@@ -25,9 +27,9 @@ public class StoreRelatedPersonsWorker {
         try {
             Map<String, Object> variables = job.getVariablesAsMap();
             relatedPersonService.storeOfficialGazetteRelatedPersons(
-                    Tabsare3186WorkerVariables.requiredLong(
+                    ExecutionPaperWorkerVariables.resolveExecutionPaperId(
                             variables,
-                            ProcessConstants.VAR_EXECUTION_PAPER_ID
+                            executionPaperRepository
                     ),
                     Tabsare3186WorkerVariables.requiredRelatedPersons(
                             objectMapper,

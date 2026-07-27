@@ -1,6 +1,7 @@
 package com.mparsict.vosolmaliat.infrastructure.camunda.worker;
 
 import com.mparsict.vosolmaliat.application.service.InformProcessService;
+import com.mparsict.vosolmaliat.domain.repository.ExecutionPaperRepository;
 import com.mparsict.vosolmaliat.infrastructure.camunda.ProcessConstants;
 import io.camunda.client.api.response.ActivatedJob;
 import io.camunda.client.api.worker.JobClient;
@@ -17,12 +18,16 @@ import java.util.Map;
 public class SetReInformDateWorker {
 
     private final InformProcessService informProcessService;
+    private final ExecutionPaperRepository executionPaperRepository;
 
     @JobWorker(type = ProcessConstants.JOB_SET_RE_INFORM_DATE, autoComplete = false)
     public void handle(JobClient client, ActivatedJob job) {
         try {
             Map<String, Object> variables = job.getVariablesAsMap();
-            Long executionPaperId = requiredLong(variables, ProcessConstants.VAR_EXECUTION_PAPER_ID);
+            Long executionPaperId = ExecutionPaperWorkerVariables.resolveExecutionPaperId(
+                    variables,
+                    executionPaperRepository
+            );
             String reInformDate = informProcessService.setReInformDate(
                     executionPaperId,
                     (String) variables.get(ProcessConstants.VAR_RESTRICTION_REMOVAL_DATE)
@@ -37,11 +42,4 @@ public class SetReInformDateWorker {
         }
     }
 
-    private Long requiredLong(Map<String, Object> variables, String variable) {
-        Object value = variables.get(variable);
-        if (value instanceof Number number) {
-            return number.longValue();
-        }
-        return Long.valueOf(String.valueOf(value));
-    }
 }

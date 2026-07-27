@@ -19,6 +19,15 @@ public interface ExecutionPaperRepository extends JpaRepository<ExecutionPaper, 
 
     Optional<ExecutionPaper> findByFinalizedDebtPaperDebtPaperUniqueCode(String debtPaperUniqueCode);
 
+    @Query("""
+            SELECT finalizedDebtPaper.debtPaperIssueDate
+            FROM ExecutionPaper executionPaper
+            JOIN executionPaper.finalizedDebtPaper finalizedDebtPaper
+            WHERE executionPaper.id = :executionPaperId
+            """)
+    Optional<String> findDebtPaperIssueDateByExecutionPaperId(
+            @Param("executionPaperId") Long executionPaperId);
+
     List<ExecutionPaper> findByCurrentState(String state);
 
     long countByCurrentState(String state);

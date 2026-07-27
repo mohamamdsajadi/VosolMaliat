@@ -1,6 +1,7 @@
 package com.mparsict.vosolmaliat.infrastructure.camunda.worker;
 
 import com.mparsict.vosolmaliat.application.service.FakeSanimInformService;
+import com.mparsict.vosolmaliat.domain.repository.ExecutionPaperRepository;
 import com.mparsict.vosolmaliat.infrastructure.camunda.ProcessConstants;
 import io.camunda.client.api.response.ActivatedJob;
 import io.camunda.client.api.worker.JobClient;
@@ -9,21 +10,20 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.util.Map;
-
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class SendExecutionPaperIdToSanimWorker {
 
     private final FakeSanimInformService fakeSanimInformService;
+    private final ExecutionPaperRepository executionPaperRepository;
 
     @JobWorker(type = ProcessConstants.JOB_SEND_EXECUTION_PAPER_ID_TO_SANIM, autoComplete = false)
     public void handle(JobClient client, ActivatedJob job) {
         try {
-            Long executionPaperId = requiredLong(
+            Long executionPaperId = ExecutionPaperWorkerVariables.resolveExecutionPaperId(
                     job.getVariablesAsMap(),
-                    ProcessConstants.VAR_EXECUTION_PAPER_ID
+                    executionPaperRepository
             );
             fakeSanimInformService.sendExecutionPaperId(executionPaperId);
 
@@ -35,14 +35,4 @@ public class SendExecutionPaperIdToSanimWorker {
         }
     }
 
-    private Long requiredLong(Map<String, Object> variables, String variable) {
-        Object value = variables.get(variable);
-        if (value == null) {
-            throw new IllegalArgumentException("Missing required process variable: " + variable);
-        }
-        if (value instanceof Number number) {
-            return number.longValue();
-        }
-        return Long.valueOf(String.valueOf(value));
-    }
 }

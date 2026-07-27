@@ -1,6 +1,7 @@
 package com.mparsict.vosolmaliat.infrastructure.camunda.worker;
 
 import com.mparsict.vosolmaliat.application.service.InformProcessService;
+import com.mparsict.vosolmaliat.domain.repository.ExecutionPaperRepository;
 import com.mparsict.vosolmaliat.infrastructure.camunda.ProcessConstants;
 import io.camunda.client.api.response.ActivatedJob;
 import io.camunda.client.api.worker.JobClient;
@@ -15,11 +16,15 @@ import org.springframework.stereotype.Component;
 public class SendExecutionPaperToElectronicNotificationWorker {
 
     private final InformProcessService informProcessService;
+    private final ExecutionPaperRepository executionPaperRepository;
 
     @JobWorker(type = ProcessConstants.JOB_SEND_TO_ELECTRONIC_NOTIFICATION, autoComplete = false)
     public void handle(JobClient client, ActivatedJob job) {
         try {
-            Long executionPaperId = requiredLong(job, ProcessConstants.VAR_EXECUTION_PAPER_ID);
+            Long executionPaperId = ExecutionPaperWorkerVariables.resolveExecutionPaperId(
+                    job.getVariablesAsMap(),
+                    executionPaperRepository
+            );
             informProcessService.markSentToElectronicNotification(executionPaperId);
             client.newCompleteCommand(job.getKey()).send().join();
         } catch (Exception ex) {
@@ -28,11 +33,4 @@ public class SendExecutionPaperToElectronicNotificationWorker {
         }
     }
 
-    private Long requiredLong(ActivatedJob job, String variable) {
-        Object value = job.getVariablesAsMap().get(variable);
-        if (value instanceof Number number) {
-            return number.longValue();
-        }
-        return Long.valueOf(String.valueOf(value));
-    }
 }

@@ -40,6 +40,12 @@ camunda:
       client-id: ${CAMUNDA_CLIENT_ID:orchestration}
       client-secret: ${CAMUNDA_CLIENT_SECRET:secret}
       audience: ${CAMUNDA_AUDIENCE:orchestration}
+    execution-threads: ${CAMUNDA_EXECUTION_THREADS:4}
+    worker:
+      defaults:
+        max-jobs-active: ${CAMUNDA_WORKER_MAX_JOBS_ACTIVE:4}
+        poll-interval: ${CAMUNDA_WORKER_POLL_INTERVAL:PT1S}
+        request-timeout: ${CAMUNDA_WORKER_REQUEST_TIMEOUT:PT15S}
     enabled: true
 
 server:

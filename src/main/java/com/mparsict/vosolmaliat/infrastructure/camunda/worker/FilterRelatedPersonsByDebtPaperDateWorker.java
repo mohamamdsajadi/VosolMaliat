@@ -2,6 +2,7 @@ package com.mparsict.vosolmaliat.infrastructure.camunda.worker;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mparsict.vosolmaliat.application.dto.integration.CompanyRegistryRelatedPersonData;
+import com.mparsict.vosolmaliat.domain.repository.ExecutionPaperRepository;
 import com.mparsict.vosolmaliat.infrastructure.camunda.ProcessConstants;
 import io.camunda.client.annotation.JobWorker;
 import io.camunda.client.api.response.ActivatedJob;
@@ -19,6 +20,7 @@ import java.util.Map;
 public class FilterRelatedPersonsByDebtPaperDateWorker {
 
     private final ObjectMapper objectMapper;
+    private final ExecutionPaperRepository executionPaperRepository;
 
     @JobWorker(
             type = ProcessConstants.JOB_FILTER_RELATED_PERSONS_BY_DEBT_PAPER_DATE,
@@ -27,9 +29,11 @@ public class FilterRelatedPersonsByDebtPaperDateWorker {
     public void handle(JobClient client, ActivatedJob job) {
         try {
             Map<String, Object> variables = job.getVariablesAsMap();
-            String debtPaperDate = Tabsare3186WorkerVariables.requiredString(
-                    variables,
-                    ProcessConstants.VAR_DEBT_PAPER_DATE
+            String debtPaperDate = Tabsare3186WorkerVariables.normalizeJalaliDate(
+                    ExecutionPaperWorkerVariables.resolveDebtPaperDate(
+                            variables,
+                            executionPaperRepository
+                    )
             );
             List<CompanyRegistryRelatedPersonData> filtered =
                     Tabsare3186WorkerVariables.requiredRelatedPersons(

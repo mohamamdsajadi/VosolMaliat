@@ -1,6 +1,7 @@
 package com.mparsict.vosolmaliat.infrastructure.camunda.worker;
 
 import com.mparsict.vosolmaliat.application.service.InformProcessService;
+import com.mparsict.vosolmaliat.domain.repository.ExecutionPaperRepository;
 import com.mparsict.vosolmaliat.infrastructure.camunda.ProcessConstants;
 import io.camunda.client.api.response.ActivatedJob;
 import io.camunda.client.api.worker.JobClient;
@@ -17,27 +18,31 @@ import java.util.Map;
 public class SendInformDataToSanimWorker {
 
     private final InformProcessService informProcessService;
+    private final ExecutionPaperRepository executionPaperRepository;
 
     @JobWorker(type = ProcessConstants.JOB_SEND_INFORM_DATA_TO_SANIM, autoComplete = false)
     public void handle(JobClient client, ActivatedJob job) {
         try {
             Map<String, Object> variables = job.getVariablesAsMap();
-            informProcessService.sendInformDateToSanim(
-                    requiredLong(variables, ProcessConstants.VAR_EXECUTION_PAPER_ID),
-                    (String) variables.get(ProcessConstants.VAR_INFORM_DATE)
+            Long executionPaperId = ExecutionPaperWorkerVariables.resolveExecutionPaperId(
+                    variables,
+                    executionPaperRepository
             );
-            client.newCompleteCommand(job.getKey()).send().join();
+            informProcessService.sendInformDateToSanim(
+                    executionPaperId,
+                    Tabsare3186WorkerVariables.requiredString(
+                            variables,
+                            ProcessConstants.VAR_INFORM_DATE
+                    )
+            );
+            client.newCompleteCommand(job.getKey())
+                    .variables(Map.of(ProcessConstants.VAR_EXECUTION_PAPER_ID, executionPaperId))
+                    .send()
+                    .join();
         } catch (Exception ex) {
             log.error("Error in SendInformDataToSanimWorker", ex);
             WorkerFailureHandler.failSafely(client, job, ex, log);
         }
     }
 
-    private Long requiredLong(Map<String, Object> variables, String variable) {
-        Object value = variables.get(variable);
-        if (value instanceof Number number) {
-            return number.longValue();
-        }
-        return Long.valueOf(String.valueOf(value));
-    }
 }

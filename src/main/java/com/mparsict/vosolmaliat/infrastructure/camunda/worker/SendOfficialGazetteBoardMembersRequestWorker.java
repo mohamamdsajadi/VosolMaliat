@@ -28,30 +28,35 @@ public class SendOfficialGazetteBoardMembersRequestWorker {
         try {
             Map<String, Object> variables = job.getVariablesAsMap();
             String requestId = resolveRequestId(variables, job.getProcessInstanceKey());
-            Long executionPaperId = resolveExecutionPaperId(variables);
+            Long executionPaperId = ExecutionPaperWorkerVariables.resolveExecutionPaperId(
+                    variables,
+                    executionPaperRepository
+            );
+            String legalPersonNationalId = Tabsare3186WorkerVariables.requiredStringOrNested(
+                    variables,
+                    ProcessConstants.VAR_LEGAL_PERSON_NATIONAL_ID,
+                    ProcessConstants.VAR_DEBT_PAPER_PAYLOAD,
+                    "taxpayer",
+                    "nationalId"
+            );
+            String debtPaperDate = Tabsare3186WorkerVariables.normalizeJalaliDate(
+                    ExecutionPaperWorkerVariables.resolveDebtPaperDate(
+                            variables,
+                            executionPaperRepository
+                    )
+            );
             fakeOfficialGazetteService.send(
                     requestId,
                     executionPaperId,
-                    Tabsare3186WorkerVariables.requiredStringOrNested(
-                            variables,
-                            ProcessConstants.VAR_LEGAL_PERSON_NATIONAL_ID,
-                            ProcessConstants.VAR_DEBT_PAPER_PAYLOAD,
-                            "taxpayer",
-                            "nationalId"
-                    ),
-                    Tabsare3186WorkerVariables.normalizeJalaliDate(
-                            Tabsare3186WorkerVariables.requiredStringOrNested(
-                                    variables,
-                                    ProcessConstants.VAR_DEBT_PAPER_DATE,
-                                    ProcessConstants.VAR_DEBT_PAPER_PAYLOAD,
-                                    "debtPaperIssueDate"
-                            )
-                    )
+                    legalPersonNationalId,
+                    debtPaperDate
             );
             client.newCompleteCommand(job.getKey())
                     .variables(Map.of(
                             ProcessConstants.VAR_OFFICIAL_GAZETTE_REQUEST_ID, requestId,
-                            ProcessConstants.VAR_EXECUTION_PAPER_ID, executionPaperId
+                            ProcessConstants.VAR_EXECUTION_PAPER_ID, executionPaperId,
+                            ProcessConstants.VAR_LEGAL_PERSON_NATIONAL_ID, legalPersonNationalId,
+                            ProcessConstants.VAR_DEBT_PAPER_DATE, debtPaperDate
                     ))
                     .send()
                     .join();
@@ -69,25 +74,4 @@ public class SendOfficialGazetteBoardMembersRequestWorker {
         return "official-gazette-" + processInstanceKey;
     }
 
-    private Long resolveExecutionPaperId(Map<String, Object> variables) {
-        Object value = variables.get(ProcessConstants.VAR_EXECUTION_PAPER_ID);
-        if (value != null) {
-            return value instanceof Number number
-                    ? number.longValue()
-                    : Long.valueOf(String.valueOf(value));
-        }
-        String debtPaperUniqueCode = Tabsare3186WorkerVariables.requiredStringOrNested(
-                variables,
-                ProcessConstants.VAR_EXECUTION_PAPER_ID,
-                ProcessConstants.VAR_DEBT_PAPER_PAYLOAD,
-                "debtPaperUniqueCode"
-        );
-        return executionPaperRepository
-                .findByFinalizedDebtPaperDebtPaperUniqueCode(debtPaperUniqueCode)
-                .map(executionPaper -> executionPaper.getId())
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Could not resolve executionPaperId for debtPaperUniqueCode: "
-                                + debtPaperUniqueCode
-                ));
-    }
 }

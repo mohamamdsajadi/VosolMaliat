@@ -48,6 +48,7 @@ public class IssueExecutionPaperWorker {
             outputVars.put(ProcessConstants.VAR_EXECUTION_PAPER_ID, ep.getId());
             outputVars.put(ProcessConstants.VAR_EXECUTION_PAPER_CODE, ep.getExecutionPaperUniqueCode());
             outputVars.put(ProcessConstants.VAR_TAX_UNIT_ID, ep.getTaxUnitId());
+            outputVars.put(ProcessConstants.VAR_DEBT_PAPER_PAYLOAD, request);
             outputVars.put(ProcessConstants.VAR_SUCCESS, true);
 
             log.info("ExecutionPaper issued: code={}, requestId={}", ep.getExecutionPaperUniqueCode(), requestId);

@@ -2,6 +2,7 @@ package com.mparsict.vosolmaliat.infrastructure.camunda.worker;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mparsict.vosolmaliat.application.service.FakeRestrictionService;
+import com.mparsict.vosolmaliat.domain.repository.ExecutionPaperRepository;
 import com.mparsict.vosolmaliat.infrastructure.camunda.ProcessConstants;
 import io.camunda.client.annotation.JobWorker;
 import io.camunda.client.api.response.ActivatedJob;
@@ -18,6 +19,7 @@ import java.util.Map;
 public class SendRelatedPersonsForRestrictionsWorker {
 
     private final FakeRestrictionService fakeRestrictionService;
+    private final ExecutionPaperRepository executionPaperRepository;
     private final ObjectMapper objectMapper;
 
     @JobWorker(
@@ -32,9 +34,9 @@ public class SendRelatedPersonsForRestrictionsWorker {
                             variables,
                             ProcessConstants.VAR_OFFICIAL_GAZETTE_REQUEST_ID
                     ),
-                    Tabsare3186WorkerVariables.requiredLong(
+                    ExecutionPaperWorkerVariables.resolveExecutionPaperId(
                             variables,
-                            ProcessConstants.VAR_EXECUTION_PAPER_ID
+                            executionPaperRepository
                     ),
                     Tabsare3186WorkerVariables.requiredRelatedPersons(
                             objectMapper,

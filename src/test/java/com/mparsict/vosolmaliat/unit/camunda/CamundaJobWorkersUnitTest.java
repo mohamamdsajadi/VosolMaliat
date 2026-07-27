@@ -124,6 +124,7 @@ class CamundaJobWorkersUnitTest {
                 .containsEntry(ProcessConstants.VAR_TAX_EXPERT_CANDIDATE_GROUPS, List.of("TAX_EXPERT:7"))
                 .containsEntry(ProcessConstants.VAR_LEGAL_PERSON_NATIONAL_ID, "14001234567")
                 .containsEntry(ProcessConstants.VAR_DEBT_PAPER_DATE, "2026-07-18")
+                .containsKey(ProcessConstants.VAR_DEBT_PAPER_PAYLOAD)
                 .containsEntry(ProcessConstants.VAR_SUCCESS, true);
     }
 
@@ -152,10 +153,31 @@ class CamundaJobWorkersUnitTest {
     @Test
     void sendExecutionPaperIdToSanimDelegatesToFakeSanimAndCompletesJob() {
         StubFakeSanimInformService fakeSanimInformService = new StubFakeSanimInformService();
-        SendExecutionPaperIdToSanimWorker worker = new SendExecutionPaperIdToSanimWorker(fakeSanimInformService);
+        SendExecutionPaperIdToSanimWorker worker = new SendExecutionPaperIdToSanimWorker(
+                fakeSanimInformService,
+                null
+        );
         CamundaJobClientStub client = new CamundaJobClientStub();
 
         worker.handle(client.proxy(), job(Map.of(ProcessConstants.VAR_EXECUTION_PAPER_ID, 99L)));
+
+        assertThat(fakeSanimInformService.executionPaperId).isEqualTo(99L);
+        assertThat(client.completed).isTrue();
+    }
+
+    @Test
+    void sendExecutionPaperIdToSanimRecoversMissingIdFromDebtPaperPayload() {
+        StubFakeSanimInformService fakeSanimInformService = new StubFakeSanimInformService();
+        SendExecutionPaperIdToSanimWorker worker = new SendExecutionPaperIdToSanimWorker(
+                fakeSanimInformService,
+                executionPaperRepositoryByDebtPaperCode("DEBT-1001", 99L)
+        );
+        CamundaJobClientStub client = new CamundaJobClientStub();
+
+        worker.handle(client.proxy(), job(Map.of(
+                ProcessConstants.VAR_DEBT_PAPER_PAYLOAD,
+                Map.of("debtPaperUniqueCode", "DEBT-1001")
+        )));
 
         assertThat(fakeSanimInformService.executionPaperId).isEqualTo(99L);
         assertThat(client.completed).isTrue();
@@ -190,26 +212,66 @@ class CamundaJobWorkersUnitTest {
                         "official-gazette-700"
                 )
                 .containsEntry(ProcessConstants.VAR_EXECUTION_PAPER_ID, 99L);
+        assertThat(client.completeVariables)
+                .containsEntry(ProcessConstants.VAR_LEGAL_PERSON_NATIONAL_ID, "14001234567")
+                .containsEntry(ProcessConstants.VAR_DEBT_PAPER_DATE, "1405-01-01");
     }
 
     @Test
     void checkInformPossibilityCompletesJobWithInformRuleVariables() {
         StubInformProcessService service = new StubInformProcessService();
         service.checkInformResult = Map.of(ProcessConstants.VAR_CAN_INFORM, true);
-        CheckInformPossibilityWorker worker = new CheckInformPossibilityWorker(service);
+        CheckInformPossibilityWorker worker = new CheckInformPossibilityWorker(service, null);
         CamundaJobClientStub client = new CamundaJobClientStub();
 
         worker.handle(client.proxy(), job(Map.of(ProcessConstants.VAR_EXECUTION_PAPER_ID, "99")));
 
         assertThat(service.checkedExecutionPaperId).isEqualTo(99L);
         assertThat(client.completed).isTrue();
-        assertThat(client.completeVariables).containsEntry(ProcessConstants.VAR_CAN_INFORM, true);
+        assertThat(client.completeVariables)
+                .containsEntry(ProcessConstants.VAR_CAN_INFORM, true)
+                .containsEntry(ProcessConstants.VAR_EXECUTION_PAPER_ID, 99L);
+    }
+
+    @Test
+    void checkInformPossibilityRecoversExecutionPaperIdAndPublishesCanInform() {
+        StubInformProcessService service = new StubInformProcessService();
+        service.checkInformResult = Map.of(ProcessConstants.VAR_CAN_INFORM, true);
+        CheckInformPossibilityWorker worker = new CheckInformPossibilityWorker(
+                service,
+                executionPaperRepositoryByDebtPaperCode("DEBT-1001", 99L)
+        );
+        CamundaJobClientStub client = new CamundaJobClientStub();
+
+        worker.handle(client.proxy(), job(Map.of(
+                ProcessConstants.VAR_DEBT_PAPER_PAYLOAD,
+                Map.of("debtPaperUniqueCode", "DEBT-1001")
+        )));
+
+        assertThat(service.checkedExecutionPaperId).isEqualTo(99L);
+        assertThat(client.completeVariables)
+                .containsEntry(ProcessConstants.VAR_EXECUTION_PAPER_ID, 99L)
+                .containsEntry(ProcessConstants.VAR_CAN_INFORM, true);
+    }
+
+    @Test
+    void checkInformPossibilityFailsBeforeGatewayWhenCanInformIsMissing() {
+        StubInformProcessService service = new StubInformProcessService();
+        service.checkInformResult = Map.of();
+        CheckInformPossibilityWorker worker = new CheckInformPossibilityWorker(service, null);
+        CamundaJobClientStub client = new CamundaJobClientStub();
+
+        worker.handle(client.proxy(), job(Map.of(ProcessConstants.VAR_EXECUTION_PAPER_ID, 99L)));
+
+        assertThat(client.failed).isTrue();
+        assertThat(client.errorMessage).contains(ProcessConstants.VAR_CAN_INFORM);
     }
 
     @Test
     void sendExecutionPaperToElectronicNotificationMarksSentAndCompletesJob() {
         StubInformProcessService service = new StubInformProcessService();
-        SendExecutionPaperToElectronicNotificationWorker worker = new SendExecutionPaperToElectronicNotificationWorker(service);
+        SendExecutionPaperToElectronicNotificationWorker worker =
+                new SendExecutionPaperToElectronicNotificationWorker(service, null);
         CamundaJobClientStub client = new CamundaJobClientStub();
 
         worker.handle(client.proxy(), job(Map.of(ProcessConstants.VAR_EXECUTION_PAPER_ID, 99L)));
@@ -221,7 +283,7 @@ class CamundaJobWorkersUnitTest {
     @Test
     void updateInformStatusPassesInformVariablesToServiceAndCompletesJob() {
         StubInformProcessService service = new StubInformProcessService();
-        UpdateInformStatusWorker worker = new UpdateInformStatusWorker(service);
+        UpdateInformStatusWorker worker = new UpdateInformStatusWorker(service, null);
         CamundaJobClientStub client = new CamundaJobClientStub();
 
         worker.handle(client.proxy(), job(Map.of(
@@ -234,7 +296,7 @@ class CamundaJobWorkersUnitTest {
 
         assertThat(service.updatedExecutionPaperId).isEqualTo(99L);
         assertThat(service.updatedCanInform).isFalse();
-        assertThat(service.updatedInformDate).isEqualTo("2026-07-18T10:30:00");
+        assertThat(service.updatedInformDate).isNull();
         assertThat(service.updatedRejectionCode).isEqualTo("NO_ADDRESS");
         assertThat(service.updatedRejectionDesc).isEqualTo("Missing address");
         assertThat(client.completed).isTrue();
@@ -244,7 +306,7 @@ class CamundaJobWorkersUnitTest {
     void setReInformDateCompletesJobWithReInformDateVariable() {
         StubInformProcessService service = new StubInformProcessService();
         service.reInformDate = "2026-09-02T00:00:00+03:30";
-        SetReInformDateWorker worker = new SetReInformDateWorker(service);
+        SetReInformDateWorker worker = new SetReInformDateWorker(service, null);
         CamundaJobClientStub client = new CamundaJobClientStub();
 
         worker.handle(client.proxy(), job(Map.of(
@@ -263,7 +325,7 @@ class CamundaJobWorkersUnitTest {
     void setDebtInquiryDateCompletesJobWithNextDebtInquiryDateVariable() {
         StubInformProcessService service = new StubInformProcessService();
         service.nextDebtInquiryDate = "2026-08-18";
-        SetDebtInquiryDateWorker worker = new SetDebtInquiryDateWorker(service);
+        SetDebtInquiryDateWorker worker = new SetDebtInquiryDateWorker(service, null);
         CamundaJobClientStub client = new CamundaJobClientStub();
 
         worker.handle(client.proxy(), job(Map.of(
@@ -281,7 +343,7 @@ class CamundaJobWorkersUnitTest {
     @Test
     void sendInformDataToSanimPassesInformDateToServiceAndCompletesJob() {
         StubInformProcessService service = new StubInformProcessService();
-        SendInformDataToSanimWorker worker = new SendInformDataToSanimWorker(service);
+        SendInformDataToSanimWorker worker = new SendInformDataToSanimWorker(service, null);
         CamundaJobClientStub client = new CamundaJobClientStub();
 
         worker.handle(client.proxy(), job(Map.of(
@@ -295,8 +357,30 @@ class CamundaJobWorkersUnitTest {
     }
 
     @Test
+    void sendInformDataToSanimRecoversExecutionPaperIdFromDebtPaperPayload() {
+        StubInformProcessService service = new StubInformProcessService();
+        SendInformDataToSanimWorker worker = new SendInformDataToSanimWorker(
+                service,
+                executionPaperRepositoryByDebtPaperCode("DEBT-1001", 99L)
+        );
+        CamundaJobClientStub client = new CamundaJobClientStub();
+
+        worker.handle(client.proxy(), job(Map.of(
+                ProcessConstants.VAR_DEBT_PAPER_PAYLOAD, Map.of("debtPaperUniqueCode", "DEBT-1001"),
+                ProcessConstants.VAR_INFORM_DATE, "2026-07-18T10:30:00"
+        )));
+
+        assertThat(service.sanimExecutionPaperId).isEqualTo(99L);
+        assertThat(client.completeVariables)
+                .containsEntry(ProcessConstants.VAR_EXECUTION_PAPER_ID, 99L);
+    }
+
+    @Test
     void workerFailureSendsCamundaFailCommand() {
-        CheckInformPossibilityWorker worker = new CheckInformPossibilityWorker(new StubInformProcessService());
+        CheckInformPossibilityWorker worker = new CheckInformPossibilityWorker(
+                new StubInformProcessService(),
+                null
+        );
         CamundaJobClientStub client = new CamundaJobClientStub();
 
         worker.handle(client.proxy(), job(Map.of()));
