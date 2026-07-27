@@ -3,11 +3,13 @@ package com.mparsict.vosolmaliat.unit.camunda;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mparsict.vosolmaliat.application.dto.request.DebtPaperIssuanceRequest;
 import com.mparsict.vosolmaliat.application.service.ExecutionPaperService;
+import com.mparsict.vosolmaliat.application.service.FakeOfficialGazetteService;
 import com.mparsict.vosolmaliat.application.service.FakeSanimInformService;
 import com.mparsict.vosolmaliat.application.service.InformProcessService;
 import com.mparsict.vosolmaliat.application.service.IssuanceRequestService;
 import com.mparsict.vosolmaliat.application.service.RuleEngineService;
 import com.mparsict.vosolmaliat.domain.model.execution.ExecutionPaper;
+import com.mparsict.vosolmaliat.domain.repository.ExecutionPaperRepository;
 import com.mparsict.vosolmaliat.domain.repository.TaxUnitRepository;
 import com.mparsict.vosolmaliat.infrastructure.camunda.ProcessConstants;
 import com.mparsict.vosolmaliat.infrastructure.camunda.worker.CheckInformPossibilityWorker;
@@ -16,6 +18,7 @@ import com.mparsict.vosolmaliat.infrastructure.camunda.worker.IssueExecutionPape
 import com.mparsict.vosolmaliat.infrastructure.camunda.worker.SendExecutionPaperIdToSanimWorker;
 import com.mparsict.vosolmaliat.infrastructure.camunda.worker.SendExecutionPaperToElectronicNotificationWorker;
 import com.mparsict.vosolmaliat.infrastructure.camunda.worker.SendInformDataToSanimWorker;
+import com.mparsict.vosolmaliat.infrastructure.camunda.worker.SendOfficialGazetteBoardMembersRequestWorker;
 import com.mparsict.vosolmaliat.infrastructure.camunda.worker.SendRejectionResponseWorker;
 import com.mparsict.vosolmaliat.infrastructure.camunda.worker.SetDebtInquiryDateWorker;
 import com.mparsict.vosolmaliat.infrastructure.camunda.worker.SetReInformDateWorker;
@@ -48,7 +51,8 @@ class CamundaJobWorkersUnitTest {
                 UpdateInformStatusWorker.class,
                 SetReInformDateWorker.class,
                 SetDebtInquiryDateWorker.class,
-                SendInformDataToSanimWorker.class
+                SendInformDataToSanimWorker.class,
+                SendOfficialGazetteBoardMembersRequestWorker.class
         );
 
         for (Class<?> worker : workers) {
@@ -71,7 +75,10 @@ class CamundaJobWorkersUnitTest {
         CheckIssuancePossibilityWorker worker = new CheckIssuancePossibilityWorker(ruleEngineService, objectMapper);
         CamundaJobClientStub client = new CamundaJobClientStub();
 
-        worker.handle(client.proxy(), job(Map.of(ProcessConstants.VAR_DEBT_PAPER_PAYLOAD, objectMapper.writeValueAsString(sampleDebtPaper()))));
+        worker.handle(client.proxy(), job(Map.of(
+                ProcessConstants.VAR_DEBT_PAPER_PAYLOAD,
+                objectMapper.convertValue(sampleDebtPaper(), Map.class)
+        )));
 
         assertThat(ruleEngineService.evaluatedRequest.debtPaperUniqueCode()).isEqualTo("DEBT-1001");
         assertThat(client.completed).isTrue();
@@ -98,7 +105,8 @@ class CamundaJobWorkersUnitTest {
         CamundaJobClientStub client = new CamundaJobClientStub();
 
         worker.handle(client.proxy(), job(Map.of(
-                ProcessConstants.VAR_DEBT_PAPER_PAYLOAD, objectMapper.writeValueAsString(sampleDebtPaper()),
+                ProcessConstants.VAR_DEBT_PAPER_PAYLOAD,
+                objectMapper.convertValue(sampleLegalDebtPaper(), Map.class),
                 ProcessConstants.VAR_ISSUANCE_REQUEST_ID, 123L
         )));
 
@@ -114,6 +122,8 @@ class CamundaJobWorkersUnitTest {
                 .containsEntry(ProcessConstants.VAR_TAX_OFFICE_HEAD_CANDIDATE_GROUPS, List.of("TAX_OFFICE_HEAD:70"))
                 .containsEntry(ProcessConstants.VAR_TAX_UNIT_HEAD_CANDIDATE_GROUPS, List.of("TAX_UNIT_HEAD:7"))
                 .containsEntry(ProcessConstants.VAR_TAX_EXPERT_CANDIDATE_GROUPS, List.of("TAX_EXPERT:7"))
+                .containsEntry(ProcessConstants.VAR_LEGAL_PERSON_NATIONAL_ID, "14001234567")
+                .containsEntry(ProcessConstants.VAR_DEBT_PAPER_DATE, "2026-07-18")
                 .containsEntry(ProcessConstants.VAR_SUCCESS, true);
     }
 
@@ -149,6 +159,37 @@ class CamundaJobWorkersUnitTest {
 
         assertThat(fakeSanimInformService.executionPaperId).isEqualTo(99L);
         assertThat(client.completed).isTrue();
+    }
+
+    @Test
+    void officialGazetteWorkerCreatesStableRequestIdWhenProcessVariableIsMissing() {
+        StubFakeOfficialGazetteService service = new StubFakeOfficialGazetteService();
+        SendOfficialGazetteBoardMembersRequestWorker worker =
+                new SendOfficialGazetteBoardMembersRequestWorker(
+                        service,
+                        executionPaperRepositoryByDebtPaperCode("DEBT-1001", 99L)
+                );
+        CamundaJobClientStub client = new CamundaJobClientStub();
+
+        worker.handle(client.proxy(), job(Map.of(
+                ProcessConstants.VAR_DEBT_PAPER_PAYLOAD, Map.of(
+                        "debtPaperUniqueCode", "DEBT-1001",
+                        "debtPaperIssueDate", "۱۴۰۵/۰۱/۰۱",
+                        "taxpayer", Map.of("nationalId", "14001234567")
+                )
+        )));
+
+        assertThat(service.requestId).isEqualTo("official-gazette-700");
+        assertThat(service.executionPaperId).isEqualTo(99L);
+        assertThat(service.legalPersonNationalId).isEqualTo("14001234567");
+        assertThat(service.debtPaperDate).isEqualTo("1405-01-01");
+        assertThat(client.completed).isTrue();
+        assertThat(client.completeVariables)
+                .containsEntry(
+                        ProcessConstants.VAR_OFFICIAL_GAZETTE_REQUEST_ID,
+                        "official-gazette-700"
+                )
+                .containsEntry(ProcessConstants.VAR_EXECUTION_PAPER_ID, 99L);
     }
 
     @Test
@@ -271,6 +312,7 @@ class CamundaJobWorkersUnitTest {
                 new Class<?>[]{ActivatedJob.class},
                 (proxy, method, args) -> switch (method.getName()) {
                     case "getKey" -> 500L;
+                    case "getProcessInstanceKey" -> 700L;
                     case "getRetries" -> 3;
                     case "getVariablesAsMap" -> variables;
                     default -> defaultValue(method.getReturnType());
@@ -286,6 +328,22 @@ class CamundaJobWorkersUnitTest {
                     case "findTaxAffairsOfficeIdByTaxUnitId" -> Optional.of(taxOfficeId);
                     case "findGeneralDirectorateIdByTaxUnitId" -> Optional.of(generalDirectorateId);
                     default -> defaultValue(method.getReturnType());
+                }
+        );
+    }
+
+    private ExecutionPaperRepository executionPaperRepositoryByDebtPaperCode(
+            String debtPaperUniqueCode,
+            Long executionPaperId) {
+        return (ExecutionPaperRepository) Proxy.newProxyInstance(
+                ExecutionPaperRepository.class.getClassLoader(),
+                new Class<?>[]{ExecutionPaperRepository.class},
+                (proxy, method, args) -> {
+                    if ("findByFinalizedDebtPaperDebtPaperUniqueCode".equals(method.getName())
+                            && debtPaperUniqueCode.equals(args[0])) {
+                        return Optional.of(ExecutionPaper.builder().id(executionPaperId).build());
+                    }
+                    return defaultValue(method.getReturnType());
                 }
         );
     }
@@ -336,6 +394,42 @@ class CamundaJobWorkersUnitTest {
                         0d
                 ),
                 java.util.List.of()
+        );
+    }
+
+    private DebtPaperIssuanceRequest sampleLegalDebtPaper() {
+        DebtPaperIssuanceRequest source = sampleDebtPaper();
+        return new DebtPaperIssuanceRequest(
+                source.debtPaperUniqueCode(),
+                source.debtPaperIssueDate(),
+                source.notificationId(),
+                source.finalizationReason(),
+                source.taxSource(),
+                source.performanceYear(),
+                source.performancePeriod(),
+                source.activityTypeCode(),
+                source.activityTypeTitle(),
+                source.mainTaxBureauId(),
+                source.taxBureauId(),
+                source.taxUnitId(),
+                source.sendingUnitId(),
+                new DebtPaperIssuanceRequest.TaxpayerInfo(
+                        "LEGAL",
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        "1234567890",
+                        "تهران",
+                        "14001234567",
+                        "12345",
+                        "1390-01-01",
+                        "شرکت نمونه"
+                ),
+                source.debtInfo(),
+                source.relatedPersons()
         );
     }
 
@@ -522,6 +616,30 @@ class CamundaJobWorkersUnitTest {
                 String rejectionReasonDescription,
                 String restrictionRemovalDate) {
             this.issuanceRejectionRequestId = issuanceRequestId;
+            return null;
+        }
+    }
+
+    private static class StubFakeOfficialGazetteService extends FakeOfficialGazetteService {
+        private String requestId;
+        private Long executionPaperId;
+        private String legalPersonNationalId;
+        private String debtPaperDate;
+
+        private StubFakeOfficialGazetteService() {
+            super(null, null, null, new ObjectMapper(), null, null);
+        }
+
+        @Override
+        public com.mparsict.vosolmaliat.application.dto.response.FakeOfficialGazetteResponse send(
+                String requestId,
+                Long executionPaperId,
+                String legalPersonNationalId,
+                String debtPaperDate) {
+            this.requestId = requestId;
+            this.executionPaperId = executionPaperId;
+            this.legalPersonNationalId = legalPersonNationalId;
+            this.debtPaperDate = debtPaperDate;
             return null;
         }
     }

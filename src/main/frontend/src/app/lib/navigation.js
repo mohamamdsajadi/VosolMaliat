@@ -42,25 +42,18 @@ export const NAV_ITEMS = [
     permissions: ["PERMISSION_ASSIGN"]
   },
   {
-    key: "fake-electronic-notification",
-    href: "/admin/fake-electronic-notification",
-    label: "سامانه ابلاغ آزمایشی",
-    helper: "تایید دریافت ابلاغ",
-    permissions: ["AUDIT_VIEW"]
-  },
-  {
-    key: "fake-sanim",
-    href: "/admin/fake-sanim",
-    label: "سنیم آزمایشی",
-    helper: "تایید دریافت تاریخ ابلاغ",
-    permissions: ["AUDIT_VIEW"]
-  },
-  {
     key: "data-entry",
     href: "/admin/data-entry",
     label: "ورود دستی داده",
     helper: "برگ بدهی و برگ اجرا",
     permissions: ["USER_PROFILE_CREATE", "REPORT_VIEW"]
+  },
+  {
+    key: "test-front",
+    href: "/test-front",
+    label: "Test Front",
+    helper: "سامانه‌ها و فرایندهای آزمایشی",
+    permissions: ["AUDIT_VIEW"]
   }
 ];
 

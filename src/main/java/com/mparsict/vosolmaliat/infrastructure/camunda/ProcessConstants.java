@@ -3,6 +3,7 @@ package com.mparsict.vosolmaliat.infrastructure.camunda;
 public final class ProcessConstants {
 
     public static final String PROCESS_ID = "Process_0rtbdc5";
+    public static final String TABSARE_3_186_PROCESS_ID = "Process_0eqvh8j";
     public static final String JOB_CHECK_ISSUANCE = "check-issuance-possibility";
     public static final String JOB_ISSUE_PAPER = "issue-execution-paper";
     public static final String JOB_SEND_REJECTION = "inform_sanim_rejection";
@@ -13,8 +14,17 @@ public final class ProcessConstants {
     public static final String JOB_SET_RE_INFORM_DATE = "set-re-inform-date";
     public static final String JOB_SET_INQUIRE = "set-inquire";
     public static final String JOB_SEND_INFORM_DATA_TO_SANIM = "send-inform-data-to-sanim";
+    public static final String JOB_SEND_OFFICIAL_GAZETTE_BOARD_MEMBERS_REQUEST =
+            "send-official-gazette-board-members-request";
+    public static final String JOB_FILTER_RELATED_PERSONS_BY_DEBT_PAPER_DATE =
+            "filter-related-persons-by-debt-paper-date";
+    public static final String JOB_SEND_RELATED_PERSONS_FOR_RESTRICTIONS =
+            "send-related-persons-for-restrictions";
+    public static final String JOB_STORE_RELATED_PERSONS = "store-related-persons";
 
     public static final String MESSAGE_EXECUTION_PAPER_INFORMED = "ExecutionPaperInformed";
+    public static final String MESSAGE_OFFICIAL_GAZETTE_RELATED_PERSONS_RECEIVED =
+            "official_gazette_related_persons_received";
 
     public static final String VAR_ISSUANCE_REQUEST_ID = "issuanceRequestId";
     public static final String VAR_DEBT_PAPER_PAYLOAD = "debtPaperPayload";
@@ -23,6 +33,11 @@ public final class ProcessConstants {
     public static final String VAR_REJECTION_DESC = "rejectionReasonDesc";
     public static final String VAR_RESTRICTION_REMOVAL_DATE = "restrictionRemovalDate";
     public static final String VAR_EXECUTION_PAPER_ID = "executionPaperId";
+    public static final String VAR_LEGAL_PERSON_NATIONAL_ID = "legalPersonNationalId";
+    public static final String VAR_DEBT_PAPER_DATE = "debtPaperDate";
+    public static final String VAR_OFFICIAL_GAZETTE_REQUEST_ID = "officialGazetteRequestId";
+    public static final String VAR_OFFICIAL_GAZETTE_RELATED_PERSONS = "officialGazetteRelatedPersons";
+    public static final String VAR_FILTERED_RELATED_PERSONS = "filteredRelatedPersons";
     public static final String VAR_EXECUTION_PAPER_CODE = "executionPaperCode";
     public static final String VAR_GENERAL_DIRECTORATE_ID = "generalDirectorateId";
     public static final String VAR_TAX_AFFAIRS_OFFICE_ID = "taxAffairsOfficeId";

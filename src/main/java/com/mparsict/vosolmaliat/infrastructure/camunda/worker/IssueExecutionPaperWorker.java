@@ -36,12 +36,13 @@ public class IssueExecutionPaperWorker {
         log.debug("Processing job: issue-execution-paper, key={}", job.getKey());
         try {
             Map<String, Object> variables = job.getVariablesAsMap();
-            String payload = (String) variables.get(ProcessConstants.VAR_DEBT_PAPER_PAYLOAD);
+            Object payload = variables.get(ProcessConstants.VAR_DEBT_PAPER_PAYLOAD);
             Long requestId = ((Number) variables.get(ProcessConstants.VAR_ISSUANCE_REQUEST_ID)).longValue();
 
-            DebtPaperIssuanceRequest request = objectMapper.readValue(payload, DebtPaperIssuanceRequest.class);
+            DebtPaperIssuanceRequest request = toRequest(payload);
             Map<String, Object> outputVars = new HashMap<>();
             addOrganizationVariables(outputVars, request.taxUnitId());
+            addTabsare3186Variables(outputVars, request);
 
             ExecutionPaper ep = executionPaperService.createFromRequest(request);
             outputVars.put(ProcessConstants.VAR_EXECUTION_PAPER_ID, ep.getId());
@@ -55,6 +56,37 @@ public class IssueExecutionPaperWorker {
             log.error("Error in IssueExecutionPaperWorker", e);
             WorkerFailureHandler.failSafely(client, job, e, log);
         }
+    }
+
+    private DebtPaperIssuanceRequest toRequest(Object payload) throws Exception {
+        if (payload instanceof String json) {
+            return objectMapper.readValue(json, DebtPaperIssuanceRequest.class);
+        }
+        return objectMapper.convertValue(payload, DebtPaperIssuanceRequest.class);
+    }
+
+    private void addTabsare3186Variables(
+            Map<String, Object> outputVars,
+            DebtPaperIssuanceRequest request) {
+        if (!"LEGAL".equalsIgnoreCase(request.taxpayer().type().trim())) {
+            return;
+        }
+        String nationalId = request.taxpayer().nationalId();
+        if (nationalId == null || nationalId.isBlank()) {
+            throw new BusinessException(
+                    "LEGAL_PERSON_NATIONAL_ID_REQUIRED",
+                    "شناسه ملی مودی حقوقی برای فرایند تبصره ۳ ماده ۱۸۶ الزامی است"
+            );
+        }
+        String debtPaperDate = request.debtPaperIssueDate();
+        if (debtPaperDate == null || debtPaperDate.isBlank()) {
+            throw new BusinessException(
+                    "DEBT_PAPER_DATE_REQUIRED",
+                    "تاریخ برگ بدهی برای فرایند تبصره ۳ ماده ۱۸۶ الزامی است"
+            );
+        }
+        outputVars.put(ProcessConstants.VAR_LEGAL_PERSON_NATIONAL_ID, nationalId.trim());
+        outputVars.put(ProcessConstants.VAR_DEBT_PAPER_DATE, debtPaperDate.trim());
     }
 
     private void addOrganizationVariables(Map<String, Object> outputVars, Long taxUnitId) {

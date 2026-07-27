@@ -18,6 +18,8 @@ Last Updated: 2026-07-15
 | سامانه ابلاغ الکترونیک fake | دریافت برگ اجرا و callback InformDate | execution paper payload | در fake بدون احراز جداگانه؛ callback permitAll | آزمایشی | `FakeElectronicNotificationService` |
 | سنیم fake | دریافت تاریخ ابلاغ | executionPaperId, informDate | endpoint امن برای پنل | آزمایشی | `FakeSanimInformService` |
 | سامانه ثبت شرکت‌ها fake | دریافت اشخاص حقیقی/حقوقی مرتبط با مودی حقوقی | nationalId, post codes, Jalali validity dates, signatory authority, natural representative of legal targets | endpoint داخلی امن | آزمایشی | `FakeCompanyRegistryService`, `RelatedPersonService` |
+| روزنامه رسمی fake | دریافت غیرهمزمان اعضای هیئت‌مدیره و اشخاص مرتبط | requestId, executionPaperId, legalPersonNationalId, Jalali debtPaperDate | پنل Test Front با `AUDIT_VIEW` | آزمایشی | `FakeOfficialGazetteService`, `SendOfficialGazetteBoardMembersRequestWorker` |
+| سامانه اعمال محدودیت fake | دریافت فهرست اشخاص مرتبط فعال در تاریخ برگ بدهی | officialGazetteRequestId, executionPaperId, related persons | پنل Test Front با `AUDIT_VIEW` | آزمایشی | `FakeRestrictionService`, `SendRelatedPersonsForRestrictionsWorker` |
 | Rule engine داخلی | ارزیابی قوانین | rule_json, request/execution data | داخلی | پیاده‌سازی‌شده | `RuleEngineService`, `InformRuleEngineService` |
 
 ## Failure Handling
@@ -29,4 +31,4 @@ Last Updated: 2026-07-15
 ## سوالات باز
 
 - قرارداد API واقعی ابلاغ و سنیم هنوز در ریپازیتوری موجود نیست.
-- قرارداد API واقعی سامانه ثبت شرکت‌ها هنوز موجود نیست؛ پیاده‌سازی فعلی deterministic fake است.
+- قرارداد API واقعی سامانه ثبت شرکت‌ها هنوز موجود نیست؛ endpoint نمونه fake ثابت است و refresh برگ اجرا تغییرات افزایشی تصادفی تولید می‌کند.

@@ -78,7 +78,7 @@ export default function FakeElectronicNotificationPage() {
 
   return (
     <AppShell
-      active="fake-electronic-notification"
+      active="test-front"
       title="سامانه ابلاغ الکترونیک آزمایشی"
       eyebrow="Fake External System"
       actions={<RefreshButton onClick={load} loading={loading} />}

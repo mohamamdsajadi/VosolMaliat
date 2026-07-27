@@ -249,19 +249,11 @@ function MenuIcon({ name }) {
           <path d="M9 10h6M9 13h4M17 4l2 2 2-2" />
         </svg>
       );
-    case "fake-electronic-notification":
+    case "test-front":
       return (
         <svg viewBox="0 0 24 24" {...common}>
-          <path d="M4 7l8 6 8-6" />
-          <rect x="4" y="6" width="16" height="12" rx="2" />
-          <path d="M15.5 16.5l1.2 1.2 2.8-3.2" />
-        </svg>
-      );
-    case "fake-sanim":
-      return (
-        <svg viewBox="0 0 24 24" {...common}>
-          <rect x="4" y="5" width="16" height="12" rx="2" />
-          <path d="M8 20h8M12 17v3M8 9h8M8 13h4" />
+          <path d="M9 3h6M10 3v5l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3" />
+          <path d="M8 14h8M10 17h.01M14 17h.01" />
         </svg>
       );
     case "data-entry":

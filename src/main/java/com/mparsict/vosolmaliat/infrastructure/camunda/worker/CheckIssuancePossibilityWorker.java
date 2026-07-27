@@ -27,9 +27,8 @@ public class CheckIssuancePossibilityWorker {
         log.debug("Processing job: check-issuance-possibility, key={}", job.getKey());
         try {
             Map<String, Object> variables = job.getVariablesAsMap();
-            String payload = (String) variables.get(ProcessConstants.VAR_DEBT_PAPER_PAYLOAD);
-
-            DebtPaperIssuanceRequest request = objectMapper.readValue(payload, DebtPaperIssuanceRequest.class);
+            Object payload = variables.get(ProcessConstants.VAR_DEBT_PAPER_PAYLOAD);
+            DebtPaperIssuanceRequest request = toRequest(payload);
             RuleEngineService.RuleEvaluationResult result = ruleEngineService.evaluate(request);
 
             Map<String, Object> outputVars = new HashMap<>();
@@ -49,5 +48,12 @@ public class CheckIssuancePossibilityWorker {
             log.error("Error in CheckIssuancePossibilityWorker", e);
             WorkerFailureHandler.failSafely(client, job, e, log);
         }
+    }
+
+    private DebtPaperIssuanceRequest toRequest(Object payload) throws Exception {
+        if (payload instanceof String json) {
+            return objectMapper.readValue(json, DebtPaperIssuanceRequest.class);
+        }
+        return objectMapper.convertValue(payload, DebtPaperIssuanceRequest.class);
     }
 }

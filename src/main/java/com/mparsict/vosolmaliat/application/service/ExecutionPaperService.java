@@ -555,6 +555,12 @@ public class ExecutionPaperService {
             case "SANIM_INFORM_DATE_CONFIRMED" -> "تایید دریافت سنیم";
             case "RELATED_PERSONS_REFRESHED_FROM_COMPANY_REGISTRY" ->
                     "بروزرسانی اشخاص مرتبط از سامانه ثبت شرکت‌ها";
+            case "RELATED_PERSONS_STORED_FROM_OFFICIAL_GAZETTE" ->
+                    "ذخیره اشخاص مرتبط دریافتی از روزنامه رسمی";
+            case "OFFICIAL_GAZETTE_REQUEST_SENT" -> "ارسال درخواست به روزنامه رسمی";
+            case "OFFICIAL_GAZETTE_RESPONSE_SENT" -> "دریافت پاسخ روزنامه رسمی";
+            case "RESTRICTION_REQUEST_SENT" -> "ارسال اشخاص مرتبط برای اعمال محدودیت";
+            case "RESTRICTION_REQUEST_CONFIRMED" -> "تایید اعمال محدودیت اشخاص مرتبط";
             default -> action == null ? "عملیات" : action;
         };
     }

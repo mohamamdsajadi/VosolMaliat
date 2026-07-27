@@ -148,15 +148,27 @@ POST /api/v1/execution-papers/{id}/related-persons/refresh
 فرایند همگام‌سازی:
 
 1. شناسه ملی شخص حقوقی مودی از روی برگ اجرا پیدا می‌شود.
-2. سرویس `FakeCompanyRegistryService` اشخاص مرتبط را برمی‌گرداند.
-3. داده ورودی از نظر نوع شخص، سمت و شناسه هویتی اعتبارسنجی می‌شود و سمت از جدول `related_person_post` resolve می‌شود.
-4. شخص حقیقی با `nationalCode` و در نبود آن با `fida` پیدا یا ایجاد می‌شود.
-5. شخص حقوقی با `nationalId` و در نبود آن با `registrationNumber` پیدا یا ایجاد می‌شود.
-6. رابطه با کلید `(ownerLegalPersonId, sourceSystem, sourceRecordId)` درج یا به‌روزرسانی می‌شود.
-7. پاسخ بر اساس سال بدهی فیلتر می‌شود.
-8. رخداد audit با کد `RELATED_PERSONS_REFRESHED_FROM_COMPANY_REGISTRY` و snapshot پاسخ ثبت می‌شود.
+2. از میان رابطه‌های فعال موجود، یک یا دو رابطه به‌صورت تصادفی با تاریخ پایان در سال بدهی منقضی می‌شوند؛ اگر فقط یک رابطه فعال باشد همان یک مورد منقضی می‌شود.
+3. سرویس `FakeCompanyRegistryService` یک یا دو شخص جدید با شناسه خارجی یکتا و سمت تصادفی مجاز برای نوع شخص تولید می‌کند.
+4. داده ورودی از نظر نوع شخص، سمت و شناسه هویتی اعتبارسنجی می‌شود و سمت از جدول `related_person_post` resolve می‌شود.
+5. شخص حقیقی با `nationalCode` و در نبود آن با `fida` پیدا یا ایجاد می‌شود.
+6. شخص حقوقی با `nationalId` و در نبود آن با `registrationNumber` پیدا یا ایجاد می‌شود.
+7. رابطه با کلید `(ownerLegalPersonId, sourceSystem, sourceRecordId)` درج یا به‌روزرسانی می‌شود.
+8. پاسخ بر اساس سال بدهی فیلتر می‌شود.
+9. رخداد audit با کد `RELATED_PERSONS_REFRESHED_FROM_COMPANY_REGISTRY` و snapshot پاسخ ثبت می‌شود.
 
-مقدار `sourceSystem` در پیاده‌سازی فعلی `FAKE_COMPANY_REGISTRY` است. اجرای چندباره refresh رکورد تکراری برای همان کلید خارجی ایجاد نمی‌کند.
+مقدار `sourceSystem` در این مسیر `FAKE_COMPANY_REGISTRY` است. هر refresh فقط یک یا دو رابطه جدید با `sourceRecordId` یکتا می‌سازد و رابطه‌های قبلی را دوباره درج نمی‌کند.
+
+## فرایند Tabsare3-186
+
+فرایند آزمایشی از Test Front آغاز می‌شود و چهار worker دارد:
+
+1. `send-official-gazette-board-members-request` درخواست را در روزنامه رسمی fake ثبت می‌کند.
+2. پاسخ دستی روزنامه رسمی پیام `official_gazette_related_persons_received` را با correlation روی `officialGazetteRequestId` منتشر می‌کند.
+3. `filter-related-persons-by-debt-paper-date` فقط رابطه‌های فعال در تاریخ دقیق برگ بدهی را نگه می‌دارد.
+4. در دو شاخه موازی، `send-related-persons-for-restrictions` فهرست را به سامانه محدودیت fake می‌فرستد و `store-related-persons` اطلاعات هویتی و رابطه‌ها را در جداول متناظر upsert می‌کند.
+
+داده ذخیره‌شده از این مسیر مقدار `sourceSystem=FAKE_OFFICIAL_GAZETTE` دارد. درخواست‌های mock با `officialGazetteRequestId` idempotent هستند تا retry شدن worker رکورد تکراری نسازد.
 
 ## ساختار داده ورودی integration
 
@@ -206,8 +218,7 @@ POST /api/v1/execution-papers/{id}/related-persons/refresh
 
 ## محدودیت‌ها و نکات فنی
 
-- integration فعلی fake و deterministic است؛ قرارداد و احراز هویت سامانه واقعی ثبت شرکت‌ها هنوز تعریف نشده است.
-- refresh فقط رکوردهای دریافت‌شده را upsert می‌کند و رابطه‌هایی را که دیگر در پاسخ مبدأ نیستند حذف یا منقضی نمی‌کند.
+- integration فعلی fake است؛ پاسخ نمونه endpoint مستقل ثابت است، اما refresh برگ اجرا برای شبیه‌سازی تغییرات ثبتی به‌صورت تصادفی یک یا دو رابطه را اضافه و یک یا دو رابطه فعال را منقضی می‌کند.
 - قیود «مالک الزامی»، «دقیقاً یک مقصد» و وجود `post_id` در اسکریپت migration نیز اعمال می‌شوند؛ مجاز بودن enum سمت برای نوع مقصد در سطح برنامه کنترل می‌شود.
 - مقایسه بازه‌ها رشته‌ای است و به تاریخ‌های صفرگذاری‌شده با قالب `yyyy-MM-dd` وابسته است.
 - `lastSyncedAt` به صورت رشته `LocalDateTime` بدون timezone ذخیره می‌شود.

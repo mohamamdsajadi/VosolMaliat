@@ -37,7 +37,6 @@ public class AdminDataEntryService {
     private final ExecutionPaperRepository executionPaperRepository;
     private final DebtInformationRepository debtInformationRepository;
     private final UniqueCodeGenerator uniqueCodeGenerator;
-    private final com.fasterxml.jackson.databind.ObjectMapper objectMapper;
 
     @Transactional
     public ExecutionPaperDetailResponse createFinalizedDebtPaperAndExecutionPaper(DebtPaperIssuanceRequest request) {
@@ -49,8 +48,7 @@ public class AdminDataEntryService {
     public IssuanceResponse sendFinalizedDebtPaperToWorkflow(DebtPaperIssuanceRequest request) {
         try {
             ExecutionPaperIssuanceRequest savedRequest = issuanceRequestService.createAndSave(request);
-            String payload = objectMapper.writeValueAsString(request);
-            return camundaProcessService.startExecutionPaperIssuanceProcess(savedRequest.getId(), payload);
+            return camundaProcessService.startExecutionPaperIssuanceProcess(savedRequest.getId(), request);
         } catch (Exception ex) {
             throw new BusinessException("MANUAL_FINALIZED_DEBT_SEND_FAILED", "ارسال دستی برگ بدهی قطعی ناموفق بود", ex);
         }

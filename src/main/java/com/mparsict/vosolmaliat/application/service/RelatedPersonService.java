@@ -28,13 +28,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 @RequiredArgsConstructor
 public class RelatedPersonService {
 
-    private static final String SOURCE_SYSTEM = "FAKE_COMPANY_REGISTRY";
+    private static final String SOURCE_COMPANY_REGISTRY = "FAKE_COMPANY_REGISTRY";
+    private static final String SOURCE_OFFICIAL_GAZETTE = "FAKE_OFFICIAL_GAZETTE";
 
     private final ExecutionPaperRepository executionPaperRepository;
     private final TaxpayerRepository taxpayerRepository;
@@ -56,8 +60,93 @@ public class RelatedPersonService {
     @Transactional
     public ExecutionPaperRelatedPersonsResponse refreshForExecutionPaper(Long executionPaperId) {
         ExecutionContext context = executionContext(executionPaperId);
+        List<RelatedPerson> existingRelationships =
+                relatedPersonRepository.findByOwnerLegalPersonIdOrderByStartDateAscIdAsc(
+                        context.owner().getId()
+                );
+        expireRandomActiveRelationships(existingRelationships, context.debtYear());
         List<CompanyRegistryRelatedPersonData> externalData =
-                fakeCompanyRegistryService.fetchRelatedPersons(context.owner().getNationalId());
+                fakeCompanyRegistryService.fetchNewRelatedPersons(
+                        context.owner().getNationalId(),
+                        existingRelationships.size() + 1L,
+                        debtYearStart(context.debtYear())
+                );
+        synchronize(context, externalData, SOURCE_COMPANY_REGISTRY);
+
+        ExecutionPaperRelatedPersonsResponse refreshed = response(context);
+        recordSynchronizationAudit(
+                executionPaperId,
+                "RELATED_PERSONS_REFRESHED_FROM_COMPANY_REGISTRY",
+                refreshed
+        );
+        return refreshed;
+    }
+
+    private void expireRandomActiveRelationships(
+            List<RelatedPerson> existingRelationships,
+            String debtYear) {
+        List<RelatedPerson> activeRelationships = new ArrayList<>(
+                existingRelationships.stream()
+                        .filter(item -> !hasText(item.getEndDate()))
+                        .toList()
+        );
+        if (activeRelationships.isEmpty()) {
+            return;
+        }
+
+        Collections.shuffle(activeRelationships);
+        int maximumToExpire = Math.min(2, activeRelationships.size());
+        int countToExpire = maximumToExpire == 1
+                ? 1
+                : ThreadLocalRandom.current().nextInt(1, maximumToExpire + 1);
+        String syncedAt = LocalDateTime.now().toString();
+
+        activeRelationships.stream()
+                .limit(countToExpire)
+                .forEach(relationship -> {
+                    relationship.setEndDate(randomExpiryDate(relationship, debtYear));
+                    relationship.setLastSyncedAt(syncedAt);
+                    relatedPersonRepository.save(relationship);
+                });
+    }
+
+    private String debtYearStart(String debtYear) {
+        return hasText(debtYear) ? debtYear + "-01-01" : "1400-01-01";
+    }
+
+    private String randomExpiryDate(RelatedPerson relationship, String debtYear) {
+        String year = hasText(debtYear) ? debtYear : "1400";
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+        int month = random.nextInt(1, 13);
+        int maximumDay = month <= 6 ? 31 : month <= 11 ? 30 : 29;
+        int day = random.nextInt(1, maximumDay + 1);
+        String candidate = "%s-%02d-%02d".formatted(year, month, day);
+        String startDate = normalizeJalaliDate(relationship.getStartDate());
+        return hasText(startDate) && startDate.compareTo(candidate) > 0
+                ? startDate
+                : candidate;
+    }
+
+    @Transactional
+    public ExecutionPaperRelatedPersonsResponse storeOfficialGazetteRelatedPersons(
+            Long executionPaperId,
+            List<CompanyRegistryRelatedPersonData> relatedPersons) {
+        ExecutionContext context = executionContext(executionPaperId);
+        synchronize(context, relatedPersons, SOURCE_OFFICIAL_GAZETTE);
+
+        ExecutionPaperRelatedPersonsResponse stored = response(context);
+        recordSynchronizationAudit(
+                executionPaperId,
+                "RELATED_PERSONS_STORED_FROM_OFFICIAL_GAZETTE",
+                stored
+        );
+        return stored;
+    }
+
+    private void synchronize(
+            ExecutionContext context,
+            List<CompanyRegistryRelatedPersonData> externalData,
+            String sourceSystem) {
         String syncedAt = LocalDateTime.now().toString();
 
         for (CompanyRegistryRelatedPersonData item : externalData) {
@@ -65,7 +154,7 @@ public class RelatedPersonService {
             RelatedPerson relationship = relatedPersonRepository
                     .findByOwnerLegalPersonIdAndSourceSystemAndSourceRecordId(
                             context.owner().getId(),
-                            SOURCE_SYSTEM,
+                            sourceSystem,
                             item.sourceRecordId()
                     )
                     .orElseGet(RelatedPerson::new);
@@ -75,7 +164,7 @@ public class RelatedPersonService {
             relationship.setStartDate(normalizeJalaliDate(item.startDate()));
             relationship.setEndDate(normalizeJalaliDate(item.endDate()));
             relationship.setHasSignatoryAuthority(item.hasSignatoryAuthority() ? 1 : 0);
-            relationship.setSourceSystem(SOURCE_SYSTEM);
+            relationship.setSourceSystem(sourceSystem);
             relationship.setSourceRecordId(item.sourceRecordId());
             relationship.setLastSyncedAt(syncedAt);
 
@@ -92,17 +181,20 @@ public class RelatedPersonService {
             }
             relatedPersonRepository.save(relationship);
         }
+    }
 
-        ExecutionPaperRelatedPersonsResponse refreshed = response(context);
+    private void recordSynchronizationAudit(
+            Long executionPaperId,
+            String action,
+            ExecutionPaperRelatedPersonsResponse response) {
         auditLogService.record(
                 null,
-                "RELATED_PERSONS_REFRESHED_FROM_COMPANY_REGISTRY",
+                action,
                 "EXECUTION_PAPER",
                 executionPaperId.toString(),
                 null,
-                toAuditPayload(refreshed)
+                toAuditPayload(response)
         );
-        return refreshed;
     }
 
     private ExecutionPaperRelatedPersonsResponse response(ExecutionContext context) {

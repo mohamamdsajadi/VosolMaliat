@@ -58,7 +58,7 @@ public class IssuanceController {
 
         // Start Camunda process and wait for result
         IssuanceResponse response = camundaProcessService.startExecutionPaperIssuanceProcess(
-                savedRequest.getId(), json);
+                savedRequest.getId(), request);
 
         if (response.success()) {
             return ResponseEntity.ok(response);

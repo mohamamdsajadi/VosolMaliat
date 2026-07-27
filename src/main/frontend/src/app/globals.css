@@ -966,6 +966,33 @@ textarea {
     margin-bottom: 18px;
 }
 
+.test-front-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.test-front-hero {
+    display: grid;
+    gap: 7px;
+    margin-bottom: 18px;
+    padding: 22px;
+    border: 1px solid #dbe4ee;
+    border-radius: 8px;
+    background: linear-gradient(180deg, #ffffff, #f4f9ff);
+}
+
+.test-front-hero h2 {
+    margin: 0;
+    color: #14365d;
+    font-size: 22px;
+    font-weight: 900;
+}
+
+.test-front-hero span {
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.9;
+}
+
 .data-entry-choice {
     display: grid;
     gap: 8px;
@@ -1752,6 +1779,29 @@ textarea {
     line-height: 1.7;
 }
 
+.fake-service-hero--gazette {
+    border-color: #c7d2fe;
+    background:
+        radial-gradient(circle at 8% 20%, rgba(79, 70, 229, 0.09), transparent 28%),
+        linear-gradient(135deg, #ffffff, #f5f7ff);
+}
+
+.fake-service-hero--restriction {
+    border-color: #a7f3d0;
+    background:
+        radial-gradient(circle at 8% 20%, rgba(5, 150, 105, 0.1), transparent 28%),
+        linear-gradient(135deg, #ffffff, #f0fdf8);
+}
+
+.fake-service-hero__copy {
+    max-width: 680px;
+    margin: 7px 0 0;
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.9;
+}
+
 .fake-service-stats {
     display: flex;
     align-items: center;
@@ -1778,6 +1828,18 @@ textarea {
     color: #b91c1c;
     background: #fef2f2;
     border-color: #fecaca;
+}
+
+.fake-service-stats .fake-service-stat--warning {
+    color: #92400e;
+    background: #fffbeb;
+    border-color: #fde68a;
+}
+
+.fake-service-stats .fake-service-stat--success {
+    color: #047857;
+    background: #ecfdf5;
+    border-color: #a7f3d0;
 }
 
 .fake-service-grid {
@@ -1895,6 +1957,24 @@ textarea {
     font-family: monospace, monospace;
 }
 
+.fake-service-request-id {
+    display: block;
+    max-width: 260px;
+    margin-top: 4px;
+    direction: ltr;
+    color: #64748b;
+    font-family: monospace, monospace;
+    font-size: 11px;
+    overflow-wrap: anywhere;
+}
+
+.fake-service-paper-code {
+    direction: ltr;
+    display: inline-flex;
+    font-family: monospace, monospace;
+    font-weight: 900;
+}
+
 .fake-service-action-bar {
     display: flex;
     align-items: end;
@@ -1966,6 +2046,17 @@ textarea {
     background: linear-gradient(180deg, #155e75, #164e63);
     border-color: #164e63;
     transform: translateY(-1px);
+}
+
+.fake-service-random-action--legal {
+    border-color: #047857;
+    background: linear-gradient(180deg, #059669, #047857);
+    box-shadow: 0 12px 24px rgba(5, 150, 105, 0.18);
+}
+
+.fake-service-random-action--legal:hover:not(:disabled) {
+    border-color: #065f46;
+    background: linear-gradient(180deg, #047857, #065f46);
 }
 
 .fake-service-random-action:disabled {
@@ -2357,6 +2448,74 @@ textarea {
     padding: 14px 20px;
     border-top: 1px solid #edf2f7;
     background: #ffffff;
+}
+
+.fake-payload-modal {
+    width: min(900px, 100%);
+}
+
+.fake-payload-modal__context {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 16px 20px 0;
+}
+
+.fake-payload-modal__context span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-height: 32px;
+    padding: 0 10px;
+    border: 1px solid #dbe4ee;
+    border-radius: 999px;
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.fake-payload-modal__context strong {
+    color: #1e3a5f;
+}
+
+.fake-payload-editor {
+    display: grid;
+    gap: 8px;
+    padding: 18px 20px;
+}
+
+.fake-payload-editor > span {
+    color: #334155;
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.fake-payload-editor textarea {
+    width: 100%;
+    min-height: 390px;
+    box-sizing: border-box;
+    resize: vertical;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    background: #0f172a;
+    color: #dbeafe;
+    padding: 14px;
+    direction: ltr;
+    text-align: left;
+    font: 12px/1.8 monospace, monospace;
+    tab-size: 2;
+}
+
+.fake-payload-editor textarea:focus {
+    outline: 3px solid rgba(37, 99, 235, 0.16);
+    border-color: #60a5fa;
+}
+
+.fake-payload-editor small {
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 700;
 }
 
 .metric-card span {
@@ -4579,6 +4738,7 @@ textarea {
     .ops-summary-grid,
     .masterdata-grid,
     .data-entry-choice-grid,
+    .test-front-grid,
     .form-grid {
         grid-template-columns: 1fr;
     }

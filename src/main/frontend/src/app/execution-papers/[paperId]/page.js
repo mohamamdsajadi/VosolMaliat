@@ -159,8 +159,18 @@ const CRITICAL_TRACE_FIELD_LABELS = {
   INFORM_DATE_SENT_TO_SANIM: 'تاریخ ابلاغ ارسال‌شده به سنیم',
   SANIM_MESSAGE_CONFIRMED: 'وضعیت دریافت سنیم',
   SANIM_INFORM_DATE_CONFIRMED: 'وضعیت دریافت سنیم',
-  RELATED_PERSONS_REFRESHED_FROM_COMPANY_REGISTRY: 'اطلاعات اشخاص مرتبط دریافت‌شده'
+  RELATED_PERSONS_REFRESHED_FROM_COMPANY_REGISTRY: 'اطلاعات اشخاص مرتبط دریافت‌شده',
+  RELATED_PERSONS_STORED_FROM_OFFICIAL_GAZETTE: 'اشخاص مرتبط ذخیره‌شده از روزنامه رسمی',
+  OFFICIAL_GAZETTE_REQUEST_SENT: 'شناسه درخواست روزنامه رسمی',
+  OFFICIAL_GAZETTE_RESPONSE_SENT: 'خلاصه پاسخ روزنامه رسمی',
+  RESTRICTION_REQUEST_SENT: 'خلاصه درخواست اعمال محدودیت',
+  RESTRICTION_REQUEST_CONFIRMED: 'نتیجه تایید اعمال محدودیت'
 }
+
+const RELATED_PERSON_TRACE_ACTIONS = new Set([
+  'RELATED_PERSONS_REFRESHED_FROM_COMPANY_REGISTRY',
+  'RELATED_PERSONS_STORED_FROM_OFFICIAL_GAZETTE'
+])
 
 function extractTraceValue(value) {
   if (value == null || value === '') return ''
@@ -183,6 +193,192 @@ function traceFieldLabel(item) {
 
 function formatTraceChangeValue(value) {
   return formatAuditValue(extractTraceValue(value))
+}
+
+function parseRelatedPersonsTraceValue(value) {
+  const rawValue = extractTraceValue(value)
+  if (!rawValue) return null
+
+  try {
+    const parsedValue = typeof rawValue === 'string' ? JSON.parse(rawValue) : rawValue
+    return parsedValue && Array.isArray(parsedValue.relatedPersons) ? parsedValue : null
+  } catch {
+    return null
+  }
+}
+
+function relatedPersonDisplayName(person) {
+  if (person.personType === 'LEGAL') return formatValue(person.companyName)
+  return formatValue([person.firstName, person.lastName].filter(Boolean).join(' '))
+}
+
+function relatedPersonIdentifier(person) {
+  return formatValue(
+    person.nationalCode ||
+    person.fida ||
+    person.nationalId ||
+    person.registrationNumber
+  )
+}
+
+function legalRepresentativeDisplay(person) {
+  if (person.personType !== 'LEGAL') return '—'
+  const name = [person.legalRepresentativeFirstName, person.legalRepresentativeLastName]
+    .filter(Boolean)
+    .join(' ')
+  const identifier = person.legalRepresentativeNationalCode || person.legalRepresentativeFida
+  if (!name && !identifier) return '—'
+  return formatValue([name, identifier ? `(${identifier})` : ''].filter(Boolean).join(' '))
+}
+
+function normalizeRelatedPersonDate(value) {
+  if (!value) return ''
+  const englishDigits = '0123456789'
+  return String(value)
+    .trim()
+    .replace(/[۰-۹]/g, digit => englishDigits['۰۱۲۳۴۵۶۷۸۹'.indexOf(digit)])
+    .replaceAll('/', '-')
+}
+
+function isRelatedPersonInDebtYear(person, debtYear) {
+  const normalizedYear = normalizeRelatedPersonDate(debtYear).replaceAll(/[^0-9]/g, '')
+  if (!normalizedYear) return false
+  const yearStart = `${normalizedYear}-01-01`
+  const nextYearStart = `${Number(normalizedYear) + 1}-01-01`
+  const startDate = normalizeRelatedPersonDate(person.startDate)
+  const endDate = normalizeRelatedPersonDate(person.endDate)
+  return (!startDate || startDate < nextYearStart) && (!endDate || endDate >= yearStart)
+}
+
+function relatedPersonStatus(person, debtYear) {
+  if (normalizeRelatedPersonDate(person.endDate)) {
+    return {
+      key: 'expired',
+      label: 'منقضی‌شده',
+      badgeStyle: expiredRelatedPersonBadgeStyle,
+      rowStyle: expiredRelatedPersonRowStyle
+    }
+  }
+  if (isRelatedPersonInDebtYear(person, debtYear)) {
+    return {
+      key: 'debt-year',
+      label: 'مرتبط در سال بدهی',
+      badgeStyle: debtYearRelatedPersonBadgeStyle,
+      rowStyle: debtYearRelatedPersonRowStyle
+    }
+  }
+  return {
+    key: 'other',
+    label: 'خارج از سال بدهی',
+    badgeStyle: otherRelatedPersonBadgeStyle,
+    rowStyle: otherRelatedPersonRowStyle
+  }
+}
+
+function RelatedPersonStatusBadge({ person, debtYear }) {
+  const status = relatedPersonStatus(person, debtYear)
+  return <span style={{ ...relatedPersonStatusBadgeStyle, ...status.badgeStyle }}>{status.label}</span>
+}
+
+function RelatedPersonsStatusLegend() {
+  return (
+    <div style={relatedPersonsLegendStyle} aria-label="راهنمای وضعیت اشخاص مرتبط">
+      <span style={{ ...relatedPersonStatusBadgeStyle, ...debtYearRelatedPersonBadgeStyle }}>مرتبط در سال بدهی</span>
+      <span style={{ ...relatedPersonStatusBadgeStyle, ...expiredRelatedPersonBadgeStyle }}>منقضی‌شده</span>
+      <span style={{ ...relatedPersonStatusBadgeStyle, ...otherRelatedPersonBadgeStyle }}>خارج از سال بدهی</span>
+    </div>
+  )
+}
+
+function RelatedPersonsTraceValue({ value }) {
+  const snapshot = parseRelatedPersonsTraceValue(value)
+  if (!snapshot) {
+    return (
+      <div style={traceChangeBoxStyle}>
+        <span style={traceChangeFieldStyle}>اطلاعات جدید اشخاص مرتبط</span>
+        <strong style={traceFallbackValueStyle}>{formatTraceChangeValue(value)}</strong>
+      </div>
+    )
+  }
+
+  const persons = snapshot.relatedPersons
+  return (
+    <div style={relatedPersonsTraceStyle}>
+      <div style={relatedPersonsTraceHeadingStyle}>
+        <strong style={traceChangeFieldStyle}>اطلاعات جدید اشخاص مرتبط</strong>
+        <div style={relatedPersonsTraceHeadingMetaStyle}>
+          <RelatedPersonsStatusLegend />
+          <span style={relatedPersonsCountStyle}>
+            {formatValue(persons.length)} شخص
+          </span>
+        </div>
+      </div>
+      <div style={relatedPersonsTraceMetaStyle}>
+        <div style={relatedPersonsTraceMetaItemStyle}>
+          <span style={traceChangeLabelStyle}>شناسه برگ اجرا</span>
+          <strong>{formatValue(snapshot.executionPaperId)}</strong>
+        </div>
+        <div style={relatedPersonsTraceMetaItemStyle}>
+          <span style={traceChangeLabelStyle}>شناسه ملی مودی حقوقی</span>
+          <strong>{formatValue(snapshot.ownerNationalId)}</strong>
+        </div>
+        <div style={relatedPersonsTraceMetaItemStyle}>
+          <span style={traceChangeLabelStyle}>سال بدهی</span>
+          <strong>{formatValue(snapshot.debtYear)}</strong>
+        </div>
+        <div style={relatedPersonsTraceMetaItemStyle}>
+          <span style={traceChangeLabelStyle}>زمان آخرین بروزرسانی</span>
+          <strong>{formatPersianDateTime(snapshot.lastSyncedAt)}</strong>
+        </div>
+      </div>
+      {persons.length === 0 ? (
+        <p style={relatedPersonsEmptyTraceStyle}>شخص مرتبطی در پاسخ دریافت‌شده وجود ندارد.</p>
+      ) : (
+        <div style={relatedPersonsTraceTableScrollStyle}>
+          <table style={relatedPersonsTraceTableStyle}>
+            <thead>
+              <tr>
+                <th style={relatedPersonHeaderCellStyle}>وضعیت</th>
+                <th style={relatedPersonHeaderCellStyle}>نوع شخص</th>
+                <th style={relatedPersonHeaderCellStyle}>نام شخص</th>
+                <th style={relatedPersonHeaderCellStyle}>شناسه</th>
+                <th style={relatedPersonHeaderCellStyle}>سمت</th>
+                <th style={relatedPersonHeaderCellStyle}>نماینده شخص حقوقی</th>
+                <th style={relatedPersonHeaderCellStyle}>تاریخ شروع</th>
+                <th style={relatedPersonHeaderCellStyle}>تاریخ پایان</th>
+                <th style={relatedPersonHeaderCellStyle}>حق امضا</th>
+              </tr>
+            </thead>
+            <tbody>
+              {persons.map((person, index) => {
+                const status = relatedPersonStatus(person, snapshot.debtYear)
+                return (
+                <tr
+                  key={person.relationshipId || `${relatedPersonIdentifier(person)}-${index}`}
+                  style={status.rowStyle}
+                >
+                  <td style={relatedPersonCellStyle}>
+                    <RelatedPersonStatusBadge person={person} debtYear={snapshot.debtYear} />
+                  </td>
+                  <td style={relatedPersonCellStyle}>
+                    {person.personType === 'NATURAL' ? 'حقیقی' : person.personType === 'LEGAL' ? 'حقوقی' : 'نامشخص'}
+                  </td>
+                  <td style={relatedPersonCellStyle}><strong>{relatedPersonDisplayName(person)}</strong></td>
+                  <td style={relatedPersonCellStyle}>{relatedPersonIdentifier(person)}</td>
+                  <td style={relatedPersonCellStyle}>{formatValue(person.postLabel || person.postCode)}</td>
+                  <td style={relatedPersonCellStyle}>{legalRepresentativeDisplay(person)}</td>
+                  <td style={relatedPersonCellStyle}>{formatPersianDate(person.startDate)}</td>
+                  <td style={relatedPersonCellStyle}>{formatPersianDate(person.endDate)}</td>
+                  <td style={relatedPersonCellStyle}>{person.hasSignatoryAuthority ? 'دارد' : 'ندارد'}</td>
+                </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  )
 }
 
 function TraceSection({ trace, loading, error }) {
@@ -210,9 +406,12 @@ function TraceSection({ trace, loading, error }) {
                   <span style={timelineDateStyle}>{formatPersianDateTime(item.occurredAt)}</span>
                 </div>
                 <div style={timelineMetaStyle}>
-                  <span>انجام‌دهنده: {formatValue(item.actorUsername || 'system')}</span>
+                  <span>انجام‌دهنده: {formatValue(item.actorUsername || 'سامانه')}</span>
                 </div>
-                {hasTraceChange(item) && (
+                {RELATED_PERSON_TRACE_ACTIONS.has(item.action) && item.newValue && (
+                  <RelatedPersonsTraceValue value={item.newValue} />
+                )}
+                {!RELATED_PERSON_TRACE_ACTIONS.has(item.action) && hasTraceChange(item) && (
                   <div style={traceChangeBoxStyle}>
                     <span style={traceChangeFieldStyle}>{traceFieldLabel(item)}</span>
                     <div style={traceChangeValuesStyle}>
@@ -248,6 +447,7 @@ function RelatedPersonsSection({ data, loading, refreshing, error, onRefresh }) 
           <span style={mutedMetaStyle}>
             سال عملکرد: {formatValue(data?.debtYear)} · آخرین بروزرسانی: {formatPersianDateTime(data?.lastSyncedAt)}
           </span>
+          <RelatedPersonsStatusLegend />
         </div>
         <button
           type="button"
@@ -269,6 +469,7 @@ function RelatedPersonsSection({ data, loading, refreshing, error, onRefresh }) 
           <table style={relatedPersonsTableStyle}>
             <thead>
               <tr>
+                <th style={relatedPersonHeaderCellStyle}>وضعیت</th>
                 <th style={relatedPersonHeaderCellStyle}>نوع شخص</th>
                 <th style={relatedPersonHeaderCellStyle}>نام</th>
                 <th style={relatedPersonHeaderCellStyle}>شناسه</th>
@@ -280,8 +481,13 @@ function RelatedPersonsSection({ data, loading, refreshing, error, onRefresh }) 
               </tr>
             </thead>
             <tbody>
-              {items.map(item => (
-                <tr key={item.relationshipId}>
+              {items.map(item => {
+                const status = relatedPersonStatus(item, data?.debtYear)
+                return (
+                <tr key={item.relationshipId} style={status.rowStyle}>
+                  <td style={relatedPersonCellStyle}>
+                    <RelatedPersonStatusBadge person={item} debtYear={data?.debtYear} />
+                  </td>
                   <td style={relatedPersonCellStyle}>{item.personType === 'NATURAL' ? 'حقیقی' : 'حقوقی'}</td>
                   <td style={relatedPersonCellStyle}>
                     <strong>{item.personType === 'NATURAL'
@@ -301,7 +507,8 @@ function RelatedPersonsSection({ data, loading, refreshing, error, onRefresh }) 
                   <td style={relatedPersonCellStyle}>{formatPersianDate(item.endDate)}</td>
                   <td style={relatedPersonCellStyle}>{item.hasSignatoryAuthority ? 'دارد' : 'ندارد'}</td>
                 </tr>
-              ))}
+                )
+              })}
             </tbody>
           </table>
         </div>
@@ -927,6 +1134,79 @@ const traceChangeArrowStyle = {
   color: '#2563eb',
   fontWeight: 900
 }
+const traceFallbackValueStyle = {
+  color: '#0f172a',
+  fontSize: 12,
+  lineHeight: 1.9,
+  overflowWrap: 'anywhere'
+}
+const relatedPersonsTraceStyle = {
+  display: 'grid',
+  gap: 12,
+  marginTop: 12,
+  padding: 12,
+  border: '1px solid #bbf7d0',
+  borderRadius: 10,
+  background: '#f7fff9'
+}
+const relatedPersonsTraceHeadingStyle = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: 10,
+  flexWrap: 'wrap'
+}
+const relatedPersonsTraceHeadingMetaStyle = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'flex-end',
+  gap: 8,
+  flexWrap: 'wrap'
+}
+const relatedPersonsCountStyle = {
+  padding: '3px 9px',
+  borderRadius: 999,
+  color: '#166534',
+  background: '#dcfce7',
+  fontSize: 11,
+  fontWeight: 900
+}
+const relatedPersonsTraceMetaStyle = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(155px, 1fr))',
+  gap: 8
+}
+const relatedPersonsTraceMetaItemStyle = {
+  display: 'grid',
+  gap: 4,
+  minWidth: 0,
+  padding: '8px 10px',
+  border: '1px solid #dcfce7',
+  borderRadius: 8,
+  background: '#ffffff',
+  color: '#0f172a',
+  fontSize: 12,
+  overflowWrap: 'anywhere'
+}
+const relatedPersonsEmptyTraceStyle = {
+  margin: 0,
+  padding: 10,
+  borderRadius: 8,
+  color: '#64748b',
+  background: '#ffffff',
+  fontSize: 12
+}
+const relatedPersonsTraceTableScrollStyle = {
+  overflowX: 'auto',
+  border: '1px solid #dcfce7',
+  borderRadius: 9
+}
+const relatedPersonsTraceTableStyle = {
+  width: '100%',
+  minWidth: 1000,
+  borderCollapse: 'collapse',
+  background: '#ffffff'
+}
 const relatedPersonsCardStyle = { ...cardStyle, borderColor: '#bbf7d0', background: 'linear-gradient(180deg, #ffffff, #f7fff9)' }
 const relatedPersonsHeaderStyle = { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap', marginBottom: 16 }
 const mutedMetaStyle = { color: '#64748b', fontSize: 12, lineHeight: 1.8 }
@@ -944,4 +1224,24 @@ const refreshRelatedButtonStyle = {
 const relatedPersonsTableScrollStyle = { overflowX: 'auto', border: '1px solid #dcfce7', borderRadius: 9 }
 const relatedPersonsTableStyle = { width: '100%', minWidth: 1050, borderCollapse: 'collapse', background: '#ffffff' }
 const relatedPersonHeaderCellStyle = { padding: '10px 12px', color: '#166534', background: '#f0fdf4', borderBottom: '1px solid #bbf7d0', fontSize: 12, whiteSpace: 'nowrap', textAlign: 'center' }
-const relatedPersonCellStyle = { padding: '11px 12px', color: '#334155', borderBottom: '1px solid #ecfdf5', fontSize: 12, lineHeight: 1.7, textAlign: 'center', whiteSpace: 'nowrap' }
+const relatedPersonCellStyle = { padding: '11px 12px', color: '#334155', borderBottom: '1px solid rgba(203, 213, 225, 0.55)', fontSize: 12, lineHeight: 1.7, textAlign: 'center', whiteSpace: 'nowrap' }
+const relatedPersonsLegendStyle = { display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginTop: 7 }
+const relatedPersonStatusBadgeStyle = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  minWidth: 88,
+  padding: '4px 9px',
+  border: '1px solid transparent',
+  borderRadius: 999,
+  fontSize: 11,
+  fontWeight: 900,
+  lineHeight: 1.5,
+  whiteSpace: 'nowrap'
+}
+const debtYearRelatedPersonBadgeStyle = { color: '#166534', background: '#dcfce7', borderColor: '#86efac' }
+const expiredRelatedPersonBadgeStyle = { color: '#991b1b', background: '#fee2e2', borderColor: '#fca5a5' }
+const otherRelatedPersonBadgeStyle = { color: '#475569', background: '#f1f5f9', borderColor: '#cbd5e1' }
+const debtYearRelatedPersonRowStyle = { background: '#f7fff9', boxShadow: 'inset -4px 0 #22c55e' }
+const expiredRelatedPersonRowStyle = { background: '#fff7f7', boxShadow: 'inset -4px 0 #ef4444' }
+const otherRelatedPersonRowStyle = { background: '#f8fafc', boxShadow: 'inset -4px 0 #94a3b8' }

@@ -76,8 +76,10 @@ const sampleAddresses = [
   'مشهد، احمدآباد، خیابان عارف، پلاک ۳۱'
 ];
 
-export function randomDebtPaperSample(masterdata = {}) {
-  const natural = randomInt(1, 10) <= 7;
+export function randomDebtPaperSample(masterdata = {}, forcedTaxpayerType = null) {
+  const natural = forcedTaxpayerType
+    ? forcedTaxpayerType === 'NATURAL'
+    : randomInt(1, 10) <= 7;
   const taxAmount = randomAmount(80_000_000, 850_000_000);
   const dutyAmount = randomAmount(5_000_000, 80_000_000);
   const penaltyArticle22 = randomAmount(2_000_000, 45_000_000);
@@ -127,6 +129,10 @@ export function randomDebtPaperSample(masterdata = {}) {
     guildShare: String(randomAmount(0, 8_000_000)),
     complianceBonus: String(randomAmount(0, 5_000_000))
   };
+}
+
+export function randomLegalPersonDebtPaperSample(masterdata = {}) {
+  return randomDebtPaperSample(masterdata, 'LEGAL');
 }
 
 export function randomExecutionPaperSample(summary = {}, masterdata = {}) {

@@ -17,6 +17,8 @@ public interface ExecutionPaperRepository extends JpaRepository<ExecutionPaper, 
 
     Optional<ExecutionPaper> findByExecutionPaperUniqueCode(String code);
 
+    Optional<ExecutionPaper> findByFinalizedDebtPaperDebtPaperUniqueCode(String debtPaperUniqueCode);
+
     List<ExecutionPaper> findByCurrentState(String state);
 
     long countByCurrentState(String state);

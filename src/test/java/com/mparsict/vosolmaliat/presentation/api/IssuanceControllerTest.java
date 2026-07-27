@@ -103,7 +103,9 @@ class IssuanceControllerTest {
                 .build();
         when(issuanceRequestService.findByHash(anyString())).thenReturn(Optional.empty());
         when(issuanceRequestService.createAndSave(any(DebtPaperIssuanceRequest.class))).thenReturn(savedRequest);
-        when(camundaProcessService.startExecutionPaperIssuanceProcess(eq(42L), anyString()))
+        when(camundaProcessService.startExecutionPaperIssuanceProcess(
+                eq(42L),
+                any(DebtPaperIssuanceRequest.class)))
                 .thenReturn(new IssuanceResponse(true, "EP-1403-000001", null, null, null, "برگ اجرا با موفقیت صادر شد"));
 
         mockMvc.perform(post("/api/v1/debt-papers/issue")
@@ -146,10 +148,10 @@ class IssuanceControllerTest {
         assertThat(mappedRequest.debtInfo().taxCredit()).isEqualTo(0.0);
         assertThat(mappedRequest.debtInfo().remainingTax()).isEqualTo(62000000.0);
 
-        ArgumentCaptor<String> payloadCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<DebtPaperIssuanceRequest> payloadCaptor =
+                ArgumentCaptor.forClass(DebtPaperIssuanceRequest.class);
         verify(camundaProcessService).startExecutionPaperIssuanceProcess(eq(42L), payloadCaptor.capture());
-        DebtPaperIssuanceRequest processPayload = new ObjectMapper().readValue(payloadCaptor.getValue(), DebtPaperIssuanceRequest.class);
-        assertThat(processPayload).isEqualTo(mappedRequest);
+        assertThat(payloadCaptor.getValue()).isEqualTo(mappedRequest);
     }
 
     @Test

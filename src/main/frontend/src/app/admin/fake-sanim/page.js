@@ -8,7 +8,11 @@ import { sendFinalizedDebtPaper } from '../../lib/admin-data-entry'
 import { apiJson } from '../../lib/api'
 import { formatJalaliDateTime } from '../../lib/display'
 import { fetchGeneralDirectorates, fetchTaxAffairsOffices, fetchTaxUnits } from '../../lib/security'
-import { randomDebtPaperSample, toDebtPaperPayload } from '../data-entry/form-parts'
+import {
+  randomDebtPaperSample,
+  randomLegalPersonDebtPaperSample,
+  toDebtPaperPayload
+} from '../data-entry/form-parts'
 
 const CHART_COLORS = ['#1d4ed8', '#dc2626', '#059669']
 
@@ -138,7 +142,7 @@ export default function FakeSanimPage() {
     await load()
   }
 
-  const prepareRandomDebtPaper = async () => {
+  const prepareRandomDebtPaper = async (taxpayerType = null) => {
     setMessage('')
     setSendingRandom(true)
     try {
@@ -149,7 +153,11 @@ export default function FakeSanimPage() {
       ])
       const loadedMasterdata = { generals, offices, units }
       setMasterdata(loadedMasterdata)
-      setSampleForm(randomDebtPaperSample(loadedMasterdata))
+      setSampleForm(
+        taxpayerType === 'LEGAL'
+          ? randomLegalPersonDebtPaperSample(loadedMasterdata)
+          : randomDebtPaperSample(loadedMasterdata)
+      )
       setSampleModalOpen(true)
     } catch (error) {
       setMessage(error.message || 'ساخت برگ بدهی تصادفی ناموفق بود.')
@@ -182,12 +190,21 @@ export default function FakeSanimPage() {
 
   return (
     <AppShell
-      active="fake-sanim"
+      active="test-front"
       title="سامانه عملیاتی سنیم آزمایشی"
       eyebrow="Fake External System"
       actions={(
         <div className="row-actions">
-          <button className="fake-service-random-action" type="button" onClick={prepareRandomDebtPaper} disabled={sendingRandom}>
+          <button
+            className="fake-service-random-action fake-service-random-action--legal"
+            type="button"
+            onClick={() => prepareRandomDebtPaper('LEGAL')}
+            disabled={sendingRandom}
+          >
+            <span aria-hidden="true">◆</span>
+            {sendingRandom ? 'در حال آماده‌سازی...' : 'ساخت برگ بدهی شخص حقوقی تصادفی'}
+          </button>
+          <button className="fake-service-random-action" type="button" onClick={() => prepareRandomDebtPaper()} disabled={sendingRandom}>
             <span aria-hidden="true">✦</span>
             {sendingRandom ? 'در حال آماده‌سازی...' : 'ساخت و ارسال برگ بدهی تصادفی'}
           </button>

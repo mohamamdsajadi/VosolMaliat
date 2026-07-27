@@ -44,35 +44,33 @@ class RelatedPersonServiceUnitTest {
         var secondRefresh = service.refreshForExecutionPaper(100L);
 
         assertThat(firstRefresh.debtYear()).isEqualTo("1405");
-        assertThat(firstRefresh.relatedPersons()).hasSize(4);
-        assertThat(secondRefresh.relatedPersons()).hasSize(4);
-        assertThat(state.relationships).hasSize(4);
-        assertThat(state.naturalPeopleByNationalCode).hasSize(2);
-        assertThat(state.legalPeopleByNationalId).hasSize(2);
-        assertThat(firstRefresh.relatedPersons())
-                .filteredOn(item -> item.personType().equals(RelatedPersonType.NATURAL.name()))
-                .extracting(item -> item.postCode())
-                .contains(
-                        RelatedPersonPostCode.CEO.name(),
-                        RelatedPersonPostCode.BOARD_MEMBER.name(),
-                        RelatedPersonPostCode.BOARD_CHAIR.name()
-                );
-        assertThat(firstRefresh.relatedPersons())
-                .filteredOn(item -> item.personType().equals(RelatedPersonType.LEGAL.name()))
-                .extracting(item -> item.postCode())
-                .containsExactly(RelatedPersonPostCode.SHAREHOLDER.name());
-        assertThat(firstRefresh.relatedPersons())
+        assertThat(firstRefresh.relatedPersons()).hasSizeBetween(1, 2);
+        assertThat(secondRefresh.relatedPersons().size() - firstRefresh.relatedPersons().size())
+                .isBetween(1, 2);
+        assertThat(state.relationships).hasSize(secondRefresh.relatedPersons().size());
+        assertThat(state.relationships)
+                .extracting(RelatedPerson::getSourceRecordId)
+                .doesNotHaveDuplicates();
+        assertThat(state.relationships)
+                .filteredOn(item -> item.getEndDate() != null)
+                .hasSizeBetween(1, Math.min(2, firstRefresh.relatedPersons().size()));
+        assertThat(secondRefresh.relatedPersons())
                 .filteredOn(item -> item.personType().equals(RelatedPersonType.LEGAL.name()))
                 .allSatisfy(item -> {
                     assertThat(item.legalRepresentativeNaturalPersonId()).isNotNull();
                     assertThat(item.legalRepresentativeNationalCode()).isNotBlank();
                 });
-        assertThat(firstRefresh.relatedPersons())
+        assertThat(secondRefresh.relatedPersons())
                 .filteredOn(item -> item.personType().equals(RelatedPersonType.NATURAL.name()))
                 .allSatisfy(item -> assertThat(item.legalRepresentativeNaturalPersonId()).isNull());
-        assertThat(firstRefresh.relatedPersons())
+        assertThat(secondRefresh.relatedPersons())
                 .extracting(item -> item.postId())
                 .doesNotContainNull();
+        assertThat(secondRefresh.relatedPersons())
+                .allSatisfy(item -> assertThat(
+                        RelatedPersonPostCode.valueOf(item.postCode())
+                                .supports(RelatedPersonType.valueOf(item.personType()))
+                ).isTrue());
         assertThat(auditLogService.action)
                 .isEqualTo("RELATED_PERSONS_REFRESHED_FROM_COMPANY_REGISTRY");
         assertThat(auditLogService.newValue).contains("\"debtYear\":\"1405\"");
@@ -87,11 +85,11 @@ class RelatedPersonServiceUnitTest {
         var response = service.getForExecutionPaper(100L);
 
         assertThat(response.relatedPersons())
-                .extracting(item -> item.postCode())
-                .containsExactlyInAnyOrder(
-                        RelatedPersonPostCode.BOARD_MEMBER.name(),
-                        RelatedPersonPostCode.SHAREHOLDER.name()
-                );
+                .hasSizeBetween(1, 2)
+                .allSatisfy(item -> assertThat(
+                        RelatedPersonPostCode.valueOf(item.postCode())
+                                .supports(RelatedPersonType.valueOf(item.personType()))
+                ).isTrue());
     }
 
     @Test
