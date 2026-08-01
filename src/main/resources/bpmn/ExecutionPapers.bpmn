@@ -58,10 +58,84 @@
     </bpmn:startEvent>
     <bpmn:parallelGateway id="Gateway_0fw9zja">
       <bpmn:incoming>Flow_0pf5o1c</bpmn:incoming>
+      <bpmn:outgoing>Flow_07v2mwm</bpmn:outgoing>
       <bpmn:outgoing>Flow_11dgpnv</bpmn:outgoing>
-      <bpmn:outgoing>Flow_07fwfdh</bpmn:outgoing>
-      <bpmn:outgoing>Flow_07yuaef</bpmn:outgoing>
+      <bpmn:outgoing>Flow_16w484y</bpmn:outgoing>
+      <bpmn:outgoing>Flow_1oqia36</bpmn:outgoing>
     </bpmn:parallelGateway>
+    <bpmn:parallelGateway id="Gateway_0e7ujls">
+      <bpmn:incoming>Flow_0jnz16g</bpmn:incoming>
+      <bpmn:incoming>Flow_0aj7mt3</bpmn:incoming>
+      <bpmn:incoming>Flow_19yszz7</bpmn:incoming>
+      <bpmn:incoming>Flow_1i7jq54</bpmn:incoming>
+      <bpmn:outgoing>Flow_15l2v1o</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:endEvent id="Event_0executionPaperCartableEnd">
+      <bpmn:incoming>Flow_15l2v1o</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:exclusiveGateway id="Gateway_1g0dphg">
+      <bpmn:incoming>Flow_07v2mwm</bpmn:incoming>
+      <bpmn:outgoing>Flow_0dk43em</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0dpqedy</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:callActivity id="Activity_0xodqlk" name="ابلاغ برگه اجرا از طریق سامانه ابلاغ الکترونیک">
+      <bpmn:extensionElements>
+        <zeebe:calledElement processId="Process_0lt64q4" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_11dgpnv</bpmn:incoming>
+      <bpmn:outgoing>Flow_0aj7mt3</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:exclusiveGateway id="Gateway_0yy16p7">
+      <bpmn:incoming>Flow_0n7pcia</bpmn:incoming>
+      <bpmn:incoming>Flow_0dpqedy</bpmn:incoming>
+      <bpmn:outgoing>Flow_1i7jq54</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:callActivity id="Activity_0aeytw4" name="اعمال تبصره ۳ ماده ۱۸۶">
+      <bpmn:extensionElements>
+        <zeebe:calledElement processId="Process_0eqvh8j" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0dk43em</bpmn:incoming>
+      <bpmn:outgoing>Flow_0n7pcia</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:userTask id="Activity_0generalHeadReview" name="بررسی و ارجاع برگ اجرا توسط رئیس اداره کل">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+        <zeebe:assignmentDefinition candidateGroups="GENERAL_OFFICE_HEAD" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_16w484y</bpmn:incoming>
+      <bpmn:outgoing>Flow_0generalHeadDone</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Activity_0taxOfficeHeadReview" name="بررسی و ارجاع برگ اجرا توسط رئیس اداره مالیات">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+        <zeebe:assignmentDefinition candidateGroups="TAX_OFFICE_HEAD" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0generalHeadDone</bpmn:incoming>
+      <bpmn:outgoing>Flow_0taxOfficeHeadDone</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Activity_0taxUnitHeadReview" name="بررسی و ارجاع برگ اجرا توسط رئیس واحد مالیاتی">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+        <zeebe:assignmentDefinition candidateGroups="TAX_UNIT_HEAD" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0taxOfficeHeadDone</bpmn:incoming>
+      <bpmn:outgoing>Flow_0taxUnitHeadDone</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Activity_0taxExpertProcess" name="رسیدگی برگ اجرا توسط کارشناس مالیاتی">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+        <zeebe:assignmentDefinition candidateGroups="TAX_EXPERT" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0taxUnitHeadDone</bpmn:incoming>
+      <bpmn:outgoing>Flow_0jnz16g</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sendTask id="Activity_1f7l5yj" name="ارسال شناسه یکتای برگه اجرا به سامانه عملیاتی">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="send_execution_paper_id_to_sanim" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1oqia36</bpmn:incoming>
+      <bpmn:outgoing>Flow_19yszz7</bpmn:outgoing>
+    </bpmn:sendTask>
     <bpmn:sequenceFlow id="Flow_0tajbqi" sourceRef="Activity_1ahtl92" targetRef="Gateway_1uchrac" />
     <bpmn:sequenceFlow id="Flow_0eioah5" name="امکان صدور وجود دارد" sourceRef="Gateway_1uchrac" targetRef="Activity_0rwz3ak">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=canIssue</bpmn:conditionExpression>
@@ -73,233 +147,219 @@
     <bpmn:sequenceFlow id="Flow_0k4vjit" sourceRef="Event_1dm1a0h" targetRef="Activity_1ahtl92" />
     <bpmn:sequenceFlow id="Flow_0pf5o1c" sourceRef="Activity_0rwz3ak" targetRef="Gateway_0fw9zja" />
     <bpmn:sequenceFlow id="Flow_11dgpnv" sourceRef="Gateway_0fw9zja" targetRef="Activity_0xodqlk" />
-    <bpmn:sequenceFlow id="Flow_07fwfdh" sourceRef="Gateway_0fw9zja" targetRef="Activity_0generalHeadReview" />
+    <bpmn:sequenceFlow id="Flow_07v2mwm" sourceRef="Gateway_0fw9zja" targetRef="Gateway_1g0dphg" />
+    <bpmn:sequenceFlow id="Flow_16w484y" sourceRef="Gateway_0fw9zja" targetRef="Activity_0generalHeadReview" />
+    <bpmn:sequenceFlow id="Flow_1oqia36" sourceRef="Gateway_0fw9zja" targetRef="Activity_1f7l5yj" />
+    <bpmn:sequenceFlow id="Flow_0jnz16g" sourceRef="Activity_0taxExpertProcess" targetRef="Gateway_0e7ujls" />
+    <bpmn:sequenceFlow id="Flow_0aj7mt3" sourceRef="Activity_0xodqlk" targetRef="Gateway_0e7ujls" />
+    <bpmn:sequenceFlow id="Flow_19yszz7" sourceRef="Activity_1f7l5yj" targetRef="Gateway_0e7ujls" />
+    <bpmn:sequenceFlow id="Flow_1i7jq54" sourceRef="Gateway_0yy16p7" targetRef="Gateway_0e7ujls" />
+    <bpmn:sequenceFlow id="Flow_15l2v1o" sourceRef="Gateway_0e7ujls" targetRef="Event_0executionPaperCartableEnd" />
+    <bpmn:sequenceFlow id="Flow_0dk43em" sourceRef="Gateway_1g0dphg" targetRef="Activity_0aeytw4">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=debtPaperPayload.taxpayer.type = "LEGAL"</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_0dpqedy" sourceRef="Gateway_1g0dphg" targetRef="Gateway_0yy16p7">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=debtPaperPayload.taxpayer.type != "LEGAL"</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_0n7pcia" sourceRef="Activity_0aeytw4" targetRef="Gateway_0yy16p7" />
     <bpmn:sequenceFlow id="Flow_0generalHeadDone" sourceRef="Activity_0generalHeadReview" targetRef="Activity_0taxOfficeHeadReview" />
     <bpmn:sequenceFlow id="Flow_0taxOfficeHeadDone" sourceRef="Activity_0taxOfficeHeadReview" targetRef="Activity_0taxUnitHeadReview" />
     <bpmn:sequenceFlow id="Flow_0taxUnitHeadDone" sourceRef="Activity_0taxUnitHeadReview" targetRef="Activity_0taxExpertProcess" />
-    <bpmn:sequenceFlow id="Flow_0jnz16g" sourceRef="Activity_0taxExpertProcess" targetRef="Gateway_0e7ujls" />
-    <bpmn:sequenceFlow id="Flow_15l2v1o" sourceRef="Gateway_0e7ujls" targetRef="Event_0executionPaperCartableEnd" />
-    <bpmn:sequenceFlow id="Flow_0aj7mt3" sourceRef="Activity_0xodqlk" targetRef="Gateway_0e7ujls" />
-    <bpmn:parallelGateway id="Gateway_0e7ujls">
-      <bpmn:incoming>Flow_0jnz16g</bpmn:incoming>
-      <bpmn:incoming>Flow_0aj7mt3</bpmn:incoming>
-      <bpmn:incoming>Flow_19yszz7</bpmn:incoming>
-      <bpmn:outgoing>Flow_15l2v1o</bpmn:outgoing>
-    </bpmn:parallelGateway>
-    <bpmn:callActivity id="Activity_0xodqlk" name="ابلاغ برگه اجرا از طریق سامانه ابلاغ الکترونیک">
-      <bpmn:extensionElements>
-        <zeebe:calledElement processId="Process_0lt64q4" propagateAllChildVariables="false" />
-      </bpmn:extensionElements>
-      <bpmn:incoming>Flow_11dgpnv</bpmn:incoming>
-      <bpmn:outgoing>Flow_0aj7mt3</bpmn:outgoing>
-    </bpmn:callActivity>
-    <bpmn:endEvent id="Event_0executionPaperCartableEnd">
-      <bpmn:incoming>Flow_15l2v1o</bpmn:incoming>
-    </bpmn:endEvent>
-    <bpmn:userTask id="Activity_0generalHeadReview" name="بررسی و ارجاع برگ اجرا توسط رئیس اداره کل">
-      <bpmn:extensionElements>
-        <zeebe:userTask />
-        <zeebe:assignmentDefinition candidateGroups="GENERAL_OFFICE_HEAD" />
-      </bpmn:extensionElements>
-      <bpmn:incoming>Flow_07fwfdh</bpmn:incoming>
-      <bpmn:outgoing>Flow_0generalHeadDone</bpmn:outgoing>
-    </bpmn:userTask>
-    <bpmn:sequenceFlow id="Flow_07yuaef" sourceRef="Gateway_0fw9zja" targetRef="Activity_1f7l5yj" />
-    <bpmn:userTask id="Activity_0taxOfficeHeadReview" name="بررسی و ارجاع برگ اجرا توسط رئیس اداره مالیات">
-      <bpmn:extensionElements>
-        <zeebe:userTask />
-        <zeebe:assignmentDefinition candidateGroups="TAX_OFFICE_HEAD" />
-      </bpmn:extensionElements>
-      <bpmn:incoming>Flow_0generalHeadDone</bpmn:incoming>
-      <bpmn:outgoing>Flow_0taxOfficeHeadDone</bpmn:outgoing>
-    </bpmn:userTask>
-    <bpmn:userTask id="Activity_0taxExpertProcess" name="رسیدگی برگ اجرا توسط کارشناس مالیاتی">
-      <bpmn:extensionElements>
-        <zeebe:userTask />
-        <zeebe:assignmentDefinition candidateGroups="TAX_EXPERT" />
-      </bpmn:extensionElements>
-      <bpmn:incoming>Flow_0taxUnitHeadDone</bpmn:incoming>
-      <bpmn:outgoing>Flow_0jnz16g</bpmn:outgoing>
-    </bpmn:userTask>
-    <bpmn:userTask id="Activity_0taxUnitHeadReview" name="بررسی و ارجاع برگ اجرا توسط رئیس واحد مالیاتی">
-      <bpmn:extensionElements>
-        <zeebe:userTask />
-        <zeebe:assignmentDefinition candidateGroups="TAX_UNIT_HEAD" />
-      </bpmn:extensionElements>
-      <bpmn:incoming>Flow_0taxOfficeHeadDone</bpmn:incoming>
-      <bpmn:outgoing>Flow_0taxUnitHeadDone</bpmn:outgoing>
-    </bpmn:userTask>
-    <bpmn:sequenceFlow id="Flow_19yszz7" sourceRef="Activity_1f7l5yj" targetRef="Gateway_0e7ujls" />
-    <bpmn:sendTask id="Activity_1f7l5yj" name="ارسال شناسه یکتای برگه اجرا به سامانه عملیاتی">
-      <bpmn:extensionElements>
-        <zeebe:taskDefinition type="send_execution_paper_id_to_sanim" />
-      </bpmn:extensionElements>
-      <bpmn:incoming>Flow_07yuaef</bpmn:incoming>
-      <bpmn:outgoing>Flow_19yszz7</bpmn:outgoing>
-    </bpmn:sendTask>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_0blcya1">
       <bpmndi:BPMNShape id="Participant_0zo8zrs_di" bpmnElement="Participant_0zo8zrs" isHorizontal="true">
-        <dc:Bounds x="160" y="80" width="2820" height="1000" />
+        <dc:Bounds x="160" y="80" width="2820" height="1060" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_1uchrac_di" bpmnElement="Gateway_1uchrac" isMarkerVisible="true">
-        <dc:Bounds x="880" y="315" width="50" height="50" />
+        <dc:Bounds x="880" y="375" width="50" height="50" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_10ewku3_di" bpmnElement="Event_10ewku3">
-        <dc:Bounds x="1242" y="492" width="36" height="36" />
+        <dc:Bounds x="1242" y="552" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0wym9i9_di" bpmnElement="Activity_1ahtl92">
-        <dc:Bounds x="560" y="300" width="100" height="80" />
+        <dc:Bounds x="560" y="360" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1lj3txo_di" bpmnElement="Activity_0rwz3ak">
-        <dc:Bounds x="1100" y="300" width="100" height="80" />
+        <dc:Bounds x="1100" y="360" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1ae6ql4_di" bpmnElement="Activity_010iyzn">
-        <dc:Bounds x="855" y="480" width="100" height="80" />
+        <dc:Bounds x="855" y="540" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_0y3lo4d_di" bpmnElement="Event_1dm1a0h">
-        <dc:Bounds x="392" y="322" width="36" height="36" />
+        <dc:Bounds x="392" y="382" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_0fw9zja_di" bpmnElement="Gateway_0fw9zja">
-        <dc:Bounds x="1335" y="315" width="50" height="50" />
+        <dc:Bounds x="1335" y="375" width="50" height="50" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_1tyo9zx_di" bpmnElement="Gateway_0e7ujls">
-        <dc:Bounds x="2465" y="315" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0xodqlk_di" bpmnElement="Activity_0xodqlk">
-        <dc:Bounds x="1830" y="110" width="100" height="80" />
-        <bpmndi:BPMNLabel />
+        <dc:Bounds x="2465" y="375" width="50" height="50" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_0executionPaperCartableEnd_di" bpmnElement="Event_0executionPaperCartableEnd">
-        <dc:Bounds x="2562" y="322" width="36" height="36" />
+        <dc:Bounds x="2562" y="382" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1g0dphg_di" bpmnElement="Gateway_1g0dphg" isMarkerVisible="true">
+        <dc:Bounds x="1515" y="375" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0xodqlk_di" bpmnElement="Activity_0xodqlk">
+        <dc:Bounds x="1850" y="220" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0yy16p7_di" bpmnElement="Gateway_0yy16p7" isMarkerVisible="true">
+        <dc:Bounds x="1965" y="375" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0aeytw4_di" bpmnElement="Activity_0aeytw4">
+        <dc:Bounds x="1720" y="360" width="100" height="80" />
+        <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0generalHeadReview_di" bpmnElement="Activity_0generalHeadReview">
-        <dc:Bounds x="1480" y="500" width="160" height="80" />
+        <dc:Bounds x="1390" y="840" width="160" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0taxOfficeHeadReview_di" bpmnElement="Activity_0taxOfficeHeadReview">
-        <dc:Bounds x="1750" y="690" width="160" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0taxExpertProcess_di" bpmnElement="Activity_0taxExpertProcess">
-        <dc:Bounds x="2280" y="480" width="160" height="80" />
+        <dc:Bounds x="1760" y="840" width="160" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0taxUnitHeadReview_di" bpmnElement="Activity_0taxUnitHeadReview">
-        <dc:Bounds x="1930" y="540" width="160" height="80" />
+        <dc:Bounds x="2180" y="780" width="160" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0taxExpertProcess_di" bpmnElement="Activity_0taxExpertProcess">
+        <dc:Bounds x="2500" y="780" width="160" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1i6zmn4_di" bpmnElement="Activity_1f7l5yj">
-        <dc:Bounds x="1820" y="300" width="100" height="80" />
+        <dc:Bounds x="1770" y="600" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_0tajbqi_di" bpmnElement="Flow_0tajbqi">
-        <di:waypoint x="660" y="340" />
-        <di:waypoint x="880" y="340" />
+        <di:waypoint x="660" y="400" />
+        <di:waypoint x="880" y="400" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0eioah5_di" bpmnElement="Flow_0eioah5">
-        <di:waypoint x="930" y="340" />
-        <di:waypoint x="1100" y="340" />
+        <di:waypoint x="930" y="400" />
+        <di:waypoint x="1100" y="400" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="975" y="322" width="81" height="27" />
+          <dc:Bounds x="975" y="382" width="81" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0k7613y_di" bpmnElement="Flow_0k7613y">
-        <di:waypoint x="905" y="365" />
-        <di:waypoint x="905" y="480" />
+        <di:waypoint x="905" y="425" />
+        <di:waypoint x="905" y="540" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="910" y="411" width="81" height="27" />
+          <dc:Bounds x="910" y="471" width="81" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_05tcjnl_di" bpmnElement="Flow_05tcjnl">
-        <di:waypoint x="955" y="520" />
-        <di:waypoint x="1099" y="520" />
-        <di:waypoint x="1099" y="510" />
-        <di:waypoint x="1242" y="510" />
+        <di:waypoint x="955" y="580" />
+        <di:waypoint x="1099" y="580" />
+        <di:waypoint x="1099" y="570" />
+        <di:waypoint x="1242" y="570" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0k4vjit_di" bpmnElement="Flow_0k4vjit">
-        <di:waypoint x="428" y="340" />
-        <di:waypoint x="560" y="340" />
+        <di:waypoint x="428" y="400" />
+        <di:waypoint x="560" y="400" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0pf5o1c_di" bpmnElement="Flow_0pf5o1c">
-        <di:waypoint x="1200" y="340" />
-        <di:waypoint x="1335" y="340" />
+        <di:waypoint x="1200" y="400" />
+        <di:waypoint x="1335" y="400" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_11dgpnv_di" bpmnElement="Flow_11dgpnv">
-        <di:waypoint x="1360" y="315" />
-        <di:waypoint x="1360" y="150" />
-        <di:waypoint x="1830" y="150" />
+        <di:waypoint x="1360" y="375" />
+        <di:waypoint x="1360" y="250" />
+        <di:waypoint x="1850" y="250" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_07fwfdh_di" bpmnElement="Flow_07fwfdh">
-        <di:waypoint x="1360" y="365" />
-        <di:waypoint x="1360" y="540" />
-        <di:waypoint x="1480" y="540" />
+      <bpmndi:BPMNEdge id="Flow_07v2mwm_di" bpmnElement="Flow_07v2mwm">
+        <di:waypoint x="1384" y="401" />
+        <di:waypoint x="1430" y="400" />
+        <di:waypoint x="1515" y="400" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0generalHeadDone_di" bpmnElement="Flow_0generalHeadDone">
-        <di:waypoint x="1640" y="540" />
-        <di:waypoint x="1695" y="540" />
-        <di:waypoint x="1695" y="730" />
-        <di:waypoint x="1750" y="730" />
+      <bpmndi:BPMNEdge id="Flow_16w484y_di" bpmnElement="Flow_16w484y">
+        <di:waypoint x="1360" y="425" />
+        <di:waypoint x="1360" y="880" />
+        <di:waypoint x="1390" y="880" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0taxOfficeHeadDone_di" bpmnElement="Flow_0taxOfficeHeadDone">
-        <di:waypoint x="1910" y="730" />
-        <di:waypoint x="2010" y="730" />
-        <di:waypoint x="2010" y="620" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0taxUnitHeadDone_di" bpmnElement="Flow_0taxUnitHeadDone">
-        <di:waypoint x="2010" y="540" />
-        <di:waypoint x="2010" y="520" />
-        <di:waypoint x="2280" y="520" />
+      <bpmndi:BPMNEdge id="Flow_1oqia36_di" bpmnElement="Flow_1oqia36">
+        <di:waypoint x="1360" y="425" />
+        <di:waypoint x="1360" y="640" />
+        <di:waypoint x="1770" y="640" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0jnz16g_di" bpmnElement="Flow_0jnz16g">
-        <di:waypoint x="2440" y="520" />
-        <di:waypoint x="2490" y="520" />
-        <di:waypoint x="2490" y="365" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_15l2v1o_di" bpmnElement="Flow_15l2v1o">
-        <di:waypoint x="2515" y="340" />
-        <di:waypoint x="2562" y="340" />
+        <di:waypoint x="2580" y="780" />
+        <di:waypoint x="2580" y="420" />
+        <di:waypoint x="2495" y="420" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0aj7mt3_di" bpmnElement="Flow_0aj7mt3">
-        <di:waypoint x="1930" y="150" />
-        <di:waypoint x="2490" y="150" />
-        <di:waypoint x="2490" y="315" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_07yuaef_di" bpmnElement="Flow_07yuaef">
-        <di:waypoint x="1385" y="340" />
-        <di:waypoint x="1820" y="340" />
+        <di:waypoint x="1950" y="260" />
+        <di:waypoint x="2490" y="260" />
+        <di:waypoint x="2490" y="375" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_19yszz7_di" bpmnElement="Flow_19yszz7">
-        <di:waypoint x="1920" y="340" />
-        <di:waypoint x="2465" y="340" />
+        <di:waypoint x="1870" y="640" />
+        <di:waypoint x="2490" y="640" />
+        <di:waypoint x="2490" y="425" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1i7jq54_di" bpmnElement="Flow_1i7jq54">
+        <di:waypoint x="2015" y="400" />
+        <di:waypoint x="2465" y="400" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_15l2v1o_di" bpmnElement="Flow_15l2v1o">
+        <di:waypoint x="2515" y="400" />
+        <di:waypoint x="2562" y="400" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0dk43em_di" bpmnElement="Flow_0dk43em">
+        <di:waypoint x="1565" y="400" />
+        <di:waypoint x="1720" y="400" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0dpqedy_di" bpmnElement="Flow_0dpqedy">
+        <di:waypoint x="1540" y="425" />
+        <di:waypoint x="1540" y="500" />
+        <di:waypoint x="1990" y="500" />
+        <di:waypoint x="1990" y="425" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0n7pcia_di" bpmnElement="Flow_0n7pcia">
+        <di:waypoint x="1820" y="400" />
+        <di:waypoint x="1965" y="400" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0generalHeadDone_di" bpmnElement="Flow_0generalHeadDone">
+        <di:waypoint x="1550" y="880" />
+        <di:waypoint x="1760" y="880" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0taxOfficeHeadDone_di" bpmnElement="Flow_0taxOfficeHeadDone">
+        <di:waypoint x="1920" y="880" />
+        <di:waypoint x="2260" y="880" />
+        <di:waypoint x="2260" y="860" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0taxUnitHeadDone_di" bpmnElement="Flow_0taxUnitHeadDone">
+        <di:waypoint x="2340" y="820" />
+        <di:waypoint x="2500" y="820" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_08qtnyv_di" bpmnElement="Association_08qtnyv">
+        <di:waypoint x="855" y="557" />
+        <di:waypoint x="790" y="528" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_1wly86j_di" bpmnElement="Association_1wly86j">
+        <di:waypoint x="392" y="397" />
+        <di:waypoint x="326" y="386" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="Group_1old2zo_di" bpmnElement="Group_1old2zo">
-        <dc:Bounds x="430" y="250" width="870" height="340" />
+        <dc:Bounds x="430" y="310" width="870" height="340" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="601" y="257" width="70" height="14" />
+          <dc:Bounds x="601" y="317" width="70" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="TextAnnotation_1gv1en8_di" bpmnElement="TextAnnotation_1gv1en8">
-        <dc:Bounds x="690" y="430" width="100" height="127" />
+        <dc:Bounds x="690" y="490" width="100" height="127" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="TextAnnotation_1sw91qh_di" bpmnElement="TextAnnotation_1sw91qh">
-        <dc:Bounds x="210" y="305" width="116" height="70" />
+        <dc:Bounds x="210" y="365" width="116" height="70" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="Association_08qtnyv_di" bpmnElement="Association_08qtnyv">
-        <di:waypoint x="855" y="497" />
-        <di:waypoint x="790" y="468" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Association_1wly86j_di" bpmnElement="Association_1wly86j">
-        <di:waypoint x="392" y="337" />
-        <di:waypoint x="326" y="326" />
-      </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
 </bpmn:definitions>

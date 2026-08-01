@@ -21,6 +21,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * برگ اجرا را ایجاد و متغیرهای مشترک فرایندهای ابلاغ و تبصره ۳ ماده ۱۸۶ را منتشر می‌کند.
+ */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -66,6 +69,9 @@ public class IssueExecutionPaperWorker {
         return objectMapper.convertValue(payload, DebtPaperIssuanceRequest.class);
     }
 
+    /**
+     * برای مودی حقوقی، شناسه ملی و تاریخ برگ بدهی را به فرایند تبصره می‌دهد.
+     */
     private void addTabsare3186Variables(
             Map<String, Object> outputVars,
             DebtPaperIssuanceRequest request) {

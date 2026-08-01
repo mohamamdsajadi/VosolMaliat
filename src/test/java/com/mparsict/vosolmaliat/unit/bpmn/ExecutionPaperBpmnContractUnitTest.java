@@ -38,24 +38,29 @@ class ExecutionPaperBpmnContractUnitTest {
     void issuedExecutionPaperStartsInformSubprocessAndOperationalCartableInParallel() {
         assertThat(sequenceTarget("Flow_0pf5o1c")).isEqualTo("Gateway_0fw9zja");
         assertThat(sequenceTarget("Flow_11dgpnv")).isEqualTo("Activity_0xodqlk");
-        assertThat(sequenceTarget("Flow_07fwfdh")).isEqualTo("Activity_0generalHeadReview");
+        assertThat(sequenceTarget("Flow_16w484y")).isEqualTo("Activity_0generalHeadReview");
+    }
 
-        Element calledElement = firstChild(elementById("Activity_0xodqlk"), ZEEBE, "calledElement");
-        assertThat(calledElement.getAttribute("processId")).isEqualTo("Process_0lt64q4");
-        assertThat(calledElement.getAttribute("propagateAllChildVariables")).isEqualTo("true");
+    @Test
+    void legalExecutionPaperStartsTabsareProcess() {
+        assertThat(sequenceTarget("Flow_07v2mwm")).isEqualTo("Gateway_1g0dphg");
+        assertThat(sequenceTarget("Flow_0dk43em")).isEqualTo("Activity_0aeytw4");
+        Element calledElement = firstChild(elementById("Activity_0aeytw4"), ZEEBE, "calledElement");
+        assertThat(calledElement.getAttribute("processId"))
+                .isEqualTo(ProcessConstants.TABSARE_3_186_PROCESS_ID);
     }
 
     @Test
     void operationalUserTasksFollowTheBusinessRoleDelegationHierarchy() {
         Map<String, String> expectedCandidateGroups = Map.of(
-                "Activity_0generalHeadReview", ProcessConstants.VAR_GENERAL_OFFICE_HEAD_CANDIDATE_GROUPS,
-                "Activity_0taxOfficeHeadReview", ProcessConstants.VAR_TAX_OFFICE_HEAD_CANDIDATE_GROUPS,
-                "Activity_0taxUnitHeadReview", ProcessConstants.VAR_TAX_UNIT_HEAD_CANDIDATE_GROUPS,
-                "Activity_0taxExpertProcess", ProcessConstants.VAR_TAX_EXPERT_CANDIDATE_GROUPS
+                "Activity_0generalHeadReview", "GENERAL_OFFICE_HEAD",
+                "Activity_0taxOfficeHeadReview", "TAX_OFFICE_HEAD",
+                "Activity_0taxUnitHeadReview", "TAX_UNIT_HEAD",
+                "Activity_0taxExpertProcess", "TAX_EXPERT"
         );
 
         expectedCandidateGroups.forEach((taskId, variable) ->
-                assertThat(candidateGroups(taskId)).isEqualTo("=" + variable));
+                assertThat(candidateGroups(taskId)).isEqualTo(variable));
 
         assertThat(sequenceSourceAndTarget("Flow_0generalHeadDone"))
                 .containsEntry("sourceRef", "Activity_0generalHeadReview")

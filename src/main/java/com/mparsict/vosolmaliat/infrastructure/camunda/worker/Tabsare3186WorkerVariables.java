@@ -7,6 +7,9 @@ import com.mparsict.vosolmaliat.application.dto.integration.CompanyRegistryRelat
 import java.util.List;
 import java.util.Map;
 
+/**
+ * اعتبارسنجی و تبدیل متغیرهای فرایند تبصره ۳ ماده ۱۸۶.
+ */
 final class Tabsare3186WorkerVariables {
 
     private Tabsare3186WorkerVariables() {
@@ -20,6 +23,9 @@ final class Tabsare3186WorkerVariables {
         return String.valueOf(value).trim();
     }
 
+    /**
+     * مقدار را ابتدا مستقیم و سپس از مسیر تو در توی payload می‌خواند.
+     */
     static String requiredStringOrNested(
             Map<String, Object> variables,
             String name,
@@ -69,6 +75,9 @@ final class Tabsare3186WorkerVariables {
         );
     }
 
+    /**
+     * تاریخ جلالی را با رقم انگلیسی و قالب yyyy-MM-dd یکسان می‌کند.
+     */
     static String normalizeJalaliDate(String value) {
         String normalized = requiredDate(value)
                 .replace('۰', '0')
@@ -85,6 +94,9 @@ final class Tabsare3186WorkerVariables {
         return normalized.length() > 10 ? normalized.substring(0, 10) : normalized;
     }
 
+    /**
+     * مشخص می‌کند شخص مرتبط در تاریخ صدور برگ بدهی فعال بوده است.
+     */
     static boolean activeAt(CompanyRegistryRelatedPersonData person, String debtPaperDate) {
         String activeDate = normalizeJalaliDate(debtPaperDate);
         String startDate = optionalDate(person.startDate());

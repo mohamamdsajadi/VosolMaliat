@@ -13,6 +13,9 @@ import org.springframework.stereotype.Component;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * امکان ابلاغ را بررسی و متغیر Boolean به نام canInform را برای Gateway تولید می‌کند.
+ */
 @Slf4j
 @Component
 @RequiredArgsConstructor

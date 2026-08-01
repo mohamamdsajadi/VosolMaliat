@@ -5,11 +5,17 @@ import com.mparsict.vosolmaliat.infrastructure.camunda.ProcessConstants;
 
 import java.util.Map;
 
+/**
+ * بازیابی متغیرهای پایه برگ اجرا برای Workerها، حتی اگر Call Activity همه متغیرها را منتقل نکرده باشد.
+ */
 final class ExecutionPaperWorkerVariables {
 
     private ExecutionPaperWorkerVariables() {
     }
 
+    /**
+     * شناسه را به‌ترتیب از id، کد یکتای برگ اجرا و کد یکتای برگ بدهی پیدا می‌کند.
+     */
     static Long resolveExecutionPaperId(
             Map<String, Object> variables,
             ExecutionPaperRepository executionPaperRepository) {
@@ -45,6 +51,9 @@ final class ExecutionPaperWorkerVariables {
                 ));
     }
 
+    /**
+     * تاریخ برگ بدهی را از متغیر مستقیم، payload و در نهایت پایگاه داده می‌خواند.
+     */
     static String resolveDebtPaperDate(
             Map<String, Object> variables,
             ExecutionPaperRepository executionPaperRepository) {

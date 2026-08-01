@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:modeler="http://camunda.org/schema/modeler/1.0" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Web Modeler" exporterVersion="e787c33" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.8.0">
+  <bpmn:process id="Process_0eqvh8j" name="New BPMN diagram" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1">
+      <bpmn:outgoing>Flow_19agaf4</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_19agaf4" sourceRef="StartEvent_1" targetRef="Activity_081d0tt" />
+    <bpmn:sendTask id="Activity_081d0tt" name="ارسال درخواست استخراج اعضای هیئت مدیره به سامانه روزنامه رسمی">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="send-official-gazette-board-members-request" retries="" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_19agaf4</bpmn:incoming>
+      <bpmn:outgoing>Flow_0azvxox</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:sequenceFlow id="Flow_0azvxox" sourceRef="Activity_081d0tt" targetRef="Event_0nuru68" />
+    <bpmn:intermediateCatchEvent id="Event_0nuru68" name="دریافت شدن پاسخ روزنامه رسمی">
+      <bpmn:incoming>Flow_0azvxox</bpmn:incoming>
+      <bpmn:outgoing>Flow_079osxs</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_0a3n7vi" messageRef="Message_official_gazette_related_persons" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:sequenceFlow id="Flow_079osxs" sourceRef="Event_0nuru68" targetRef="Activity_1f4jd51" />
+    <bpmn:serviceTask id="Activity_1f4jd51" name="فیلتر اشخاص مرتبط بر اساس تاریخ فعال بودن در تاریخ برگ بدهی">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="filter-related-persons-by-debt-paper-date" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_079osxs</bpmn:incoming>
+      <bpmn:outgoing>Flow_03roe7m</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_03roe7m" sourceRef="Activity_1f4jd51" targetRef="Gateway_0st41cj" />
+    <bpmn:parallelGateway id="Gateway_0st41cj">
+      <bpmn:incoming>Flow_03roe7m</bpmn:incoming>
+      <bpmn:outgoing>Flow_1tp5x52</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0xal9xt</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:sequenceFlow id="Flow_1tp5x52" sourceRef="Gateway_0st41cj" targetRef="Activity_0lrql5n" />
+    <bpmn:sendTask id="Activity_0lrql5n" name="ارسال فهرست اشخاص مرتبط به سامانه ثبت شرکت‌ها جهت اعمال محدودیت">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="send-related-persons-for-restrictions" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1tp5x52</bpmn:incoming>
+      <bpmn:outgoing>Flow_1xfji8r</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:sequenceFlow id="Flow_0xal9xt" sourceRef="Gateway_0st41cj" targetRef="Activity_0l82eat" />
+    <bpmn:serviceTask id="Activity_0l82eat" name="ذخیره اشخاص مرتبط در جداول متناظر سامانه">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="store-related-persons" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0xal9xt</bpmn:incoming>
+      <bpmn:outgoing>Flow_0hr9eb5</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_1xfji8r" sourceRef="Activity_0lrql5n" targetRef="Gateway_0r5ol6o" />
+    <bpmn:parallelGateway id="Gateway_0r5ol6o">
+      <bpmn:incoming>Flow_1xfji8r</bpmn:incoming>
+      <bpmn:incoming>Flow_0hr9eb5</bpmn:incoming>
+      <bpmn:outgoing>Flow_0opltlb</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:sequenceFlow id="Flow_0hr9eb5" sourceRef="Activity_0l82eat" targetRef="Gateway_0r5ol6o" />
+    <bpmn:endEvent id="Event_0hczgv3">
+      <bpmn:incoming>Flow_0opltlb</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0opltlb" sourceRef="Gateway_0r5ol6o" targetRef="Event_0hczgv3" />
+    <bpmn:textAnnotation id="TextAnnotation_0621o6h">
+      <bpmn:text>بهتر است ذخیره سازی در دیتابیس اول اتفاق بیفته بعد گام همزمان با ذخیره سازی دیتابیس انجام شود.</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_0shxeoy" associationDirection="None" sourceRef="Activity_0l82eat" targetRef="TextAnnotation_0621o6h" />
+  </bpmn:process>
+  <bpmn:message id="Message_official_gazette_related_persons" name="official_gazette_related_persons_received">
+    <bpmn:extensionElements>
+      <zeebe:subscription correlationKey="=officialGazetteRequestId" />
+    </bpmn:extensionElements>
+  </bpmn:message>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_0eqvh8j">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="150" y="100" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1e9n3ef_di" bpmnElement="Activity_081d0tt">
+        <dc:Bounds x="240" y="78" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1mb101j_di" bpmnElement="Event_0nuru68">
+        <dc:Bounds x="402" y="100" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="386" y="143" width="69" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_08pqzyi_di" bpmnElement="Activity_1f4jd51">
+        <dc:Bounds x="500" y="78" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1yd0ua0_di" bpmnElement="Gateway_0st41cj">
+        <dc:Bounds x="665" y="93" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_00g3rvr_di" bpmnElement="Activity_0lrql5n">
+        <dc:Bounds x="780" y="78" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_107twxv_di" bpmnElement="Activity_0l82eat">
+        <dc:Bounds x="790" y="230" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_12psg4h_di" bpmnElement="Gateway_0r5ol6o">
+        <dc:Bounds x="945" y="93" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0hczgv3_di" bpmnElement="Event_0hczgv3">
+        <dc:Bounds x="1062" y="100" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_0621o6h_di" bpmnElement="TextAnnotation_0621o6h">
+        <dc:Bounds x="640" y="380" width="100" height="113" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_19agaf4_di" bpmnElement="Flow_19agaf4">
+        <di:waypoint x="186" y="118" />
+        <di:waypoint x="240" y="118" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0azvxox_di" bpmnElement="Flow_0azvxox">
+        <di:waypoint x="340" y="118" />
+        <di:waypoint x="402" y="118" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_079osxs_di" bpmnElement="Flow_079osxs">
+        <di:waypoint x="438" y="118" />
+        <di:waypoint x="500" y="118" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_03roe7m_di" bpmnElement="Flow_03roe7m">
+        <di:waypoint x="600" y="118" />
+        <di:waypoint x="665" y="118" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1tp5x52_di" bpmnElement="Flow_1tp5x52">
+        <di:waypoint x="715" y="118" />
+        <di:waypoint x="780" y="118" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0xal9xt_di" bpmnElement="Flow_0xal9xt">
+        <di:waypoint x="690" y="143" />
+        <di:waypoint x="690" y="270" />
+        <di:waypoint x="790" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1xfji8r_di" bpmnElement="Flow_1xfji8r">
+        <di:waypoint x="880" y="118" />
+        <di:waypoint x="945" y="118" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0hr9eb5_di" bpmnElement="Flow_0hr9eb5">
+        <di:waypoint x="890" y="270" />
+        <di:waypoint x="970" y="270" />
+        <di:waypoint x="970" y="143" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0opltlb_di" bpmnElement="Flow_0opltlb">
+        <di:waypoint x="995" y="118" />
+        <di:waypoint x="1062" y="118" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_0shxeoy_di" bpmnElement="Association_0shxeoy">
+        <di:waypoint x="794" y="308" />
+        <di:waypoint x="708" y="380" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

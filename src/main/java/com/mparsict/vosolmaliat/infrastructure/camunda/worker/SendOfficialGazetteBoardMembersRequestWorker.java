@@ -12,6 +12,9 @@ import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
+/**
+ * درخواست اعضای هیئت‌مدیره را با شناسه برگ اجرا، شناسه ملی و تاریخ بدهی ارسال می‌کند.
+ */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -66,6 +69,9 @@ public class SendOfficialGazetteBoardMembersRequestWorker {
         }
     }
 
+    /**
+     * در اجرای مجدد همان requestId را نگه می‌دارد؛ در اجرای اول از کلید فرایند می‌سازد.
+     */
     private String resolveRequestId(Map<String, Object> variables, long processInstanceKey) {
         Object value = variables.get(ProcessConstants.VAR_OFFICIAL_GAZETTE_REQUEST_ID);
         if (value != null && !String.valueOf(value).isBlank()) {
