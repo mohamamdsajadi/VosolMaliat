@@ -19,19 +19,26 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class CheckIssuancePossibilityWorker {
 
+    private static final long JOB_TIMEOUT_MILLIS = 10 * 60 * 1000L;
+
     private final RuleEngineService ruleEngineService;
     private final ObjectMapper objectMapper;
 
-    @JobWorker(type = ProcessConstants.JOB_CHECK_ISSUANCE, autoComplete = false)
+    @JobWorker(
+            type = ProcessConstants.JOB_CHECK_ISSUANCE,
+            autoComplete = false,
+            timeout = JOB_TIMEOUT_MILLIS
+    )
     public void handle(final JobClient client, final ActivatedJob job) {
         log.debug("Processing job: check-issuance-possibility, key={}", job.getKey());
+        Map<String, Object> outputVars;
         try {
             Map<String, Object> variables = job.getVariablesAsMap();
             Object payload = variables.get(ProcessConstants.VAR_DEBT_PAPER_PAYLOAD);
             DebtPaperIssuanceRequest request = toRequest(payload);
             RuleEngineService.RuleEvaluationResult result = ruleEngineService.evaluate(request);
 
-            Map<String, Object> outputVars = new HashMap<>();
+            outputVars = new HashMap<>();
             outputVars.put(ProcessConstants.VAR_CAN_ISSUE, result.canIssue());
 
             if (!result.canIssue()) {
@@ -42,11 +49,35 @@ public class CheckIssuancePossibilityWorker {
             } else {
                 log.info("Issuance approved for job key={}", job.getKey());
             }
-
-            client.newCompleteCommand(job.getKey()).variables(outputVars).send().join();
         } catch (Exception e) {
             log.error("Error in CheckIssuancePossibilityWorker", e);
             WorkerFailureHandler.failSafely(client, job, e, log);
+            return;
+        }
+
+        if (job.getDeadline() > 0 && System.currentTimeMillis() >= job.getDeadline()) {
+            log.warn(
+                    "Skipping completion of expired job type={} key={}; Camunda will activate it again",
+                    job.getType(),
+                    job.getKey()
+            );
+            return;
+        }
+
+        try {
+            client.newCompleteCommand(job.getKey()).variables(outputVars).send().join();
+        } catch (Exception completionException) {
+            if (WorkerFailureHandler.isJobNotFound(completionException)) {
+                log.warn(
+                        "Could not complete job type={} key={}; it is no longer active",
+                        job.getType(),
+                        job.getKey()
+                );
+                return;
+            }
+
+            log.error("Could not complete check-issuance-possibility job key={}", job.getKey(), completionException);
+            WorkerFailureHandler.failSafely(client, job, completionException, log);
         }
     }
 

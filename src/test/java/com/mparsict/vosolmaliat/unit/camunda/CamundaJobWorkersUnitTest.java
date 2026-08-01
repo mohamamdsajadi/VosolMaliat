@@ -23,6 +23,8 @@ import com.mparsict.vosolmaliat.infrastructure.camunda.worker.SendRejectionRespo
 import com.mparsict.vosolmaliat.infrastructure.camunda.worker.SetDebtInquiryDateWorker;
 import com.mparsict.vosolmaliat.infrastructure.camunda.worker.SetReInformDateWorker;
 import com.mparsict.vosolmaliat.infrastructure.camunda.worker.UpdateInformStatusWorker;
+import io.camunda.client.api.ProblemDetail;
+import io.camunda.client.api.command.ProblemException;
 import io.camunda.client.api.response.ActivatedJob;
 import io.camunda.client.api.worker.JobClient;
 import io.camunda.client.annotation.JobWorker;
@@ -32,6 +34,7 @@ import java.lang.reflect.Proxy;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletionException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -87,6 +90,36 @@ class CamundaJobWorkersUnitTest {
                 .containsEntry(ProcessConstants.VAR_REJECTION_CODE, "BLOCKED")
                 .containsEntry(ProcessConstants.VAR_REJECTION_DESC, "Blocked by rule")
                 .containsEntry(ProcessConstants.VAR_RESTRICTION_REMOVAL_DATE, "2026-08-01");
+    }
+
+    @Test
+    void checkIssuancePossibilityUsesExtendedJobTimeout() throws Exception {
+        JobWorker annotation = CheckIssuancePossibilityWorker.class
+                .getMethod("handle", JobClient.class, ActivatedJob.class)
+                .getAnnotation(JobWorker.class);
+
+        assertThat(annotation.timeout()).isEqualTo(10 * 60 * 1000L);
+    }
+
+    @Test
+    void checkIssuancePossibilityDoesNotFailAJobThatWasAlreadyRemoved() throws Exception {
+        StubRuleEngineService ruleEngineService = new StubRuleEngineService(
+                new RuleEngineService.RuleEvaluationResult(true, null, null, null));
+        CheckIssuancePossibilityWorker worker = new CheckIssuancePossibilityWorker(ruleEngineService, objectMapper);
+        CamundaJobClientStub client = new CamundaJobClientStub();
+        client.completeFailure = new CompletionException(new ProblemException(
+                404,
+                "Not Found",
+                new ProblemDetail().setTitle("NOT_FOUND").setStatus(404)
+        ));
+
+        worker.handle(client.proxy(), job(Map.of(
+                ProcessConstants.VAR_DEBT_PAPER_PAYLOAD,
+                objectMapper.convertValue(sampleDebtPaper(), Map.class)
+        )));
+
+        assertThat(client.completed).isTrue();
+        assertThat(client.failed).isFalse();
     }
 
     @Test
@@ -551,6 +584,7 @@ class CamundaJobWorkersUnitTest {
     private static class CamundaJobClientStub {
         boolean completed;
         boolean failed;
+        RuntimeException completeFailure;
         Map<String, Object> completeVariables = Map.of();
         int failRetries;
         String errorMessage;
@@ -600,7 +634,7 @@ class CamundaJobWorkersUnitTest {
                             } else {
                                 failed = true;
                             }
-                            yield camundaFuture();
+                            yield camundaFuture(completeCommand);
                         }
                         default -> method.getReturnType().isInterface()
                                 ? commandProxy(method.getReturnType(), completeCommand)
@@ -609,12 +643,17 @@ class CamundaJobWorkersUnitTest {
             );
         }
 
-        private Object camundaFuture() {
+        private Object camundaFuture(boolean completeCommand) {
             return Proxy.newProxyInstance(
                     io.camunda.client.api.CamundaFuture.class.getClassLoader(),
                     new Class<?>[]{io.camunda.client.api.CamundaFuture.class},
                     (proxy, method, args) -> switch (method.getName()) {
-                        case "join" -> null;
+                        case "join" -> {
+                            if (completeCommand && completeFailure != null) {
+                                throw completeFailure;
+                            }
+                            yield null;
+                        }
                         case "isDone" -> true;
                         case "isCancelled" -> false;
                         case "cancel" -> false;

@@ -1,5 +1,6 @@
 package com.mparsict.vosolmaliat.infrastructure.camunda.worker;
 
+import io.camunda.client.api.command.ProblemException;
 import io.camunda.client.api.response.ActivatedJob;
 import io.camunda.client.api.worker.JobClient;
 import org.slf4j.Logger;
@@ -24,5 +25,18 @@ final class WorkerFailureHandler {
                     failException.getMessage()
             );
         }
+    }
+
+    static boolean isJobNotFound(Throwable throwable) {
+        Throwable current = throwable;
+        while (current != null) {
+            if (current instanceof ProblemException problemException
+                    && Integer.valueOf(404).equals(problemException.details().getStatus())
+                    && "NOT_FOUND".equals(problemException.details().getTitle())) {
+                return true;
+            }
+            current = current.getCause();
+        }
+        return false;
     }
 }
