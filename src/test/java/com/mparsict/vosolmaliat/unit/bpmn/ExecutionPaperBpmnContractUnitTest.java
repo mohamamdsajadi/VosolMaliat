@@ -9,6 +9,7 @@ import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -39,6 +40,15 @@ class ExecutionPaperBpmnContractUnitTest {
         assertThat(sequenceTarget("Flow_0pf5o1c")).isEqualTo("Gateway_0fw9zja");
         assertThat(sequenceTarget("Flow_11dgpnv")).isEqualTo("Activity_0xodqlk");
         assertThat(sequenceTarget("Flow_16w484y")).isEqualTo("Activity_0generalHeadReview");
+    }
+
+    @Test
+    void issuanceTaskMustPublishPersistedPaperContextBeforeParallelBranchesStart() {
+        assertThat(outputMappings("Activity_0rwz3ak"))
+                .containsEntry(ProcessConstants.VAR_EXECUTION_PAPER_ID, "=" + ProcessConstants.VAR_EXECUTION_PAPER_ID)
+                .containsEntry(ProcessConstants.VAR_EXECUTION_PAPER_CODE, "=" + ProcessConstants.VAR_EXECUTION_PAPER_CODE)
+                .containsEntry(ProcessConstants.VAR_DEBT_PAPER_PAYLOAD, "=" + ProcessConstants.VAR_DEBT_PAPER_PAYLOAD)
+                .containsEntry(ProcessConstants.VAR_TAX_UNIT_ID, "=" + ProcessConstants.VAR_TAX_UNIT_ID);
     }
 
     @Test
@@ -75,7 +85,14 @@ class ExecutionPaperBpmnContractUnitTest {
 
     @Test
     void issuanceGatewayConditionsUseTheWorkerOutputVariable() {
+        assertThat(sequenceSourceAndTarget("Flow_0eioah5"))
+                .containsEntry("sourceRef", "Gateway_1uchrac")
+                .containsEntry("targetRef", "Activity_0rwz3ak");
         assertThat(conditionExpression("Flow_0eioah5")).isEqualTo("=" + ProcessConstants.VAR_CAN_ISSUE);
+
+        assertThat(sequenceSourceAndTarget("Flow_0k7613y"))
+                .containsEntry("sourceRef", "Gateway_1uchrac")
+                .containsEntry("targetRef", "Activity_010iyzn");
         assertThat(conditionExpression("Flow_0k7613y")).isEqualTo("=not(" + ProcessConstants.VAR_CAN_ISSUE + ")");
     }
 
@@ -85,6 +102,16 @@ class ExecutionPaperBpmnContractUnitTest {
 
     private String candidateGroups(String taskId) {
         return firstChild(elementById(taskId), ZEEBE, "assignmentDefinition").getAttribute("candidateGroups");
+    }
+
+    private Map<String, String> outputMappings(String activityId) {
+        NodeList outputs = elementById(activityId).getElementsByTagNameNS(ZEEBE, "output");
+        Map<String, String> mappings = new HashMap<>();
+        for (int i = 0; i < outputs.getLength(); i++) {
+            Element output = (Element) outputs.item(i);
+            mappings.put(output.getAttribute("target"), output.getAttribute("source"));
+        }
+        return mappings;
     }
 
     private String sequenceTarget(String flowId) {

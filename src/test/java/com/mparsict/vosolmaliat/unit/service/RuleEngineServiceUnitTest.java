@@ -2,17 +2,63 @@ package com.mparsict.vosolmaliat.unit.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mparsict.vosolmaliat.application.dto.request.DebtPaperIssuanceRequest;
+import com.mparsict.vosolmaliat.application.dto.request.RejectionRuleRequest;
 import com.mparsict.vosolmaliat.application.service.RuleEngineService;
 import com.mparsict.vosolmaliat.domain.model.rule.ExecutionPaperRejectionRule;
 import com.mparsict.vosolmaliat.domain.repository.ExecutionPaperRejectionRuleRepository;
+import com.mparsict.vosolmaliat.presentation.api.RejectionRuleController;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
 
 import java.lang.reflect.Proxy;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class RuleEngineServiceUnitTest {
+
+    @Test
+    void ruleCreatedByAdminRejectsMatchingExecutionPaperIssuance() {
+        AtomicReference<ExecutionPaperRejectionRule> storedRule = new AtomicReference<>();
+        ExecutionPaperRejectionRuleRepository repository = mutableRepository(storedRule);
+        RejectionRuleController controller = new RejectionRuleController(repository);
+
+        var response = controller.create(new RejectionRuleRequest(
+                """
+                        {
+                          "logicalOperator": "AND",
+                          "rejectionReasonCode": "TAX_UNIT_SUSPENDED",
+                          "rejectionReasonDescription": "Execution-paper issuance is suspended for this tax unit",
+                          "conditions": [
+                            { "field": "taxUnitId", "operator": "EQUALS", "value": 7 }
+                          ]
+                        }
+                        """,
+                "2026-01-01",
+                "2026-12-31",
+                "DOC-2026-10",
+                "/rules/doc-2026-10.pdf",
+                "Temporary issuance restriction"
+        ));
+
+        RuleEngineService.RuleEvaluationResult result =
+                new RuleEngineService(repository, new ObjectMapper()).evaluate(sampleRequest(7L));
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(storedRule.get())
+                .extracting(
+                        ExecutionPaperRejectionRule::getStartDate,
+                        ExecutionPaperRejectionRule::getEndDate,
+                        ExecutionPaperRejectionRule::getDocumentNo
+                )
+                .containsExactly("2026-01-01", "2026-12-31", "DOC-2026-10");
+        assertThat(result.canIssue()).isFalse();
+        assertThat(result.rejectionReasonCode()).isEqualTo("TAX_UNIT_SUSPENDED");
+        assertThat(result.rejectionReasonDescription())
+                .isEqualTo("Execution-paper issuance is suspended for this tax unit");
+        assertThat(result.restrictionRemovalDate()).isEqualTo("2026-12-31");
+    }
 
     @Test
     void evaluateSupportsTaxUnitIdRulesForIssuanceFlow() {
@@ -64,6 +110,26 @@ class RuleEngineServiceUnitTest {
                 ExecutionPaperRejectionRuleRepository.class.getClassLoader(),
                 new Class<?>[]{ExecutionPaperRejectionRuleRepository.class},
                 (proxy, method, args) -> "findActiveRules".equals(method.getName()) ? rules : defaultValue(method.getReturnType())
+        );
+    }
+
+    private ExecutionPaperRejectionRuleRepository mutableRepository(
+            AtomicReference<ExecutionPaperRejectionRule> storedRule) {
+        return (ExecutionPaperRejectionRuleRepository) Proxy.newProxyInstance(
+                ExecutionPaperRejectionRuleRepository.class.getClassLoader(),
+                new Class<?>[]{ExecutionPaperRejectionRuleRepository.class},
+                (proxy, method, args) -> switch (method.getName()) {
+                    case "save" -> {
+                        ExecutionPaperRejectionRule rule = (ExecutionPaperRejectionRule) args[0];
+                        rule.setId(42L);
+                        storedRule.set(rule);
+                        yield rule;
+                    }
+                    case "findActiveRules" -> storedRule.get() == null
+                            ? List.of()
+                            : List.of(storedRule.get());
+                    default -> defaultValue(method.getReturnType());
+                }
         );
     }
 

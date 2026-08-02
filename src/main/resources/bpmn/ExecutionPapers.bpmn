@@ -42,6 +42,21 @@
     <bpmn:serviceTask id="Activity_0rwz3ak" name="صدور برگ اجرا با شناسه یکتا">
       <bpmn:extensionElements>
         <zeebe:taskDefinition type="issue-execution-paper" retries="" />
+        <zeebe:ioMapping>
+          <zeebe:output source="=executionPaperId" target="executionPaperId" />
+          <zeebe:output source="=executionPaperCode" target="executionPaperCode" />
+          <zeebe:output source="=taxUnitId" target="taxUnitId" />
+          <zeebe:output source="=debtPaperPayload" target="debtPaperPayload" />
+          <zeebe:output source="=success" target="success" />
+          <zeebe:output source="=taxAffairsOfficeId" target="taxAffairsOfficeId" />
+          <zeebe:output source="=generalDirectorateId" target="generalDirectorateId" />
+          <zeebe:output source="=generalOfficeHeadCandidateGroups" target="generalOfficeHeadCandidateGroups" />
+          <zeebe:output source="=taxOfficeHeadCandidateGroups" target="taxOfficeHeadCandidateGroups" />
+          <zeebe:output source="=taxUnitHeadCandidateGroups" target="taxUnitHeadCandidateGroups" />
+          <zeebe:output source="=taxExpertCandidateGroups" target="taxExpertCandidateGroups" />
+          <zeebe:output source="=if debtPaperPayload.taxpayer.type = &#34;LEGAL&#34; then legalPersonNationalId else null" target="legalPersonNationalId" />
+          <zeebe:output source="=if debtPaperPayload.taxpayer.type = &#34;LEGAL&#34; then debtPaperDate else null" target="debtPaperDate" />
+        </zeebe:ioMapping>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_0eioah5</bpmn:incoming>
       <bpmn:outgoing>Flow_0pf5o1c</bpmn:outgoing>

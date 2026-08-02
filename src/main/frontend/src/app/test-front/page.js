@@ -3,6 +3,13 @@ import AppShell from '../components/app-shell';
 
 const TEST_SERVICES = [
   {
+    href: '/admin/fake-sanim-audit',
+    eyebrow: 'SANIM Audit',
+    title: 'زیرسامانه حسابرسی بدهی سنیم',
+    description: 'ثبت رویدادهای بدهی، جریمه، پرداخت و اعتبار و استعلام آخرین مانده مؤدی.',
+    action: 'ورود به حسابرسی سنیم'
+  },
+  {
     href: '/admin/fake-sanim',
     eyebrow: 'Fake SANIM',
     title: 'سامانه سنیم آزمایشی',

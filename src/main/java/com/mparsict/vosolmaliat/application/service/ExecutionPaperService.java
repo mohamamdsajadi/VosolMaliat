@@ -125,7 +125,10 @@ public class ExecutionPaperService {
                 .taxSource(request.taxSource())
                 .currentState(ExecutionPaperState.UNASSIGNED.name())
                 .build();
-        ep = executionPaperRepository.save(ep);
+        // Flush the root row before the Camunda worker publishes its id. This prevents
+        // parallel downstream jobs from observing variables whose database record has
+        // not yet been materialized by SQLite/Hibernate.
+        ep = executionPaperRepository.saveAndFlush(ep);
 
         // 4. Save state history
         ExecutionPaperStateHistory history = ExecutionPaperStateHistory.builder()
@@ -155,6 +158,7 @@ public class ExecutionPaperService {
                 .complianceBonus(orZero(di.complianceBonus()))
                 .build();
         debtInformationRepository.save(debtInfo);
+        executionPaperRepository.flush();
 
         log.info("Created ExecutionPaper id={}, code={}", ep.getId(), ep.getExecutionPaperUniqueCode());
         return ep;

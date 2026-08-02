@@ -55,15 +55,6 @@ public class CheckIssuancePossibilityWorker {
             return;
         }
 
-        if (job.getDeadline() > 0 && System.currentTimeMillis() >= job.getDeadline()) {
-            log.warn(
-                    "Skipping completion of expired job type={} key={}; Camunda will activate it again",
-                    job.getType(),
-                    job.getKey()
-            );
-            return;
-        }
-
         try {
             client.newCompleteCommand(job.getKey()).variables(outputVars).send().join();
         } catch (Exception completionException) {

@@ -34,6 +34,9 @@ camunda:
     mode: self-managed
     grpc-address: ${CAMUNDA_GRPC_ADDRESS:http://46.245.79.18:26500}
     rest-address: ${CAMUNDA_REST_ADDRESS:https://parand.mparsict.com}
+    # Keep job activation and completion on gRPC. The REST endpoint is behind a
+    # reverse proxy and has returned stale-job 404s and activation failures.
+    prefer-rest-over-grpc: ${CAMUNDA_PREFER_REST_OVER_GRPC:false}
     auth:
       method: oidc
       token-url: ${CAMUNDA_TOKEN_URL:https://keycloack.parand.mparsict.com/auth/realms/camunda-platform/protocol/openid-connect/token}
@@ -43,8 +46,8 @@ camunda:
     execution-threads: ${CAMUNDA_EXECUTION_THREADS:4}
     worker:
       defaults:
-        max-jobs-active: ${CAMUNDA_WORKER_MAX_JOBS_ACTIVE:4}
-        poll-interval: ${CAMUNDA_WORKER_POLL_INTERVAL:PT1S}
+        max-jobs-active: ${CAMUNDA_WORKER_MAX_JOBS_ACTIVE:10}
+        poll-interval: ${CAMUNDA_WORKER_POLL_INTERVAL:PT10S}
         request-timeout: ${CAMUNDA_WORKER_REQUEST_TIMEOUT:PT15S}
     enabled: true
 

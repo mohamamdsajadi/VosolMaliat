@@ -19,6 +19,8 @@ public interface ExecutionPaperRepository extends JpaRepository<ExecutionPaper, 
 
     Optional<ExecutionPaper> findByFinalizedDebtPaperDebtPaperUniqueCode(String debtPaperUniqueCode);
 
+    Optional<ExecutionPaper> findByTaxpayerDebtPaperUniqueCode(String debtPaperUniqueCode);
+
     /**
      * تاریخ صدور برگ بدهی متصل به برگ اجرا را برای بازیابی متغیر فرایند برمی‌گرداند.
      */

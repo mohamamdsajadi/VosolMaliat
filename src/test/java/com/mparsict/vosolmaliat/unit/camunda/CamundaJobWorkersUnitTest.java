@@ -9,7 +9,9 @@ import com.mparsict.vosolmaliat.application.service.InformProcessService;
 import com.mparsict.vosolmaliat.application.service.IssuanceRequestService;
 import com.mparsict.vosolmaliat.application.service.RuleEngineService;
 import com.mparsict.vosolmaliat.domain.model.execution.ExecutionPaper;
+import com.mparsict.vosolmaliat.domain.model.rule.ExecutionPaperRejectionRule;
 import com.mparsict.vosolmaliat.domain.repository.ExecutionPaperRepository;
+import com.mparsict.vosolmaliat.domain.repository.ExecutionPaperRejectionRuleRepository;
 import com.mparsict.vosolmaliat.domain.repository.TaxUnitRepository;
 import com.mparsict.vosolmaliat.infrastructure.camunda.ProcessConstants;
 import com.mparsict.vosolmaliat.infrastructure.camunda.worker.CheckInformPossibilityWorker;
@@ -90,6 +92,51 @@ class CamundaJobWorkersUnitTest {
                 .containsEntry(ProcessConstants.VAR_REJECTION_CODE, "BLOCKED")
                 .containsEntry(ProcessConstants.VAR_REJECTION_DESC, "Blocked by rule")
                 .containsEntry(ProcessConstants.VAR_RESTRICTION_REMOVAL_DATE, "2026-08-01");
+    }
+
+    @Test
+    void configuredRejectionRuleCompletesCheckJobWithRejectionVariables() throws Exception {
+        ExecutionPaperRejectionRule rule = ExecutionPaperRejectionRule.builder()
+                .id(15L)
+                .endDate("2026-12-31")
+                .ruleJson("""
+                        {
+                          "logicalOperator": "AND",
+                          "rejectionReasonCode": "VAT_DEBT_LIMIT",
+                          "rejectionReasonDescription": "VAT debt exceeds the issuance limit",
+                          "conditions": [
+                            { "field": "taxSource", "operator": "EQUALS", "value": "VAT" },
+                            { "field": "debtAmount", "operator": "GREATER_THAN", "value": 1000 }
+                          ]
+                        }
+                        """)
+                .build();
+        ExecutionPaperRejectionRuleRepository repository = (ExecutionPaperRejectionRuleRepository)
+                Proxy.newProxyInstance(
+                        ExecutionPaperRejectionRuleRepository.class.getClassLoader(),
+                        new Class<?>[]{ExecutionPaperRejectionRuleRepository.class},
+                        (proxy, method, args) -> "findActiveRules".equals(method.getName())
+                                ? List.of(rule)
+                                : defaultValue(method.getReturnType())
+                );
+        CheckIssuancePossibilityWorker worker = new CheckIssuancePossibilityWorker(
+                new RuleEngineService(repository, objectMapper),
+                objectMapper
+        );
+        CamundaJobClientStub client = new CamundaJobClientStub();
+
+        worker.handle(client.proxy(), job(Map.of(
+                ProcessConstants.VAR_DEBT_PAPER_PAYLOAD,
+                objectMapper.convertValue(sampleDebtPaper(), Map.class)
+        )));
+
+        assertThat(client.completed).isTrue();
+        assertThat(client.failed).isFalse();
+        assertThat(client.completeVariables)
+                .containsEntry(ProcessConstants.VAR_CAN_ISSUE, false)
+                .containsEntry(ProcessConstants.VAR_REJECTION_CODE, "VAT_DEBT_LIMIT")
+                .containsEntry(ProcessConstants.VAR_REJECTION_DESC, "VAT debt exceeds the issuance limit")
+                .containsEntry(ProcessConstants.VAR_RESTRICTION_REMOVAL_DATE, "2026-12-31");
     }
 
     @Test
@@ -214,6 +261,25 @@ class CamundaJobWorkersUnitTest {
 
         assertThat(fakeSanimInformService.executionPaperId).isEqualTo(99L);
         assertThat(client.completed).isTrue();
+    }
+
+    @Test
+    void sendExecutionPaperIdToSanimSupportsLegacyTaxpayerDebtPaperRelationship() {
+        StubFakeSanimInformService fakeSanimInformService = new StubFakeSanimInformService();
+        SendExecutionPaperIdToSanimWorker worker = new SendExecutionPaperIdToSanimWorker(
+                fakeSanimInformService,
+                executionPaperRepositoryByTaxpayerDebtPaperCode("DEBT-LEGACY", 101L)
+        );
+        CamundaJobClientStub client = new CamundaJobClientStub();
+
+        worker.handle(client.proxy(), job(Map.of(
+                ProcessConstants.VAR_DEBT_PAPER_PAYLOAD,
+                Map.of("debtPaperUniqueCode", "DEBT-LEGACY")
+        )));
+
+        assertThat(fakeSanimInformService.executionPaperId).isEqualTo(101L);
+        assertThat(client.completed).isTrue();
+        assertThat(client.failed).isFalse();
     }
 
     @Test
@@ -457,6 +523,25 @@ class CamundaJobWorkersUnitTest {
                 new Class<?>[]{ExecutionPaperRepository.class},
                 (proxy, method, args) -> {
                     if ("findByFinalizedDebtPaperDebtPaperUniqueCode".equals(method.getName())
+                            && debtPaperUniqueCode.equals(args[0])) {
+                        return Optional.of(ExecutionPaper.builder().id(executionPaperId).build());
+                    }
+                    return defaultValue(method.getReturnType());
+                }
+        );
+    }
+
+    private ExecutionPaperRepository executionPaperRepositoryByTaxpayerDebtPaperCode(
+            String debtPaperUniqueCode,
+            Long executionPaperId) {
+        return (ExecutionPaperRepository) Proxy.newProxyInstance(
+                ExecutionPaperRepository.class.getClassLoader(),
+                new Class<?>[]{ExecutionPaperRepository.class},
+                (proxy, method, args) -> {
+                    if ("findByFinalizedDebtPaperDebtPaperUniqueCode".equals(method.getName())) {
+                        return Optional.empty();
+                    }
+                    if ("findByTaxpayerDebtPaperUniqueCode".equals(method.getName())
                             && debtPaperUniqueCode.equals(args[0])) {
                         return Optional.of(ExecutionPaper.builder().id(executionPaperId).build());
                     }
