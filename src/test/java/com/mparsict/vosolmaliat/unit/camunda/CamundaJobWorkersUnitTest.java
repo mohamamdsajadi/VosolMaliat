@@ -2,8 +2,10 @@ package com.mparsict.vosolmaliat.unit.camunda;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mparsict.vosolmaliat.application.dto.request.DebtPaperIssuanceRequest;
+import com.mparsict.vosolmaliat.application.dto.response.FakeRestrictionResponse;
 import com.mparsict.vosolmaliat.application.service.ExecutionPaperService;
 import com.mparsict.vosolmaliat.application.service.FakeOfficialGazetteService;
+import com.mparsict.vosolmaliat.application.service.FakeRestrictionService;
 import com.mparsict.vosolmaliat.application.service.FakeSanimInformService;
 import com.mparsict.vosolmaliat.application.service.InformProcessService;
 import com.mparsict.vosolmaliat.application.service.IssuanceRequestService;
@@ -21,6 +23,7 @@ import com.mparsict.vosolmaliat.infrastructure.camunda.worker.SendExecutionPaper
 import com.mparsict.vosolmaliat.infrastructure.camunda.worker.SendExecutionPaperToElectronicNotificationWorker;
 import com.mparsict.vosolmaliat.infrastructure.camunda.worker.SendInformDataToSanimWorker;
 import com.mparsict.vosolmaliat.infrastructure.camunda.worker.SendOfficialGazetteBoardMembersRequestWorker;
+import com.mparsict.vosolmaliat.infrastructure.camunda.worker.SendRelatedPersonsForRestrictionsWorker;
 import com.mparsict.vosolmaliat.infrastructure.camunda.worker.SendRejectionResponseWorker;
 import com.mparsict.vosolmaliat.infrastructure.camunda.worker.SetDebtInquiryDateWorker;
 import com.mparsict.vosolmaliat.infrastructure.camunda.worker.SetReInformDateWorker;
@@ -57,7 +60,8 @@ class CamundaJobWorkersUnitTest {
                 SetReInformDateWorker.class,
                 SetDebtInquiryDateWorker.class,
                 SendInformDataToSanimWorker.class,
-                SendOfficialGazetteBoardMembersRequestWorker.class
+                SendOfficialGazetteBoardMembersRequestWorker.class,
+                SendRelatedPersonsForRestrictionsWorker.class
         );
 
         for (Class<?> worker : workers) {
@@ -314,6 +318,32 @@ class CamundaJobWorkersUnitTest {
         assertThat(client.completeVariables)
                 .containsEntry(ProcessConstants.VAR_LEGAL_PERSON_NATIONAL_ID, "14001234567")
                 .containsEntry(ProcessConstants.VAR_DEBT_PAPER_DATE, "1405-01-01");
+    }
+
+    @Test
+    void restrictionWorkerPublishesRequestIdForMessageCorrelation() {
+        StubFakeRestrictionService service = new StubFakeRestrictionService();
+        SendRelatedPersonsForRestrictionsWorker worker = new SendRelatedPersonsForRestrictionsWorker(
+                service,
+                null,
+                objectMapper
+        );
+        CamundaJobClientStub client = new CamundaJobClientStub();
+
+        worker.handle(client.proxy(), job(Map.of(
+                ProcessConstants.VAR_OFFICIAL_GAZETTE_REQUEST_ID, "official-gazette-700",
+                ProcessConstants.VAR_EXECUTION_PAPER_ID, 99L,
+                ProcessConstants.VAR_FILTERED_RELATED_PERSONS, List.of()
+        )));
+
+        assertThat(service.officialGazetteRequestId).isEqualTo("official-gazette-700");
+        assertThat(service.executionPaperId).isEqualTo(99L);
+        assertThat(client.completed).isTrue();
+        assertThat(client.completeVariables)
+                .containsEntry(
+                        ProcessConstants.VAR_RESTRICTION_REQUEST_ID,
+                        "restriction-official-gazette-700"
+                );
     }
 
     @Test
@@ -849,6 +879,36 @@ class CamundaJobWorkersUnitTest {
             this.legalPersonNationalId = legalPersonNationalId;
             this.debtPaperDate = debtPaperDate;
             return null;
+        }
+    }
+
+    private static class StubFakeRestrictionService extends FakeRestrictionService {
+        private String officialGazetteRequestId;
+        private Long executionPaperId;
+
+        private StubFakeRestrictionService() {
+            super(null, new ObjectMapper(), null, null, null);
+        }
+
+        @Override
+        public FakeRestrictionResponse send(
+                String officialGazetteRequestId,
+                Long executionPaperId,
+                List<com.mparsict.vosolmaliat.application.dto.integration.CompanyRegistryRelatedPersonData> relatedPersons) {
+            this.officialGazetteRequestId = officialGazetteRequestId;
+            this.executionPaperId = executionPaperId;
+            return new FakeRestrictionResponse(
+                    321L,
+                    officialGazetteRequestId,
+                    executionPaperId,
+                    null,
+                    "SENT",
+                    relatedPersons.size(),
+                    "[]",
+                    null,
+                    null,
+                    null
+            );
         }
     }
 

@@ -9,9 +9,13 @@ import com.mparsict.vosolmaliat.common.exception.BusinessException;
 import com.mparsict.vosolmaliat.domain.model.integration.FakeRestrictionRequest;
 import com.mparsict.vosolmaliat.domain.repository.ExecutionPaperRepository;
 import com.mparsict.vosolmaliat.domain.repository.FakeRestrictionRequestRepository;
+import com.mparsict.vosolmaliat.infrastructure.camunda.ProcessConstants;
+import com.mparsict.vosolmaliat.infrastructure.camunda.service.CamundaMessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,6 +31,7 @@ public class FakeRestrictionService {
     private final ObjectMapper objectMapper;
     private final AuditLogService auditLogService;
     private final ExecutionPaperRepository executionPaperRepository;
+    private final CamundaMessageService camundaMessageService;
 
     @Transactional
     public FakeRestrictionResponse send(
@@ -101,6 +106,9 @@ public class FakeRestrictionService {
         request.setStatus(STATUS_CONFIRMED);
         request.setConfirmedAt(LocalDateTime.now().toString());
         FakeRestrictionRequest saved = repository.save(request);
+        publishConfirmationAfterCommit(ProcessConstants.restrictionRequestId(
+                saved.getOfficialGazetteRequestId()
+        ));
         auditLogService.record(
                 null,
                 "RESTRICTION_REQUEST_CONFIRMED",
@@ -110,6 +118,19 @@ public class FakeRestrictionService {
                 "تعداد اشخاص تاییدشده: " + request.getRelatedPersonCount()
         );
         return toResponse(saved);
+    }
+
+    private void publishConfirmationAfterCommit(String restrictionRequestId) {
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+            camundaMessageService.publishRestrictionsApplied(restrictionRequestId);
+            return;
+        }
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                camundaMessageService.publishRestrictionsApplied(restrictionRequestId);
+            }
+        });
     }
 
     private FakeRestrictionResponse toResponse(FakeRestrictionRequest request) {

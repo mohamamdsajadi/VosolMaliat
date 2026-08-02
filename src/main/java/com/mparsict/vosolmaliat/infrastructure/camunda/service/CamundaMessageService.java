@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.util.Map;
 import java.util.List;
 
@@ -55,6 +56,26 @@ public class CamundaMessageService {
             throw new BusinessException(
                     "CAMUNDA_OFFICIAL_GAZETTE_MESSAGE_FAILED",
                     "خطا در ارسال پاسخ روزنامه رسمی به Camunda: " + ex.getMessage(),
+                    ex
+            );
+        }
+    }
+
+    public void publishRestrictionsApplied(String restrictionRequestId) {
+        try {
+            camundaClient.newPublishMessageCommand()
+                    .messageName(ProcessConstants.MESSAGE_RESTRICTIONS_APPLIED)
+                    .correlationKey(restrictionRequestId)
+                    .messageId("restrictions-applied-" + restrictionRequestId)
+                    .timeToLive(Duration.ofHours(1))
+                    .variables(Map.of(ProcessConstants.VAR_RESTRICTIONS_APPLIED, true))
+                    .send()
+                    .join();
+            log.info("Published restriction confirmation for restrictionRequestId={}", restrictionRequestId);
+        } catch (Exception ex) {
+            throw new BusinessException(
+                    "CAMUNDA_RESTRICTION_MESSAGE_FAILED",
+                    "خطا در ارسال تأیید اعمال محدودیت به Camunda: " + ex.getMessage(),
                     ex
             );
         }

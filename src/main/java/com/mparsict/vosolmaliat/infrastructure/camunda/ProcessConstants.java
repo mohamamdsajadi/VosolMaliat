@@ -25,6 +25,7 @@ public final class ProcessConstants {
     public static final String MESSAGE_EXECUTION_PAPER_INFORMED = "ExecutionPaperInformed";
     public static final String MESSAGE_OFFICIAL_GAZETTE_RELATED_PERSONS_RECEIVED =
             "official_gazette_related_persons_received";
+    public static final String MESSAGE_RESTRICTIONS_APPLIED = "restrictions_applied";
 
     public static final String VAR_ISSUANCE_REQUEST_ID = "issuanceRequestId";
     public static final String VAR_DEBT_PAPER_PAYLOAD = "debtPaperPayload";
@@ -38,6 +39,8 @@ public final class ProcessConstants {
     public static final String VAR_OFFICIAL_GAZETTE_REQUEST_ID = "officialGazetteRequestId";
     public static final String VAR_OFFICIAL_GAZETTE_RELATED_PERSONS = "officialGazetteRelatedPersons";
     public static final String VAR_FILTERED_RELATED_PERSONS = "filteredRelatedPersons";
+    public static final String VAR_RESTRICTION_REQUEST_ID = "restrictionRequestId";
+    public static final String VAR_RESTRICTIONS_APPLIED = "restrictionsApplied";
     public static final String VAR_EXECUTION_PAPER_CODE = "executionPaperCode";
     public static final String VAR_GENERAL_DIRECTORATE_ID = "generalDirectorateId";
     public static final String VAR_TAX_AFFAIRS_OFFICE_ID = "taxAffairsOfficeId";
@@ -51,6 +54,10 @@ public final class ProcessConstants {
     public static final String VAR_INFORM_DATE = "InformDate";
     public static final String VAR_RE_INFORM_DATE = "reInformDate";
     public static final String VAR_NEXT_DEBT_INQUIRY_DATE = "nextDebtInquiryDate";
+
+    public static String restrictionRequestId(String officialGazetteRequestId) {
+        return "restriction-" + officialGazetteRequestId;
+    }
 
     private ProcessConstants() {}
 }

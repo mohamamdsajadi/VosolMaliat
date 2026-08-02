@@ -41,6 +41,25 @@ class Tabsare3186BpmnContractUnitTest {
                 .isEqualTo("=officialGazetteRequestId");
     }
 
+    @Test
+    void restrictionBranchWaitsForConfirmationUsingRestrictionRequestId() {
+        assertThat(elementById("Flow_1xfji8r").getAttribute("targetRef"))
+                .isEqualTo("Event_restrictions_applied");
+
+        Element event = elementById("Event_restrictions_applied");
+        Element definition = firstChild(event, BPMN, "messageEventDefinition");
+        assertThat(definition.getAttribute("messageRef"))
+                .isEqualTo("Message_restrictions_applied");
+
+        Element message = elementById("Message_restrictions_applied");
+        assertThat(message.getAttribute("name")).isEqualTo("restrictions_applied");
+        assertThat(firstChild(message, ZEEBE, "subscription").getAttribute("correlationKey"))
+                .isEqualTo("=restrictionRequestId");
+
+        assertThat(elementById("Flow_restrictions_confirmed").getAttribute("targetRef"))
+                .isEqualTo("Gateway_0r5ol6o");
+    }
+
     private String taskType(String id) {
         return firstChild(elementById(id), ZEEBE, "taskDefinition").getAttribute("type");
     }
