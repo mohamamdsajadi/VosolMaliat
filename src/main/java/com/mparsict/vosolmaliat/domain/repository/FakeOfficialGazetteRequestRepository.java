@@ -11,5 +11,7 @@ public interface FakeOfficialGazetteRequestRepository
 
     List<FakeOfficialGazetteRequest> findAllByOrderByIdDesc();
 
+    List<FakeOfficialGazetteRequest> findAllByExecutionPaperIdOrderByIdDesc(Long executionPaperId);
+
     Optional<FakeOfficialGazetteRequest> findByRequestId(String requestId);
 }

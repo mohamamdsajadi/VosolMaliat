@@ -85,6 +85,9 @@ class ExecutionPaperBpmnContractUnitTest {
 
     @Test
     void issuanceGatewayConditionsUseTheWorkerOutputVariable() {
+        assertThat(outputMappings("Activity_1ahtl92"))
+                .containsEntry(ProcessConstants.VAR_CAN_ISSUE, "=" + ProcessConstants.VAR_CAN_ISSUE);
+
         assertThat(sequenceSourceAndTarget("Flow_0eioah5"))
                 .containsEntry("sourceRef", "Gateway_1uchrac")
                 .containsEntry("targetRef", "Activity_0rwz3ak");

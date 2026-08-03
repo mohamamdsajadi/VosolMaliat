@@ -12,5 +12,7 @@ public interface FakeElectronicNotificationRequestRepository extends JpaReposito
 
     List<FakeElectronicNotificationRequest> findAllByOrderByIdDesc();
 
+    List<FakeElectronicNotificationRequest> findAllByExecutionPaper_IdOrderByIdDesc(Long executionPaperId);
+
     Optional<FakeElectronicNotificationRequest> findFirstByExecutionPaper_IdOrderByIdDesc(Long executionPaperId);
 }

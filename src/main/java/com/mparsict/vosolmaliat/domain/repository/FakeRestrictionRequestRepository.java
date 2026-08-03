@@ -10,5 +10,7 @@ public interface FakeRestrictionRequestRepository extends JpaRepository<FakeRest
 
     List<FakeRestrictionRequest> findAllByOrderByIdDesc();
 
+    List<FakeRestrictionRequest> findAllByExecutionPaperIdOrderByIdDesc(Long executionPaperId);
+
     Optional<FakeRestrictionRequest> findByOfficialGazetteRequestId(String officialGazetteRequestId);
 }

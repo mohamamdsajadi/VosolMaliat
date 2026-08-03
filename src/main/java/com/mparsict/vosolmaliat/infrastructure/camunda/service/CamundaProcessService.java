@@ -32,13 +32,19 @@ public class CamundaProcessService {
             processVariables.put(ProcessConstants.VAR_ISSUANCE_REQUEST_ID, issuanceRequestId);
             processVariables.put(ProcessConstants.VAR_DEBT_PAPER_PAYLOAD, debtPaperPayload);
 
-            camundaClient
+            var processInstance = camundaClient
                     .newCreateInstanceCommand()
                     .bpmnProcessId(ProcessConstants.PROCESS_ID)
                     .latestVersion()
                     .variables(processVariables)
                     .send()
                     .join();
+
+            LOG.info(
+                    "Started execution paper process: processInstanceKey={}, issuanceRequestId={}",
+                    processInstance.getProcessInstanceKey(),
+                    issuanceRequestId
+            );
 
             return new IssuanceResponse(
                     true,

@@ -64,7 +64,7 @@ sequenceDiagram
     FE->>API: ارسال برگ بدهی
     API->>DB: ذخیره درخواست
     API->>CAM: start Process_0rtbdc5
-    CAM->>W: check-issuance-possibility
+    CAM->>W: check-issuance-possibility-v2
     W->>DB: خواندن قوانین
     CAM->>W: issue-execution-paper
     W->>DB: ایجاد ExecutionPaper
@@ -89,4 +89,3 @@ sequenceDiagram
 ## سوالات باز
 
 - topology تولیدی شامل reverse proxy، TLS، database و Camunda cluster در ریپازیتوری مشخص نیست.
-

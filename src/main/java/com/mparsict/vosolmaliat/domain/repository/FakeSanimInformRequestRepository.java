@@ -10,4 +10,6 @@ import java.util.List;
 public interface FakeSanimInformRequestRepository extends JpaRepository<FakeSanimInformRequest, Long> {
 
     List<FakeSanimInformRequest> findAllByOrderByIdDesc();
+
+    List<FakeSanimInformRequest> findAllByExecutionPaper_IdOrderByIdDesc(Long executionPaperId);
 }

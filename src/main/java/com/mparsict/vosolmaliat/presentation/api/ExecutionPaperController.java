@@ -5,12 +5,16 @@ import com.mparsict.vosolmaliat.application.dto.response.ExecutionPaperDetailRes
 import com.mparsict.vosolmaliat.application.dto.response.ExecutionPaperPageResponse;
 import com.mparsict.vosolmaliat.application.dto.response.ExecutionPaperRelatedPersonsResponse;
 import com.mparsict.vosolmaliat.application.dto.response.ExecutionPaperTraceResponse;
+import com.mparsict.vosolmaliat.application.dto.response.ExternalSystemRequestResponse;
 import com.mparsict.vosolmaliat.application.service.ExecutionPaperService;
+import com.mparsict.vosolmaliat.application.service.ExternalSystemRequestService;
 import com.mparsict.vosolmaliat.application.service.RelatedPersonService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -20,6 +24,7 @@ public class ExecutionPaperController {
 
     private final ExecutionPaperService executionPaperService;
     private final RelatedPersonService relatedPersonService;
+    private final ExternalSystemRequestService externalSystemRequestService;
 
     @GetMapping
     @PreAuthorize("hasAuthority('REPORT_VIEW')")
@@ -52,6 +57,13 @@ public class ExecutionPaperController {
     public ExecutionPaperTraceResponse getTrace(@PathVariable Long id) {
         log.debug("GET /api/v1/execution-papers/{}/trace", id);
         return executionPaperService.getTrace(id);
+    }
+
+    @GetMapping("/{id}/external-requests")
+    @PreAuthorize("hasAnyAuthority('REPORT_VIEW','EXECUTION_PAPER_DETAIL_VIEW')")
+    public List<ExternalSystemRequestResponse> getExternalRequests(@PathVariable Long id) {
+        log.debug("GET /api/v1/execution-papers/{}/external-requests", id);
+        return externalSystemRequestService.findByExecutionPaperId(id);
     }
 
     @GetMapping("/{id}/related-persons")

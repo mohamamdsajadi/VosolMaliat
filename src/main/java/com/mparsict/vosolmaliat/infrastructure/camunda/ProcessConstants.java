@@ -4,7 +4,12 @@ public final class ProcessConstants {
 
     public static final String PROCESS_ID = "Process_0rtbdc5";
     public static final String TABSARE_3_186_PROCESS_ID = "Process_0eqvh8j";
-    public static final String JOB_CHECK_ISSUANCE = "check-issuance-possibility";
+    /**
+     * Versioned because older application deployments used automatic completion for this job.
+     * Keeping a distinct type prevents a stale worker from completing a new process without
+     * publishing the required {@link #VAR_CAN_ISSUE} variable.
+     */
+    public static final String JOB_CHECK_ISSUANCE = "check-issuance-possibility-v2";
     public static final String JOB_ISSUE_PAPER = "issue-execution-paper";
     public static final String JOB_SEND_REJECTION = "inform_sanim_rejection";
     public static final String JOB_SEND_EXECUTION_PAPER_ID_TO_SANIM = "send_execution_paper_id_to_sanim";

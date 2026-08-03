@@ -557,6 +557,7 @@ public class ExecutionPaperService {
             case "NEXT_DEBT_INQUIRY_DATE_SET" -> "تنظیم تاریخ استعلام بدهی";
             case "EXECUTION_PAPER_ID_SENT_TO_SANIM" -> "ارسال شناسه برگ اجرا به سامانه سنیم";
             case "INFORM_DATE_SENT_TO_SANIM" -> "ارسال تاریخ ابلاغ به سنیم";
+            case "SANIM_MESSAGE_CONFIRMED" -> "تأیید دریافت پیام توسط سامانه سنیم";
             case "SANIM_INFORM_DATE_CONFIRMED" -> "تایید دریافت سنیم";
             case "RELATED_PERSONS_REFRESHED_FROM_COMPANY_REGISTRY" ->
                     "بروزرسانی اشخاص مرتبط از سامانه ثبت شرکت‌ها";

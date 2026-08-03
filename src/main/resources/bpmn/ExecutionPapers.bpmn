@@ -34,7 +34,10 @@
     </bpmn:endEvent>
     <bpmn:businessRuleTask id="Activity_1ahtl92" name="بررسی امکان صدور برگ اجرا (براساس محدودیت‌های اعمالی مدیر سامانه)">
       <bpmn:extensionElements>
-        <zeebe:taskDefinition type="check-issuance-possibility" retries="" />
+        <zeebe:taskDefinition type="check-issuance-possibility-v2" retries="" />
+        <zeebe:ioMapping>
+          <zeebe:output source="=canIssue" target="canIssue" />
+        </zeebe:ioMapping>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_0k4vjit</bpmn:incoming>
       <bpmn:outgoing>Flow_0tajbqi</bpmn:outgoing>

@@ -31,12 +31,14 @@ function isDateTimeField(key) {
     'informRejectedAt',
     'reInformDate',
     'nextDebtInquiryDate',
-    'rejectedAt'
+    'rejectedAt',
+    'InformDate',
+    'notificationDate'
   ].includes(key)
 }
 
 function isDateOnlyField(key) {
-  return ['debtPaperIssueDate', 'birthDate', 'registrationDate'].includes(key)
+  return ['debtPaperIssueDate', 'debtPaperDate', 'birthDate', 'registrationDate'].includes(key)
 }
 
 function formatMoney(value) {
@@ -171,6 +173,279 @@ const RELATED_PERSON_TRACE_ACTIONS = new Set([
   'RELATED_PERSONS_REFRESHED_FROM_COMPANY_REGISTRY',
   'RELATED_PERSONS_STORED_FROM_OFFICIAL_GAZETTE'
 ])
+
+const EXTERNAL_REQUEST_FIELD_LABELS = {
+  requestId: 'شناسه درخواست',
+  officialGazetteRequestId: 'شناسه درخواست روزنامه رسمی',
+  executionPaperId: 'شناسه برگ اجرا',
+  executionPaperCode: 'کد یکتای برگ اجرا',
+  taxpayerName: 'نام مؤدی',
+  taxpayerNationalId: 'شناسه ملی/کد ملی مؤدی',
+  taxpayerType: 'نوع مؤدی',
+  notificationDate: 'تاریخ ابلاغ',
+  notificationStatus: 'وضعیت ابلاغ',
+  paymentDeadlineStatus: 'وضعیت مهلت پرداخت',
+  legalPersonNationalId: 'شناسه ملی مؤدی حقوقی',
+  debtPaperDate: 'تاریخ برگ بدهی',
+  debtPaperId: 'شناسه برگ بدهی',
+  messageType: 'نوع پیام',
+  InformDate: 'تاریخ ابلاغ',
+  uniqueCode: 'کد یکتای برگ اجرا',
+  currentState: 'وضعیت برگ اجرا',
+  currentStateLabel: 'عنوان وضعیت برگ اجرا',
+  currentStateDisplay: 'وضعیت برگ اجرا',
+  taxUnitId: 'شناسه واحد مالیاتی',
+  taxUnitName: 'واحد مالیاتی',
+  taxSource: 'منبع مالیاتی',
+  taxSourceLabel: 'عنوان منبع مالیاتی',
+  taxSourceDisplay: 'منبع مالیاتی',
+  finalizationReason: 'علت قطعیت',
+  debtPaperUniqueCode: 'شناسه یکتای برگ بدهی',
+  debtPaperIssueDate: 'تاریخ صدور برگ بدهی',
+  notificationId: 'شناسه ابلاغ',
+  performanceYear: 'سال عملکرد',
+  performancePeriod: 'دوره عملکرد',
+  activityTypeCode: 'کد نوع فعالیت',
+  activityTypeTitle: 'عنوان نوع فعالیت',
+  activityTypeDisplay: 'نوع فعالیت',
+  mainTaxBureauId: 'شناسه اداره کل مالیاتی',
+  mainTaxBureauName: 'اداره کل مالیاتی',
+  generalDirectorateName: 'اداره کل مالیاتی',
+  taxBureauId: 'شناسه اداره مالیاتی',
+  taxBureauName: 'اداره مالیاتی',
+  taxAffairsOfficeName: 'اداره مالیاتی',
+  totalFinalizedAmount: 'کل مبلغ قطعی‌شده',
+  finalizedTaxAndNonDeductibleAmount: 'مبلغ قطعی بدون جرایم قابل بخشش',
+  id: 'شناسه داخلی',
+  type: 'نوع مؤدی',
+  typeLabel: 'عنوان نوع مؤدی',
+  typeDisplay: 'نوع مؤدی',
+  nationalCode: 'کد ملی',
+  nationalId: 'شناسه ملی',
+  firstName: 'نام',
+  lastName: 'نام خانوادگی',
+  fatherName: 'نام پدر',
+  birthDate: 'تاریخ تولد',
+  companyName: 'نام شخص حقوقی',
+  registrationNumber: 'شماره ثبت',
+  registrationDate: 'تاریخ ثبت',
+  postalCode: 'کد پستی',
+  address: 'نشانی قانونی',
+  taxAmount: 'اصل مالیات',
+  dutyAmount: 'اصل عوارض',
+  penaltyArticle22: 'جریمه ثابت',
+  penaltyArticle23: 'جریمه دیرکرد',
+  deductiblePenalty: 'جریمه قابل بخشش',
+  nonDeductiblePenalty: 'جریمه غیرقابل بخشش',
+  taxPaidAmount: 'پرداخت اصل مالیات',
+  penaltyPaidAmount: 'پرداخت جریمه',
+  taxCredit: 'اعتبار مالیاتی',
+  remainingTax: 'مانده مالیات',
+  totalDebt: 'جمع کل بدهی',
+  electronicNotificationDate: 'تاریخ ابلاغ الکترونیکی',
+  informStatus: 'وضعیت ابلاغ',
+  informStatusLabel: 'عنوان وضعیت ابلاغ',
+  informRejectionReason: 'علت رد ابلاغ',
+  informRejectedAt: 'زمان رد ابلاغ',
+  reInformDate: 'زمان ابلاغ مجدد',
+  nextDebtInquiryDate: 'زمان استعلام بعدی بدهی',
+  rejectionReasonCode: 'کد علت رد',
+  rejectionReasonDescription: 'شرح علت رد',
+  restrictionRemovalDate: 'تاریخ رفع محدودیت',
+  createdAt: 'زمان ایجاد',
+  rawPayload: 'متن اصلی درخواست'
+}
+
+const EXTERNAL_REQUEST_SECTION_LABELS = {
+  summary: 'خلاصه برگ اجرا',
+  executionPaper: 'مشخصات برگ اجرا',
+  finalizedDebtPaper: 'مشخصات برگ بدهی قطعی',
+  taxpayer: 'مشخصات مؤدی',
+  debtInformation: 'ریز مبالغ بدهی',
+  notification: 'اطلاعات ابلاغ',
+  ruleRejection: 'اطلاعات رد مبتنی بر قانون',
+  relatedPersons: 'اشخاص مرتبط مشمول محدودیت'
+}
+
+const EXTERNAL_MONEY_FIELDS = new Set([
+  'totalFinalizedAmount', 'finalizedTaxAndNonDeductibleAmount', 'taxAmount', 'dutyAmount',
+  'penaltyArticle22', 'penaltyArticle23', 'deductiblePenalty', 'nonDeductiblePenalty',
+  'taxPaidAmount', 'penaltyPaidAmount', 'taxCredit', 'remainingTax', 'totalDebt'
+])
+
+const RELATED_PERSON_POST_LABELS = {
+  CEO: 'مدیرعامل', BOARD_CHAIR: 'رئیس هیئت‌مدیره', BOARD_VICE_CHAIR: 'نایب‌رئیس هیئت‌مدیره',
+  BOARD_MEMBER: 'عضو هیئت‌مدیره', ALTERNATE_BOARD_MEMBER: 'عضو علی‌البدل هیئت‌مدیره',
+  MANAGING_PARTNER: 'شریک مدیر', PARTNER: 'شریک', SHAREHOLDER: 'سهام‌دار',
+  LEGAL_REPRESENTATIVE: 'نماینده قانونی', LEGAL_ENTITY_REPRESENTATIVE: 'نماینده شخص حقوقی',
+  LIQUIDATOR: 'مدیر تصفیه', PRIMARY_INSPECTOR: 'بازرس اصلی', ALTERNATE_INSPECTOR: 'بازرس علی‌البدل',
+  PARENT_COMPANY: 'شرکت مادر', SUBSIDIARY: 'شرکت تابعه', AFFILIATE: 'شخص حقوقی وابسته'
+}
+
+function externalRequestFieldLabel(key) {
+  return EXTERNAL_REQUEST_FIELD_LABELS[key] || key
+}
+
+function externalRequestValue(key, value) {
+  if (typeof value === 'boolean') return value ? 'بله' : 'خیر'
+  if (key === 'messageType') {
+    return { EXECUTION_PAPER_ID: 'ارسال شناسه برگ اجرا', INFORM_DATE: 'ارسال تاریخ ابلاغ', ISSUANCE_REJECTION: 'رد صدور برگ اجرا' }[value] || formatValue(value)
+  }
+  if (key === 'type') return { NATURAL: 'حقیقی', LEGAL: 'حقوقی' }[value] || formatValue(value)
+  if (key === 'taxpayerType') return { NATURAL: 'حقیقی', LEGAL: 'حقوقی' }[value] || formatValue(value)
+  if (key === 'currentState') return {
+    UNASSIGNED: 'در انتظار ارجاع', ASSIGNED: 'ارجاع‌شده', INFORM_SENT: 'ارسال‌شده برای ابلاغ',
+    INFORMED: 'ابلاغ‌شده', INFORM_REJECTED: 'رد ابلاغ', COMPLETED: 'تکمیل‌شده', CANCELLED: 'لغوشده'
+  }[value] || formatValue(value)
+  if (key === 'notificationStatus' || key === 'informStatus') return {
+    NOT_NOTIFIED: 'ابلاغ‌نشده', NOTIFIED: 'ابلاغ‌شده', INFORM_SENT: 'ارسال‌شده برای ابلاغ',
+    INFORMED: 'ابلاغ‌شده', INFORM_REJECTED: 'رد ابلاغ'
+  }[value] || formatValue(value)
+  if (key === 'paymentDeadlineStatus') return {
+    NOT_STARTED: 'آغاز نشده', ACTIVE: 'مهلت فعال', EXPIRED: 'مهلت پایان یافته', UNKNOWN: 'نامشخص'
+  }[value] || formatValue(value)
+  if (EXTERNAL_MONEY_FIELDS.has(key)) return `${formatMoney(value)} ریال`
+  return formatDetailValue(key, value)
+}
+
+function ExternalRelatedPersonsTable({ persons }) {
+  if (!persons.length) return <p style={externalPayloadEmptyStyle}>هیچ شخص مرتبطی در بدنه درخواست ارسال نشده است.</p>
+  return (
+    <div style={externalPayloadTableScrollStyle}>
+      <table style={externalPayloadTableStyle}>
+        <thead><tr>
+          <th style={externalPayloadHeaderCellStyle}>نوع شخص</th>
+          <th style={externalPayloadHeaderCellStyle}>نام</th>
+          <th style={externalPayloadHeaderCellStyle}>شناسه</th>
+          <th style={externalPayloadHeaderCellStyle}>سمت</th>
+          <th style={externalPayloadHeaderCellStyle}>شروع اعتبار</th>
+          <th style={externalPayloadHeaderCellStyle}>پایان اعتبار</th>
+          <th style={externalPayloadHeaderCellStyle}>حق امضا</th>
+          <th style={externalPayloadHeaderCellStyle}>نماینده شخص حقوقی</th>
+        </tr></thead>
+        <tbody>{persons.map((person, index) => {
+          const representative = person.legalRepresentative || {}
+          const representativeName = [representative.firstName, representative.lastName].filter(Boolean).join(' ')
+          const representativeId = representative.nationalCode || representative.fida
+          return <tr key={person.sourceRecordId || `${person.nationalCode || person.nationalId}-${index}`}>
+            <td style={externalPayloadCellStyle}>{person.personType === 'LEGAL' ? 'حقوقی' : 'حقیقی'}</td>
+            <td style={externalPayloadCellStyle}><strong>{formatValue(person.companyName || [person.firstName, person.lastName].filter(Boolean).join(' '))}</strong></td>
+            <td style={externalPayloadCellStyle}>{formatValue(person.nationalCode || person.fida || person.nationalId || person.registrationNumber)}</td>
+            <td style={externalPayloadCellStyle}>{formatValue(RELATED_PERSON_POST_LABELS[person.postCode] || person.postCode)}</td>
+            <td style={externalPayloadCellStyle}>{formatPersianDate(person.startDate)}</td>
+            <td style={externalPayloadCellStyle}>{formatPersianDate(person.endDate)}</td>
+            <td style={externalPayloadCellStyle}>{person.hasSignatoryAuthority ? 'دارد' : 'ندارد'}</td>
+            <td style={externalPayloadCellStyle}>{formatValue([representativeName, representativeId ? `(${representativeId})` : ''].filter(Boolean).join(' '))}</td>
+          </tr>
+        })}</tbody>
+      </table>
+    </div>
+  )
+}
+
+function StructuredExternalPayload({ value, fieldKey = 'requestBody' }) {
+  if (Array.isArray(value)) {
+    if (fieldKey === 'relatedPersons') return <ExternalRelatedPersonsTable persons={value} />
+    return <div style={externalPayloadListStyle}>{value.map((item, index) => (
+      <div key={index} style={externalPayloadListItemStyle}>
+        <span style={externalPayloadIndexStyle}>مورد {formatValue(index + 1)}</span>
+        <StructuredExternalPayload value={item} />
+      </div>
+    ))}</div>
+  }
+  if (!value || typeof value !== 'object') {
+    return <strong style={externalPayloadValueStyle}>{externalRequestValue(fieldKey, value)}</strong>
+  }
+
+  const entries = Object.entries(value)
+  const simpleEntries = entries.filter(([, item]) => item == null || typeof item !== 'object')
+  const nestedEntries = entries.filter(([, item]) => item != null && typeof item === 'object')
+  return (
+    <div style={externalPayloadObjectStyle}>
+      {simpleEntries.length > 0 && <div style={externalPayloadGridStyle}>{simpleEntries.map(([key, item]) => (
+        <div key={key} style={externalPayloadFieldStyle}>
+          <span style={externalPayloadLabelStyle}>{externalRequestFieldLabel(key)}</span>
+          <strong style={externalPayloadValueStyle}>{externalRequestValue(key, item)}</strong>
+        </div>
+      ))}</div>}
+      {nestedEntries.map(([key, item]) => (
+        <section key={key} style={externalPayloadGroupStyle}>
+          <h5 style={externalPayloadGroupTitleStyle}>{EXTERNAL_REQUEST_SECTION_LABELS[key] || externalRequestFieldLabel(key)}</h5>
+          <StructuredExternalPayload value={item} fieldKey={key} />
+        </section>
+      ))}
+    </div>
+  )
+}
+
+const TRACE_EXTERNAL_REQUEST_MATCHERS = {
+  EXECUTION_PAPER_ID_SENT_TO_SANIM: request => request.systemCode === 'SANIM' && request.requestType === 'EXECUTION_PAPER_ID',
+  INFORM_DATE_SENT_TO_SANIM: request => request.systemCode === 'SANIM' && request.requestType === 'INFORM_DATE',
+  INFORM_SENT_TO_ELECTRONIC_NOTIFICATION: request => request.systemCode === 'ELECTRONIC_NOTIFICATION',
+  OFFICIAL_GAZETTE_REQUEST_SENT: request => request.systemCode === 'OFFICIAL_GAZETTE',
+  RESTRICTION_REQUEST_SENT: request => request.systemCode === 'COMPANY_REGISTRY'
+}
+
+function traceTime(value) {
+  const time = new Date(value || '').getTime()
+  return Number.isNaN(time) ? 0 : time
+}
+
+function requestsByTraceIndex(items, requests) {
+  const matches = new Map()
+  const usedRequestKeys = new Set()
+  items.forEach((item, index) => {
+    const matcher = TRACE_EXTERNAL_REQUEST_MATCHERS[item.action]
+    if (!matcher) return
+    const available = requests.filter(request => {
+      const key = `${request.systemCode}-${request.id}`
+      return !usedRequestKeys.has(key) && matcher(request)
+    })
+    if (!available.length) return
+
+    const traceValue = extractTraceValue(item.newValue)
+    const exactTrackingMatch = available.find(request => request.trackingCode && request.trackingCode === traceValue)
+    const request = exactTrackingMatch || available.reduce((nearest, candidate) => {
+      if (!nearest) return candidate
+      const candidateDistance = Math.abs(traceTime(candidate.sentAt) - traceTime(item.occurredAt))
+      const nearestDistance = Math.abs(traceTime(nearest.sentAt) - traceTime(item.occurredAt))
+      return candidateDistance < nearestDistance ? candidate : nearest
+    }, null)
+    usedRequestKeys.add(`${request.systemCode}-${request.id}`)
+    matches.set(index, request)
+  })
+  return matches
+}
+
+function TraceExternalRequest({ request }) {
+  return (
+    <div style={traceExternalRequestStyle}>
+      <div style={traceExternalRequestHeaderStyle}>
+        <div style={externalRequestIdentityStyle}>
+          <span style={externalSystemBadgeStyle}>{request.systemLabel}</span>
+          <div>
+            <strong style={externalRequestTitleStyle}>{request.requestTypeLabel}</strong>
+            <span style={externalRequestSentStyle}>بدنه ثبت‌شده در زمان ارسال: {formatPersianDateTime(request.sentAt)}</span>
+          </div>
+        </div>
+        <span style={{ ...externalStatusBadgeStyle, ...(request.status === 'FAILED' ? externalStatusFailedStyle : request.status === 'SENT' ? externalStatusPendingStyle : externalStatusDoneStyle) }}>
+          {request.statusLabel || request.status}
+        </span>
+      </div>
+      <div style={externalRequestMetaStyle}>
+        <span>شماره درخواست: {formatValue(request.id)}</span>
+        {request.trackingCode && <span>شناسه پیگیری: {formatValue(request.trackingCode)}</span>}
+        {request.completedAt && <span>زمان پاسخ/تأیید: {formatPersianDateTime(request.completedAt)}</span>}
+      </div>
+      <details style={externalRequestBodyStyle}>
+        <summary style={externalRequestBodySummaryStyle}>مشاهده اطلاعات دقیق ارسال‌شده به {request.systemLabel}</summary>
+        <div style={externalRequestBodyContentStyle}>
+          <StructuredExternalPayload value={request.requestBody} />
+        </div>
+      </details>
+    </div>
+  )
+}
 
 function extractTraceValue(value) {
   if (value == null || value === '') return ''
@@ -381,7 +656,11 @@ function RelatedPersonsTraceValue({ value }) {
   )
 }
 
-function TraceSection({ trace, loading, error }) {
+function TraceSection({ trace, loading, error, externalRequests, externalRequestsLoading, externalRequestsError }) {
+  const externalRequestMatches = useMemo(
+    () => requestsByTraceIndex(trace?.items || [], externalRequests || []),
+    [trace, externalRequests]
+  )
   return (
     <section style={traceCardStyle}>
       <div style={traceHeaderStyle}>
@@ -392,6 +671,8 @@ function TraceSection({ trace, loading, error }) {
       </div>
       {loading && <p style={mutedTextStyle}>در حال دریافت سوابق...</p>}
       {!loading && error && <p style={errorTextStyle}>خطا در دریافت سوابق: {error}</p>}
+      {!loading && externalRequestsLoading && <p style={traceExternalLoadingStyle}>در حال تطبیق بدنه درخواست‌های بیرونی با سوابق پرونده...</p>}
+      {!loading && externalRequestsError && <p style={errorTextStyle}>خطا در دریافت بدنه درخواست‌های بیرونی: {externalRequestsError}</p>}
       {!loading && !error && (!trace?.items || trace.items.length === 0) && (
         <p style={mutedTextStyle}>هنوز سابقه عملیاتی برای این برگ اجرا ثبت نشده است.</p>
       )}
@@ -408,6 +689,9 @@ function TraceSection({ trace, loading, error }) {
                 <div style={timelineMetaStyle}>
                   <span>انجام‌دهنده: {formatValue(item.actorUsername || 'سامانه')}</span>
                 </div>
+                {externalRequestMatches.has(index) && (
+                  <TraceExternalRequest request={externalRequestMatches.get(index)} />
+                )}
                 {RELATED_PERSON_TRACE_ACTIONS.has(item.action) && item.newValue && (
                   <RelatedPersonsTraceValue value={item.newValue} />
                 )}
@@ -719,6 +1003,9 @@ export default function ExecutionPaperDetailsPage() {
   const [relatedPersonsLoading, setRelatedPersonsLoading] = useState(false)
   const [relatedPersonsRefreshing, setRelatedPersonsRefreshing] = useState(false)
   const [relatedPersonsError, setRelatedPersonsError] = useState(null)
+  const [externalRequests, setExternalRequests] = useState([])
+  const [externalRequestsLoading, setExternalRequestsLoading] = useState(true)
+  const [externalRequestsError, setExternalRequestsError] = useState(null)
 
   const loadRelatedPersons = () => {
     setRelatedPersonsLoading(true)
@@ -749,6 +1036,8 @@ export default function ExecutionPaperDetailsPage() {
     setError(null)
     setTraceError(null)
     setCanViewTrace(true)
+    setExternalRequestsLoading(true)
+    setExternalRequestsError(null)
     apiFetch(`/api/v1/execution-papers/${paperId}`)
       .then(r => {
         if (!r.ok) {
@@ -789,6 +1078,20 @@ export default function ExecutionPaperDetailsPage() {
         }
       })
       .catch(err => { setTraceError(err.message); setTraceLoading(false) })
+
+    apiFetch(`/api/v1/execution-papers/${paperId}/external-requests`)
+      .then(async response => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`)
+        return response.json()
+      })
+      .then(json => {
+        setExternalRequests(Array.isArray(json) ? json : [])
+        setExternalRequestsLoading(false)
+      })
+      .catch(error => {
+        setExternalRequestsError(error.message)
+        setExternalRequestsLoading(false)
+      })
   }, [paperId])
 
   const refreshRelatedPersons = () => {
@@ -869,7 +1172,16 @@ export default function ExecutionPaperDetailsPage() {
               onRefresh={refreshRelatedPersons}
             />
           )}
-          {!loading && !error && canViewTrace && <TraceSection trace={trace} loading={traceLoading} error={traceError} />}
+          {!loading && !error && canViewTrace && (
+            <TraceSection
+              trace={trace}
+              loading={traceLoading}
+              error={traceError}
+              externalRequests={externalRequests}
+              externalRequestsLoading={externalRequestsLoading}
+              externalRequestsError={externalRequestsError}
+            />
+          )}
         </main>
       </AppShell>
       {!loading && !error && data && <PrintExecutionPaper data={data} />}
@@ -1208,6 +1520,36 @@ const relatedPersonsTraceTableStyle = {
   background: '#ffffff'
 }
 const relatedPersonsCardStyle = { ...cardStyle, borderColor: '#bbf7d0', background: 'linear-gradient(180deg, #ffffff, #f7fff9)' }
+const traceExternalRequestStyle = { marginTop: 12, border: '1px solid #c7d2fe', borderRadius: 10, background: '#f8faff', overflow: 'hidden' }
+const traceExternalRequestHeaderStyle = { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', padding: '12px 13px 9px' }
+const traceExternalLoadingStyle = { margin: '0 0 12px', padding: '8px 10px', borderRadius: 8, color: '#475569', background: '#f1f5f9', fontSize: 11 }
+const externalRequestIdentityStyle = { display: 'flex', alignItems: 'center', gap: 11, flexWrap: 'wrap' }
+const externalSystemBadgeStyle = { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minHeight: 32, padding: '5px 10px', border: '1px solid #a5b4fc', borderRadius: 8, color: '#3730a3', background: '#eef2ff', fontSize: 12, fontWeight: 900 }
+const externalRequestTitleStyle = { display: 'block', color: '#172554', fontSize: 14, marginBottom: 4 }
+const externalRequestSentStyle = { display: 'block', color: '#64748b', fontSize: 11 }
+const externalStatusBadgeStyle = { display: 'inline-flex', alignItems: 'center', padding: '5px 10px', border: '1px solid transparent', borderRadius: 999, fontSize: 11, fontWeight: 900 }
+const externalStatusPendingStyle = { color: '#92400e', background: '#fef3c7', borderColor: '#fcd34d' }
+const externalStatusDoneStyle = { color: '#166534', background: '#dcfce7', borderColor: '#86efac' }
+const externalStatusFailedStyle = { color: '#991b1b', background: '#fee2e2', borderColor: '#fca5a5' }
+const externalRequestMetaStyle = { display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', padding: '0 16px 12px', color: '#475569', fontSize: 11 }
+const externalRequestBodyStyle = { borderTop: '1px solid #e2e8f0', background: '#f8fafc' }
+const externalRequestBodySummaryStyle = { padding: '11px 16px', color: '#3730a3', cursor: 'pointer', fontSize: 12, fontWeight: 900, userSelect: 'none' }
+const externalRequestBodyContentStyle = { padding: '2px 16px 16px' }
+const externalPayloadObjectStyle = { display: 'grid', gap: 12 }
+const externalPayloadGridStyle = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(185px, 1fr))', gap: 8 }
+const externalPayloadFieldStyle = { display: 'grid', alignContent: 'start', gap: 5, minWidth: 0, padding: '9px 10px', border: '1px solid #e2e8f0', borderRadius: 8, background: '#ffffff' }
+const externalPayloadLabelStyle = { color: '#64748b', fontSize: 11, fontWeight: 800 }
+const externalPayloadValueStyle = { color: '#0f172a', fontSize: 12, lineHeight: 1.8, overflowWrap: 'anywhere', whiteSpace: 'pre-wrap' }
+const externalPayloadGroupStyle = { display: 'grid', gap: 9, padding: 10, border: '1px solid #dbeafe', borderRadius: 9, background: '#f8fbff' }
+const externalPayloadGroupTitleStyle = { margin: 0, color: '#1e3a8a', fontSize: 12, fontWeight: 900 }
+const externalPayloadListStyle = { display: 'grid', gap: 8 }
+const externalPayloadListItemStyle = { display: 'grid', gap: 7, padding: 9, border: '1px solid #e2e8f0', borderRadius: 8, background: '#ffffff' }
+const externalPayloadIndexStyle = { color: '#6366f1', fontSize: 10, fontWeight: 900 }
+const externalPayloadEmptyStyle = { margin: 0, padding: 10, color: '#64748b', background: '#ffffff', borderRadius: 8, fontSize: 12 }
+const externalPayloadTableScrollStyle = { overflowX: 'auto', border: '1px solid #dbeafe', borderRadius: 8 }
+const externalPayloadTableStyle = { width: '100%', minWidth: 980, borderCollapse: 'collapse', background: '#ffffff' }
+const externalPayloadHeaderCellStyle = { padding: '9px 10px', color: '#1e3a8a', background: '#eff6ff', borderBottom: '1px solid #bfdbfe', fontSize: 11, whiteSpace: 'nowrap', textAlign: 'center' }
+const externalPayloadCellStyle = { padding: '9px 10px', color: '#334155', borderBottom: '1px solid #e2e8f0', fontSize: 11, lineHeight: 1.7, textAlign: 'center', whiteSpace: 'nowrap' }
 const relatedPersonsHeaderStyle = { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap', marginBottom: 16 }
 const mutedMetaStyle = { color: '#64748b', fontSize: 12, lineHeight: 1.8 }
 const refreshRelatedButtonStyle = {

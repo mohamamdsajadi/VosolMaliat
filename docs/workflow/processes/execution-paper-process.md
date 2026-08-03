@@ -24,7 +24,7 @@ Last Updated: 2026-07-15
 
 | Element ID | نام | نوع | Actor/Worker | ورودی/خروجی |
 |---|---|---|---|---|
-| `Activity_0jnn0au` | بررسی امکان صدور برگ اجرا | Service Task | `CheckIssuancePossibilityWorker`, type `check-issuance-possibility` | `debtPaperPayload` -> `canIssue`, rejection vars |
+| `Activity_1ahtl92` | بررسی امکان صدور برگ اجرا | Service Task | `CheckIssuancePossibilityWorker`, type `check-issuance-possibility-v2` | `debtPaperPayload` -> `canIssue`, rejection vars |
 | `Gateway_1uchrac` | تصمیم امکان صدور | Exclusive Gateway | BPMN | `canIssue` |
 | `Activity_0rwz3ak` | صدور برگ اجرا با شناسه یکتا | Service Task | `IssueExecutionPaperWorker`, type `issue-execution-paper` | خروجی `executionPaperId`, `executionPaperCode`, org vars |
 | `Activity_010iyzn` | ارسال پاسخ عدم امکان صدور | Send Task | `SendRejectionResponseWorker`, type `inform_sanim_rejection` | rejection vars |

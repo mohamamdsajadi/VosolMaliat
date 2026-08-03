@@ -43,7 +43,7 @@ camunda:
       client-id: ${CAMUNDA_CLIENT_ID:orchestration}
       client-secret: ${CAMUNDA_CLIENT_SECRET:secret}
       audience: ${CAMUNDA_AUDIENCE:orchestration}
-    execution-threads: ${CAMUNDA_EXECUTION_THREADS:4}
+    execution-threads: ${CAMUNDA_EXECUTION_THREADS:8}
     worker:
       defaults:
         max-jobs-active: ${CAMUNDA_WORKER_MAX_JOBS_ACTIVE:10}
