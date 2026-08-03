@@ -1,6 +1,6 @@
 # فرایند برگ اجرا
 
-Last Updated: 2026-07-15
+Last Updated: 2026-08-03
 
 ## هدف سند
 
@@ -28,10 +28,10 @@ Last Updated: 2026-07-15
 | `Gateway_1uchrac` | تصمیم امکان صدور | Exclusive Gateway | BPMN | `canIssue` |
 | `Activity_0rwz3ak` | صدور برگ اجرا با شناسه یکتا | Service Task | `IssueExecutionPaperWorker`, type `issue-execution-paper-v2` | خروجی `executionPaperId`, `executionPaperCode`, org vars |
 | `Activity_010iyzn` | ارسال پاسخ عدم امکان صدور | Send Task | `SendRejectionResponseWorker`, type `inform_sanim_rejection` | rejection vars |
-| `Activity_0generalHeadReview` | بررسی و ارجاع توسط رئیس اداره کل | User Task | candidate `GENERAL_OFFICE_HEAD:{generalDirectorateId}` | complete/delegate |
-| `Activity_0taxOfficeHeadReview` | بررسی و ارجاع توسط رئیس اداره مالیات | User Task | candidate `TAX_OFFICE_HEAD:{taxAffairsOfficeId}` | complete/delegate |
-| `Activity_0taxUnitHeadReview` | بررسی و ارجاع توسط رئیس واحد مالیاتی | User Task | candidate `TAX_UNIT_HEAD:{taxUnitId}` | complete/delegate |
-| `Activity_0taxExpertProcess` | رسیدگی توسط کارشناس مالیاتی | User Task | candidate `TAX_EXPERT:{taxUnitId}` | complete |
+| `Activity_0generalHeadReview` | بررسی و ارجاع توسط رئیس اداره کل | User Task | candidate `GENERAL_OFFICE_HEAD:{generalDirectorateId}` | delegate یا `finishExecutionPaperCheck=true` |
+| `Activity_0taxOfficeHeadReview` | بررسی و ارجاع توسط رئیس اداره مالیات | User Task | candidate `TAX_OFFICE_HEAD:{taxAffairsOfficeId}` | delegate یا `finishExecutionPaperCheck=true` |
+| `Activity_0taxUnitHeadReview` | بررسی و ارجاع توسط رئیس واحد مالیاتی | User Task | candidate `TAX_UNIT_HEAD:{taxUnitId}` | delegate یا `finishExecutionPaperCheck=true` |
+| `Activity_0taxExpertProcess` | رسیدگی توسط کارشناس مالیاتی | User Task | candidate `TAX_EXPERT:{taxUnitId}` | پایان شاخه بررسی |
 | `Activity_0xodqlk` | ابلاغ برگ اجرا | Call Activity | `Process_0lt64q4` | propagate child variables |
 
 ## نمای Mermaid
@@ -44,16 +44,22 @@ flowchart TD
     R --> END1[End]
     G -->|true| I[issue-execution-paper]
     I --> GH[GENERAL_OFFICE_HEAD]
-    GH --> OH[TAX_OFFICE_HEAD]
-    OH --> UH[TAX_UNIT_HEAD]
-    UH --> EX[TAX_EXPERT]
-    EX --> INF[Call NoticeProcess]
-    INF --> END2[End]
+    GH -->|ارجاع| OH[TAX_OFFICE_HEAD]
+    OH -->|ارجاع| UH[TAX_UNIT_HEAD]
+    UH -->|ارجاع| EX[TAX_EXPERT]
+    GH -->|پایان بررسی| M{Review merge}
+    OH -->|پایان بررسی| M
+    UH -->|پایان بررسی| M
+    EX --> M
+    M --> J[Parallel join]
+    J --> END2[End]
 ```
 
 ## نقش‌ها و assignment
 
 نقش‌ها در BPMN به صورت candidateGroups وابسته به شناسه سازمان تعریف شده‌اند. برای نمونه برگ اجرای متعلق به اداره کل تهران فقط در گروهی مانند `GENERAL_OFFICE_HEAD:700` قرار می‌گیرد. backend همان گروه سازمانی را از نقش و محل سازمانی پروفایل کاربر در `CamundaIdentityMappingService.toCamundaCandidateGroups` تولید می‌کند و `TaskAuthorizationService` نیز محدوده را دوباره کنترل می‌کند.
+
+کاربر مسئول در هر مرحله می‌تواند با متغیر `finishExecutionPaperCheck=true` مراحل سازمانی بعدی را رد کند. همه مسیرهای پایان در `Gateway_0reviewMerge` ادغام می‌شوند و سپس فقط یک token به parallel join اصلی می‌رسد؛ بنابراین مسیرهای جایگزین باعث انتظار دائمی gateway نمی‌شوند. این تصمیم فقط شاخه بررسی سازمانی را تمام می‌کند و شاخه‌های موازی ابلاغ، سنیم و تبصره همچنان باید تکمیل شوند.
 
 ## ریسک‌ها
 

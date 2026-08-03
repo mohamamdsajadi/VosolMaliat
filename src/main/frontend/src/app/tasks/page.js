@@ -6,7 +6,7 @@ import AppShell from '../components/app-shell';
 import JalaliInput from '../components/jalali-input';
 import RefreshButton from '../components/refresh-button';
 import { formatFaNumber, formatJalaliDateTime } from '../lib/display';
-import { claimCartableTask, delegateTask, fetchCartableTasks, fetchDelegationTargets } from '../lib/tasks';
+import { claimCartableTask, completeTask, delegateTask, fetchCartableTasks, fetchDelegationTargets, isExecutionPaperReviewTask } from '../lib/tasks';
 import { fetchCurrentUser } from '../lib/security';
 
 const TABLE_HEADERS = [
@@ -202,8 +202,10 @@ function CartableTaskRow({ task, index, onChanged, readOnly, zebra }) {
   const [message, setMessage] = useState('');
   const [claiming, setClaiming] = useState(false);
   const [delegating, setDelegating] = useState(false);
+  const [finishingReview, setFinishingReview] = useState(false);
   const canClaim = task.allowedActions?.claim && !readOnly;
   const canDelegate = task.allowedActions?.delegate && !readOnly;
+  const canFinishReview = isExecutionPaperReviewTask(task) && task.allowedActions?.complete && !readOnly;
   const variables = variableMap(task.variables);
   const executionPaperId = firstValue(variables, ['executionPaperId', 'execution_paper_id']);
   const executionPaperCode = firstValue(variables, ['executionPaperCode', 'executionPaperUniqueCode', 'execution_paper_code']);
@@ -251,6 +253,22 @@ function CartableTaskRow({ task, index, onChanged, readOnly, zebra }) {
       setMessage(error.message || 'ارجاع کاربر ناموفق بود.');
     } finally {
       setDelegating(false);
+    }
+  };
+
+  const finishExecutionPaperReview = async () => {
+    if (!window.confirm('آیا از پایان بررسی برگ اجرا و رد کردن مراحل سازمانی باقی‌مانده مطمئن هستید؟')) {
+      return;
+    }
+    setFinishingReview(true);
+    setMessage('');
+    try {
+      await completeTask(task.taskKey, { finishExecutionPaperCheck: true });
+      await onChanged();
+    } catch (error) {
+      setMessage(error.message || 'پایان بررسی برگ اجرا ناموفق بود.');
+    } finally {
+      setFinishingReview(false);
     }
   };
 
@@ -309,6 +327,16 @@ function CartableTaskRow({ task, index, onChanged, readOnly, zebra }) {
                   </>
                 )}
               </div>
+            )}
+            {canFinishReview && (
+              <button
+                className="task-table-primary-action task-table-primary-action--danger"
+                type="button"
+                onClick={finishExecutionPaperReview}
+                disabled={finishingReview}
+              >
+                {finishingReview ? 'در حال پایان بررسی' : 'پایان بررسی برگ اجرا'}
+              </button>
             )}
           </div>
         </td>

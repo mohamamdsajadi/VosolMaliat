@@ -82,7 +82,7 @@
       <bpmn:outgoing>Flow_1oqia36</bpmn:outgoing>
     </bpmn:parallelGateway>
     <bpmn:parallelGateway id="Gateway_0e7ujls">
-      <bpmn:incoming>Flow_0jnz16g</bpmn:incoming>
+      <bpmn:incoming>Flow_0reviewBranchDone</bpmn:incoming>
       <bpmn:incoming>Flow_0aj7mt3</bpmn:incoming>
       <bpmn:incoming>Flow_19yszz7</bpmn:incoming>
       <bpmn:incoming>Flow_1i7jq54</bpmn:incoming>
@@ -121,7 +121,7 @@
         <zeebe:assignmentDefinition candidateGroups="GENERAL_OFFICE_HEAD" />
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_16w484y</bpmn:incoming>
-      <bpmn:outgoing>Flow_0generalHeadDone</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0generalReviewDecision</bpmn:outgoing>
     </bpmn:userTask>
     <bpmn:userTask id="Activity_0taxOfficeHeadReview" name="بررسی و ارجاع برگ اجرا توسط رئیس اداره مالیات">
       <bpmn:extensionElements>
@@ -129,7 +129,7 @@
         <zeebe:assignmentDefinition candidateGroups="TAX_OFFICE_HEAD" />
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_0generalHeadDone</bpmn:incoming>
-      <bpmn:outgoing>Flow_0taxOfficeHeadDone</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0taxOfficeReviewDecision</bpmn:outgoing>
     </bpmn:userTask>
     <bpmn:userTask id="Activity_0taxUnitHeadReview" name="بررسی و ارجاع برگ اجرا توسط رئیس واحد مالیاتی">
       <bpmn:extensionElements>
@@ -137,7 +137,7 @@
         <zeebe:assignmentDefinition candidateGroups="TAX_UNIT_HEAD" />
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_0taxOfficeHeadDone</bpmn:incoming>
-      <bpmn:outgoing>Flow_0taxUnitHeadDone</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0taxUnitReviewDecision</bpmn:outgoing>
     </bpmn:userTask>
     <bpmn:userTask id="Activity_0taxExpertProcess" name="رسیدگی برگ اجرا توسط کارشناس مالیاتی">
       <bpmn:extensionElements>
@@ -147,6 +147,28 @@
       <bpmn:incoming>Flow_0taxUnitHeadDone</bpmn:incoming>
       <bpmn:outgoing>Flow_0jnz16g</bpmn:outgoing>
     </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_0generalReviewDecision" default="Flow_0generalHeadDone">
+      <bpmn:incoming>Flow_0generalReviewDecision</bpmn:incoming>
+      <bpmn:outgoing>Flow_0generalHeadDone</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0generalHeadFinish</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:exclusiveGateway id="Gateway_0taxOfficeReviewDecision" default="Flow_0taxOfficeHeadDone">
+      <bpmn:incoming>Flow_0taxOfficeReviewDecision</bpmn:incoming>
+      <bpmn:outgoing>Flow_0taxOfficeHeadDone</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0taxOfficeHeadFinish</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:exclusiveGateway id="Gateway_0taxUnitReviewDecision" default="Flow_0taxUnitHeadDone">
+      <bpmn:incoming>Flow_0taxUnitReviewDecision</bpmn:incoming>
+      <bpmn:outgoing>Flow_0taxUnitHeadDone</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0taxUnitHeadFinish</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:exclusiveGateway id="Gateway_0reviewMerge">
+      <bpmn:incoming>Flow_0generalHeadFinish</bpmn:incoming>
+      <bpmn:incoming>Flow_0taxOfficeHeadFinish</bpmn:incoming>
+      <bpmn:incoming>Flow_0taxUnitHeadFinish</bpmn:incoming>
+      <bpmn:incoming>Flow_0jnz16g</bpmn:incoming>
+      <bpmn:outgoing>Flow_0reviewBranchDone</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
     <bpmn:sendTask id="Activity_1f7l5yj" name="ارسال شناسه یکتای برگه اجرا به سامانه عملیاتی">
       <bpmn:extensionElements>
         <zeebe:taskDefinition type="send_execution_paper_id_to_sanim" />
@@ -171,7 +193,8 @@
     <bpmn:sequenceFlow id="Flow_07v2mwm" sourceRef="Gateway_0fw9zja" targetRef="Gateway_1g0dphg" />
     <bpmn:sequenceFlow id="Flow_16w484y" sourceRef="Gateway_0fw9zja" targetRef="Activity_0generalHeadReview" />
     <bpmn:sequenceFlow id="Flow_1oqia36" sourceRef="Gateway_0fw9zja" targetRef="Activity_1f7l5yj" />
-    <bpmn:sequenceFlow id="Flow_0jnz16g" sourceRef="Activity_0taxExpertProcess" targetRef="Gateway_0e7ujls" />
+    <bpmn:sequenceFlow id="Flow_0jnz16g" sourceRef="Activity_0taxExpertProcess" targetRef="Gateway_0reviewMerge" />
+    <bpmn:sequenceFlow id="Flow_0reviewBranchDone" sourceRef="Gateway_0reviewMerge" targetRef="Gateway_0e7ujls" />
     <bpmn:sequenceFlow id="Flow_0aj7mt3" sourceRef="Activity_0xodqlk" targetRef="Gateway_0e7ujls" />
     <bpmn:sequenceFlow id="Flow_19yszz7" sourceRef="Activity_1f7l5yj" targetRef="Gateway_0e7ujls" />
     <bpmn:sequenceFlow id="Flow_1i7jq54" sourceRef="Gateway_0yy16p7" targetRef="Gateway_0e7ujls" />
@@ -183,9 +206,21 @@
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=debtPaperPayload.taxpayer.type != "LEGAL"</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_0n7pcia" sourceRef="Activity_0aeytw4" targetRef="Gateway_0yy16p7" />
-    <bpmn:sequenceFlow id="Flow_0generalHeadDone" sourceRef="Activity_0generalHeadReview" targetRef="Activity_0taxOfficeHeadReview" />
-    <bpmn:sequenceFlow id="Flow_0taxOfficeHeadDone" sourceRef="Activity_0taxOfficeHeadReview" targetRef="Activity_0taxUnitHeadReview" />
-    <bpmn:sequenceFlow id="Flow_0taxUnitHeadDone" sourceRef="Activity_0taxUnitHeadReview" targetRef="Activity_0taxExpertProcess" />
+    <bpmn:sequenceFlow id="Flow_0generalReviewDecision" sourceRef="Activity_0generalHeadReview" targetRef="Gateway_0generalReviewDecision" />
+    <bpmn:sequenceFlow id="Flow_0generalHeadDone" sourceRef="Gateway_0generalReviewDecision" targetRef="Activity_0taxOfficeHeadReview" />
+    <bpmn:sequenceFlow id="Flow_0generalHeadFinish" name="پایان بررسی برگ اجرا" sourceRef="Gateway_0generalReviewDecision" targetRef="Gateway_0reviewMerge">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=finishExecutionPaperCheck = true</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_0taxOfficeReviewDecision" sourceRef="Activity_0taxOfficeHeadReview" targetRef="Gateway_0taxOfficeReviewDecision" />
+    <bpmn:sequenceFlow id="Flow_0taxOfficeHeadDone" sourceRef="Gateway_0taxOfficeReviewDecision" targetRef="Activity_0taxUnitHeadReview" />
+    <bpmn:sequenceFlow id="Flow_0taxOfficeHeadFinish" name="پایان بررسی برگ اجرا" sourceRef="Gateway_0taxOfficeReviewDecision" targetRef="Gateway_0reviewMerge">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=finishExecutionPaperCheck = true</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_0taxUnitReviewDecision" sourceRef="Activity_0taxUnitHeadReview" targetRef="Gateway_0taxUnitReviewDecision" />
+    <bpmn:sequenceFlow id="Flow_0taxUnitHeadDone" sourceRef="Gateway_0taxUnitReviewDecision" targetRef="Activity_0taxExpertProcess" />
+    <bpmn:sequenceFlow id="Flow_0taxUnitHeadFinish" name="پایان بررسی برگ اجرا" sourceRef="Gateway_0taxUnitReviewDecision" targetRef="Gateway_0reviewMerge">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=finishExecutionPaperCheck = true</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_0blcya1">
@@ -253,6 +288,18 @@
         <dc:Bounds x="2500" y="780" width="160" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0generalReviewDecision_di" bpmnElement="Gateway_0generalReviewDecision" isMarkerVisible="true">
+        <dc:Bounds x="1615" y="855" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0taxOfficeReviewDecision_di" bpmnElement="Gateway_0taxOfficeReviewDecision" isMarkerVisible="true">
+        <dc:Bounds x="2005" y="855" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0taxUnitReviewDecision_di" bpmnElement="Gateway_0taxUnitReviewDecision" isMarkerVisible="true">
+        <dc:Bounds x="2400" y="795" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0reviewMerge_di" bpmnElement="Gateway_0reviewMerge" isMarkerVisible="true">
+        <dc:Bounds x="2720" y="675" width="50" height="50" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1i6zmn4_di" bpmnElement="Activity_1f7l5yj">
         <dc:Bounds x="1770" y="600" width="100" height="80" />
         <bpmndi:BPMNLabel />
@@ -310,9 +357,15 @@
         <di:waypoint x="1770" y="640" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0jnz16g_di" bpmnElement="Flow_0jnz16g">
-        <di:waypoint x="2580" y="780" />
-        <di:waypoint x="2580" y="420" />
-        <di:waypoint x="2495" y="420" />
+        <di:waypoint x="2660" y="820" />
+        <di:waypoint x="2690" y="820" />
+        <di:waypoint x="2690" y="700" />
+        <di:waypoint x="2720" y="700" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0reviewBranchDone_di" bpmnElement="Flow_0reviewBranchDone">
+        <di:waypoint x="2745" y="675" />
+        <di:waypoint x="2745" y="400" />
+        <di:waypoint x="2515" y="400" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0aj7mt3_di" bpmnElement="Flow_0aj7mt3">
         <di:waypoint x="1950" y="260" />
@@ -347,17 +400,54 @@
         <di:waypoint x="1965" y="400" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0generalHeadDone_di" bpmnElement="Flow_0generalHeadDone">
-        <di:waypoint x="1550" y="880" />
+        <di:waypoint x="1665" y="880" />
         <di:waypoint x="1760" y="880" />
       </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0generalReviewDecision_di" bpmnElement="Flow_0generalReviewDecision">
+        <di:waypoint x="1550" y="880" />
+        <di:waypoint x="1615" y="880" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0generalHeadFinish_di" bpmnElement="Flow_0generalHeadFinish">
+        <di:waypoint x="1640" y="855" />
+        <di:waypoint x="1640" y="700" />
+        <di:waypoint x="2720" y="700" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2081" y="682" width="78" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0taxOfficeHeadDone_di" bpmnElement="Flow_0taxOfficeHeadDone">
-        <di:waypoint x="1920" y="880" />
+        <di:waypoint x="2055" y="880" />
         <di:waypoint x="2260" y="880" />
         <di:waypoint x="2260" y="860" />
       </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0taxOfficeReviewDecision_di" bpmnElement="Flow_0taxOfficeReviewDecision">
+        <di:waypoint x="1920" y="880" />
+        <di:waypoint x="2005" y="880" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0taxOfficeHeadFinish_di" bpmnElement="Flow_0taxOfficeHeadFinish">
+        <di:waypoint x="2030" y="855" />
+        <di:waypoint x="2030" y="720" />
+        <di:waypoint x="2720" y="720" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2312" y="702" width="78" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0taxUnitHeadDone_di" bpmnElement="Flow_0taxUnitHeadDone">
-        <di:waypoint x="2340" y="820" />
+        <di:waypoint x="2450" y="820" />
         <di:waypoint x="2500" y="820" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0taxUnitReviewDecision_di" bpmnElement="Flow_0taxUnitReviewDecision">
+        <di:waypoint x="2340" y="820" />
+        <di:waypoint x="2400" y="820" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0taxUnitHeadFinish_di" bpmnElement="Flow_0taxUnitHeadFinish">
+        <di:waypoint x="2425" y="795" />
+        <di:waypoint x="2425" y="740" />
+        <di:waypoint x="2745" y="740" />
+        <di:waypoint x="2745" y="725" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2507" y="722" width="78" height="27" />
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Association_08qtnyv_di" bpmnElement="Association_08qtnyv">
         <di:waypoint x="855" y="557" />

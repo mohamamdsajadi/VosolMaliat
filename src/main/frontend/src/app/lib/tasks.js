@@ -1,5 +1,12 @@
 import { apiJson } from './api';
 
+const EXECUTION_PAPER_REVIEW_TASK_IDS = new Set([
+  'Activity_0generalHeadReview',
+  'Activity_0taxOfficeHeadReview',
+  'Activity_0taxUnitHeadReview',
+  'Activity_0taxExpertProcess'
+]);
+
 export function fetchCartableTasks(filters = {}) {
   const params = new URLSearchParams();
   Object.entries(filters).forEach(([key, value]) => {
@@ -83,6 +90,10 @@ export function isEvaluationReviewTask(task) {
 export function isIncompleteInformationTask(task) {
   const name = String(task?.name || "").trim();
   return name === "تکمیل مجدد اطلاعات ناقص توسط کاربر";
+}
+
+export function isExecutionPaperReviewTask(task) {
+  return EXECUTION_PAPER_REVIEW_TASK_IDS.has(String(task?.taskDefinitionId || '').trim());
 }
 
 export function hasRenderableSchema(task) {

@@ -21,6 +21,7 @@ Last Updated: 2026-07-15
 | BR-TASK-001 | task فقط برای assignee، candidate group/user یا مجوز سازمانی قابل مشاهده است. | `TaskAuthorizationService.canView` | Camunda UserTask | پیاده‌سازی‌شده | admin همه taskها را read-only می‌بیند. |
 | BR-TASK-002 | claim فقط برای task بدون assignee، candidate معتبر و در محدوده سازمانی مجاز است. | `TaskAuthorizationService.canClaim` | Cartable | پیاده‌سازی‌شده | نیازمند `TASK_CLAIM`. |
 | BR-TASK-003 | complete فقط توسط assignee و با `TASK_COMPLETE` مجاز است. | `TaskAuthorizationService.canComplete` | Cartable | پیاده‌سازی‌شده | admin در وضعیت فعلی complete عملیاتی ندارد. |
+| BR-TASK-004 | مسئول هر مرحله بررسی سازمانی می‌تواند مراحل باقی‌مانده را پایان دهد. | `finishExecutionPaperCheck`, review decision gateways | `ExecutionPapers` | پیاده‌سازی‌شده | فقط شاخه بررسی پایان می‌یابد؛ شاخه‌های موازی ادامه دارند. |
 | BR-DEL-001 | هر مدیر فقط به نقش مستقیم پایین‌تر ارجاع می‌دهد. | `BusinessRole.nextDelegationRole`, `CartableService.delegate` | نقش‌ها | پیاده‌سازی‌شده | cross-org وجود ندارد. |
 | BR-DEL-002 | مقصد ارجاع باید در محدوده سازمانی مرتبط باشد. | `CartableService.isInDelegationScope` | سازمان | پیاده‌سازی‌شده | نیازمند تعریف دقیق استان/صلاحیت. |
 | BR-ORG-001 | متغیرهای `generalDirectorateId`, `taxAffairsOfficeId`, `taxUnitId` محدوده task را تعیین می‌کنند. | `OrganizationScopeService` | Camunda variables | پیاده‌سازی‌شده | نمونه‌های قدیمی Camunda ممکن است ناقص باشند. |
@@ -47,4 +48,3 @@ Last Updated: 2026-07-15
 - قرارداد نهایی ساختار `rule_json` چیست؟
 - در چه شرایطی ارجاع خارج از سازمان مجاز است؟
 - وضعیت‌های نهایی برگ اجرا و لغو چه چرخه رسمی دارند؟
-

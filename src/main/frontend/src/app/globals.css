@@ -183,6 +183,15 @@ textarea {
     transform: translateY(-1px);
 }
 
+.primary-action--danger {
+    background: #b91c1c;
+    box-shadow: 0 10px 22px rgba(185, 28, 28, 0.18);
+}
+
+.primary-action--danger:hover:not(:disabled) {
+    background: #991b1b;
+}
+
 .primary-action:disabled,
 .ghost-action:disabled {
     cursor: not-allowed;
@@ -3832,6 +3841,16 @@ textarea {
 .task-table-primary-action:hover:not(:disabled) {
     background: #1d4ed8;
     border-color: #1d4ed8;
+}
+
+.task-table-primary-action--danger {
+    background: #b91c1c;
+    border-color: #b91c1c;
+}
+
+.task-table-primary-action--danger:hover:not(:disabled) {
+    background: #991b1b;
+    border-color: #991b1b;
 }
 
 .task-table-secondary-action {

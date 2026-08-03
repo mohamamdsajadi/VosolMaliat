@@ -79,15 +79,53 @@ class ExecutionPaperBpmnContractUnitTest {
         expectedCandidateGroups.forEach((taskId, variable) ->
                 assertThat(candidateGroups(taskId)).isEqualTo(variable));
 
-        assertThat(sequenceSourceAndTarget("Flow_0generalHeadDone"))
+        assertThat(sequenceSourceAndTarget("Flow_0generalReviewDecision"))
                 .containsEntry("sourceRef", "Activity_0generalHeadReview")
+                .containsEntry("targetRef", "Gateway_0generalReviewDecision");
+        assertThat(sequenceSourceAndTarget("Flow_0generalHeadDone"))
+                .containsEntry("sourceRef", "Gateway_0generalReviewDecision")
                 .containsEntry("targetRef", "Activity_0taxOfficeHeadReview");
-        assertThat(sequenceSourceAndTarget("Flow_0taxOfficeHeadDone"))
+        assertThat(sequenceSourceAndTarget("Flow_0taxOfficeReviewDecision"))
                 .containsEntry("sourceRef", "Activity_0taxOfficeHeadReview")
+                .containsEntry("targetRef", "Gateway_0taxOfficeReviewDecision");
+        assertThat(sequenceSourceAndTarget("Flow_0taxOfficeHeadDone"))
+                .containsEntry("sourceRef", "Gateway_0taxOfficeReviewDecision")
                 .containsEntry("targetRef", "Activity_0taxUnitHeadReview");
-        assertThat(sequenceSourceAndTarget("Flow_0taxUnitHeadDone"))
+        assertThat(sequenceSourceAndTarget("Flow_0taxUnitReviewDecision"))
                 .containsEntry("sourceRef", "Activity_0taxUnitHeadReview")
+                .containsEntry("targetRef", "Gateway_0taxUnitReviewDecision");
+        assertThat(sequenceSourceAndTarget("Flow_0taxUnitHeadDone"))
+                .containsEntry("sourceRef", "Gateway_0taxUnitReviewDecision")
                 .containsEntry("targetRef", "Activity_0taxExpertProcess");
+    }
+
+    @Test
+    void everyOperationalReviewStepCanFinishThroughOneMergedReviewBranch() {
+        Map.of(
+                "Flow_0generalHeadFinish", "Gateway_0generalReviewDecision",
+                "Flow_0taxOfficeHeadFinish", "Gateway_0taxOfficeReviewDecision",
+                "Flow_0taxUnitHeadFinish", "Gateway_0taxUnitReviewDecision"
+        ).forEach((flowId, sourceId) -> {
+            assertThat(sequenceSourceAndTarget(flowId))
+                    .containsEntry("sourceRef", sourceId)
+                    .containsEntry("targetRef", "Gateway_0reviewMerge");
+            assertThat(conditionExpression(flowId))
+                    .isEqualTo("=" + ProcessConstants.VAR_FINISH_EXECUTION_PAPER_CHECK + " = true");
+        });
+
+        assertThat(sequenceSourceAndTarget("Flow_0jnz16g"))
+                .containsEntry("sourceRef", "Activity_0taxExpertProcess")
+                .containsEntry("targetRef", "Gateway_0reviewMerge");
+        assertThat(sequenceSourceAndTarget("Flow_0reviewBranchDone"))
+                .containsEntry("sourceRef", "Gateway_0reviewMerge")
+                .containsEntry("targetRef", "Gateway_0e7ujls");
+        assertThat(incomingFlowIds("Gateway_0e7ujls"))
+                .containsExactlyInAnyOrder(
+                        "Flow_0reviewBranchDone",
+                        "Flow_0aj7mt3",
+                        "Flow_19yszz7",
+                        "Flow_1i7jq54"
+                );
     }
 
     @Test
@@ -145,6 +183,15 @@ class ExecutionPaperBpmnContractUnitTest {
 
     private String conditionExpression(String flowId) {
         return firstChild(elementById(flowId), BPMN, "conditionExpression").getTextContent().trim();
+    }
+
+    private java.util.List<String> incomingFlowIds(String activityId) {
+        NodeList incoming = elementById(activityId).getElementsByTagNameNS(BPMN, "incoming");
+        java.util.List<String> result = new java.util.ArrayList<>();
+        for (int i = 0; i < incoming.getLength(); i++) {
+            result.add(incoming.item(i).getTextContent().trim());
+        }
+        return result;
     }
 
     private Element elementById(String id) {

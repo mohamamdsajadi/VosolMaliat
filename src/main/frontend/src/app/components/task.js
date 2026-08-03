@@ -8,7 +8,7 @@ import {
 } from '../lib/display';
 import EvaluationReviewForm from './evaluation-review-form';
 import IncompleteInformationForm from './incomplete-information-form';
-import { completeTask, fetchTask, hasRenderableSchema, isEvaluationReviewTask, isIncompleteInformationTask } from '../lib/tasks';
+import { completeTask, fetchTask, hasRenderableSchema, isEvaluationReviewTask, isExecutionPaperReviewTask, isIncompleteInformationTask } from '../lib/tasks';
 
 const ProcessForm = dynamic(
   () => import('./embedded-form'),
@@ -119,6 +119,35 @@ export default function Task({ taskId, order, onDone }) {
             onComplete={submitTask}
             submitting={submitting}
           />
+        </div>
+      ) : isExecutionPaperReviewTask(task) ? (
+        <div className="form-stage">
+          <div className="form-stage-header">
+            <div>
+              <p className="eyebrow">تصمیم نهایی این مرحله</p>
+              <h4>پایان بررسی سازمانی برگ اجرا</h4>
+            </div>
+            <span className={`status-pill ${task.allowedActions?.complete ? 'status-pill--ready' : 'status-pill--muted'}`}>
+              {task.allowedActions?.complete ? 'قابل اقدام' : 'ابتدا کار را دریافت کنید'}
+            </span>
+          </div>
+          <p className="task-card-copy">
+            این اقدام مراحل سازمانی باقی‌مانده را رد می‌کند و شاخه بررسی را مستقیماً به محل اتصال فرایند می‌فرستد. سایر شاخه‌های موازی باید طبق روال خود تکمیل شوند.
+          </p>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 18 }}>
+            <button
+              className="primary-action primary-action--danger"
+              type="button"
+              disabled={submitting || !task.allowedActions?.complete}
+              onClick={() => {
+                if (window.confirm('آیا از پایان بررسی برگ اجرا و رد کردن مراحل سازمانی باقی‌مانده مطمئن هستید؟')) {
+                  submitTask({ finishExecutionPaperCheck: true });
+                }
+              }}
+            >
+              {submitting ? 'در حال ثبت تصمیم...' : 'پایان بررسی برگ اجرا'}
+            </button>
+          </div>
         </div>
       ) : hasRenderableSchema(task) ? (
         <div className="form-stage">

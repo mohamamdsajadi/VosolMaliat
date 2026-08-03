@@ -70,6 +70,7 @@ public final class ProcessConstants {
     public static final String VAR_DEBT_INQUIRY_REQUEST_ID = "debtInquiryRequestId";
     public static final String VAR_SANIM_DEBT_STATUS = "sanimDebtStatus";
     public static final String VAR_DEBT_STATUS_UPDATED = "debtStatusUpdated";
+    public static final String VAR_FINISH_EXECUTION_PAPER_CHECK = "finishExecutionPaperCheck";
 
     public static String restrictionRequestId(String officialGazetteRequestId) {
         return "restriction-" + officialGazetteRequestId;

@@ -17,6 +17,7 @@ import com.mparsict.vosolmaliat.common.exception.BusinessException;
 import com.mparsict.vosolmaliat.domain.enums.BusinessRole;
 import com.mparsict.vosolmaliat.domain.model.security.AppUserProfile;
 import com.mparsict.vosolmaliat.domain.repository.security.AppUserProfileRepository;
+import com.mparsict.vosolmaliat.infrastructure.camunda.ProcessConstants;
 import io.camunda.client.CamundaClient;
 import io.camunda.client.api.search.enums.UserTaskState;
 import io.camunda.client.api.search.response.UserTask;
@@ -145,14 +146,36 @@ public class CartableService {
             throw new BusinessException("TASK_COMPLETE_NOT_ALLOWED", "امکان تکمیل این کار وجود ندارد");
         }
         try {
+            Map<String, Object> completionVariables = request.variables() == null
+                    ? Map.of()
+                    : request.variables();
             camundaClient.newCompleteUserTaskCommand(taskKey)
-                    .variables(request.variables() == null ? Map.of() : request.variables())
+                    .variables(completionVariables)
                     .action("complete")
                     .requestTimeout(Duration.ofSeconds(30))
                     .send()
                     .join();
             auditLogService.record(user, "TASK_COMPLETED", "CAMUNDA_USER_TASK", taskKey.toString(), null, "completed");
             recordExecutionPaperAudit(user, variables, "TASK_COMPLETED", taskKey, task.getAssignee(), "completed");
+            if (Boolean.TRUE.equals(completionVariables.get(
+                    ProcessConstants.VAR_FINISH_EXECUTION_PAPER_CHECK))) {
+                auditLogService.record(
+                        user,
+                        "EXECUTION_PAPER_REVIEW_FINISHED",
+                        "CAMUNDA_USER_TASK",
+                        taskKey.toString(),
+                        task.getName(),
+                        "finished"
+                );
+                recordExecutionPaperAudit(
+                        user,
+                        variables,
+                        "EXECUTION_PAPER_REVIEW_FINISHED",
+                        taskKey,
+                        task.getAssignee(),
+                        task.getName()
+                );
+            }
         } catch (Exception ex) {
             throw new BusinessException("TASK_COMPLETION_FAILED", "تکمیل کار ناموفق بود", ex);
         }

@@ -556,6 +556,7 @@ public class ExecutionPaperService {
             case "TASK_ASSIGNED" -> "اختصاص کار";
             case "TASK_DELEGATED_TO_USER" -> "ارجاع به کاربر";
             case "TASK_DELEGATED_TO_GROUP" -> "ارجاع به نقش بعدی";
+            case "EXECUTION_PAPER_REVIEW_FINISHED" -> "پایان زودهنگام بررسی برگ اجرا";
             case "INFORM_SENT_TO_ELECTRONIC_NOTIFICATION" -> "ارسال به سامانه ابلاغ الکترونیک";
             case "ELECTRONIC_NOTIFICATION_CONFIRMED" -> "تایید ابلاغ الکترونیک";
             case "EXECUTION_PAPER_INFORM_REJECTED" -> "رد ابلاغ برگ اجرا";
