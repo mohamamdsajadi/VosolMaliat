@@ -16,10 +16,13 @@ Last Updated: 2026-07-15
 |---|---|---|---|
 | `src/main/resources/bpmn/ExecutionPapers.bpmn` | `Process_0rtbdc5` | `ExecutionPapers` | [فرایند برگ اجرا](processes/execution-paper-process.md) |
 | `src/main/resources/bpmn/Inform.bpmn` | `Process_0lt64q4` | `NoticeProcess` | [فرایند ابلاغ](processes/inform-process.md) |
+| `src/main/resources/bpmn/GetLastDebtStatus.bpmn` | `Process_09srbi7` | `Get Last Debt Status` | [دریافت آخرین وضعیت بدهی](processes/get-last-debt-status-process.md) |
 
 ## رابطه فرایندها
 
 `ExecutionPapers.bpmn` بعد از رسیدگی کارشناسی، با call activity به `Process_0lt64q4` وارد فرایند ابلاغ می‌شود و همه child variables را propagate می‌کند.
+
+`GetLastDebtStatus.bpmn` قرارداد یک فرایند callable مستقل را فراهم می‌کند. Call Activity فراخوان آن هنوز به فرایند والد اضافه نشده است.
 
 ```mermaid
 flowchart LR
@@ -28,9 +31,8 @@ flowchart LR
 
 ## متغیرهای مشترک مهم
 
-`issuanceRequestId`, `debtPaperPayload`, `canIssue`, `executionPaperId`, `executionPaperCode`, `generalDirectorateId`, `taxAffairsOfficeId`, `taxUnitId`, `canInform`, `InformDate`, `reInformDate`, `nextDebtInquiryDate`.
+`issuanceRequestId`, `debtPaperPayload`, `canIssue`, `executionPaperId`, `executionPaperCode`, `generalDirectorateId`, `taxAffairsOfficeId`, `taxUnitId`, `canInform`, `InformDate`, `reInformDate`, `nextDebtInquiryDate`, `debtInquiryRequestId`, `sanimDebtStatus`, `debtStatusUpdated`.
 
 ## سوالات باز
 
 - سیاست نسخه‌دهی و migration نمونه‌های در حال اجرا مشخص نیست.
-

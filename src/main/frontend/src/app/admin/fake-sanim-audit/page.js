@@ -6,13 +6,25 @@ import { apiJson } from '../../lib/api'
 
 const TYPE_LABELS = { DEBT: 'بدهی', PAYMENT: 'پرداخت', PENALTY: 'جریمه', CREDIT: 'اعتبار' }
 const money = value => `${Number(value || 0).toLocaleString('fa-IR')} ریال`
+const dateTime = value => value ? new Date(value).toLocaleString('fa-IR') : '—'
+
+function debtInquiryStatusLabel(status) {
+  return {
+    SENT: 'در انتظار پاسخ سنیم',
+    RESPONDED: 'پاسخ منتشر شده'
+  }[status] || status || 'نامشخص'
+}
 
 export default function FakeSanimAuditPage() {
   const [taxpayers, setTaxpayers] = useState([])
   const [taxpayerId, setTaxpayerId] = useState('')
   const [history, setHistory] = useState([])
   const [status, setStatus] = useState(null)
+  const [debtInquiries, setDebtInquiries] = useState([])
+  const [debtInquiriesLoading, setDebtInquiriesLoading] = useState(true)
+  const [publishingRequestId, setPublishingRequestId] = useState(null)
   const [error, setError] = useState('')
+  const [message, setMessage] = useState('')
   const [busy, setBusy] = useState(false)
   const [form, setForm] = useState({ entryType: 'DEBT', amountRials: '', referenceNo: '', description: '' })
   const selected = useMemo(() => taxpayers.find(item => String(item.taxpayerId) === String(taxpayerId)), [taxpayers, taxpayerId])
@@ -22,6 +34,7 @@ export default function FakeSanimAuditPage() {
       setTaxpayers(items)
       if (items.length) setTaxpayerId(String(items[0].taxpayerId))
     }).catch(err => setError(err.message))
+    loadDebtInquiries().catch(err => setError(err.message))
   }, [])
 
   useEffect(() => { if (taxpayerId) refresh() }, [taxpayerId]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -35,6 +48,29 @@ export default function FakeSanimAuditPage() {
       catch { setStatus(null) }
     } catch (err) { setError(err.message) }
     finally { setBusy(false) }
+  }
+
+  async function loadDebtInquiries() {
+    setDebtInquiriesLoading(true)
+    try {
+      const items = await apiJson('/api/v1/fake-sanim/debt-inquiries')
+      setDebtInquiries(Array.isArray(items) ? items : [])
+    } finally {
+      setDebtInquiriesLoading(false)
+    }
+  }
+
+  async function publishDebtStatus(request) {
+    setPublishingRequestId(request.id); setError(''); setMessage('')
+    try {
+      await apiJson(`/api/v1/fake-sanim/debt-inquiries/${request.id}/respond`, { method: 'POST' })
+      setMessage(`پاسخ استعلام ${request.requestId} محاسبه و پیام taxPayerDebt در Camunda منتشر شد.`)
+      await loadDebtInquiries()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setPublishingRequestId(null)
+    }
   }
 
   async function addEntry(event) {
@@ -59,7 +95,8 @@ export default function FakeSanimAuditPage() {
   return <AppShell active="test-front" title="حسابرسی بدهی سنیم" eyebrow="Fake SANIM Audit">
     <section className="panel-section">
       <div className="section-heading"><div><p className="eyebrow">انتخاب مؤدی</p><h2>آخرین وضعیت بدهی</h2></div></div>
-      {error && <div className="alert alert-error">{error}</div>}
+      {error && <div className="notice error">{error}</div>}
+      {message && <div className="notice success">{message}</div>}
       <div className="form-grid">
         <label><span>مؤدی موجود</span><select value={taxpayerId} onChange={e => setTaxpayerId(e.target.value)}>
           {taxpayers.map(item => <option key={`${item.taxpayerType}-${item.identifier}`} value={item.taxpayerId}>
@@ -78,6 +115,47 @@ export default function FakeSanimAuditPage() {
         <article className="dashboard-stat-card dashboard-stat-card--success"><span>اعتبار</span><strong>{money(status.totalCreditRials)}</strong></article>
         <article className="dashboard-stat-card dashboard-stat-card--warning"><span>مانده قابل مطالبه</span><strong>{money(status.outstandingDebtRials)}</strong></article>
       </div>}
+    </section>
+
+    <section className="panel-section">
+      <div className="section-heading">
+        <div>
+          <p className="eyebrow">Camunda Message Queue</p>
+          <h2>درخواست‌های استعلام بدهی فرایند</h2>
+        </div>
+        <button className="ghost-action" type="button" disabled={debtInquiriesLoading} onClick={() => loadDebtInquiries().catch(err => setError(err.message))}>
+          {debtInquiriesLoading ? 'در حال دریافت...' : 'به‌روزرسانی درخواست‌ها'}
+        </button>
+      </div>
+      <p style={{ color: '#64748b', margin: '0 0 16px', lineHeight: 1.9 }}>
+        با انتشار پاسخ، آخرین وضعیت فعلی مؤدی از رویدادهای حسابرسی محاسبه و با پیام <code>taxPayerDebt</code> و شناسه همبستگی درخواست به Camunda ارسال می‌شود.
+      </p>
+      <div className="task-grid-wrap">
+        <table className="task-grid-table">
+          <thead><tr><th>شناسه همبستگی</th><th>برگ اجرا</th><th>مؤدی</th><th>زمان درخواست</th><th>وضعیت</th><th>آخرین نتیجه</th><th>عملیات</th></tr></thead>
+          <tbody>{debtInquiries.map(request => <tr key={request.id}>
+            <td><strong>{request.requestId}</strong></td>
+            <td>{request.executionPaperCode || `#${request.executionPaperId}`}</td>
+            <td>{request.taxpayerIdentifier}<br /><small>{request.taxpayerType === 'LEGAL' ? 'حقوقی' : 'حقیقی'}</small></td>
+            <td>{dateTime(request.sentAt)}</td>
+            <td><span className={request.status === 'RESPONDED' ? 'status-pill status-pill--success' : 'status-pill status-pill--warning'}>{debtInquiryStatusLabel(request.status)}</span></td>
+            <td>{request.debtStatus
+              ? <><strong>{money(request.debtStatus.outstandingDebtRials)}</strong><br /><small>مانده در پاسخ {dateTime(request.respondedAt)}</small></>
+              : 'هنوز پاسخی منتشر نشده است'}</td>
+            <td><button
+              className="primary-action"
+              type="button"
+              disabled={publishingRequestId !== null}
+              onClick={() => publishDebtStatus(request)}
+            >
+              {publishingRequestId === request.id
+                ? 'در حال انتشار...'
+                : request.status === 'RESPONDED' ? 'انتشار مجدد پیام' : 'محاسبه و انتشار پاسخ'}
+            </button></td>
+          </tr>)}</tbody>
+        </table>
+        {!debtInquiriesLoading && !debtInquiries.length && <div className="empty-state">فرایند هنوز درخواست استعلام بدهی برای سنیم ایجاد نکرده است.</div>}
+      </div>
     </section>
 
     <section className="panel-section">

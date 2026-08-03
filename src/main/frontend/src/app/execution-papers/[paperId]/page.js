@@ -33,7 +33,9 @@ function isDateTimeField(key) {
     'nextDebtInquiryDate',
     'rejectedAt',
     'InformDate',
-    'notificationDate'
+    'notificationDate',
+    'sanimLastActivityAt',
+    'lastDebtInquiryAt'
   ].includes(key)
 }
 
@@ -109,7 +111,7 @@ const SECTIONS = [
   {
     key: 'debtInformation',
     title: 'ریز مبالغ بدهی',
-    labels: { taxAmount: 'اصل مالیات', dutyAmount: 'اصل عوارض', penaltyArticle22: 'جریمه ثابت', penaltyArticle23: 'جریمه دیرکرد', nonDeductiblePenalty: 'جریمه غیرقابل بخشش', deductiblePenalty: 'بخشودگی/کسر جریمه', taxPaidAmount: 'پرداخت اصل', penaltyPaidAmount: 'پرداخت جریمه', taxCredit: 'اعتبار', remainingTax: 'مانده بدهی ارسالی', totalDebt: 'مانده محاسبه‌شده' }
+    labels: { taxAmount: 'اصل مالیات', dutyAmount: 'اصل عوارض', penaltyArticle22: 'جریمه ثابت', penaltyArticle23: 'جریمه دیرکرد', nonDeductiblePenalty: 'جریمه غیرقابل بخشش', deductiblePenalty: 'بخشودگی/کسر جریمه', taxPaidAmount: 'پرداخت اصل', penaltyPaidAmount: 'پرداخت جریمه', taxCredit: 'اعتبار', remainingTax: 'مانده بدهی ارسالی', totalDebt: 'مانده محاسبه‌شده', sanimTotalDebtRials: 'اصل بدهی در آخرین پاسخ سنیم', sanimTotalPenaltyRials: 'جرایم در آخرین پاسخ سنیم', sanimTotalPaymentRials: 'پرداخت‌ها در آخرین پاسخ سنیم', sanimTotalCreditRials: 'اعتبار در آخرین پاسخ سنیم', sanimOutstandingDebtRials: 'مانده بدهی در آخرین پاسخ سنیم', sanimLastActivityAt: 'آخرین رویداد مالی سنیم', lastDebtInquiryAt: 'زمان آخرین استعلام سنیم' }
   },
   {
     key: 'notification',

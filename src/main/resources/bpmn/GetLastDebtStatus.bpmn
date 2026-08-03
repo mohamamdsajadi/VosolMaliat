@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:modeler="http://camunda.org/schema/modeler/1.0" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Web Modeler" exporterVersion="e787c33" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.8.0">
+  <bpmn:process id="Process_09srbi7" name="Get Last Debt Status" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1">
+      <bpmn:outgoing>Flow_0g04rtz</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_0g04rtz" sourceRef="StartEvent_1" targetRef="Activity_1khsio8" />
+    <bpmn:sendTask id="Activity_1khsio8" name="استعلام وضعیت پرداخت بدهی با شناسه یکتا از سامانه عملیاتی">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="get-debt-from-sanim" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=executionPaperId" target="executionPaperId" />
+          <zeebe:output source="=executionPaperId" target="executionPaperId" />
+          <zeebe:output source="=debtInquiryRequestId" target="debtInquiryRequestId" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0g04rtz</bpmn:incoming>
+      <bpmn:outgoing>Flow_1x5qjkh</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:intermediateCatchEvent id="Event_0f49589" name="دریافت آخرین وضعیت بدهی از سنیم">
+      <bpmn:extensionElements>
+        <zeebe:ioMapping>
+          <zeebe:output source="=sanimDebtStatus" target="sanimDebtStatus" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1x5qjkh</bpmn:incoming>
+      <bpmn:outgoing>Flow_13zbg7e</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_06fwbt6" messageRef="Message_3lah0dr" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:sequenceFlow id="Flow_1x5qjkh" sourceRef="Activity_1khsio8" targetRef="Event_0f49589" />
+    <bpmn:sequenceFlow id="Flow_13zbg7e" sourceRef="Event_0f49589" targetRef="Activity_0d55kj2" />
+    <bpmn:serviceTask id="Activity_0d55kj2" name="به روزرسانی وضعیت پرداخت بدهی در سامانه">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="update-taxpayer-payment-status" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=executionPaperId" target="executionPaperId" />
+          <zeebe:input source="=debtInquiryRequestId" target="debtInquiryRequestId" />
+          <zeebe:input source="=sanimDebtStatus" target="sanimDebtStatus" />
+          <zeebe:output source="=debtStatusUpdated" target="debtStatusUpdated" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_13zbg7e</bpmn:incoming>
+      <bpmn:outgoing>Flow_0smwhqh</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="Event_0g0rmuj">
+      <bpmn:incoming>Flow_0smwhqh</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0smwhqh" sourceRef="Activity_0d55kj2" targetRef="Event_0g0rmuj" />
+  </bpmn:process>
+  <bpmn:message id="Message_3lah0dr" name="taxPayerDebt">
+    <bpmn:extensionElements>
+      <zeebe:subscription correlationKey="=debtInquiryRequestId" />
+    </bpmn:extensionElements>
+  </bpmn:message>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_09srbi7">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="152" y="102" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1npj4b3_di" bpmnElement="Activity_1khsio8">
+        <dc:Bounds x="280" y="80" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0f49589_di" bpmnElement="Event_0f49589">
+        <dc:Bounds x="472" y="102" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="454" y="150" width="72" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0w0jah2_di" bpmnElement="Activity_0d55kj2">
+        <dc:Bounds x="600" y="80" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0g0rmuj_di" bpmnElement="Event_0g0rmuj">
+        <dc:Bounds x="792" y="102" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0g04rtz_di" bpmnElement="Flow_0g04rtz">
+        <di:waypoint x="188" y="120" />
+        <di:waypoint x="280" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1x5qjkh_di" bpmnElement="Flow_1x5qjkh">
+        <di:waypoint x="380" y="120" />
+        <di:waypoint x="472" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_13zbg7e_di" bpmnElement="Flow_13zbg7e">
+        <di:waypoint x="508" y="120" />
+        <di:waypoint x="600" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0smwhqh_di" bpmnElement="Flow_0smwhqh">
+        <di:waypoint x="700" y="120" />
+        <di:waypoint x="792" y="120" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

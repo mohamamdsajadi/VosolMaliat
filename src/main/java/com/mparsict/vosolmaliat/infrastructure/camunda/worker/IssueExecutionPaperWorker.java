@@ -36,7 +36,7 @@ public class IssueExecutionPaperWorker {
 
     @JobWorker(type = ProcessConstants.JOB_ISSUE_PAPER, autoComplete = false)
     public void handle(final JobClient client, final ActivatedJob job) {
-        log.debug("Processing job: issue-execution-paper, key={}", job.getKey());
+        log.debug("Processing job: {}, key={}", ProcessConstants.JOB_ISSUE_PAPER, job.getKey());
         try {
             Map<String, Object> variables = job.getVariablesAsMap();
             Object payload = variables.get(ProcessConstants.VAR_DEBT_PAPER_PAYLOAD);

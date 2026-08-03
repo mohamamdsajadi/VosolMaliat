@@ -26,7 +26,7 @@ Last Updated: 2026-07-15
 |---|---|---|---|---|
 | `Activity_1ahtl92` | بررسی امکان صدور برگ اجرا | Service Task | `CheckIssuancePossibilityWorker`, type `check-issuance-possibility-v2` | `debtPaperPayload` -> `canIssue`, rejection vars |
 | `Gateway_1uchrac` | تصمیم امکان صدور | Exclusive Gateway | BPMN | `canIssue` |
-| `Activity_0rwz3ak` | صدور برگ اجرا با شناسه یکتا | Service Task | `IssueExecutionPaperWorker`, type `issue-execution-paper` | خروجی `executionPaperId`, `executionPaperCode`, org vars |
+| `Activity_0rwz3ak` | صدور برگ اجرا با شناسه یکتا | Service Task | `IssueExecutionPaperWorker`, type `issue-execution-paper-v2` | خروجی `executionPaperId`, `executionPaperCode`, org vars |
 | `Activity_010iyzn` | ارسال پاسخ عدم امکان صدور | Send Task | `SendRejectionResponseWorker`, type `inform_sanim_rejection` | rejection vars |
 | `Activity_0generalHeadReview` | بررسی و ارجاع توسط رئیس اداره کل | User Task | candidate `GENERAL_OFFICE_HEAD:{generalDirectorateId}` | complete/delegate |
 | `Activity_0taxOfficeHeadReview` | بررسی و ارجاع توسط رئیس اداره مالیات | User Task | candidate `TAX_OFFICE_HEAD:{taxAffairsOfficeId}` | complete/delegate |

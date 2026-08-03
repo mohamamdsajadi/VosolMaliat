@@ -5,6 +5,8 @@ import com.mparsict.vosolmaliat.domain.model.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "debt_information")
 @Getter
@@ -73,6 +75,27 @@ public class DebtInformation extends BaseEntity {
     @Builder.Default
     @Column(name = "compliance_bonus")
     private Double complianceBonus = 0.0;
+
+    @Column(name = "sanim_total_debt_rials")
+    private Long sanimTotalDebtRials;
+
+    @Column(name = "sanim_total_penalty_rials")
+    private Long sanimTotalPenaltyRials;
+
+    @Column(name = "sanim_total_payment_rials")
+    private Long sanimTotalPaymentRials;
+
+    @Column(name = "sanim_total_credit_rials")
+    private Long sanimTotalCreditRials;
+
+    @Column(name = "sanim_outstanding_debt_rials")
+    private Long sanimOutstandingDebtRials;
+
+    @Column(name = "sanim_last_activity_at")
+    private LocalDateTime sanimLastActivityAt;
+
+    @Column(name = "last_debt_inquiry_at")
+    private LocalDateTime lastDebtInquiryAt;
 
     @Transient
     public Double getTotalDebt() {

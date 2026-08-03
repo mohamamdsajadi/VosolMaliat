@@ -2,6 +2,7 @@ package com.mparsict.vosolmaliat.infrastructure.camunda.service;
 
 import com.mparsict.vosolmaliat.common.exception.BusinessException;
 import com.mparsict.vosolmaliat.application.dto.integration.CompanyRegistryRelatedPersonData;
+import com.mparsict.vosolmaliat.application.dto.response.SanimDebtStatusResponse;
 import com.mparsict.vosolmaliat.infrastructure.camunda.ProcessConstants;
 import io.camunda.client.CamundaClient;
 import lombok.RequiredArgsConstructor;
@@ -76,6 +77,26 @@ public class CamundaMessageService {
             throw new BusinessException(
                     "CAMUNDA_RESTRICTION_MESSAGE_FAILED",
                     "خطا در ارسال تأیید اعمال محدودیت به Camunda: " + ex.getMessage(),
+                    ex
+            );
+        }
+    }
+
+    public void publishTaxpayerDebt(String requestId, SanimDebtStatusResponse debtStatus) {
+        try {
+            camundaClient.newPublishMessageCommand()
+                    .messageName(ProcessConstants.MESSAGE_TAXPAYER_DEBT)
+                    .correlationKey(requestId)
+                    .messageId("taxpayer-debt-" + requestId)
+                    .timeToLive(Duration.ofHours(1))
+                    .variables(Map.of(ProcessConstants.VAR_SANIM_DEBT_STATUS, debtStatus))
+                    .send()
+                    .join();
+            log.info("Published SANIM debt status for requestId={}", requestId);
+        } catch (Exception ex) {
+            throw new BusinessException(
+                    "CAMUNDA_TAXPAYER_DEBT_MESSAGE_FAILED",
+                    "خطا در ارسال پاسخ بدهی سنیم به Camunda: " + ex.getMessage(),
                     ex
             );
         }

@@ -4,8 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mparsict.vosolmaliat.application.dto.request.DebtPaperIssuanceRequest;
 import com.mparsict.vosolmaliat.application.dto.response.FakeRestrictionResponse;
 import com.mparsict.vosolmaliat.application.service.ExecutionPaperService;
+import com.mparsict.vosolmaliat.application.service.DebtStatusUpdateService;
 import com.mparsict.vosolmaliat.application.service.FakeOfficialGazetteService;
 import com.mparsict.vosolmaliat.application.service.FakeRestrictionService;
+import com.mparsict.vosolmaliat.application.service.FakeSanimDebtInquiryService;
 import com.mparsict.vosolmaliat.application.service.FakeSanimInformService;
 import com.mparsict.vosolmaliat.application.service.InformProcessService;
 import com.mparsict.vosolmaliat.application.service.IssuanceRequestService;
@@ -18,6 +20,7 @@ import com.mparsict.vosolmaliat.domain.repository.TaxUnitRepository;
 import com.mparsict.vosolmaliat.infrastructure.camunda.ProcessConstants;
 import com.mparsict.vosolmaliat.infrastructure.camunda.worker.CheckInformPossibilityWorker;
 import com.mparsict.vosolmaliat.infrastructure.camunda.worker.CheckIssuancePossibilityWorker;
+import com.mparsict.vosolmaliat.infrastructure.camunda.worker.GetDebtFromSanimWorker;
 import com.mparsict.vosolmaliat.infrastructure.camunda.worker.IssueExecutionPaperWorker;
 import com.mparsict.vosolmaliat.infrastructure.camunda.worker.SendExecutionPaperIdToSanimWorker;
 import com.mparsict.vosolmaliat.infrastructure.camunda.worker.SendExecutionPaperToElectronicNotificationWorker;
@@ -28,6 +31,7 @@ import com.mparsict.vosolmaliat.infrastructure.camunda.worker.SendRejectionRespo
 import com.mparsict.vosolmaliat.infrastructure.camunda.worker.SetDebtInquiryDateWorker;
 import com.mparsict.vosolmaliat.infrastructure.camunda.worker.SetReInformDateWorker;
 import com.mparsict.vosolmaliat.infrastructure.camunda.worker.UpdateInformStatusWorker;
+import com.mparsict.vosolmaliat.infrastructure.camunda.worker.UpdateTaxpayerPaymentStatusWorker;
 import io.camunda.client.api.ProblemDetail;
 import io.camunda.client.api.command.ProblemException;
 import io.camunda.client.api.response.ActivatedJob;
@@ -45,7 +49,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class CamundaJobWorkersUnitTest {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
     @Test
     void manuallyCompletedWorkersDisableFrameworkAutoCompletion() throws Exception {
@@ -61,7 +65,9 @@ class CamundaJobWorkersUnitTest {
                 SetDebtInquiryDateWorker.class,
                 SendInformDataToSanimWorker.class,
                 SendOfficialGazetteBoardMembersRequestWorker.class,
-                SendRelatedPersonsForRestrictionsWorker.class
+                SendRelatedPersonsForRestrictionsWorker.class,
+                GetDebtFromSanimWorker.class,
+                UpdateTaxpayerPaymentStatusWorker.class
         );
 
         for (Class<?> worker : workers) {
@@ -519,6 +525,57 @@ class CamundaJobWorkersUnitTest {
         assertThat(client.errorMessage).contains(ProcessConstants.VAR_EXECUTION_PAPER_ID);
     }
 
+    @Test
+    void getDebtFromSanimCreatesStableCorrelatedRequest() {
+        StubFakeSanimDebtInquiryService service = new StubFakeSanimDebtInquiryService();
+        GetDebtFromSanimWorker worker = new GetDebtFromSanimWorker(service, null);
+        CamundaJobClientStub client = new CamundaJobClientStub();
+
+        worker.handle(client.proxy(), job(Map.of(ProcessConstants.VAR_EXECUTION_PAPER_ID, 99L)));
+
+        assertThat(service.requestId).isEqualTo("debt-inquiry-700");
+        assertThat(service.executionPaperId).isEqualTo(99L);
+        assertThat(client.completeVariables)
+                .containsEntry(ProcessConstants.VAR_EXECUTION_PAPER_ID, 99L)
+                .containsEntry(ProcessConstants.VAR_DEBT_INQUIRY_REQUEST_ID, "debt-inquiry-700");
+    }
+
+    @Test
+    void updateTaxpayerPaymentStatusMapsMessagePayloadAndCompletesContract() {
+        StubDebtStatusUpdateService service = new StubDebtStatusUpdateService();
+        UpdateTaxpayerPaymentStatusWorker worker = new UpdateTaxpayerPaymentStatusWorker(
+                service,
+                null,
+                objectMapper
+        );
+        CamundaJobClientStub client = new CamundaJobClientStub();
+        com.mparsict.vosolmaliat.application.dto.response.SanimDebtStatusResponse status =
+                new com.mparsict.vosolmaliat.application.dto.response.SanimDebtStatusResponse(
+                        com.mparsict.vosolmaliat.domain.enums.TaxpayerType.NATURAL,
+                        "0012345678",
+                        "علی تهرانی",
+                        1_000L,
+                        200L,
+                        300L,
+                        100L,
+                        800L,
+                        4,
+                        java.time.LocalDateTime.of(2026, 8, 3, 10, 0)
+                );
+
+        worker.handle(client.proxy(), job(Map.of(
+                ProcessConstants.VAR_EXECUTION_PAPER_ID, 99L,
+                ProcessConstants.VAR_DEBT_INQUIRY_REQUEST_ID, "debt-inquiry-700",
+                ProcessConstants.VAR_SANIM_DEBT_STATUS, status
+        )));
+
+        assertThat(service.executionPaperId).isEqualTo(99L);
+        assertThat(service.requestId).isEqualTo("debt-inquiry-700");
+        assertThat(service.status).isEqualTo(status);
+        assertThat(client.completeVariables)
+                .containsEntry(ProcessConstants.VAR_DEBT_STATUS_UPDATED, true);
+    }
+
     private ActivatedJob job(Map<String, Object> variables) {
         return (ActivatedJob) Proxy.newProxyInstance(
                 ActivatedJob.class.getClassLoader(),
@@ -855,6 +912,44 @@ class CamundaJobWorkersUnitTest {
                 String restrictionRemovalDate) {
             this.issuanceRejectionRequestId = issuanceRequestId;
             return null;
+        }
+    }
+
+    private static class StubFakeSanimDebtInquiryService extends FakeSanimDebtInquiryService {
+        private String requestId;
+        private Long executionPaperId;
+
+        private StubFakeSanimDebtInquiryService() {
+            super(null, null, null, null, new ObjectMapper(), null);
+        }
+
+        @Override
+        public com.mparsict.vosolmaliat.application.dto.response.FakeSanimDebtInquiryResponse send(
+                String requestId,
+                Long executionPaperId) {
+            this.requestId = requestId;
+            this.executionPaperId = executionPaperId;
+            return null;
+        }
+    }
+
+    private static class StubDebtStatusUpdateService extends DebtStatusUpdateService {
+        private Long executionPaperId;
+        private String requestId;
+        private com.mparsict.vosolmaliat.application.dto.response.SanimDebtStatusResponse status;
+
+        private StubDebtStatusUpdateService() {
+            super(null, null, null, null, null, new ObjectMapper());
+        }
+
+        @Override
+        public void update(
+                Long executionPaperId,
+                String requestId,
+                com.mparsict.vosolmaliat.application.dto.response.SanimDebtStatusResponse status) {
+            this.executionPaperId = executionPaperId;
+            this.requestId = requestId;
+            this.status = status;
         }
     }
 

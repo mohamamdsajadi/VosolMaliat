@@ -4,13 +4,18 @@ public final class ProcessConstants {
 
     public static final String PROCESS_ID = "Process_0rtbdc5";
     public static final String TABSARE_3_186_PROCESS_ID = "Process_0eqvh8j";
+    public static final String GET_LAST_DEBT_STATUS_PROCESS_ID = "Process_09srbi7";
     /**
      * Versioned because older application deployments used automatic completion for this job.
      * Keeping a distinct type prevents a stale worker from completing a new process without
      * publishing the required {@link #VAR_CAN_ISSUE} variable.
      */
     public static final String JOB_CHECK_ISSUANCE = "check-issuance-possibility-v2";
-    public static final String JOB_ISSUE_PAPER = "issue-execution-paper";
+    /**
+     * Versioned so an older application replica with framework auto-completion enabled cannot
+     * advance a new process after issuance persistence fails.
+     */
+    public static final String JOB_ISSUE_PAPER = "issue-execution-paper-v2";
     public static final String JOB_SEND_REJECTION = "inform_sanim_rejection";
     public static final String JOB_SEND_EXECUTION_PAPER_ID_TO_SANIM = "send_execution_paper_id_to_sanim";
     public static final String JOB_CHECK_INFORM = "check-inform-possibility";
@@ -26,11 +31,14 @@ public final class ProcessConstants {
     public static final String JOB_SEND_RELATED_PERSONS_FOR_RESTRICTIONS =
             "send-related-persons-for-restrictions";
     public static final String JOB_STORE_RELATED_PERSONS = "store-related-persons";
+    public static final String JOB_GET_DEBT_FROM_SANIM = "get-debt-from-sanim";
+    public static final String JOB_UPDATE_TAXPAYER_PAYMENT_STATUS = "update-taxpayer-payment-status";
 
     public static final String MESSAGE_EXECUTION_PAPER_INFORMED = "ExecutionPaperInformed";
     public static final String MESSAGE_OFFICIAL_GAZETTE_RELATED_PERSONS_RECEIVED =
             "official_gazette_related_persons_received";
     public static final String MESSAGE_RESTRICTIONS_APPLIED = "restrictions_applied";
+    public static final String MESSAGE_TAXPAYER_DEBT = "taxPayerDebt";
 
     public static final String VAR_ISSUANCE_REQUEST_ID = "issuanceRequestId";
     public static final String VAR_DEBT_PAPER_PAYLOAD = "debtPaperPayload";
@@ -59,6 +67,9 @@ public final class ProcessConstants {
     public static final String VAR_INFORM_DATE = "InformDate";
     public static final String VAR_RE_INFORM_DATE = "reInformDate";
     public static final String VAR_NEXT_DEBT_INQUIRY_DATE = "nextDebtInquiryDate";
+    public static final String VAR_DEBT_INQUIRY_REQUEST_ID = "debtInquiryRequestId";
+    public static final String VAR_SANIM_DEBT_STATUS = "sanimDebtStatus";
+    public static final String VAR_DEBT_STATUS_UPDATED = "debtStatusUpdated";
 
     public static String restrictionRequestId(String officialGazetteRequestId) {
         return "restriction-" + officialGazetteRequestId;

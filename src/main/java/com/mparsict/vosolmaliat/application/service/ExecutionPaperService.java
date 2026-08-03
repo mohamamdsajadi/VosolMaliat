@@ -327,6 +327,13 @@ public class ExecutionPaperService {
             debt.put("taxCredit", di.getTaxCredit());
             debt.put("remainingTax", di.getRemainingTax());
             debt.put("totalDebt", di.getTotalDebt());
+            debt.put("sanimTotalDebtRials", di.getSanimTotalDebtRials());
+            debt.put("sanimTotalPenaltyRials", di.getSanimTotalPenaltyRials());
+            debt.put("sanimTotalPaymentRials", di.getSanimTotalPaymentRials());
+            debt.put("sanimTotalCreditRials", di.getSanimTotalCreditRials());
+            debt.put("sanimOutstandingDebtRials", di.getSanimOutstandingDebtRials());
+            debt.put("sanimLastActivityAt", di.getSanimLastActivityAt());
+            debt.put("lastDebtInquiryAt", di.getLastDebtInquiryAt());
         });
 
         Map<String, Object> notification = new LinkedHashMap<>();
@@ -559,6 +566,9 @@ public class ExecutionPaperService {
             case "INFORM_DATE_SENT_TO_SANIM" -> "ارسال تاریخ ابلاغ به سنیم";
             case "SANIM_MESSAGE_CONFIRMED" -> "تأیید دریافت پیام توسط سامانه سنیم";
             case "SANIM_INFORM_DATE_CONFIRMED" -> "تایید دریافت سنیم";
+            case "SANIM_DEBT_INQUIRY_SENT" -> "ارسال استعلام آخرین وضعیت بدهی به سنیم";
+            case "SANIM_DEBT_STATUS_RESPONDED" -> "دریافت آخرین وضعیت بدهی از سنیم";
+            case "TAXPAYER_DEBT_STATUS_UPDATED_FROM_SANIM" -> "به‌روزرسانی وضعیت بدهی مؤدی از سنیم";
             case "RELATED_PERSONS_REFRESHED_FROM_COMPANY_REGISTRY" ->
                     "بروزرسانی اشخاص مرتبط از سامانه ثبت شرکت‌ها";
             case "RELATED_PERSONS_STORED_FROM_OFFICIAL_GAZETTE" ->

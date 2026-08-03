@@ -52,6 +52,13 @@ class ExecutionPaperBpmnContractUnitTest {
     }
 
     @Test
+    void sanimIdTaskRequiresThePersistedExecutionPaperId() {
+        assertThat(inputMappings("Activity_1f7l5yj"))
+                .containsEntry(ProcessConstants.VAR_EXECUTION_PAPER_ID,
+                        "=" + ProcessConstants.VAR_EXECUTION_PAPER_ID);
+    }
+
+    @Test
     void legalExecutionPaperStartsTabsareProcess() {
         assertThat(sequenceTarget("Flow_07v2mwm")).isEqualTo("Gateway_1g0dphg");
         assertThat(sequenceTarget("Flow_0dk43em")).isEqualTo("Activity_0aeytw4");
@@ -113,6 +120,16 @@ class ExecutionPaperBpmnContractUnitTest {
         for (int i = 0; i < outputs.getLength(); i++) {
             Element output = (Element) outputs.item(i);
             mappings.put(output.getAttribute("target"), output.getAttribute("source"));
+        }
+        return mappings;
+    }
+
+    private Map<String, String> inputMappings(String activityId) {
+        NodeList inputs = elementById(activityId).getElementsByTagNameNS(ZEEBE, "input");
+        Map<String, String> mappings = new HashMap<>();
+        for (int i = 0; i < inputs.getLength(); i++) {
+            Element input = (Element) inputs.item(i);
+            mappings.put(input.getAttribute("target"), input.getAttribute("source"));
         }
         return mappings;
     }

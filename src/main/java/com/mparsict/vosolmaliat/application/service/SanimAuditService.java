@@ -70,8 +70,13 @@ public class SanimAuditService {
 
     @Transactional(readOnly = true)
     public SanimDebtStatusResponse inquire(Long taxpayerId) {
-        SanimTaxpayerOptionResponse taxpayer = taxpayerOption(requiredTaxpayer(taxpayerId));
+        SanimTaxpayerOptionResponse taxpayer = taxpayer(taxpayerId);
         return inquire(taxpayer.taxpayerType(), taxpayer.identifier());
+    }
+
+    @Transactional(readOnly = true)
+    public SanimTaxpayerOptionResponse taxpayer(Long taxpayerId) {
+        return taxpayerOption(requiredTaxpayer(taxpayerId));
     }
 
     @Transactional(readOnly = true)

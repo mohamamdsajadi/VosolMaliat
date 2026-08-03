@@ -66,7 +66,7 @@ sequenceDiagram
     API->>CAM: start Process_0rtbdc5
     CAM->>W: check-issuance-possibility-v2
     W->>DB: خواندن قوانین
-    CAM->>W: issue-execution-paper
+    CAM->>W: issue-execution-paper-v2
     W->>DB: ایجاد ExecutionPaper
     W-->>CAM: executionPaperId + organization variables
 ```
