@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import AppShell from '../components/app-shell';
 import JalaliInput from '../components/jalali-input';
 import RefreshButton from '../components/refresh-button';
@@ -35,6 +35,7 @@ export default function AllTasksPage() {
   const [message, setMessage] = useState("");
   const [filterForm, setFilterForm] = useState(EMPTY_FILTERS);
   const [filters, setFilters] = useState(EMPTY_FILTERS);
+  const handledTaskKeys = useRef(new Set());
 
   const loadTasks = useCallback(async () => {
     setLoadingTasks(true);
@@ -42,7 +43,7 @@ export default function AllTasksPage() {
     try {
       const [me, taskResult] = await Promise.all([fetchCurrentUser(), fetchCartableTasks(filters)]);
       setCurrentUser(me);
-      setTasks(taskResult);
+      setTasks(taskResult.filter((task) => !handledTaskKeys.current.has(String(task.taskKey))));
     } catch (error) {
       setMessage(error.message || "دریافت کارتابل با خطا روبه‌رو شد.");
       setTasks([]);
@@ -50,6 +51,12 @@ export default function AllTasksPage() {
       setLoadingTasks(false);
     }
   }, [filters]);
+
+  const removeHandledTask = useCallback((taskKey) => {
+    const normalizedTaskKey = String(taskKey);
+    handledTaskKeys.current.add(normalizedTaskKey);
+    setTasks((current) => current.filter((task) => String(task.taskKey) !== normalizedTaskKey));
+  }, []);
 
   useEffect(() => {
     loadTasks();
@@ -181,6 +188,7 @@ export default function AllTasksPage() {
                       index={index}
                       task={task}
                       onChanged={loadTasks}
+                      onHandled={removeHandledTask}
                       readOnly={isAdmin}
                       zebra={index % 2 === 1}
                     />
@@ -195,7 +203,7 @@ export default function AllTasksPage() {
   );
 }
 
-function CartableTaskRow({ task, index, onChanged, readOnly, zebra }) {
+function CartableTaskRow({ task, index, onChanged, onHandled, readOnly, zebra }) {
   const [targets, setTargets] = useState([]);
   const [target, setTarget] = useState('');
   const [loadingTargets, setLoadingTargets] = useState(false);
@@ -248,7 +256,7 @@ function CartableTaskRow({ task, index, onChanged, readOnly, zebra }) {
     setMessage('');
     try {
       await delegateTask(task.taskKey, { assignee: target });
-      await onChanged();
+      onHandled(task.taskKey);
     } catch (error) {
       setMessage(error.message || 'ارجاع کاربر ناموفق بود.');
     } finally {
@@ -264,7 +272,7 @@ function CartableTaskRow({ task, index, onChanged, readOnly, zebra }) {
     setMessage('');
     try {
       await completeTask(task.taskKey, { finishExecutionPaperCheck: true });
-      await onChanged();
+      onHandled(task.taskKey);
     } catch (error) {
       setMessage(error.message || 'پایان بررسی برگ اجرا ناموفق بود.');
     } finally {
