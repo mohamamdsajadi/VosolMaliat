@@ -5,6 +5,7 @@ import com.mparsict.vosolmaliat.application.dto.response.IssuanceResponse;
 import com.mparsict.vosolmaliat.application.dto.request.Tabsare3186TestStartRequest;
 import com.mparsict.vosolmaliat.application.dto.response.Tabsare3186TestStartResponse;
 import com.mparsict.vosolmaliat.common.exception.BusinessException;
+import com.mparsict.vosolmaliat.domain.model.execution.ExecutionPaper;
 import com.mparsict.vosolmaliat.infrastructure.camunda.ProcessConstants;
 import io.camunda.client.CamundaClient;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ public class CamundaProcessService {
     private static final Logger LOG = LoggerFactory.getLogger(CamundaProcessService.class);
 
     private final CamundaClient camundaClient;
+    private final ExecutionPaperWorkflowVariablesFactory workflowVariablesFactory;
 
     public IssuanceResponse startExecutionPaperIssuanceProcess(
             Long issuanceRequestId,
@@ -59,6 +61,34 @@ public class CamundaProcessService {
             throw new BusinessException(
                     "PROCESS_START_FAILED",
                     "خطا در راه‌اندازی فرایند صدور برگ اجرا: " + e.getMessage()
+            );
+        }
+    }
+
+    /** Starts the existing process after its issuance task for a synchronously persisted paper. */
+    public long startPostIssuanceProcess(ExecutionPaper paper, DebtPaperIssuanceRequest request) {
+        try {
+            Map<String, Object> variables = workflowVariablesFactory.create(paper, request);
+            var processInstance = camundaClient
+                    .newCreateInstanceCommand()
+                    .bpmnProcessId(ProcessConstants.PROCESS_ID)
+                    .latestVersion()
+                    .startBeforeElement(ProcessConstants.POST_ISSUANCE_START_ELEMENT_ID)
+                    .variables(variables)
+                    .send()
+                    .join();
+            LOG.info(
+                    "Started post-issuance process: processInstanceKey={}, executionPaperId={}",
+                    processInstance.getProcessInstanceKey(),
+                    paper.getId()
+            );
+            return processInstance.getProcessInstanceKey();
+        } catch (Exception exception) {
+            LOG.error("Error starting post-issuance process for executionPaperId={}", paper.getId(), exception);
+            throw new BusinessException(
+                    "PROCESS_START_FAILED",
+                    "خطا در راه‌اندازی فرایند برگ اجرا: " + exception.getMessage(),
+                    exception
             );
         }
     }

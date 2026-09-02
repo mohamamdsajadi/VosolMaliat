@@ -18,6 +18,7 @@ import com.mparsict.vosolmaliat.domain.repository.ExecutionPaperRepository;
 import com.mparsict.vosolmaliat.domain.repository.ExecutionPaperRejectionRuleRepository;
 import com.mparsict.vosolmaliat.domain.repository.TaxUnitRepository;
 import com.mparsict.vosolmaliat.infrastructure.camunda.ProcessConstants;
+import com.mparsict.vosolmaliat.infrastructure.camunda.service.ExecutionPaperWorkflowVariablesFactory;
 import com.mparsict.vosolmaliat.infrastructure.camunda.worker.CheckInformPossibilityWorker;
 import com.mparsict.vosolmaliat.infrastructure.camunda.worker.CheckIssuancePossibilityWorker;
 import com.mparsict.vosolmaliat.infrastructure.camunda.worker.GetDebtFromSanimWorker;
@@ -189,7 +190,7 @@ class CamundaJobWorkersUnitTest {
         IssueExecutionPaperWorker worker = new IssueExecutionPaperWorker(
                 executionPaperService,
                 new StubIssuanceRequestService(),
-                taxUnitRepository(70L, 700L),
+                new ExecutionPaperWorkflowVariablesFactory(taxUnitRepository(70L, 700L)),
                 objectMapper
         );
         CamundaJobClientStub client = new CamundaJobClientStub();

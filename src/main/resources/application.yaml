@@ -60,6 +60,13 @@ server:
       force: true
 
 app:
+  integration:
+    debt-paper:
+      security:
+        username: ${DEBT_PAPER_BASIC_USERNAME:}
+        # Supply a DelegatingPasswordEncoder value such as {bcrypt}$2a$...; never commit the secret.
+        password-hash: ${DEBT_PAPER_BASIC_PASSWORD_HASH:}
+        access-ids: ${DEBT_PAPER_ACCESS_IDS:}
   test:
     database-reset:
       # Destructive test utility. Enable only in an isolated development/test environment.
