@@ -43,6 +43,12 @@ public class DebtPaperAccessIdFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
+        boolean integrationCaller = authentication.getAuthorities().stream()
+                .anyMatch(authority -> "DEBT_PAPER_PUSH".equals(authority.getAuthority()));
+        if (!integrationCaller) {
+            filterChain.doFilter(request, response);
+            return;
+        }
         String supplied = request.getHeader("AccessID");
         if (!allowed(supplied)) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);

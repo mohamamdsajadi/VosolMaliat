@@ -13,7 +13,6 @@ function enabledUsers(users) {
 function moduleCards(users, permissions, taxUnits) {
   return [
     {href:'/admin/ef03-receipts',eyebrow:'دریافت',title:'دریافت EF03',description:'ورود فایل برگه سنیم و ثبت درخواست صدور.',stat:'',statLabel:''},
-    {href: '/admin/identity-verifications', eyebrow: 'استعلام', title: 'شبیه‌ساز تأیید هویت', description: 'پاسخ استعلام هویت و ادامه درخواست‌های صدور منتظر تأیید.', stat: '', statLabel: ''},
     {
       href: '/admin/users',
       eyebrow: 'کاربران',

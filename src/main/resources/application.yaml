@@ -3,7 +3,7 @@ spring:
     name: vosol-maliat
 
   datasource:
-    url: jdbc:sqlite:${DB_PATH:/home/mohammad/IdeaProjects/VosolMaliat/ef03.sqlite}
+    url: jdbc:sqlite:${DB_PATH:./ef03.sqlite}
     driver-class-name: org.sqlite.JDBC
     hikari:
       connection-init-sql: PRAGMA foreign_keys=ON

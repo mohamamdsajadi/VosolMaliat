@@ -858,7 +858,7 @@ class CamundaJobWorkersUnitTest {
         private DebtPaperIssuanceRequest createdRequest;
 
         private StubExecutionPaperService(ExecutionPaper executionPaper) {
-            super(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+            super(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
             this.executionPaper = executionPaper;
         }
 

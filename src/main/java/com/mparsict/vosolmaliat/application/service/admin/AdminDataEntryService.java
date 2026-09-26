@@ -66,8 +66,10 @@ public class AdminDataEntryService {
 
         if (finalizedDebtPaper.getSourceDocument() != null && "LTR_EF03".equals(finalizedDebtPaper.getSourceDocument().getTemplateCode()))
             throw new BusinessException("EF03_RECEIPT_REQUIRED", "برای EF03 از مسیر دریافت و تأیید هویت استفاده کنید");
+        var number = uniqueCodeGenerator.generateExecutionPaperNumber();
         ExecutionPaper saved = executionPaperRepository.save(ExecutionPaper.builder()
-                .executionPaperUniqueCode(uniqueCodeGenerator.generateExecutionPaperCode())
+                .id(number.id())
+                .executionPaperUniqueCode(number.code())
                 .issuanceDate(java.time.LocalDateTime.now(java.time.ZoneId.of("Asia/Tehran")))
                 .finalizationReason(finalizedDebtPaper.getFinalizationReason())
                 .finalizedDebtPaper(finalizedDebtPaper)

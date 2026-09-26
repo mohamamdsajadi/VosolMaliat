@@ -3,6 +3,7 @@ package com.mparsict.vosolmaliat.presentation.api;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mparsict.vosolmaliat.application.dto.request.DebtPaperPushRequest;
 import com.mparsict.vosolmaliat.application.service.DebtPaperPushService;
+import com.mparsict.vosolmaliat.application.dto.response.IssuanceResponse;
 import com.mparsict.vosolmaliat.common.exception.DebtPaperPushExceptionHandler;
 import com.mparsict.vosolmaliat.common.web.DebtPaperTraceFilter;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,7 +42,9 @@ class DebtPaperPushControllerTest {
 
     @Test
     void pushReturnsGatewayEnvelopeWithGeneratedId() throws Exception {
-        when(service.push(any(DebtPaperPushRequest.class), anyString())).thenReturn(4654658719685198198L);
+        when(service.push(any(DebtPaperPushRequest.class), anyString())).thenReturn(
+                new IssuanceResponse(true, 4654658719685198198L, "14050000001",
+                        null, null, null, "issued"));
 
         mockMvc.perform(post(DebtPaperTraceFilter.ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -74,11 +77,13 @@ class DebtPaperPushControllerTest {
         verifyNoInteractions(service);
     }
 
-    @Test void pendingIdentityReturnsAcceptedWithoutAnIssuedPaper() throws Exception {
-        when(service.push(any(),anyString())).thenReturn(null);
+    @Test void ruleRejectionReturnsReasonAndNextRetryDate() throws Exception {
+        when(service.push(any(),anyString())).thenReturn(new IssuanceResponse(false, null, null,
+                "ACTIVE_RESTRICTION", "Restriction is active", "1405/08/01", "rejected"));
         mockMvc.perform(post(DebtPaperTraceFilter.ENDPOINT).contentType(MediaType.APPLICATION_JSON).content(validRequest()))
-                .andExpect(status().isAccepted())
-                .andExpect(jsonPath("$.apiGatewayData.executionPaperID").doesNotExist());
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.apiGatewayData.rejectionReasonCode").value("ACTIVE_RESTRICTION"))
+                .andExpect(jsonPath("$.apiGatewayData.nextRetryDate").value("1405/08/01"));
     }
 
     @Test void missingRegistrationTraceIsRejectedBeforeProcessing() throws Exception {

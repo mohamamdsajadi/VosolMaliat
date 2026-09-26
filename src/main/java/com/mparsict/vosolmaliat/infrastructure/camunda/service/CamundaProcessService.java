@@ -5,7 +5,6 @@ import com.mparsict.vosolmaliat.application.dto.response.IssuanceResponse;
 import com.mparsict.vosolmaliat.application.dto.request.Tabsare3186TestStartRequest;
 import com.mparsict.vosolmaliat.application.dto.response.Tabsare3186TestStartResponse;
 import com.mparsict.vosolmaliat.common.exception.BusinessException;
-import com.mparsict.vosolmaliat.domain.model.execution.ExecutionPaper;
 import com.mparsict.vosolmaliat.infrastructure.camunda.ProcessConstants;
 import io.camunda.client.CamundaClient;
 import lombok.RequiredArgsConstructor;
@@ -24,8 +23,6 @@ public class CamundaProcessService {
     private static final Logger LOG = LoggerFactory.getLogger(CamundaProcessService.class);
 
     private final CamundaClient camundaClient;
-    private final ExecutionPaperWorkflowVariablesFactory workflowVariablesFactory;
-
     public IssuanceResponse startExecutionPaperIssuanceProcess(
             Long issuanceRequestId,
             DebtPaperIssuanceRequest debtPaperPayload) {
@@ -34,27 +31,38 @@ public class CamundaProcessService {
             processVariables.put(ProcessConstants.VAR_ISSUANCE_REQUEST_ID, issuanceRequestId);
             processVariables.put(ProcessConstants.VAR_DEBT_PAPER_PAYLOAD, debtPaperPayload);
 
-            var processInstance = camundaClient
+            var processResult = camundaClient
                     .newCreateInstanceCommand()
                     .bpmnProcessId(ProcessConstants.PROCESS_ID)
                     .latestVersion()
                     .variables(processVariables)
+                    .withResult()
                     .send()
                     .join();
 
+            Map<String, Object> result = processResult.getVariablesAsMap();
+            boolean success = Boolean.TRUE.equals(result.get(ProcessConstants.VAR_SUCCESS));
+            Long executionPaperId = number(result.get(ProcessConstants.VAR_EXECUTION_PAPER_ID));
+            String executionPaperCode = text(result.get(ProcessConstants.VAR_EXECUTION_PAPER_CODE));
+            String rejectionCode = text(result.get(ProcessConstants.VAR_REJECTION_CODE));
+            String rejectionDescription = text(result.get(ProcessConstants.VAR_REJECTION_DESC));
+            String restrictionRemovalDate = text(result.get(ProcessConstants.VAR_RESTRICTION_REMOVAL_DATE));
+
             LOG.info(
-                    "Started execution paper process: processInstanceKey={}, issuanceRequestId={}",
-                    processInstance.getProcessInstanceKey(),
-                    issuanceRequestId
+                    "Completed execution paper decision: processInstanceKey={}, issuanceRequestId={}, success={}",
+                    processResult.getProcessInstanceKey(),
+                    issuanceRequestId,
+                    success
             );
 
             return new IssuanceResponse(
-                    true,
-                    null,
-                    null,
-                    null,
-                    null,
-                    "درخواست دریافت شد و فرایند صدور برگ اجرا آغاز شد"
+                    success,
+                    executionPaperId,
+                    executionPaperCode,
+                    rejectionCode,
+                    rejectionDescription,
+                    restrictionRemovalDate,
+                    success ? "برگ اجرا با موفقیت صادر شد" : "صدور برگ اجرا توسط قوانین رد شد"
             );
         } catch (Exception e) {
             LOG.error("Error starting execution paper issuance process", e);
@@ -65,32 +73,12 @@ public class CamundaProcessService {
         }
     }
 
-    /** Starts the existing process after its issuance task for a synchronously persisted paper. */
-    public long startPostIssuanceProcess(ExecutionPaper paper, DebtPaperIssuanceRequest request) {
-        try {
-            Map<String, Object> variables = workflowVariablesFactory.create(paper, request);
-            var processInstance = camundaClient
-                    .newCreateInstanceCommand()
-                    .bpmnProcessId(ProcessConstants.PROCESS_ID)
-                    .latestVersion()
-                    .startBeforeElement(ProcessConstants.POST_ISSUANCE_START_ELEMENT_ID)
-                    .variables(variables)
-                    .send()
-                    .join();
-            LOG.info(
-                    "Started post-issuance process: processInstanceKey={}, executionPaperId={}",
-                    processInstance.getProcessInstanceKey(),
-                    paper.getId()
-            );
-            return processInstance.getProcessInstanceKey();
-        } catch (Exception exception) {
-            LOG.error("Error starting post-issuance process for executionPaperId={}", paper.getId(), exception);
-            throw new BusinessException(
-                    "PROCESS_START_FAILED",
-                    "خطا در راه‌اندازی فرایند برگ اجرا: " + exception.getMessage(),
-                    exception
-            );
-        }
+    private Long number(Object value) {
+        return value instanceof Number number ? number.longValue() : null;
+    }
+
+    private String text(Object value) {
+        return value == null ? null : value.toString();
     }
 
     public Tabsare3186TestStartResponse startTabsare3186TestProcess(Tabsare3186TestStartRequest request) {

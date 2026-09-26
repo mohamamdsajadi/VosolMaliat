@@ -32,6 +32,7 @@ public class DemoDataInitializer {
     private final ExecutionPaperRepository executionPaperRepository;
     private final DebtInformationRepository debtInformationRepository;
     private final TransactionTemplate transactionTemplate;
+    private final com.mparsict.vosolmaliat.common.util.UniqueCodeGenerator uniqueCodeGenerator;
 
     @Bean
     CommandLineRunner seedDemoDashboardData() {
@@ -86,7 +87,9 @@ public class DemoDataInitializer {
     }
 
     private void createExecutionPaper(String code, Long taxpayerId, ExecutionPaperState state, Double remainingTax) {
+        var number = uniqueCodeGenerator.generateExecutionPaperNumber();
         ExecutionPaper executionPaper = executionPaperRepository.save(ExecutionPaper.builder()
+                .id(number.id())
                 .executionPaperUniqueCode(code)
                 .finalizedDebtPaper(FinalizedDebtPaper.builder().id(1000L + Math.abs(code.hashCode() % 1000)).build())
                 .taxpayer(Taxpayer.builder().id(taxpayerId).build())

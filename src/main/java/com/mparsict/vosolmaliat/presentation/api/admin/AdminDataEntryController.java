@@ -20,8 +20,6 @@ import org.springframework.web.bind.annotation.*;
 public class AdminDataEntryController {
 
     private final AdminDataEntryService adminDataEntryService;
-    private final com.mparsict.vosolmaliat.application.service.Ef03ReceptionService ef03Reception;
-
     @GetMapping("/summary")
     @PreAuthorize("hasAuthority('REPORT_VIEW')")
     public AdminDataSummaryResponse summary() {
@@ -31,7 +29,7 @@ public class AdminDataEntryController {
     @PostMapping("/finalized-debt-papers")
     @PreAuthorize("hasAuthority('USER_PROFILE_CREATE')")
     public org.springframework.http.ResponseEntity<?> createFinalizedDebtPaper(@RequestBody @Valid DebtPaperIssuanceRequest request) {
-        if (isEf03(request)) return receiveEf03(request);
+        rejectEf03(request);
         return org.springframework.http.ResponseEntity.status(HttpStatus.CREATED)
                 .body(adminDataEntryService.createFinalizedDebtPaperAndExecutionPaper(request));
     }
@@ -39,22 +37,16 @@ public class AdminDataEntryController {
     @PostMapping("/finalized-debt-papers/send")
     @PreAuthorize("hasAuthority('USER_PROFILE_CREATE')")
     public org.springframework.http.ResponseEntity<?> sendFinalizedDebtPaper(@RequestBody @Valid DebtPaperIssuanceRequest request) {
-        if (isEf03(request)) return receiveEf03(request);
+        rejectEf03(request);
         return org.springframework.http.ResponseEntity.ok(adminDataEntryService.sendFinalizedDebtPaperToWorkflow(request));
     }
 
-    private boolean isEf03(DebtPaperIssuanceRequest request) {
-        return request.sourceDocument() != null && ("LTR_EF03".equals(request.sourceDocument().getTemplateCode())
-                || "EF03".equals(request.sourceDocument().getTemplateCode()));
-    }
-
-    private org.springframework.http.ResponseEntity<?> receiveEf03(DebtPaperIssuanceRequest request) {
-        var source = request.sourceDocument();
-        if (source.getXml() == null || source.getXml().isBlank())
-            throw new com.mparsict.vosolmaliat.common.exception.BusinessException("EF03_XML_REQUIRED", "XML اصلی EF03 لازم است");
-        var result = ef03Reception.receive(source.getXml(), request.debtPaperUniqueCode(), source.getRegistrationTraceCode(),
-                source.getSourceTaxOfficeCode(), request.taxSource());
-        return org.springframework.http.ResponseEntity.status(result.executionPaperId() == null ? 202 : 200).body(result);
+    private void rejectEf03(DebtPaperIssuanceRequest request) {
+        if (request.sourceDocument() != null && ("LTR_EF03".equals(request.sourceDocument().getTemplateCode())
+                || "EF03".equals(request.sourceDocument().getTemplateCode()))) {
+            throw new com.mparsict.vosolmaliat.common.exception.BusinessException("EF03_PUSH_REQUIRED",
+                    "EF03 must be submitted through POST /api/v1/debt-papers/push");
+        }
     }
 
     @PostMapping("/execution-papers")

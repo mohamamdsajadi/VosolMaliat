@@ -20,5 +20,15 @@
         </library>
       </libraries>
     </data-source>
+    <data-source source="LOCAL" name="ef03.sqlite" uuid="ff6b6411-9a7d-40a9-929c-d9790b642c5d">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:D:\programing - in Action\VosolMaliat\ef03.sqlite</jdbc-url>
+      <jdbc-additional-properties>
+        <property name="com.intellij.clouds.kubernetes.db.enabled" value="false" />
+      </jdbc-additional-properties>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
   </component>
 </project>

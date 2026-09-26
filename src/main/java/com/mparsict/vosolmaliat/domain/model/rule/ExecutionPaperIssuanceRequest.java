@@ -14,8 +14,6 @@ import lombok.*;
 @Builder
 public class ExecutionPaperIssuanceRequest extends BaseEntity {
     @Column(name="xml", columnDefinition="TEXT") private String xml;
-    private String identityStatus;
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

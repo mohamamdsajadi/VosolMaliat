@@ -63,8 +63,10 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth.anyRequest().hasAuthority("DEBT_PAPER_PUSH"))
+                .authorizeHttpRequests(auth -> auth.anyRequest().hasAnyAuthority(
+                        "DEBT_PAPER_PUSH", "USER_PROFILE_ASSIGN_ORGANIZATION"))
                 .authenticationProvider(debtPaperAuthenticationProvider)
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter)))
                 .httpBasic(basic -> basic.authenticationEntryPoint((request, response, exception) -> {
                     response.setStatus(401);
                     response.setContentType("application/json");

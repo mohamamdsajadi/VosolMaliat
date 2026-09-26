@@ -12,9 +12,17 @@ package com.mparsict.vosolmaliat.application.dto.response;
  */
 public record IssuanceResponse(
         boolean success,
+        Long executionPaperId,
         String executionPaperUniqueCode,
         String rejectionReasonCode,
         String rejectionReasonDescription,
         String restrictionRemovalDate,
         String message
-) {}
+) {
+    public IssuanceResponse(boolean success, String executionPaperUniqueCode,
+            String rejectionReasonCode, String rejectionReasonDescription,
+            String restrictionRemovalDate, String message) {
+        this(success, null, executionPaperUniqueCode, rejectionReasonCode,
+                rejectionReasonDescription, restrictionRemovalDate, message);
+    }
+}

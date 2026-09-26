@@ -40,6 +40,9 @@ public class CheckIssuancePossibilityWorker {
 
             outputVars = new HashMap<>();
             outputVars.put(ProcessConstants.VAR_CAN_ISSUE, result.canIssue());
+            outputVars.put(ProcessConstants.VAR_REJECTION_CODE, "");
+            outputVars.put(ProcessConstants.VAR_REJECTION_DESC, "");
+            outputVars.put(ProcessConstants.VAR_RESTRICTION_REMOVAL_DATE, "");
 
             if (!result.canIssue()) {
                 outputVars.put(ProcessConstants.VAR_REJECTION_CODE, result.rejectionReasonCode());

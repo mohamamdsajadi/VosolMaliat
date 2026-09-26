@@ -21,7 +21,6 @@ public class ExecutionPaper extends BaseEntity {
     @JoinColumn(name="sending_unit_id", updatable=false) private TaxUnit sendingUnit;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "execution_paper_unique_code", unique = true)

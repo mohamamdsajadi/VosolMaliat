@@ -44,7 +44,6 @@ public class IssuanceRequestService {
                 .debtPaperUniqueCode(request.debtPaperUniqueCode())
                 .payload(json)
                 .xml(request.sourceDocument().getXml())
-                .identityStatus("PENDING")
                 .hash(hash)
                 .build();
 

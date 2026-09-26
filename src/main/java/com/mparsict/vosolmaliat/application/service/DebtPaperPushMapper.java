@@ -92,7 +92,7 @@ public class DebtPaperPushMapper {
             else if (identifier.matches("[0-9]{10}")) type = "NATURAL";
             else if (identifier.matches("[0-9]{11}")) type = "LEGAL";
             else throw invalid("Taxpayer type cannot be resolved; review required.");
-            // Length routes the simulator; it does not constitute identity verification.
+            // EF03 identifiers use the contract's fixed national-code/national-ID lengths.
         }
         if (type.equals("NATURAL") && !natural && !identifier.matches("[0-9]{10}"))
             throw invalid("Natural person identity requires review.");

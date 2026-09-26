@@ -28,7 +28,7 @@ class IssuanceControllerTest {
                "totalDutyAmount":"0","totalPenaltyAmount":"2","totalPaidAmount":"3",
                "totalCreditAmount":"0","totalRemissionAmount":"0"}}}
         """;
-    @BeforeEach void setup() { mvc = MockMvcBuilders.standaloneSetup(new IssuanceController(issuance, workflow, new ObjectMapper(), null)).setControllerAdvice(new com.mparsict.vosolmaliat.common.exception.GlobalExceptionHandler()).build(); }
+    @BeforeEach void setup() { mvc = MockMvcBuilders.standaloneSetup(new IssuanceController(issuance, workflow, new ObjectMapper())).setControllerAdvice(new com.mparsict.vosolmaliat.common.exception.GlobalExceptionHandler()).build(); }
     @Test void usesOnlySourceDocumentAggregatesWithoutRounding() throws Exception {
         when(issuance.findByHash(anyString())).thenReturn(Optional.empty());
         when(issuance.createAndSave(any())).thenReturn(ExecutionPaperIssuanceRequest.builder().id(42L).build());

@@ -3,6 +3,7 @@ package com.mparsict.vosolmaliat.presentation.api;
 import com.mparsict.vosolmaliat.application.dto.request.DebtPaperPushRequest;
 import com.mparsict.vosolmaliat.application.dto.response.ApiGatewayResponse;
 import com.mparsict.vosolmaliat.application.dto.response.DebtPaperPushData;
+import com.mparsict.vosolmaliat.application.dto.response.IssuanceResponse;
 import com.mparsict.vosolmaliat.application.service.DebtPaperPushService;
 import com.mparsict.vosolmaliat.common.web.DebtPaperTraceFilter;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,13 +28,14 @@ public class DebtPaperPushController {
             @RequestBody @Valid DebtPaperPushRequest request,
             HttpServletRequest httpRequest) {
         String traceId = DebtPaperTraceFilter.traceId(httpRequest);
-        Long executionPaperId = debtPaperPushService.push(request, traceId);
-        if (executionPaperId == null) return ResponseEntity.accepted().body(ApiGatewayResponse.success(
-                new DebtPaperPushData(null), traceId, "درخواست دریافت شد و در انتظار تأیید هویت است؛ هنوز برگه‌ای صادر نشده است."));
-        return ResponseEntity.ok(ApiGatewayResponse.success(
-                new DebtPaperPushData(executionPaperId),
-                traceId,
-                "Debt Paper received and Execution Paper created successfully."
-        ));
+        IssuanceResponse result = debtPaperPushService.push(request, traceId);
+        DebtPaperPushData data = DebtPaperPushData.from(result);
+        if (!result.success()) {
+            String message = result.rejectionReasonDescription() == null
+                    ? result.message() : result.rejectionReasonDescription();
+            return ResponseEntity.unprocessableEntity().body(ApiGatewayResponse.failure(
+                    data, traceId, true, -7, message));
+        }
+        return ResponseEntity.ok(ApiGatewayResponse.success(data, traceId, result.message()));
     }
 }

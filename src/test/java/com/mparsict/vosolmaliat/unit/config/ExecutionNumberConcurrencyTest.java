@@ -64,4 +64,11 @@ class ExecutionNumberConcurrencyTest {
         assertThat(UniqueCodeGenerator.persianYear(LocalDate.of(2025,3,20))).isEqualTo(1403);
         assertThat(UniqueCodeGenerator.persianYear(LocalDate.of(2025,3,21))).isEqualTo(1404);
     }
+    @Test void generatedInternalIdIsJalaliYearFollowedBySevenDigits() {
+        try(var factory=factory("create")) {
+            var number = allocator(factory).generateNumberForYear(1405);
+            assertThat(number.id()).isEqualTo(14050000001L);
+            assertThat(number.code()).isEqualTo("14050000001");
+        }
+    }
 }

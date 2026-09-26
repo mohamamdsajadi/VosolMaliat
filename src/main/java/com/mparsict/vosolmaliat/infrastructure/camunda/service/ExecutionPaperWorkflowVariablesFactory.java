@@ -22,7 +22,15 @@ public class ExecutionPaperWorkflowVariablesFactory {
 
     public Map<String, Object> create(ExecutionPaper paper, DebtPaperIssuanceRequest request) {
         Map<String, Object> variables = new HashMap<>();
-        addOrganizationVariables(variables, paper.getTaxUnitId());
+        variables.put(ProcessConstants.VAR_GENERAL_DIRECTORATE_ID, null);
+        variables.put(ProcessConstants.VAR_TAX_AFFAIRS_OFFICE_ID, null);
+        variables.put(ProcessConstants.VAR_GENERAL_OFFICE_HEAD_CANDIDATE_GROUPS, List.of());
+        variables.put(ProcessConstants.VAR_TAX_OFFICE_HEAD_CANDIDATE_GROUPS, List.of());
+        variables.put(ProcessConstants.VAR_TAX_UNIT_HEAD_CANDIDATE_GROUPS, List.of());
+        variables.put(ProcessConstants.VAR_TAX_EXPERT_CANDIDATE_GROUPS, List.of());
+        if (paper.getTaxUnitId() != null) {
+            addOrganizationVariables(variables, paper.getTaxUnitId());
+        }
         addLegalTaxpayerVariables(variables, request);
         variables.put(ProcessConstants.VAR_EXECUTION_PAPER_ID, paper.getId());
         variables.put(ProcessConstants.VAR_EXECUTION_PAPER_CODE, paper.getExecutionPaperUniqueCode());
@@ -55,9 +63,6 @@ public class ExecutionPaperWorkflowVariablesFactory {
     }
 
     private void addOrganizationVariables(Map<String, Object> variables, Long taxUnitId) {
-        if (taxUnitId == null) {
-            throw new BusinessException("EXECUTION_PAPER_ORGANIZATION_REQUIRED", "واحد مالیاتی برگ اجرا مشخص نشده است");
-        }
         Long taxAffairsOfficeId = taxUnitRepository.findTaxAffairsOfficeIdByTaxUnitId(taxUnitId)
                 .orElseThrow(() -> new BusinessException("TAX_OFFICE_NOT_FOUND_FOR_UNIT", "اداره مالیاتی واحد برگ اجرا یافت نشد"));
         Long generalDirectorateId = taxUnitRepository.findGeneralDirectorateIdByTaxUnitId(taxUnitId)

@@ -2,11 +2,9 @@ package com.mparsict.vosolmaliat.domain.enums;
 
 public enum DebtPaperProcessingStatus {
     RECEIVED,
-    WAITING_IDENTITY,
-    REJECTED_IDENTITY,
+    PROCESSING,
+    REJECTED_BY_RULE,
     NEEDS_REVIEW,
-    WAITING_ORGANIZATION,
-    PAPER_CREATED,
     SUCCESS,
     WORKFLOW_START_FAILED
 }

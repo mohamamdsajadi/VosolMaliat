@@ -19,6 +19,15 @@ public class UniqueCodeGenerator {
         return generateForYear(persianYear(LocalDate.now(ZoneId.of("Asia/Tehran"))));
     }
     @Transactional
+    public ExecutionPaperNumber generateExecutionPaperNumber() {
+        return generateNumberForYear(persianYear(LocalDate.now(ZoneId.of("Asia/Tehran"))));
+    }
+    @Transactional
+    public ExecutionPaperNumber generateNumberForYear(int year) {
+        String value = generateForYear(year);
+        return new ExecutionPaperNumber(Long.parseLong(value), value);
+    }
+    @Transactional
     public String generateForYear(int year) {
         if (year < 1 || year > 9999) throw new IllegalArgumentException("Invalid issuance year");
         lockIssuance();
@@ -42,5 +51,6 @@ public class UniqueCodeGenerator {
         if (days > 365) jy += (days - 1) / 365;
         return jy;
     }
+    public record ExecutionPaperNumber(Long id, String code) {}
     public String generateHash(String input) { return HashUtil.sha256(input); }
 }

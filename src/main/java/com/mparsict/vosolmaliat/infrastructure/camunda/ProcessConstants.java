@@ -3,7 +3,6 @@ package com.mparsict.vosolmaliat.infrastructure.camunda;
 public final class ProcessConstants {
 
     public static final String PROCESS_ID = "Process_0rtbdc5";
-    public static final String POST_ISSUANCE_START_ELEMENT_ID = "Gateway_0fw9zja";
     public static final String TABSARE_3_186_PROCESS_ID = "Process_0eqvh8j";
     public static final String GET_LAST_DEBT_STATUS_PROCESS_ID = "Process_09srbi7";
     /**

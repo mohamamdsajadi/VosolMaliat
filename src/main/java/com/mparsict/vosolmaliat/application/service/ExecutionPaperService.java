@@ -60,18 +60,10 @@ public class ExecutionPaperService {
     private final AuditLogService auditLogService;
     private final UniqueCodeGenerator uniqueCodeGenerator;
     private final ExecutionPaperIssuanceRequestRepository issuanceRequestRepository;
-    private final FakeIdentityVerificationService identities;
-
     @Transactional
     public ExecutionPaper createFromRequest(DebtPaperIssuanceRequest request) {
-        return createFromRequest(request, false);
-    }
-
-    @Transactional
-    public ExecutionPaper createFromRequest(DebtPaperIssuanceRequest request, boolean skipIdentityVerification) {
         uniqueCodeGenerator.lockIssuance();
         SanimModelValidation.requireDocument(request.sourceDocument());
-        var verifiedPerson = skipIdentityVerification ? request.taxpayer() : identities.verifiedPerson(request);
         var organization = resolveOrganization(request);
         // 1. Find or create FinalizedDebtPaper
         FinalizedDebtPaper fdp = finalizedDebtPaperRepository
@@ -94,7 +86,7 @@ public class ExecutionPaperService {
         // 2. Find or create the person and taxpayer
         Long naturalPersonId = null;
         Long legalPersonId = null;
-        DebtPaperIssuanceRequest.TaxpayerInfo tpInfo = verifiedPerson;
+        DebtPaperIssuanceRequest.TaxpayerInfo tpInfo = request.taxpayer();
 
         if ("NATURAL".equalsIgnoreCase(tpInfo.type())) {
             NaturalPerson np = resolveNaturalPerson(tpInfo);
@@ -134,9 +126,11 @@ public class ExecutionPaperService {
 
         // 3. Create ExecutionPaper with UNASSIGNED state
         LocalDateTime issuanceDate = LocalDateTime.now(java.time.ZoneId.of("Asia/Tehran"));
-        String epCode = uniqueCodeGenerator.generateForYear(UniqueCodeGenerator.persianYear(issuanceDate.toLocalDate()));
+        var number = uniqueCodeGenerator.generateNumberForYear(
+                UniqueCodeGenerator.persianYear(issuanceDate.toLocalDate()));
         ExecutionPaper ep = ExecutionPaper.builder()
-                .executionPaperUniqueCode(epCode)
+                .id(number.id())
+                .executionPaperUniqueCode(number.code())
                 .issuanceDate(issuanceDate)
                 .finalizationReason(request.sourceDocument().getIssuanceReason())
                 .sendingUnit(request.sendingUnitId() == null ? null : TaxUnit.builder().id(request.sendingUnitId()).build())

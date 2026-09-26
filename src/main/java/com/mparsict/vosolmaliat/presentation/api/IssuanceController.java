@@ -27,17 +27,9 @@ public class IssuanceController {
     private final IssuanceRequestService issuanceRequestService;
     private final CamundaProcessService camundaProcessService;
     private final ObjectMapper objectMapper;
-    private final com.mparsict.vosolmaliat.application.service.Ef03ReceptionService ef03Reception;
-
     @PostMapping("/issue")
     public ResponseEntity<?> issue(@RequestBody JsonNode body) {
         DebtPaperIssuanceRequest request = toIssuanceRequest(body);
-        if ("LTR_EF03".equals(request.sourceDocument().getTemplateCode()) || "EF03".equals(request.sourceDocument().getTemplateCode())) {
-            var source=request.sourceDocument();
-            if(source.getXml()==null || source.getXml().isBlank()) throw new com.mparsict.vosolmaliat.common.exception.BusinessException("EF03_XML_REQUIRED","XML اصلی EF03 لازم است");
-            var result=ef03Reception.receive(source.getXml(),request.debtPaperUniqueCode(),source.getRegistrationTraceCode(),source.getSourceTaxOfficeCode(),request.taxSource());
-            return ResponseEntity.status(result.executionPaperId()==null?202:200).body(result);
-        }
         String json;
         try {
             json = objectMapper.writeValueAsString(request);
@@ -81,7 +73,14 @@ public class IssuanceController {
         try {
             var request = objectMapper.convertValue(body, DebtPaperIssuanceRequest.class);
             com.mparsict.vosolmaliat.application.service.SanimModelValidation.requireDocument(request.sourceDocument());
+            if ("LTR_EF03".equals(request.sourceDocument().getTemplateCode())
+                    || "EF03".equals(request.sourceDocument().getTemplateCode())) {
+                throw new org.springframework.web.server.ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY,
+                        "EF03 must be submitted through POST /api/v1/debt-papers/push");
+            }
             return request;
+        } catch (org.springframework.web.server.ResponseStatusException ex) {
+            throw ex;
         } catch (IllegalArgumentException ex) {
             throw new org.springframework.web.server.ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid source document", ex);
         }

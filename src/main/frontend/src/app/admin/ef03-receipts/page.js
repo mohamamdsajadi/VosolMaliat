@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import AppShell from '../../components/app-shell';
-import { apiJson } from '../../lib/api';
+import { apiFetch, apiJson, clearAuthTokens } from '../../lib/api';
 
 const initialForm = {
   nationalID: '', xml: '', hash: '', produceDate: '', referenceID: '', followCode: '',
@@ -81,9 +81,20 @@ export default function Ef03Receipts() {
       if (!payload.hash) delete payload.hash;
       if (!payload.secondParameter) delete payload.secondParameter;
       if (!payload.taxAmount) delete payload.taxAmount;
-      setResult(await apiJson('/api/v1/admin/ef03/push', {
+      const response = await apiFetch('/api/v1/debt-papers/push', {
         method: 'POST', body: JSON.stringify(payload)
-      }));
+      });
+      const responseBody = await response.json();
+      if (response.status === 401) {
+        clearAuthTokens();
+        window.location.replace(`/login?next=${encodeURIComponent(window.location.pathname)}`);
+        return;
+      }
+      if (!response.ok && response.status !== 422) {
+        throw new Error(responseBody.message || responseBody.error
+          || responseBody.apiGatewayMessages?.join('، ') || `درخواست ناموفق بود: ${response.status}`);
+      }
+      setResult(responseBody);
     } catch (failure) {
       setError(failure.message);
     } finally {
@@ -92,6 +103,7 @@ export default function Ef03Receipts() {
   }
 
   const executionPaperId = result?.apiGatewayData?.executionPaperID;
+  const rejection = result?.apiGatewayData;
   const activeSample = samples.find(item => item.key === selectedSample);
 
   return <AppShell active="admin" title="ارسال برگه بدهی قطعی EF03">
@@ -225,15 +237,23 @@ export default function Ef03Receipts() {
 
       {result && <section className={executionPaperId ? 'ef03-result ef03-result--success' : 'ef03-result'} role="status">
         <div>
-          <span>{executionPaperId ? 'صدور موفق' : 'درخواست ثبت شد'}</span>
-          <h2>{executionPaperId ? 'برگه اجرا صادر شد' : 'درخواست دریافت شد'}</h2>
+          <span>{executionPaperId ? 'صدور موفق' : 'نتیجه فرایند'}</span>
+          <h2>{executionPaperId ? 'برگه اجرا صادر شد' : 'برگه اجرا صادر نشد'}</h2>
           <p>{result.apiGatewayMessages?.join('، ')}</p>
-          <small>شناسه رهگیری API: <b dir="ltr">{result.apiGatewayTraceID}</b></small>
+          <small>شناسه داخلی برگه اجرا: <b dir="ltr">{executionPaperId || 'ایجاد نشده'}</b></small>
         </div>
         {executionPaperId
           ? <Link className="debt-entry-action debt-entry-action--refresh"
               href={`/execution-papers/${executionPaperId}`}>مشاهده برگه اجرا</Link>
-          : <span>هنوز شناسه برگه اجرا ایجاد نشده است.</span>}
+          : <div>
+              <span>هنوز شناسه برگه اجرا ایجاد نشده است.</span>
+              {rejection?.rejectionReasonCode
+                && <p>کد رد: <b dir="ltr">{rejection.rejectionReasonCode}</b></p>}
+              {rejection?.rejectionReasonDescription
+                && <p>علت رد: {rejection.rejectionReasonDescription}</p>}
+              {rejection?.nextRetryDate
+                && <p>تاریخ تلاش بعدی: <b dir="ltr">{rejection.nextRetryDate}</b></p>}
+            </div>}
       </section>}
     </div>
   </AppShell>;
