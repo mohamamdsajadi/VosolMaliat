@@ -16,6 +16,11 @@ function formatValue(value) {
   return toPersianDigits(value)
 }
 
+function formatIdentifier(value) {
+  if (value == null || value === '') return '—'
+  return toPersianDigits(String(value))
+}
+
 function formatDetailValue(key, value) {
   if (value == null || value === '') return '—'
   if (isDateTimeField(key)) return formatPersianDateTime(value)
@@ -921,7 +926,7 @@ function SanimDocumentSection({ data }) {
 
     <div className="epd-card-grid">
       <InfoGroup title="مشخصات برگه اجرا" subtitle="شناسه‌ها و وضعیت صدور" icon="document" tone="blue">
-        <InfoItem label="شناسه داخلی" value={formatValue(execution.id)} />
+        <InfoItem label="شناسه داخلی" value={formatIdentifier(execution.id)} ltr />
         <InfoItem label="شماره برگه اجرا" value={formatValue(execution.uniqueCode)} ltr emphasize />
         <InfoItem label="وضعیت فعلی" value={execution.currentStateDisplay || execution.currentState} />
         <InfoItem label="تاریخ صدور" value={formatPersianDateTime(execution.issuanceDate)} />
