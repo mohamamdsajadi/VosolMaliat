@@ -36,3 +36,12 @@ build/
 
 ### Mac OS ###
 .DS_Store
+/src/main/frontend/node/
+/identifier.sqlite
+/.local/
+/config/application.properties
+/برگه اجرا.docx
+/سند تحلیل فرآیند وصول و اجرا (فاز اول) (4).pdf
+
+/ef03.sqlite
+/ef03.sqlite-*

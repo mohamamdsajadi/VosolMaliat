@@ -21,23 +21,40 @@ export default function TaskDetailPage() {
       active="tasks"
       title="تکمیل کار فعال"
       eyebrow="فرم مرحله"
-      subtitle="اطلاعات این مرحله را بررسی کنید، فرم را کامل کنید و نتیجه را برای ادامه فرایند ثبت کنید."
       contextItems={[
         `شناسه کار: ${formatCompactId(taskId)}`,
         processDefinitionKey ? `کلید فرایند: ${formatCompactId(processDefinitionKey)}` : "صف مشترک"
       ]}
       actions={(
-        <Link className="ghost-action" href={backHref}>بازگشت به صف</Link>
+        <Link className="task-page-back-action" href={backHref}>
+          <span aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M19 12H5" />
+              <path d="m12 19-7-7 7-7" />
+            </svg>
+          </span>
+          بازگشت به صف
+        </Link>
       )}
     >
-      <section className="detail-grid">
-        <aside className="case-aside">
-          <p className="eyebrow">پرونده در جریان</p>
-          <h2>مسیر تکمیل</h2>
-          <div className="case-timeline">
-            <span>کار از صف عملیاتی دریافت شد</span>
-            <span>فرم مرحله بارگذاری می‌شود</span>
-            <span>پس از ثبت، کار بسته می‌شود</span>
+      <section className="task-detail-layout">
+        <aside className="task-detail-aside">
+          <div className="task-detail-aside__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M7 3.75h6.2L18.25 8.8V20A1.25 1.25 0 0 1 17 21.25H7A1.25 1.25 0 0 1 5.75 20V5A1.25 1.25 0 0 1 7 3.75Z" />
+              <path d="M13 4v5h5" />
+              <path d="M9 13h6M9 16h4" />
+            </svg>
+          </div>
+          <div>
+            <p className="eyebrow">پرونده در جریان</p>
+            <h2>مسیر تکمیل کار</h2>
+            <p>فرم این مرحله را بررسی و نتیجه را ثبت کنید. پس از ثبت موفق، کار از صف فعال خارج می‌شود.</p>
+          </div>
+          <div className="task-detail-steps">
+            <span className="task-detail-step task-detail-step--done">دریافت از صف</span>
+            <span className="task-detail-step task-detail-step--active">تکمیل فرم مرحله</span>
+            <span className="task-detail-step">ثبت و بازگشت</span>
           </div>
         </aside>
 

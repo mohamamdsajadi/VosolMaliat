@@ -8,7 +8,7 @@ import {
 } from '../lib/display';
 import EvaluationReviewForm from './evaluation-review-form';
 import IncompleteInformationForm from './incomplete-information-form';
-import { completeTask, fetchTask, hasRenderableSchema, isEvaluationReviewTask, isIncompleteInformationTask } from '../lib/tasks';
+import { completeTask, fetchTask, hasRenderableSchema, isEvaluationReviewTask, isExecutionPaperReviewTask, isIncompleteInformationTask } from '../lib/tasks';
 
 const ProcessForm = dynamic(
   () => import('./embedded-form'),
@@ -79,7 +79,16 @@ export default function Task({ taskId, order, onDone }) {
     <article className={`task-card task-card--${state}`}>
       <div className="task-card-header">
         <div className="task-title-block">
-          <span className="task-index">{Number(order || 1).toLocaleString('fa-IR')}</span>
+          <span className="task-index" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M8 6h8" />
+              <path d="M8 12h8" />
+              <path d="M8 18h5" />
+              <path d="M5 6h.01" />
+              <path d="M5 12h.01" />
+              <path d="M5 18h.01" />
+            </svg>
+          </span>
           <div>
             <p className="eyebrow">{state === "error" ? "وضعیت درخواست" : "مرحله فعال"}</p>
             <h3>{title}</h3>
@@ -89,12 +98,6 @@ export default function Task({ taskId, order, onDone }) {
           </div>
         </div>
         <span className={`status-pill status-pill--${state}`}>{statusLabel}</span>
-      </div>
-
-      <div className="task-workflow-note">
-        <span>۱. دریافت اطلاعات</span>
-        <span>۲. تکمیل فرم مرحله</span>
-        <span>۳. ثبت نتیجه و بازگشت به صف</span>
       </div>
 
       {error && <div className="notice error">{error}</div>}
@@ -116,6 +119,35 @@ export default function Task({ taskId, order, onDone }) {
             onComplete={submitTask}
             submitting={submitting}
           />
+        </div>
+      ) : isExecutionPaperReviewTask(task) ? (
+        <div className="form-stage">
+          <div className="form-stage-header">
+            <div>
+              <p className="eyebrow">تصمیم نهایی این مرحله</p>
+              <h4>پایان بررسی سازمانی برگ اجرا</h4>
+            </div>
+            <span className={`status-pill ${task.allowedActions?.complete ? 'status-pill--ready' : 'status-pill--muted'}`}>
+              {task.allowedActions?.complete ? 'قابل اقدام' : 'ابتدا کار را دریافت کنید'}
+            </span>
+          </div>
+          <p className="task-card-copy">
+            این اقدام مراحل سازمانی باقی‌مانده را رد می‌کند و شاخه بررسی را مستقیماً به محل اتصال فرایند می‌فرستد. سایر شاخه‌های موازی باید طبق روال خود تکمیل شوند.
+          </p>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 18 }}>
+            <button
+              className="primary-action primary-action--danger"
+              type="button"
+              disabled={submitting || !task.allowedActions?.complete}
+              onClick={() => {
+                if (window.confirm('آیا از پایان بررسی برگ اجرا و رد کردن مراحل سازمانی باقی‌مانده مطمئن هستید؟')) {
+                  submitTask({ finishExecutionPaperCheck: true });
+                }
+              }}
+            >
+              {submitting ? 'در حال ثبت تصمیم...' : 'پایان بررسی برگ اجرا'}
+            </button>
+          </div>
         </div>
       ) : hasRenderableSchema(task) ? (
         <div className="form-stage">

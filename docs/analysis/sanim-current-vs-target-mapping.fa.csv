@@ -1,0 +1,36 @@
+﻿فیلد هدف,محل فعلی,اقدام پیشنهادی,شرح
+id,FinalizedDebtPaper.id,حفظ,شناسه داخلی با شناسه سنیم تفاوت دارد.
+templateCode,وجود ندارد,افزودن,announcementType در اکسل؛ برای انتخاب یکی از پنج mapper.
+sourceReferenceId,DebtPaperPushRecord.referenceId؛ FinalizedDebtPaper.debtPaperUniqueCode,اصلاح معنا,حفظ شناسه پیام/مبدأ؛ شماره چاپی سند جدا شود.
+documentNumber,مقصد مستقل ندارد؛ ExecutionPaper.executionPaperUniqueCode داخلی است,افزودن,EF03:F؛ خانواده EF23:D؛ EF104:F.
+issueDate / issueDateRaw,FinalizedDebtPaper.debtPaperIssueDate: String,اصلاح نگاشت,اکنون از produceDate پر می‌شود؛ مقصد باید EF03:G، EF23:E، EF104:G باشد.
+taxYear,FinalizedDebtPaper.performanceYear و PushRecord.year,حفظ + تطبیق,EF03:C؛ سایر قالب‌ها:B. پوشش پیام و XML مستقل مقایسه شوند.
+taxPeriod,FinalizedDebtPaper.performancePeriod و PushRecord.period,اصلاح نگاشت,در EF03 خروجی قراردادی 1؛ بازه اصلی D/E در XML باقی می‌ماند.
+generalDirectorateName,GeneralDirectorateOfTaxAffairs.generalDirectorateName از طریق FK,افزودن مقدار سند,نام مندرج در برگ ممکن است با نام جاری مرجع متفاوت باشد.
+taxOfficeName,TaxAffairsOffice.officeName از طریق FK,افزودن مقدار سند,EF03:I؛ EF23:G؛ EF104:E.
+sourceTaxOfficeCode / resolvedOfficeId,PushRecord.taxOfficeId و FinalizedDebtPaper.taxBureau,تفکیک,کد خارجی را بدون crosswalk کلید پایگاه داده فرض نکنید.
+taxpayerIdentifier,معادل مستقل در Taxpayer ندارد,افزودن,EF03:Q؛ EF23:O؛ EF104:J که شماره اقتصادی است.
+taxpayerIdentifierType,وجود ندارد,افزودن,نوع SANIM_TAXPAYER_ID یا ECONOMIC_ID برای جلوگیری از خلط.
+identityNumber,PushRecord.nationalId؛ NaturalPerson.nationalCode/fida؛ LegalPerson.nationalId,تکمیل,نسخه مندرج در سند و شناسه پوشش پیام حفظ و تطبیق شوند.
+identityType,بخشی از طریق نوع شخص/ستون هویتی ضمنی است,افزودن صریح,ملی حقیقی، ملی حقوقی، مشارکت، اتباع یا نامشخص.
+taxpayerName,NaturalPerson.firstName/lastName یا LegalPerson.name,اصلاح,XML نام کامل می‌دهد؛ fullName سند را بدون شکستن حدسی ذخیره کنید.
+tradeName,مقصد مستقل ندارد؛ companyName گاهی از tbz_business_reputation پر می‌شود,افزودن/تفکیک,نام تجاری با نام حقوقی یکی نیست؛ EF03:T، EF23:R، EF104:I.
+phone,ContactInfo.phoneNo,تکمیل نگاشت,در DTO TaxpayerInfo ورودی فعلی phone وجود ندارد؛ مقدار سند مستقل حفظ شود.
+postalCode,ContactInfo.postalCode,تکمیل,تگ‌های واقعی EF03:W، EF23:U، EF104:N باید نگاشت شوند.
+address,ContactInfo.legalAddress,تکمیل,EF03:X، EF23:V، EF104:L؛ نشانی سند با تغییر اطلاعات پایه بازنویسی نشود.
+basisDocumentNumber,DebtDetectionDocument فقط id و FK دارد,افزودن,EF03:N، EF23:L، EF104:O؛ موجودیت قدیمی هنوز پوشش نمی‌دهد.
+basisDocumentDate,معادل مستقل ندارد,افزودن,EF03:O، EF23:M، EF104:P؛ از تاریخ صدور و تاریخ تولید پیام جدا.
+outstandingDebtAmount,DebtInformation.getTotalDebt؛ sanimOutstandingDebtRials؛ totalFinalizedAmount,اصلاح محاسبه/زمان,هیچ‌کدام بدون بررسی جایگزین مستقیم نیست: اولی فرمول عمومی، دومی آخرین استعلام، سومی مجموع دیگری است.
+totalPenaltyAmount,penaltyArticle22/23 و sanimTotalPenaltyRials,تجمیع استاندارد,جزئیات مواد فقط XML؛ مبلغ اولیه سند با آخرین استعلام جدا باشد.
+totalPaidAmount,taxPaidAmount/penaltyPaidAmount و sanimTotalPaymentRials,تجمیع استاندارد,فرمول کامل بخش‌ها تأیید شود؛ اعتبار خرید را پرداخت بدهی فرض نکنید.
+currencyCode,پسوند Rials در برخی ستون‌ها؛ ستون مستقل ندارد,افزودن,واحد را صریح ثبت کنید؛ اعشار نمونه حذف نشود.
+sourceXml,DebtPaperPushRecord.xmlPayload: TEXT,حفظ کامل,ذخیره فیزیکی واحد؛ مدل سند از طریق رابطه بخواند.
+receivedAt,DebtPaperPushRecord.receivedAt,حفظ,زمان دریافت، نه زمان صدور.
+mappingVersion,وجود ندارد,افزودن,نسخه قواعد استخراج و فرمول‌ها.
+validationStatus,PushRecord.processingStatus/failureReason,تفکیک,وضعیت اعتبار داده با موفقیت شروع گردش‌کار یکسان نیست.
+personType,Taxpayer.getType محاسباتی؛ mapper فقط NATURAL/LEGAL,اصلاح,مقادیر فارسی و فقدان مقدار مدیریت شود؛ نامعلوم به LEGAL تبدیل نشود.
+activityTitle,FinalizedDebtPaper.activityTypeTitle؛ TaxpayerActivityType.activityTypeTitle,حفظ + نگاشت,EF03:U؛ EF23:S؛ EF104 فاقد مقدار.
+issuanceReason,FinalizedDebtPaper.finalizationReason و ExecutionPaper.finalizationReason,اصلاح معنا,شرح دلیل صدور لزوماً علت قطعی‌شدن نیست؛ EF104 در شیت‌ها متعارض است.
+taxSourceCode,PushRecord.taxSource؛ FinalizedDebtPaper.taxSource؛ ExecutionPaper.taxSource,حفظ/مرجع مشخص,پوشش پیام منبع مقدار است؛ templateCode و taxSource دو مفهوم متفاوت‌اند.
+sourceProducedAt / sourceHash / followCode,فیلدهای متناظر در DebtPaperPushRecord,حفظ,به مدل سند دسترسی داده شود؛ الگوریتم hash مستقل تأیید شود.
+totalCredit / totalRemission / totalTax / totalDuty,چند ستون نزدیک در DebtInformation,اختیاری,تنها با نیاز عملیاتی و تعریف یکسان؛ deductiblePenalty معادل مبلغ بخشودگی انجام‌شده نیست.

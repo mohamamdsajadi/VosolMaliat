@@ -1,0 +1,571 @@
+package com.mparsict.vosolmaliat.application.service.cartable;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mparsict.vosolmaliat.application.dto.request.cartable.AssignTaskRequest;
+import com.mparsict.vosolmaliat.application.dto.request.cartable.CartableTaskSearchCriteria;
+import com.mparsict.vosolmaliat.application.dto.request.cartable.ClaimTaskRequest;
+import com.mparsict.vosolmaliat.application.dto.request.cartable.CompleteTaskRequest;
+import com.mparsict.vosolmaliat.application.dto.request.cartable.DelegateTaskRequest;
+import com.mparsict.vosolmaliat.application.dto.response.cartable.CartableTaskResponse;
+import com.mparsict.vosolmaliat.application.dto.response.cartable.DelegationTargetResponse;
+import com.mparsict.vosolmaliat.application.dto.response.cartable.TaskVariableResponse;
+import com.mparsict.vosolmaliat.application.security.CurrentUserContext;
+import com.mparsict.vosolmaliat.application.service.security.AuditLogService;
+import com.mparsict.vosolmaliat.application.service.security.SecurityIdentityService;
+import com.mparsict.vosolmaliat.common.exception.BusinessException;
+import com.mparsict.vosolmaliat.domain.enums.BusinessRole;
+import com.mparsict.vosolmaliat.domain.model.security.AppUserProfile;
+import com.mparsict.vosolmaliat.domain.repository.security.AppUserProfileRepository;
+import com.mparsict.vosolmaliat.infrastructure.camunda.ProcessConstants;
+import io.camunda.client.CamundaClient;
+import io.camunda.client.api.search.enums.UserTaskState;
+import io.camunda.client.api.search.response.UserTask;
+import io.camunda.client.api.search.response.Variable;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class CartableService {
+
+    private final CamundaClient camundaClient;
+    private final SecurityIdentityService securityIdentityService;
+    private final CamundaIdentityMappingService identityMappingService;
+    private final TaskAuthorizationService taskAuthorizationService;
+    private final AuditLogService auditLogService;
+    private final AppUserProfileRepository userProfileRepository;
+    private final ObjectMapper objectMapper;
+
+    public List<CartableTaskResponse> myTasks() {
+        return myTasks(CartableTaskSearchCriteria.empty());
+    }
+
+    public List<CartableTaskResponse> myTasks(CartableTaskSearchCriteria criteria) {
+        CurrentUserContext user = securityIdentityService.currentUser();
+        List<CartableTaskResponse> responses;
+        if (user.isAdmin()) {
+            List<UserTask> tasks = searchTasks(filter -> filter.state(UserTaskState.CREATED));
+            responses = toAuthorizedResponses(user, tasks);
+        } else {
+            Map<Long, UserTask> tasks = new LinkedHashMap<>();
+            searchTasks(filter -> filter
+                    .state(UserTaskState.CREATED)
+                    .assignee(identityMappingService.toCamundaAssignee(user)))
+                    .forEach(task -> tasks.put(task.getUserTaskKey(), task));
+            candidateTasksFor(user).forEach((key, task) -> tasks.putIfAbsent(key, task));
+            responses = toAuthorizedResponses(user, new ArrayList<>(tasks.values()));
+        }
+        return filterResponses(responses, criteria);
+    }
+
+    public List<CartableTaskResponse> candidateTasks() {
+        CurrentUserContext user = securityIdentityService.currentUser();
+        return toAuthorizedResponses(user, new ArrayList<>(candidateTasksFor(user).values()));
+    }
+
+    private Map<Long, UserTask> candidateTasksFor(CurrentUserContext user) {
+        Map<Long, UserTask> tasks = new LinkedHashMap<>();
+        for (String group : identityMappingService.toCamundaCandidateGroups(user)) {
+            searchTasks(filter -> filter.state(UserTaskState.CREATED).candidateGroup(group))
+                    .forEach(task -> tasks.put(task.getUserTaskKey(), task));
+        }
+        searchTasks(filter -> filter.state(UserTaskState.CREATED).candidateUser(user.username()))
+                .forEach(task -> tasks.put(task.getUserTaskKey(), task));
+        return tasks;
+    }
+
+    public CartableTaskResponse getTask(Long taskKey) {
+        CurrentUserContext user = securityIdentityService.currentUser();
+        UserTask task = fetchTask(taskKey);
+        Map<String, Object> variables = fetchVariablesMap(taskKey);
+        if (!taskAuthorizationService.canView(user, task, variables)) {
+            throw new BusinessException("UNAUTHORIZED_TASK_ACCESS", "دسترسی به این کار مجاز نیست");
+        }
+        return toResponse(user, task, variables);
+    }
+
+    public CartableTaskResponse claim(Long taskKey, ClaimTaskRequest request) {
+        CurrentUserContext user = securityIdentityService.currentUser();
+        UserTask task = fetchTask(taskKey);
+        Map<String, Object> variables = fetchVariablesMap(taskKey);
+        if (!taskAuthorizationService.canClaim(user, task, variables)) {
+            throw new BusinessException("TASK_CLAIM_NOT_ALLOWED", "امکان دریافت این کار وجود ندارد");
+        }
+        String assignee = request.assignee() == null || request.assignee().isBlank()
+                ? identityMappingService.toCamundaAssignee(user)
+                : request.assignee();
+        try {
+            camundaClient.newAssignUserTaskCommand(taskKey)
+                    .assignee(assignee)
+                    .allowOverride(false)
+                    .action("claim")
+                    .requestTimeout(Duration.ofSeconds(20))
+                    .send()
+                    .join();
+            auditLogService.record(user, "TASK_CLAIMED", "CAMUNDA_USER_TASK", taskKey.toString(), null, assignee);
+            recordExecutionPaperAudit(user, variables, "TASK_CLAIMED", taskKey, null, assignee);
+            return getTask(taskKey);
+        } catch (Exception ex) {
+            throw new BusinessException("TASK_CLAIM_FAILED", "دریافت کار ناموفق بود", ex);
+        }
+    }
+
+    public CartableTaskResponse unclaim(Long taskKey) {
+        CurrentUserContext user = securityIdentityService.currentUser();
+        UserTask task = fetchTask(taskKey);
+        Map<String, Object> variables = fetchVariablesMap(taskKey);
+        if (!taskAuthorizationService.canUnclaim(user, task, variables)) {
+            throw new BusinessException("TASK_UNCLAIM_NOT_ALLOWED", "امکان آزادسازی این کار وجود ندارد");
+        }
+        try {
+            camundaClient.newUnassignUserTaskCommand(taskKey)
+                    .requestTimeout(Duration.ofSeconds(20))
+                    .send()
+                    .join();
+            auditLogService.record(user, "TASK_UNCLAIMED", "CAMUNDA_USER_TASK", taskKey.toString(), task.getAssignee(), null);
+            recordExecutionPaperAudit(user, variables, "TASK_UNCLAIMED", taskKey, task.getAssignee(), null);
+            return getTask(taskKey);
+        } catch (Exception ex) {
+            throw new BusinessException("TASK_UNCLAIM_FAILED", "آزادسازی کار ناموفق بود", ex);
+        }
+    }
+
+    public void complete(Long taskKey, CompleteTaskRequest request) {
+        CurrentUserContext user = securityIdentityService.currentUser();
+        UserTask task = fetchTask(taskKey);
+        Map<String, Object> variables = fetchVariablesMap(taskKey);
+        if (!taskAuthorizationService.canComplete(user, task, variables)) {
+            throw new BusinessException("TASK_COMPLETE_NOT_ALLOWED", "امکان تکمیل این کار وجود ندارد");
+        }
+        try {
+            Map<String, Object> completionVariables = request.variables() == null
+                    ? Map.of()
+                    : request.variables();
+            camundaClient.newCompleteUserTaskCommand(taskKey)
+                    .variables(completionVariables)
+                    .action("complete")
+                    .requestTimeout(Duration.ofSeconds(30))
+                    .send()
+                    .join();
+            auditLogService.record(user, "TASK_COMPLETED", "CAMUNDA_USER_TASK", taskKey.toString(), null, "completed");
+            recordExecutionPaperAudit(user, variables, "TASK_COMPLETED", taskKey, task.getAssignee(), "completed");
+            if (Boolean.TRUE.equals(completionVariables.get(
+                    ProcessConstants.VAR_FINISH_EXECUTION_PAPER_CHECK))) {
+                auditLogService.record(
+                        user,
+                        "EXECUTION_PAPER_REVIEW_FINISHED",
+                        "CAMUNDA_USER_TASK",
+                        taskKey.toString(),
+                        task.getName(),
+                        "finished"
+                );
+                recordExecutionPaperAudit(
+                        user,
+                        variables,
+                        "EXECUTION_PAPER_REVIEW_FINISHED",
+                        taskKey,
+                        task.getAssignee(),
+                        task.getName()
+                );
+            }
+        } catch (Exception ex) {
+            throw new BusinessException("TASK_COMPLETION_FAILED", "تکمیل کار ناموفق بود", ex);
+        }
+    }
+
+    public CartableTaskResponse assign(Long taskKey, AssignTaskRequest request) {
+        CurrentUserContext user = securityIdentityService.currentUser();
+        UserTask task = fetchTask(taskKey);
+        Map<String, Object> variables = fetchVariablesMap(taskKey);
+        if (!taskAuthorizationService.canAssign(user)) {
+            throw new BusinessException("TASK_ASSIGN_NOT_ALLOWED", "امکان ارجاع این کار وجود ندارد");
+        }
+        try {
+            camundaClient.newAssignUserTaskCommand(taskKey)
+                    .assignee(request.assignee())
+                    .allowOverride(true)
+                    .action("assign")
+                    .requestTimeout(Duration.ofSeconds(20))
+                    .send()
+                    .join();
+            auditLogService.record(user, "TASK_ASSIGNED", "CAMUNDA_USER_TASK", taskKey.toString(), task.getAssignee(), request.assignee());
+            recordExecutionPaperAudit(user, variables, "TASK_ASSIGNED", taskKey, task.getAssignee(), request.assignee());
+            return getTask(taskKey);
+        } catch (Exception ex) {
+            throw new BusinessException("TASK_ASSIGN_FAILED", "ارجاع کار ناموفق بود", ex);
+        }
+    }
+
+    public List<DelegationTargetResponse> delegationTargets(Long taskKey) {
+        CurrentUserContext user = securityIdentityService.currentUser();
+        UserTask task = fetchTask(taskKey);
+        Map<String, Object> variables = fetchVariablesMap(taskKey);
+        validateCanDelegate(user, task, variables);
+        BusinessRole nextRole = user.businessRole().nextDelegationRole();
+        return userProfileRepository.findByBusinessRole(nextRole).stream()
+                .filter(profile -> Boolean.TRUE.equals(profile.getEnabledInBusinessSystem()))
+                .filter(profile -> !Boolean.TRUE.equals(profile.getLockedInBusinessSystem()))
+                .filter(profile -> isInDelegationScope(user, profile))
+                .map(profile -> new DelegationTargetResponse(
+                        profile.getId(),
+                        profile.getUsername(),
+                        fullName(profile),
+                        profile.getBusinessRole().name()
+                ))
+                .toList();
+    }
+
+    public void delegate(Long taskKey, DelegateTaskRequest request) {
+        CurrentUserContext user = securityIdentityService.currentUser();
+        UserTask task = fetchTask(taskKey);
+        Map<String, Object> variables = fetchVariablesMap(taskKey);
+        validateCanDelegate(user, task, variables);
+        BusinessRole nextRole = user.businessRole().nextDelegationRole();
+        String targetAssignee = request == null ? null : blankToNull(request.assignee());
+        String candidateGroup = request == null ? null : blankToNull(request.candidateGroup());
+        try {
+            Map<String, Object> delegationVariables = new HashMap<>();
+            delegationVariables.put("delegatedByUsername", user.username());
+            delegationVariables.put("delegatedByRole", user.businessRole().name());
+            delegationVariables.put("delegatedToRole", nextRole.name());
+            if (targetAssignee != null) {
+                AppUserProfile target = userProfileRepository.findByUsername(targetAssignee)
+                        .orElseThrow(() -> new BusinessException("DELEGATION_TARGET_NOT_FOUND", "کاربر مقصد ارجاع یافت نشد"));
+                if (target.getBusinessRole() != nextRole || !isInDelegationScope(user, target)) {
+                    throw new BusinessException("DELEGATION_TARGET_NOT_ALLOWED", "کاربر مقصد در نقش یا محدوده سازمانی مجاز نیست");
+                }
+                delegationVariables.put("delegatedToUsername", target.getUsername());
+                auditLogService.record(user, "TASK_DELEGATED_TO_USER", "CAMUNDA_USER_TASK", taskKey.toString(), task.getAssignee(), target.getUsername());
+                recordExecutionPaperAudit(user, variables, "TASK_DELEGATED_TO_USER", taskKey, task.getAssignee(), target.getUsername());
+            } else {
+                String group = candidateGroup == null ? nextRole.name() : candidateGroup;
+                if (!group.equals(nextRole.name())) {
+                    throw new BusinessException("DELEGATION_GROUP_NOT_ALLOWED", "گروه مقصد ارجاع باید نقش مستقیم بعدی باشد");
+                }
+                delegationVariables.put("delegatedToCandidateGroup", group);
+                auditLogService.record(user, "TASK_DELEGATED_TO_GROUP", "CAMUNDA_USER_TASK", taskKey.toString(), task.getAssignee(), group);
+                recordExecutionPaperAudit(user, variables, "TASK_DELEGATED_TO_GROUP", taskKey, task.getAssignee(), group);
+            }
+            camundaClient.newCompleteUserTaskCommand(taskKey)
+                    .variables(delegationVariables)
+                    .action("delegate")
+                    .requestTimeout(Duration.ofSeconds(30))
+                    .send()
+                    .join();
+            if (targetAssignee != null) {
+                waitForNextDelegationTask(task.getProcessInstanceKey(), nextRole, targetAssignee, variables)
+                        .filter(nextTask -> !targetAssignee.equals(nextTask.getAssignee()))
+                        .ifPresent(nextTask -> camundaClient.newAssignUserTaskCommand(nextTask.getUserTaskKey())
+                                .assignee(targetAssignee)
+                                .allowOverride(true)
+                                .action("delegate")
+                                .requestTimeout(Duration.ofSeconds(20))
+                                .send()
+                                .join());
+            }
+        } catch (BusinessException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new BusinessException("TASK_DELEGATION_FAILED", "ارجاع کار ناموفق بود", ex);
+        }
+    }
+
+    private void validateCanDelegate(CurrentUserContext user, UserTask task, Map<String, Object> variables) {
+        if (!taskAuthorizationService.canDelegate(user, task, variables)) {
+            throw new BusinessException("TASK_DELEGATION_NOT_ALLOWED", "امکان ارجاع این کار برای شما وجود ندارد");
+        }
+    }
+
+    private boolean isInDelegationScope(CurrentUserContext actor, AppUserProfile target) {
+        if (actor.businessRole() == BusinessRole.GENERAL_OFFICE_HEAD) {
+            return actor.organization() != null
+                    && actor.organization().generalDirectorateId() != null
+                    && Objects.equals(actor.organization().generalDirectorateId(), target.getGeneralDirectorateId());
+        }
+        if (actor.businessRole() == BusinessRole.TAX_OFFICE_HEAD) {
+            return actor.organization() != null
+                    && actor.organization().taxAffairsOfficeId() != null
+                    && Objects.equals(actor.organization().taxAffairsOfficeId(), target.getTaxAffairsOfficeId());
+        }
+        if (actor.businessRole() == BusinessRole.TAX_UNIT_HEAD) {
+            return actor.organization() != null
+                    && actor.organization().taxUnitId() != null
+                    && target.getTaxUnit() != null
+                    && Objects.equals(actor.organization().taxUnitId(), target.getTaxUnit().getId());
+        }
+        return false;
+    }
+
+    private String fullName(AppUserProfile profile) {
+        String value = ((profile.getFirstName() == null ? "" : profile.getFirstName()) + " "
+                + (profile.getLastName() == null ? "" : profile.getLastName())).trim();
+        return value.isBlank() ? profile.getUsername() : value;
+    }
+
+    private String blankToNull(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
+    }
+
+    private void recordExecutionPaperAudit(
+            CurrentUserContext user,
+            Map<String, Object> variables,
+            String action,
+            Long taskKey,
+            String oldValue,
+            String newValue) {
+        Object executionPaperId = firstPresent(variables, "executionPaperId", "execution_paper_id");
+        if (executionPaperId == null) {
+            return;
+        }
+        auditLogService.record(
+                user,
+                action,
+                "EXECUTION_PAPER",
+                executionPaperId.toString(),
+                withTaskKey(taskKey, oldValue),
+                withTaskKey(taskKey, newValue)
+        );
+    }
+
+    private Object firstPresent(Map<String, Object> variables, String... keys) {
+        if (variables == null) {
+            return null;
+        }
+        for (String key : keys) {
+            if (variables.containsKey(key)) {
+                return variables.get(key);
+            }
+        }
+        return null;
+    }
+
+    private String withTaskKey(Long taskKey, String value) {
+        String normalized = value == null || value.isBlank() ? "-" : value;
+        return "taskKey=" + taskKey + "; value=" + normalized;
+    }
+
+    private Optional<UserTask> waitForNextDelegationTask(
+            Long processInstanceKey,
+            BusinessRole nextRole,
+            String targetAssignee,
+            Map<String, Object> variables) {
+        String scopedCandidateGroup = OrganizationCandidateGroup.forOrganization(
+                nextRole, organizationIdForRole(nextRole, variables));
+        for (int attempt = 0; attempt < 10; attempt++) {
+            Optional<UserTask> task = Optional.empty();
+            if (targetAssignee != null) {
+                task = searchTasks(filter -> filter
+                        .state(UserTaskState.CREATED)
+                        .processInstanceKey(processInstanceKey)
+                        .assignee(targetAssignee))
+                        .stream()
+                        .findFirst();
+            }
+            if (task.isEmpty()) {
+                String candidateGroup = scopedCandidateGroup == null ? nextRole.name() : scopedCandidateGroup;
+                task = searchTasks(filter -> filter
+                        .state(UserTaskState.CREATED)
+                        .processInstanceKey(processInstanceKey)
+                        .candidateGroup(candidateGroup))
+                        .stream()
+                        .findFirst();
+            }
+            if (task.isPresent()) {
+                return task;
+            }
+            sleepBriefly();
+        }
+        return Optional.empty();
+    }
+
+    private Long organizationIdForRole(BusinessRole role, Map<String, Object> variables) {
+        Object value = switch (role) {
+            case GENERAL_OFFICE_HEAD -> firstPresent(variables, "generalDirectorateId", "mainTaxBureauId", "general_directorate_id", "main_tax_bureau_id");
+            case TAX_OFFICE_HEAD -> firstPresent(variables, "taxAffairsOfficeId", "taxBureauId", "tax_affairs_office_id", "tax_bureau_id");
+            case TAX_UNIT_HEAD, TAX_EXPERT -> firstPresent(variables, "taxUnitId", "tax_unit_id");
+            case ADMIN -> null;
+        };
+        if (value instanceof Number number) {
+            return number.longValue();
+        }
+        if (value == null) {
+            return null;
+        }
+        try {
+            return Long.valueOf(value.toString());
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
+    }
+
+    private void sleepBriefly() {
+        try {
+            Thread.sleep(300);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            throw new BusinessException("TASK_DELEGATION_INTERRUPTED", "انتظار برای ایجاد کار بعدی متوقف شد", ex);
+        }
+    }
+
+    private List<UserTask> searchTasks(Consumer<io.camunda.client.api.search.filter.UserTaskFilter> filter) {
+        return camundaClient.newUserTaskSearchRequest()
+                .filter(filter)
+                .sort(sort -> sort.creationDate().desc())
+                .page(page -> page.from(0).limit(100))
+                .requestTimeout(Duration.ofSeconds(20))
+                .send()
+                .join()
+                .items();
+    }
+
+    private UserTask fetchTask(Long taskKey) {
+        try {
+            return camundaClient.newUserTaskGetRequest(taskKey)
+                    .requestTimeout(Duration.ofSeconds(20))
+                    .send()
+                    .join();
+        } catch (Exception ex) {
+            throw new BusinessException("CAMUNDA_TASK_NOT_FOUND", "کار فعال در Camunda یافت نشد", ex);
+        }
+    }
+
+    private List<CartableTaskResponse> toAuthorizedResponses(CurrentUserContext user, List<UserTask> tasks) {
+        return tasks.stream()
+                .map(task -> Map.entry(task, fetchVariablesMap(task.getUserTaskKey())))
+                .filter(entry -> taskAuthorizationService.canView(user, entry.getKey(), entry.getValue()))
+                .map(entry -> toResponse(user, entry.getKey(), entry.getValue()))
+                .toList();
+    }
+
+    private List<CartableTaskResponse> filterResponses(List<CartableTaskResponse> responses, CartableTaskSearchCriteria criteria) {
+        CartableTaskSearchCriteria normalized = criteria == null ? CartableTaskSearchCriteria.empty() : criteria;
+        String executionPaper = normalizeText(normalized.executionPaper());
+        String taskName = normalizeText(normalized.taskName());
+        String assignee = normalizeText(normalized.assignee());
+        String candidateGroup = normalizeText(normalized.candidateGroup());
+        OffsetDateTime createdFrom = startOfDay(normalized.createdFrom());
+        OffsetDateTime createdTo = endOfDay(normalized.createdTo());
+
+        return responses.stream()
+                .filter(task -> executionPaper == null || contains(executionPaperSearchText(task), executionPaper))
+                .filter(task -> taskName == null || contains(task.name(), taskName))
+                .filter(task -> assignee == null || contains(task.assignee(), assignee))
+                .filter(task -> candidateGroup == null || task.candidateGroups().stream().anyMatch(group -> contains(group, candidateGroup)))
+                .filter(task -> createdFrom == null || (task.createdAt() != null && !task.createdAt().isBefore(createdFrom)))
+                .filter(task -> createdTo == null || (task.createdAt() != null && !task.createdAt().isAfter(createdTo)))
+                .toList();
+    }
+
+    private String executionPaperSearchText(CartableTaskResponse task) {
+        StringBuilder builder = new StringBuilder();
+        for (TaskVariableResponse variable : task.variables()) {
+            if (Set.of("executionPaperId", "execution_paper_id", "executionPaperCode", "executionPaperUniqueCode", "execution_paper_code")
+                    .contains(variable.name())) {
+                builder.append(' ').append(variable.value());
+            }
+        }
+        return builder.toString();
+    }
+
+    private boolean contains(String source, String needle) {
+        return source != null && source.toLowerCase(Locale.ROOT).contains(needle);
+    }
+
+    private String normalizeText(String value) {
+        return value == null || value.isBlank() ? null : value.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private OffsetDateTime startOfDay(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        try {
+            return LocalDate.parse(value).atStartOfDay().atOffset(OffsetDateTime.now().getOffset());
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    private OffsetDateTime endOfDay(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        try {
+            return LocalDate.parse(value).plusDays(1).atStartOfDay().minusNanos(1).atOffset(OffsetDateTime.now().getOffset());
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    private CartableTaskResponse toResponse(CurrentUserContext user, UserTask task, Map<String, Object> variables) {
+        return new CartableTaskResponse(
+                task.getUserTaskKey(),
+                task.getName(),
+                task.getProcessInstanceKey(),
+                task.getProcessDefinitionKey(),
+                task.getBpmnProcessId(),
+                task.getElementId(),
+                task.getAssignee(),
+                fullNameForUsername(task.getAssignee()),
+                safeList(task.getCandidateUsers()),
+                safeList(task.getCandidateGroups()),
+                task.getCreationDate(),
+                task.getDueDate(),
+                task.getFollowUpDate(),
+                task.getFormKey(),
+                task.getExternalFormReference(),
+                variables.entrySet().stream()
+                        .map(entry -> new TaskVariableResponse(entry.getKey(), entry.getValue(), false))
+                        .toList(),
+                taskAuthorizationService.allowedActions(user, task, variables)
+        );
+    }
+
+    private String fullNameForUsername(String username) {
+        if (username == null || username.isBlank()) {
+            return null;
+        }
+        return userProfileRepository.findByUsername(username)
+                .map(this::fullName)
+                .orElse(username);
+    }
+
+    private Map<String, Object> fetchVariablesMap(Long taskKey) {
+        try {
+            List<Variable> variables = camundaClient.newUserTaskVariableSearchRequest(taskKey)
+                    .withFullValues()
+                    .page(page -> page.from(0).limit(100))
+                    .requestTimeout(Duration.ofSeconds(20))
+                    .send()
+                    .join()
+                    .items();
+            return variables.stream().collect(Collectors.toMap(Variable::getName, this::parseVariableValue, (a, b) -> b, LinkedHashMap::new));
+        } catch (Exception ex) {
+            return Map.of();
+        }
+    }
+
+    private Object parseVariableValue(Variable variable) {
+        String value = variable.getValue();
+        if (value == null) {
+            return null;
+        }
+        try {
+            return objectMapper.readValue(value, Object.class);
+        } catch (JsonProcessingException ex) {
+            return value;
+        }
+    }
+
+    private List<String> safeList(List<String> values) {
+        return values == null ? List.of() : values;
+    }
+}

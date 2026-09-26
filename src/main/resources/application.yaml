@@ -1,36 +1,102 @@
+spring:
+  application:
+    name: vosol-maliat
 
-tasklist:
-  client:
-    profile: oidc
-    base-url: https://parand.mparsict.com
-    auth-url: https://keycloack.parand.mparsict.com/auth/realms/camunda-platform/protocol/openid-connect/token
-    client-id: orchestration
-    client-secret: secret
-    audience: orchestration
+  datasource:
+    url: jdbc:sqlite:${DB_PATH:/home/mohammad/IdeaProjects/VosolMaliat/ef03.sqlite}
+    driver-class-name: org.sqlite.JDBC
+    hikari:
+      connection-init-sql: PRAGMA foreign_keys=ON
+      data-source-properties:
+        busy_timeout: 30000
+        foreign_keys: true
+
+  jpa:
+    database-platform: com.mparsict.vosolmaliat.common.config.RelationalSqliteDialect
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        jdbc:
+          time_zone: UTC
+
+  jackson:
+    default-property-inclusion: non_null
+    serialization:
+      write-dates-as-timestamps: false
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:https://keycloack.parand.mparsict.com/auth/realms/vosol-maliat}
 
 camunda:
-  api:
-    base-url: https://parand.mparsict.com
-    auth:
-      token-url: https://keycloack.parand.mparsict.com/auth/realms/camunda-platform/protocol/openid-connect/token
-      client-id: orchestration
-      client-secret: secret
-      audience: orchestration
-  webhook:
-    url: http://46.245.79.18:8086/inbound
-    authorization:
-      username: "semati"
-      password: "semati"
   client:
     mode: self-managed
-    grpc-address: http://46.245.79.18:26500
-    rest-address: https://parand.mparsict.com
+    grpc-address: ${CAMUNDA_GRPC_ADDRESS:http://46.245.79.18:26500}
+    rest-address: ${CAMUNDA_REST_ADDRESS:https://parand.mparsict.com}
+    # Keep job activation and completion on gRPC. The REST endpoint is behind a
+    # reverse proxy and has returned stale-job 404s and activation failures.
+    prefer-rest-over-grpc: ${CAMUNDA_PREFER_REST_OVER_GRPC:false}
     auth:
       method: oidc
-      token-url: https://keycloack.parand.mparsict.com/auth/realms/camunda-platform/protocol/openid-connect/token
-      client-id: orchestration
-      client-secret: secret
-      audience: orchestration
+      token-url: ${CAMUNDA_TOKEN_URL:https://keycloack.parand.mparsict.com/auth/realms/camunda-platform/protocol/openid-connect/token}
+      client-id: ${CAMUNDA_CLIENT_ID:orchestration}
+      client-secret: ${CAMUNDA_CLIENT_SECRET:secret}
+      audience: ${CAMUNDA_AUDIENCE:orchestration}
+    execution-threads: ${CAMUNDA_EXECUTION_THREADS:8}
+    worker:
+      defaults:
+        max-jobs-active: ${CAMUNDA_WORKER_MAX_JOBS_ACTIVE:10}
+        poll-interval: ${CAMUNDA_WORKER_POLL_INTERVAL:PT10S}
+        request-timeout: ${CAMUNDA_WORKER_REQUEST_TIMEOUT:PT15S}
     enabled: true
+
 server:
   port: ${SERVER_PORT:8025}
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+app:
+  ef03:
+    samples-path: ${EF03_SAMPLES_PATH:docs/sample-execution-papers/EF03-samples.ods}
+
+  integration:
+    debt-paper:
+      security:
+        username: ${DEBT_PAPER_BASIC_USERNAME:}
+        # Supply a DelegatingPasswordEncoder value such as {bcrypt}$2a$...; never commit the secret.
+        password-hash: ${DEBT_PAPER_BASIC_PASSWORD_HASH:}
+        access-ids: ${DEBT_PAPER_ACCESS_IDS:}
+  test:
+    database-reset:
+      # Destructive test utility. Enable only in an isolated development/test environment.
+      enabled: ${DATABASE_RESET_ENABLED:true}
+  security:
+    bootstrap-admin:
+      keycloak-user-id: ${ADMIN_KEYCLOAK_USER_ID:9c512620-10f2-4fcb-a432-57e7c84fb1f5}
+      username: ${ADMIN_USERNAME:admin}
+      email: ${ADMIN_EMAIL:admin@vosol-maliat.local}
+  keycloak:
+    bootstrap-users:
+      enabled: ${KEYCLOAK_BOOTSTRAP_USERS_ENABLED:true}
+      issuer-uri: ${KEYCLOAK_ISSUER_URI:https://keycloack.parand.mparsict.com/auth/realms/vosol-maliat}
+      client-id: ${KEYCLOAK_BOOTSTRAP_CLIENT_ID:vosol-bootstrap-admin}
+      client-secret: ${KEYCLOAK_BOOTSTRAP_CLIENT_SECRET:bJYvQXhzSw1vU2zmslcj0gVlbf0jJSJe}
+      default-password: ${KEYCLOAK_BOOTSTRAP_DEFAULT_PASSWORD:123}
+      temporary-password: ${KEYCLOAK_BOOTSTRAP_TEMPORARY_PASSWORD:false}
+
+logging:
+  level:
+    com.mparsict.vosolmaliat: DEBUG
+    io.camunda.client: INFO
+    io.camunda.zeebe: WARN
+    org.hibernate.SQL: WARN
+    org.springframework.security: INFO

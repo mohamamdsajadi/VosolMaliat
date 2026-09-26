@@ -1,117 +1,85 @@
-export async function fetchProcessDefinitions() {
-  const response = await appPost("/api/process-definitions/search", {});
+import { apiJson } from './api';
 
-  if (!response.ok) {
-    throw new Error("امکان دریافت فهرست فرایندها وجود ندارد.");
-  }
+const EXECUTION_PAPER_REVIEW_TASK_IDS = new Set([
+  'Activity_0generalHeadReview',
+  'Activity_0taxOfficeHeadReview',
+  'Activity_0taxUnitHeadReview',
+  'Activity_0taxExpertProcess'
+]);
 
-  const data = await response.json();
-  return Array.isArray(data) ? data.filter((item) => item?.processDefinitionKey) : [];
+export function fetchCartableTasks(filters = {}) {
+  const params = new URLSearchParams();
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && String(value).trim() !== '') {
+      params.set(key, String(value).trim());
+    }
+  });
+  const query = params.toString();
+  return apiJson(`/api/v1/cartable/my-tasks${query ? `?${query}` : ''}`);
 }
 
-const ACTIVE_TASK_STATES = [
-  "CREATED",
-  "ASSIGNING",
-  "UPDATING",
-  "COMPLETING",
-  "CANCELING"
-];
+export function fetchDelegationTargets(taskKey) {
+  return apiJson(`/api/v1/cartable/tasks/${taskKey}/delegation-targets`);
+}
+
+export function claimCartableTask(taskKey) {
+  return apiJson(`/api/v1/cartable/tasks/${taskKey}/claim`, {
+    method: 'POST',
+    body: JSON.stringify({})
+  });
+}
+
+export function delegateTask(taskKey, payload) {
+  return apiJson(`/api/v1/cartable/tasks/${taskKey}/delegate`, {
+    method: 'POST',
+    body: JSON.stringify(payload || {})
+  });
+}
+
+export async function fetchProcessDefinitions() {
+  const tasks = await fetchAllTasks();
+  const definitions = new Map();
+  tasks.forEach((task) => {
+    const key = task.processDefinitionKey || task.processDefinitionId || "execution-paper";
+    if (!definitions.has(key)) {
+      definitions.set(key, {
+        processDefinitionKey: key,
+        processDefinitionId: task.processDefinitionId || key,
+        name: task.processDefinitionId || "فرایند برگ اجرا",
+        version: null
+      });
+    }
+  });
+  return Array.from(definitions.values());
+}
 
 export async function startProcessInstance(processDefinitionKey, variables = {}) {
-  const response = await appPost("/api/process-instances", {
-    processDefinitionKey,
-    variables
-  });
-
-  if (!response.ok) {
-    throw new Error("شروع فرایند انتخاب‌شده ناموفق بود.");
-  }
-
-  return response.json();
+  throw new Error("شروع فرایند از این صفحه در نسخه فعلی پشتیبانی نمی‌شود. برای صدور برگ اجرا از صفحه ورود داده استفاده کنید.");
 }
 
 export async function fetchTasks(processDefinitionKey) {
-  const response = await appPost("/api/user-tasks/search", {
-    sort: [
-      {
-        field: "creationDate",
-        order: "desc"
-      }
-    ],
-    page: {
-      limit: 50,
-      from: 0
-    },
-    filter: {
-      processDefinitionKey,
-      state: {
-        $in: ACTIVE_TASK_STATES
-      }
-    }
+  const tasks = await fetchAllTasks();
+  return tasks.filter((task) => {
+    const key = task.processDefinitionKey || task.processDefinitionId || "execution-paper";
+    return String(key) === String(processDefinitionKey);
   });
-
-  if (!response.ok) {
-    throw new Error("امکان دریافت فهرست درخواست‌ها وجود ندارد.");
-  }
-
-  const data = await response.json();
-  return Array.isArray(data) ? data.filter(isVisibleTaskSummary) : [];
 }
 
 export async function fetchAllTasks() {
-  const response = await appPost("/api/user-tasks/search", {
-    sort: [
-      {
-        field: "creationDate",
-        order: "desc"
-      }
-    ],
-    page: {
-      limit: 50,
-      from: 0
-    },
-    filter: {
-      state: {
-        $in: ACTIVE_TASK_STATES
-      }
-    }
-  });
-
-  if (!response.ok) {
-    throw new Error("امکان دریافت کارهای فعال وجود ندارد.");
-  }
-
-  const data = await response.json();
-  return Array.isArray(data) ? data.filter(isVisibleTaskSummary) : [];
+  const data = await apiJson("/api/v1/cartable/my-tasks");
+  return Array.isArray(data) ? data.map(normalizeCartableTask).filter(isVisibleTaskSummary) : [];
 }
 
 export async function fetchTask(taskId) {
-  const response = await fetch(`/api/user-tasks/${taskId}/form`);
-
-  if (!response.ok) {
-    throw new Error(getTaskErrorMessage(response.status));
-  }
-
-  const text = await response.text();
-
-  if (!text) {
-    throw new Error("پاسخ دریافتی از سرور خالی است.");
-  }
-
-  return JSON.parse(text);
+  const data = await apiJson(`/api/v1/cartable/tasks/${taskId}`);
+  return normalizeCartableTask(data);
 }
 
 export async function completeTask(taskId, data) {
-  const response = await fetch(`/api/user-tasks/${taskId}/completion`, {
+  return apiJson(`/api/v1/cartable/tasks/${taskId}/complete`, {
     method: "POST",
-    body: JSON.stringify({ variables: data || {} }),
-    headers: { "Content-Type": "application/json" }
+    body: JSON.stringify({ variables: data || {} })
   });
-
-  if (!response.ok) {
-    const details = await response.text();
-    throw new Error(details || `ارسال فرم ناموفق بود: ${response.statusText || response.status}`);
-  }
 }
 
 export function isEvaluationReviewTask(task) {
@@ -122,6 +90,10 @@ export function isEvaluationReviewTask(task) {
 export function isIncompleteInformationTask(task) {
   const name = String(task?.name || "").trim();
   return name === "تکمیل مجدد اطلاعات ناقص توسط کاربر";
+}
+
+export function isExecutionPaperReviewTask(task) {
+  return EXECUTION_PAPER_REVIEW_TASK_IDS.has(String(task?.taskDefinitionId || '').trim());
 }
 
 export function hasRenderableSchema(task) {
@@ -139,18 +111,20 @@ export function isVisibleTaskSummary(task) {
   return Boolean(task?.id) && !name.includes(hiddenName);
 }
 
-function appPost(path, body) {
-  return fetch(path, {
-    method: "POST",
-    body: JSON.stringify(body),
-    headers: { "Content-Type": "application/json" }
-  });
-}
-
-function getTaskErrorMessage(status) {
-  if (status === 404) {
-    return "این درخواست دیگر در صف فعال نیست یا اطلاعات فرم آن در دسترس نیست.";
+function normalizeCartableTask(task) {
+  if (!task) {
+    return task;
   }
-
-  return `دریافت اطلاعات درخواست ناموفق بود: ${status}`;
+  const processDefinitionKey = task.processDefinitionId || task.processDefinitionKey || "execution-paper";
+  return {
+    ...task,
+    id: task.id || task.taskKey,
+    taskKey: task.taskKey || task.id,
+    processDefinitionKey,
+    processDefinitionId: task.processDefinitionId || processDefinitionKey,
+    creationDate: task.createdAt,
+    processName: task.processDefinitionId || "فرایند برگ اجرا",
+    data: task.variables?.reduce((acc, item) => ({ ...acc, [item.name]: item.value }), {}) || {},
+    schema: task.schema
+  };
 }
