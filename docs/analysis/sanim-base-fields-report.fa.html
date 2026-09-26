@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>گزارش فیلدهای پایه برگ اجرایی سنیم</title>
+<style>
+body{font-family:Tahoma,Arial,sans-serif;color:#17243a;background:#f3f5f8;margin:0;line-height:1.9;font-size:13px}main{max-width:1100px;margin:28px auto;background:white;padding:30px;border-radius:8px}h1{font-size:23px;margin:0 0 6px;color:#123954}p{margin:7px 0}.meta{color:#526174}.code,code{direction:ltr;unicode-bidi:isolate;font-family:Consolas,monospace;font-size:12px}.code{text-align:left;white-space:nowrap}table{width:100%;border-collapse:collapse;margin-top:18px}th{background:#123954;color:white;text-align:right}td,th{padding:7px 10px;border:1px solid #d7dee7}tr:nth-child(even){background:#f5f8fb}ul{padding-right:22px}.note{margin-top:16px;border-right:3px solid #4b7797;padding:4px 12px;background:#f5f8fb}footer{margin-top:18px;font-size:11px;color:#526174}@media print{body{background:white;font-size:10px}main{margin:0;padding:0;max-width:none}td,th{padding:4px 6px}.code{font-size:10px}thead{display:table-header-group}tr{break-inside:avoid}h1{font-size:18px}.note{break-inside:avoid}}@page{size:A4 landscape;margin:12mm}
+</style></head><body><main>
+<h1>گزارش فیلدهای پایه برگ اجرایی سنیم</h1>
+<p class="meta">تاریخ: ۲۰۲۶/۰۹/۲۱ | موجودیت پیشنهادی: <code>SanimExecutionDocument</code></p>
+<p>قالب‌ها: <code>EF03</code>، <code>EF23</code>، <code>EF23_1</code>، <code>EF23_2</code> و <code>EF104</code></p>
+<p>فهرست زیر شامل فیلدهای استخراجی مشترک، مبالغ تجمیعی و ویژگی‌های فنی پیشنهادی مدل واحد است. مشترک‌بودن فیلد، به معنی الزامی‌بودن آن در همه پیام‌ها نیست.</p>
+<table><thead><tr><th>ردیف</th><th>بخش</th><th>عنوان ویژگی</th><th>نام فنی پیشنهادی</th><th>وضعیت / نکته</th></tr></thead><tbody><tr><td>1</td><td>شناسایی</td><td>شناسه داخلی</td><td class="code">id</td><td>الزامی</td></tr>
+<tr><td>2</td><td>شناسایی</td><td>نوع قالب برگ</td><td class="code">templateCode</td><td>الزامی</td></tr>
+<tr><td>3</td><td>شناسایی</td><td>شناسه مرجع مبدأ</td><td class="code">sourceReferenceId</td><td>الزامی</td></tr>
+<tr><td>4</td><td>مشخصات برگ</td><td>شماره برگ اجرایی</td><td class="code">documentNumber</td><td>مشترک در پنج قالب</td></tr>
+<tr><td>5</td><td>مشخصات برگ</td><td>تاریخ صدور برگ</td><td class="code">issueDate</td><td>مشترک در پنج قالب</td></tr>
+<tr><td>6</td><td>دوره</td><td>سال مالیاتی</td><td class="code">taxYear</td><td>مشترک در پنج قالب</td></tr>
+<tr><td>7</td><td>دوره</td><td>دوره مالیاتی</td><td class="code">taxPeriod</td><td>خروجی EF03 طبق فایل: ۱</td></tr>
+<tr><td>8</td><td>اداره</td><td>اداره کل امور مالیاتی</td><td class="code">generalDirectorateName</td><td>مشترک در پنج قالب</td></tr>
+<tr><td>9</td><td>اداره</td><td>اداره امور مالیاتی</td><td class="code">taxOfficeName</td><td>مشترک در پنج قالب</td></tr>
+<tr><td>10</td><td>مؤدی</td><td>شناسه مؤدی در مبدأ</td><td class="code">taxpayerIdentifier</td><td>با ثبت نوع شناسه</td></tr>
+<tr><td>11</td><td>مؤدی</td><td>نوع شناسه مؤدی</td><td class="code">taxpayerIdentifierType</td><td>تفکیک شناسه مؤدی از شماره اقتصادی</td></tr>
+<tr><td>12</td><td>مؤدی</td><td>شناسه هویتی مؤدی</td><td class="code">identityNumber</td><td>ملی، اتباع یا مشارکت</td></tr>
+<tr><td>13</td><td>مؤدی</td><td>نوع شناسه هویتی</td><td class="code">identityType</td><td>در صورت قابل تشخیص بودن</td></tr>
+<tr><td>14</td><td>مؤدی</td><td>نام کامل شخص یا شرکت</td><td class="code">taxpayerName</td><td>مشترک در پنج قالب</td></tr>
+<tr><td>15</td><td>مؤدی</td><td>نام تجاری</td><td class="code">tradeName</td><td>اختیاری</td></tr>
+<tr><td>16</td><td>مؤدی</td><td>تلفن</td><td class="code">phone</td><td>اختیاری</td></tr>
+<tr><td>17</td><td>مؤدی</td><td>کد پستی</td><td class="code">postalCode</td><td>اختیاری</td></tr>
+<tr><td>18</td><td>مؤدی</td><td>نشانی</td><td class="code">address</td><td>اختیاری</td></tr>
+<tr><td>19</td><td>مستند صدور</td><td>شماره مستند مبنای صدور</td><td class="code">basisDocumentNumber</td><td>مشترک در نگاشت پنج قالب</td></tr>
+<tr><td>20</td><td>مستند صدور</td><td>تاریخ مستند مبنای صدور</td><td class="code">basisDocumentDate</td><td>مشترک در نگاشت پنج قالب</td></tr>
+<tr><td>21</td><td>مالی</td><td>مانده کل بدهی</td><td class="code">outstandingDebtAmount</td><td>نگاشت EF03 نیازمند تأیید</td></tr>
+<tr><td>22</td><td>مالی</td><td>مجموع جرایم</td><td class="code">totalPenaltyAmount</td><td>در صورت قابل استخراج بودن</td></tr>
+<tr><td>23</td><td>مالی</td><td>مجموع پرداختی</td><td class="code">totalPaidAmount</td><td>در صورت قابل استخراج بودن</td></tr>
+<tr><td>24</td><td>مالی</td><td>واحد پول</td><td class="code">currencyCode</td><td>نیازمند تعیین در قرارداد</td></tr>
+<tr><td>25</td><td>محتوا</td><td>XML کامل دریافتی</td><td class="code">sourceXml</td><td>شامل تمام جزئیات اختصاصی و مالی</td></tr>
+<tr><td>26</td><td>پردازش</td><td>زمان دریافت</td><td class="code">receivedAt</td><td>الزامی؛ تولیدشده در سامانه</td></tr>
+<tr><td>27</td><td>پردازش</td><td>نسخه نگاشت و محاسبه</td><td class="code">mappingVersion</td><td>تولیدشده در سامانه</td></tr>
+<tr><td>28</td><td>پردازش</td><td>وضعیت اعتبارسنجی</td><td class="code">validationStatus</td><td>معتبر، ناقص یا نیازمند بررسی</td></tr>
+<tr><td>29</td><td>تکمیلی</td><td>نوع شخص</td><td class="code">personType</td><td>اختیاری؛ در EF104 تعریف نشده</td></tr>
+<tr><td>30</td><td>تکمیلی</td><td>نوع فعالیت</td><td class="code">activityTitle</td><td>اختیاری؛ در EF104 تعریف نشده</td></tr>
+<tr><td>31</td><td>تکمیلی</td><td>شرح دلیل صدور</td><td class="code">issuanceReason</td><td>اختیاری؛ نگاشت EF104 نیازمند تأیید</td></tr></tbody></table>
+<div class="note"><ul>
+<li>تمام جزئیات مالی و تفاوت قالب‌ها در یک ستون <code>sourceXml</code> ذخیره می‌شوند؛ ردیف‌های مالی جدول مستقل ندارند.</li>
+<li>مبالغ با <code>BigDecimal</code> و حفظ اعشار ذخیره شوند؛ مقدار نامعلوم <code>NULL</code> است، نه صفر.</li>
+<li>شناسه‌ها، تلفن و کد پستی رشته متنی باشند. فرمول استخراج مبالغ برای هر قالب مستقل است.</li>
+<li>در EF03 فایل برای مانده بدهی <code>NB</code> معرفی کرده، اما نمونه با <code>HB</code> سازگار است؛ نیازمند تأیید.</li>
+<li>ستون‌های تجمیعی اعتبار، بخشودگی، مالیات و عوارض در صورت تأیید نیاز عملیاتی و نگاشت افزوده می‌شوند.</li>
+</ul></div>
+<footer>منابع: all_sanim_fields.ods و XML for Arrears.xlsx؛ وضعیت: پیشنهاد مدل، پیش از پیاده‌سازی.</footer>
+</main></body></html>

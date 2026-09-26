@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>مترجم برچسب‌های XML سنیم</title>
+<style>
+:root{font-family:Tahoma,Arial,sans-serif;color:#173444;background:#f3f6f8;font-size:14px}*{box-sizing:border-box}[hidden]{display:none!important}body{margin:0}header{background:#123c45;color:white;padding:38px max(24px,calc((100vw - 1280px)/2));border-bottom:5px solid #53c2ac}header small{color:#99dbcd}h1{font-size:28px;margin:14px 0}header p{line-height:1.9;color:#d0e3e4;margin-bottom:0}main{max-width:1328px;margin:auto;padding:26px 24px}button,select,input,textarea{font:inherit}button,select{border:1px solid #c8d7dc;border-radius:8px;background:white;padding:11px 16px;color:#173444}button{cursor:pointer}button:hover{background:#edf6f4}button:disabled{opacity:.45;cursor:default}.primary{background:#147464;color:white;border-color:#147464}.primary:hover{background:#105c50}button:focus-visible,select:focus-visible,textarea:focus-visible,input:focus-visible{outline:3px solid #55b7aa;outline-offset:2px}.toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:22px}.toolbar select{direction:ltr;min-width:180px}.muted{color:#667c86;font-size:12px}.privacy{margin-inline-start:auto;color:#237666}.grid{display:grid;grid-template-columns:1fr 1fr;gap:22px}.card{background:white;border:1px solid #dde6e9;border-radius:14px;overflow:hidden;box-shadow:0 5px 20px #193e4505}.card-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid #e5ecee;gap:10px;flex-wrap:wrap}h2{font-size:16px;margin:0}.card-head span{font-size:12px;color:#667c86}textarea{display:block;resize:vertical;width:100%;height:380px;border:0;padding:20px;direction:ltr;text-align:left;font-family:ui-monospace,Consolas,monospace;line-height:1.8;font-size:13px;tab-size:2;background:#fff;color:#15394b}#output{background:#f9fbfc}.actions{padding:14px 20px;display:flex;gap:10px;border-top:1px solid #e5ecee;flex-wrap:wrap}.notice{padding:13px 17px;border-radius:9px;background:#e5f3ef;color:#236757;line-height:1.9;margin:18px 0;overflow-wrap:anywhere}.notice.error{background:#fff0ed;color:#a33124}.notice:empty{display:none}.hint{line-height:1.9;font-size:12px;color:#617580;margin:14px 0 22px}details{margin-top:20px}summary{padding:20px;cursor:pointer;font-weight:bold}.table-wrap{overflow:auto;max-height:440px}table{width:100%;border-collapse:collapse;text-align:right;font-size:13px}th,td{padding:13px 18px;border-bottom:1px solid #e6edef;line-height:1.7;vertical-align:top}th{position:sticky;top:0;background:#edf4f5;color:#47616e}td.value{white-space:pre-wrap;overflow-wrap:anywhere;min-width:180px}code,bdi{direction:ltr;unicode-bidi:isolate}.search{width:calc(100% - 40px);margin:0 20px 18px;border:1px solid #cad8dd;border-radius:8px;padding:11px}.empty{padding:28px;text-align:center;color:#71858e}footer{font-size:12px;color:#70848d;line-height:1.9;margin-top:25px}@media(max-width:800px){.grid{grid-template-columns:1fr}header{padding:26px 20px}h1{font-size:23px}main{padding:20px 14px}.privacy{margin-inline-start:0;width:100%}textarea{height:300px}}
+</style>
+</head>
+<body>
+<header><small>ابزار تبدیل اطلاعات سنیم</small><h1>برچسب‌های XML، با عنوان فارسی</h1><p>نوع برگ را انتخاب کنید، XML را وارد کنید و خروجی فارسی بگیرید.</p></header>
+<main>
+<div class="toolbar"><label for="xmlType">نوع XML</label><select id="xmlType"></select><span id="mappingCount" class="muted"></span><span class="privacy">پردازش در مرورگر شما · بدون ارسال اطلاعات</span></div>
+<div id="conflictControls" class="toolbar" hidden><label for="sectionChoice">معنای برچسب‌های مشترک PD / QD / RD / SD</label><select id="sectionChoice"><option value="">انتخاب نشده؛ بدون تغییر بمانند</option><option value="0">مالیات و عوارض کالا و خدمات</option><option value="1">عوارض پسماند</option></select><span class="muted">این برچسب‌ها در فایل مرجع دو عنوان متفاوت دارند.</span></div>
+<div class="grid">
+<section class="card"><div class="card-head"><h2><label for="input">۱. XML اصلی</label></h2><span>ورود متن یا فایل XML</span></div><textarea id="input" spellcheck="false" placeholder="XML را اینجا بچسبانید…"></textarea><div class="actions"><button id="convert" class="primary">تبدیل به فارسی</button><button id="upload">باز کردن فایل</button><input type="file" id="file" accept=".xml,text/xml,application/xml" hidden><button id="sample">نمونه</button><button id="clear">پاک کردن</button></div></section>
+<section class="card"><div class="card-head"><h2><label for="output">۲. XML با برچسب فارسی</label></h2><span id="resultCount">آمادهٔ تبدیل</span></div><textarea id="output" readonly spellcheck="false" placeholder="خروجی تبدیل در این قسمت نمایش داده می‌شود."></textarea><div class="actions"><button id="copy" disabled>کپی خروجی</button><button id="download" disabled>دانلود XML</button></div></section>
+</div>
+<div id="status" class="notice" role="status" aria-live="polite"></div>
+<p class="hint">برای معتبر ماندن XML، فاصله و نشانه‌های نامعتبرِ عنوان‌ها با «_» جایگزین می‌شوند. برای عنوان‌های تکراری، کد اصلی به نام اضافه می‌شود. برچسب‌های ناشناخته و فیلدهای «تعریف نشده» بدون تغییر می‌مانند. مقادیر و ویژگی‌ها تغییر نمی‌کنند.</p>
+<section class="card"><div class="card-head"><h2>نمای خوانا</h2><span>عنوان کامل فارسی در کنار مقدار و کد اصلی</span></div><div class="table-wrap"><table><thead><tr><th>عنوان فارسی</th><th>برچسب اصلی</th><th>مقدار</th></tr></thead><tbody id="preview"></tbody></table><div id="empty" class="empty">پس از تبدیل، اطلاعات اینجا نمایش داده می‌شود.</div></div></section>
+<details class="card"><summary>راهنمای فیلدهای نوع انتخاب‌شده</summary><input id="search" class="search" aria-label="جست‌وجوی فیلد" placeholder="جست‌وجوی عنوان، بخش یا کد…"><div class="table-wrap"><table><thead><tr><th>کد</th><th>عنوان فارسی</th><th>بخش اطلاعاتی</th></tr></thead><tbody id="dictionary"></tbody></table></div></details>
+<footer>منبع عنوان‌ها: all_sanim_fields.ods · شامل ۵ نوع XML · این فایل به‌صورت مستقل و آفلاین نیز قابل استفاده است.</footer>
+</main>
+<script id="mapping-data" type="application/json">__MAPPINGS__</script>
+<script>
+'use strict';
+const mappings = JSON.parse(document.getElementById('mapping-data').textContent);
+const $ = id => document.getElementById(id);
+const parser = new DOMParser();
+const errorNamespace=parser.parseFromString('<','application/xml').getElementsByTagName('parsererror')[0].namespaceURI;
+function hasParseError(doc) {return doc.getElementsByTagNameNS(errorNamespace,'parsererror').length>0;}
+function message(text, error=false) { $('status').textContent=text; $('status').classList.toggle('error',error); }
+function resetResult() {
+  $('output').value=''; $('copy').disabled=true; $('download').disabled=true;
+  $('preview').replaceChildren(); $('empty').hidden=false; $('resultCount').textContent='آمادهٔ تبدیل'; message('');
+}
+function activeFields() {
+  return Object.fromEntries(Object.entries(mappings[$('xmlType').value]).map(([tag,field])=>{
+    if(!field.alternatives) return [tag,field];
+    const choice=$('sectionChoice').value;
+    return [tag, choice==='' ? {title:'عنوان مبهم؛ بخش را انتخاب کنید',section:field.alternatives.map(f=>f.section).join(' / '),defined:false} : field.alternatives[Number(choice)]];
+  }));
+}
+function xmlName(title) {
+  let name=title.normalize('NFC').replace(/[^\p{L}\p{N}\p{M}_.\-\u200c\u200d]+/gu,'_').replace(/^_+|_+$/g,'');
+  if (!/^[\p{L}_]/u.test(name)) name='فیلد_'+name;
+  return name;
+}
+function namesFor(fields, reserved) {
+  const names={}; const counts={};
+  for (const [tag,field] of Object.entries(fields)) if(field.defined) {
+    names[tag]=xmlName(field.title); counts[names[tag]]=(counts[names[tag]]||0)+1;
+  }
+  const used=new Set(reserved);
+  for(const tag of Object.keys(names)) {
+    let name=names[tag]; if(counts[name]>1 || used.has(name)) name+='__'+tag;
+    while(used.has(name)) name+='_'+tag;
+    used.add(name); names[tag]=name;
+  }
+  return names;
+}
+function appendRow(body, values) {
+  const tr=document.createElement('tr');
+  values.forEach((value,i)=>{const td=document.createElement('td');td.textContent=value;td.dir='auto';if(i===2)td.className='value';tr.append(td);});
+  body.append(tr);
+}
+function updateDictionary() {
+  const fields=activeFields(); const query=$('search').value.trim().toLowerCase();
+  $('conflictControls').hidden=!Object.values(mappings[$('xmlType').value]).some(f=>f.alternatives);
+  $('mappingCount').textContent=Object.keys(fields).length+' فیلد در راهنما';
+  const fragment=document.createDocumentFragment();
+  for(const [tag,f] of Object.entries(fields)) if([tag,f.title,f.section].join(' ').toLowerCase().includes(query)) appendRow(fragment,[tag,f.title,f.section]);
+  $('dictionary').replaceChildren(fragment);
+}
+function convert() {
+  resetResult(); const source=$('input').value;
+  if(!source.trim()) {message('ابتدا متن XML را وارد کنید.',true);return;}
+  // Reject document types before parsing: the converter has no need for entities or external DTDs.
+  if(/<!DOCTYPE\s/i.test(source)) {message('XML دارای DOCTYPE پشتیبانی نمی‌شود. از نسخهٔ بدون DTD استفاده کنید.',true);return;}
+  const doc=parser.parseFromString(source,'application/xml');
+  if(hasParseError(doc)) {
+    message('XML معتبر نیست. بسته شدن برچسب‌ها و نویسه‌های ویژه را بررسی کنید. '+doc.documentElement.textContent.slice(0,350),true);return;
+  }
+  const fields=activeFields();
+  const elements=Array.from(doc.getElementsByTagName('*'));
+  const reserved=elements.filter(e=>!fields[e.localName]?.defined).map(e=>e.localName);
+  const names=namesFor(fields,reserved); const unknown=new Set(); let count=0;
+  const preview=document.createDocumentFragment();
+  // Snapshot the original elements so renaming parents does not skip their children.
+  for(const element of elements) {
+    const tag=element.localName; const field=fields[tag];
+    if(field || !element.children.length) appendRow(preview,[field?.title||'بدون عنوان در راهنما',element.nodeName,element.textContent]);
+    if(!field?.defined) {unknown.add(element.nodeName);continue;}
+    const qualified=(element.prefix?element.prefix+':':'')+names[tag];
+    const renamed=doc.createElementNS(element.namespaceURI,qualified);
+    for(const attr of Array.from(element.attributes)) renamed.setAttributeNS(attr.namespaceURI,attr.name,attr.value);
+    while(element.firstChild) renamed.appendChild(element.firstChild);
+    element.parentNode.replaceChild(renamed,element); count++;
+  }
+  const serialized=new XMLSerializer().serializeToString(doc);
+  const check=parser.parseFromString(serialized,'application/xml');
+  if(hasParseError(check)) {message('خطا در ساخت XML فارسی.',true);return;}
+  $('output').value='<?xml version="1.0" encoding="UTF-8"?>\n'+serialized;
+  $('preview').replaceChildren(preview); $('empty').hidden=!!$('preview').children.length;
+  $('copy').disabled=false; $('download').disabled=false; $('resultCount').textContent=count+' برچسب تبدیل شد';
+  let note=count ? count+' برچسب با موفقیت تبدیل شد.' : 'هیچ برچسب قابل تبدیل پیدا نشد؛ نوع XML انتخاب‌شده را بررسی کنید.';
+  if(unknown.size) note+=' برچسب‌های بدون تغییر: '+Array.from(unknown).join('،');
+  message(note,!count);
+}
+for(const kind of Object.keys(mappings)) {const option=document.createElement('option');option.value=kind;option.textContent=kind;$('xmlType').append(option);}
+$('convert').onclick=convert;
+$('input').addEventListener('input',resetResult);
+$('sectionChoice').onchange=()=>{updateDictionary();if($('input').value.trim())convert();};
+$('xmlType').onchange=()=>{$('sectionChoice').value='';updateDictionary();if($('input').value.trim())convert();else resetResult();};
+$('search').oninput=updateDictionary;
+$('clear').onclick=()=>{$('input').value='';$('file').value='';resetResult();$('input').focus();};
+$('sample').onclick=()=>{const tags=Object.keys(mappings[$('xmlType').value]).slice(0,5);$('input').value='<'+$('xmlType').value+'>\n'+tags.map((tag,i)=>'  <'+tag+'>مقدار نمونه '+(i+1)+'</'+tag+'>').join('\n')+'\n</'+$('xmlType').value+'>';convert();};
+$('upload').onclick=()=>$('file').click();
+$('file').onchange=async()=>{const file=$('file').files[0];if(!file)return;resetResult();try{const buffer=await file.arrayBuffer();const bytes=new Uint8Array(buffer);let encoding='utf-8';if(bytes[0]===255&&bytes[1]===254)encoding='utf-16le';else if(bytes[0]===254&&bytes[1]===255)encoding='utf-16be';else if(bytes[0]===60&&bytes[1]===0)encoding='utf-16le';else if(bytes[0]===0&&bytes[1]===60)encoding='utf-16be';else {const declaration=new TextDecoder().decode(bytes.slice(0,200)).match(/<\?xml[^?]*encoding\s*=\s*["']([^"']+)["']/i);if(declaration)encoding=declaration[1];}$('input').value=new TextDecoder(encoding,{fatal:true}).decode(buffer);convert();}catch{message('خواندن فایل ممکن نشد. متن XML را بچسبانید یا فایل را با UTF-8 ذخیره کنید.',true);}$('file').value='';};
+$('copy').onclick=async()=>{try{if(!navigator.clipboard)throw new Error();await navigator.clipboard.writeText($('output').value);message('خروجی کپی شد.');}catch{$('output').focus();$('output').select();message('خروجی انتخاب شد؛ برای کپی Ctrl+C یا ⌘C را بزنید.');}};
+$('download').onclick=()=>{const blob=new Blob([$('output').value],{type:'application/xml;charset=utf-8'});const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;link.download=$('xmlType').value+'-fa.xml';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
+updateDictionary();
+</script>
+</body>
+</html>
