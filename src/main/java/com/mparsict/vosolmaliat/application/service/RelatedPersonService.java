@@ -239,7 +239,7 @@ public class RelatedPersonService {
                                 "FINALIZED_DEBT_PAPER_NOT_FOUND",
                                 "برگ بدهی قطعی مرتبط یافت نشد"
                         ));
-        return new ExecutionContext(executionPaper, owner, normalizeYear(finalizedDebtPaper.getPerformanceYear()));
+        return new ExecutionContext(executionPaper, owner, normalizeYear(finalizedDebtPaper.getSourceDocument() == null ? null : finalizedDebtPaper.getSourceDocument().getTaxYear()));
     }
 
     private NaturalPerson resolveNaturalPerson(CompanyRegistryRelatedPersonData item) {
@@ -259,10 +259,8 @@ public class RelatedPersonService {
                 : naturalPersonRepository.findByNationalCode(item.nationalCode()).orElseGet(NaturalPerson::new);
         person.setNationalCode(blankToNull(item.nationalCode()));
         person.setFida(blankToNull(item.fida()));
-        person.setFirstName(defaultString(item.firstName()));
-        person.setLastName(defaultString(item.lastName()));
-        person.setFatherName(defaultString(item.fatherName()));
-        person.setBirthDate(defaultString(normalizeJalaliDate(item.birthDate())));
+        person.updateProfile(defaultString(item.firstName()),defaultString(item.lastName()),
+                defaultString(item.fatherName()),defaultString(normalizeJalaliDate(item.birthDate())));
         return naturalPersonRepository.save(person);
     }
 
@@ -271,9 +269,8 @@ public class RelatedPersonService {
                 ? legalPersonRepository.findByRegistrationNumber(item.registrationNumber()).orElseGet(LegalPerson::new)
                 : legalPersonRepository.findByNationalId(item.nationalId()).orElseGet(LegalPerson::new);
         person.setNationalId(blankToNull(item.nationalId()));
-        person.setRegistrationNumber(blankToNull(item.registrationNumber()));
-        person.setRegistrationDate(defaultString(normalizeJalaliDate(item.registrationDate())));
-        person.setName(defaultString(item.companyName()));
+        person.updateProfile(defaultString(item.companyName()),blankToNull(item.registrationNumber()),
+                defaultString(normalizeJalaliDate(item.registrationDate())));
         return legalPersonRepository.save(person);
     }
 

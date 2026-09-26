@@ -16,6 +16,11 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class FinalizedDebtPaper extends BaseEntity {
+    @Column(name="basis_issue_date", updatable=false) private String basisIssueDate;
+    @Column(name="basis_finalization_reason", updatable=false) private String finalizationReason;
+
+    @Embedded
+    private com.mparsict.vosolmaliat.domain.model.sanim.SanimDocumentDetails sourceDocument;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,35 +29,8 @@ public class FinalizedDebtPaper extends BaseEntity {
     @Column(name = "debt_paper_unique_code", unique = true)
     private String debtPaperUniqueCode;
 
-    @Column(name = "debt_paper_issue_date")
-    private String debtPaperIssueDate;
-
-    @Column(name = "notification_id")
-    private String notificationId;
-
-    @Column(name = "finalization_reason")
-    private String finalizationReason;
-
     @Column(name = "tax_source")
     private String taxSource;
-
-    @Column(name = "performance_year")
-    private String performanceYear;
-
-    @Column(name = "performance_period")
-    private String performancePeriod;
-
-    @Column(name = "activity_type_code")
-    private String activityTypeCode;
-
-    @Column(name = "activity_type_title") // TODO m.sjd: what is given by api, code or title  ?
-    private String activityTypeTitle;
-
-    @Column(name = "total_finalized_amount")
-    private Double totalFinalizedAmount;
-
-    @Column(name = "finalized_tax_and_non_deductible_amount")
-    private Double finalizedTaxAndNonDeductibleAmount;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "main_tax_bureau_id")

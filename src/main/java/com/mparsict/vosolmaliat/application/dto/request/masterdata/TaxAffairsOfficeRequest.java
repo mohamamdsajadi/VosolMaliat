@@ -17,5 +17,7 @@ public record TaxAffairsOfficeRequest(
         @NotBlank String officeName,
         String postalCode,
         String address,
-        String phone
+        String phone,
+        @jakarta.validation.constraints.Min(0) @jakarta.validation.constraints.Max(1) Integer officeType,
+        String officeCode
 ) {}

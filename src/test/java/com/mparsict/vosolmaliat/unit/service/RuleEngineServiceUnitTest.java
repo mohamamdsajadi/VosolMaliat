@@ -134,16 +134,8 @@ class RuleEngineServiceUnitTest {
     }
 
     private DebtPaperIssuanceRequest sampleRequest(Long taxUnitId) {
-        return new DebtPaperIssuanceRequest(
-                "DEBT-1001",
-                "2026-07-18",
-                null,
-                "قطعی",
+        return new DebtPaperIssuanceRequest("DEBT-1001",
                 "VAT",
-                "1405",
-                "SPRING",
-                "A01",
-                "فعالیت نمونه",
                 700L,
                 70L,
                 taxUnitId,
@@ -163,11 +155,8 @@ class RuleEngineServiceUnitTest {
                         null,
                         null
                 ),
-                new DebtPaperIssuanceRequest.DebtInfo(
-                        1000d, 200d, 50d, 25d, 0d, 10d, 100d, 0d, 0d, 1185d, 0d, 0d, 0d
-                ),
-                List.of()
-        );
+                List.of(),
+                com.mparsict.vosolmaliat.TestSanimDocuments.document("DEBT-1001", "2026-07-18", "1405", "SPRING", "فعالیت نمونه"));
     }
 
     private static Object defaultValue(Class<?> type) {

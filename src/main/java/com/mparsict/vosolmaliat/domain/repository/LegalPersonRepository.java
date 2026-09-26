@@ -11,5 +11,6 @@ public interface LegalPersonRepository extends JpaRepository<LegalPerson, Long> 
 
     Optional<LegalPerson> findByNationalId(String nationalId);
 
-    Optional<LegalPerson> findByRegistrationNumber(String registrationNumber);
+    @org.springframework.data.jpa.repository.Query("select p from LegalPerson p join p.extraInfo e where e.registrationNumber = :number")
+    Optional<LegalPerson> findByRegistrationNumber(@org.springframework.data.repository.query.Param("number") String registrationNumber);
 }

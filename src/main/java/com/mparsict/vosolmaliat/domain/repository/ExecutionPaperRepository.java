@@ -19,13 +19,13 @@ public interface ExecutionPaperRepository extends JpaRepository<ExecutionPaper, 
 
     Optional<ExecutionPaper> findByFinalizedDebtPaperDebtPaperUniqueCode(String debtPaperUniqueCode);
 
-    Optional<ExecutionPaper> findByTaxpayerDebtPaperUniqueCode(String debtPaperUniqueCode);
+
 
     /**
      * تاریخ صدور برگ بدهی متصل به برگ اجرا را برای بازیابی متغیر فرایند برمی‌گرداند.
      */
     @Query("""
-            SELECT finalizedDebtPaper.debtPaperIssueDate
+            SELECT finalizedDebtPaper.basisIssueDate
             FROM ExecutionPaper executionPaper
             JOIN executionPaper.finalizedDebtPaper finalizedDebtPaper
             WHERE executionPaper.id = :executionPaperId
@@ -65,6 +65,8 @@ public interface ExecutionPaperRepository extends JpaRepository<ExecutionPaper, 
             LEFT JOIN ep.taxpayer taxpayer
             LEFT JOIN taxpayer.naturalPerson np
             LEFT JOIN taxpayer.legalPerson lp
+            LEFT JOIN np.extraInfo ninfo
+            LEFT JOIN lp.extraInfo linfo
             LEFT JOIN DebtInformation debt ON debt.executionPaper = ep
             LEFT JOIN ExecutionPaperNotification notification ON notification.executionPaper = ep
             WHERE (:assignmentMode IS NULL
@@ -72,10 +74,10 @@ public interface ExecutionPaperRepository extends JpaRepository<ExecutionPaper, 
                 OR (:assignmentMode = 'UNASSIGNED' AND ep.currentState = :unassignedState))
               AND (:uniqueCode IS NULL OR LOWER(ep.executionPaperUniqueCode) LIKE LOWER(CONCAT('%', :uniqueCode, '%')))
               AND (:taxpayerName IS NULL
-                OR LOWER(np.firstName) LIKE LOWER(CONCAT('%', :taxpayerName, '%'))
-                OR LOWER(np.lastName) LIKE LOWER(CONCAT('%', :taxpayerName, '%'))
-                OR LOWER(CONCAT(np.firstName, ' ', np.lastName)) LIKE LOWER(CONCAT('%', :taxpayerName, '%'))
-                OR LOWER(lp.name) LIKE LOWER(CONCAT('%', :taxpayerName, '%')))
+                OR LOWER(ninfo.firstName) LIKE LOWER(CONCAT('%', :taxpayerName, '%'))
+                OR LOWER(ninfo.lastName) LIKE LOWER(CONCAT('%', :taxpayerName, '%'))
+                OR LOWER(CONCAT(ninfo.firstName, ' ', ninfo.lastName)) LIKE LOWER(CONCAT('%', :taxpayerName, '%'))
+                OR LOWER(linfo.name) LIKE LOWER(CONCAT('%', :taxpayerName, '%')))
               AND (:taxpayerNationalId IS NULL
                 OR np.nationalCode LIKE CONCAT('%', :taxpayerNationalId, '%')
                 OR lp.nationalId LIKE CONCAT('%', :taxpayerNationalId, '%'))
@@ -84,22 +86,6 @@ public interface ExecutionPaperRepository extends JpaRepository<ExecutionPaper, 
               AND (:notificationStatus IS NULL
                 OR (:notificationStatus = 'NOTIFIED' AND notification.electronicNotificationDate IS NOT NULL)
                 OR (:notificationStatus = 'NOT_NOTIFIED' AND notification.electronicNotificationDate IS NULL))
-              AND (:minDebt IS NULL OR (
-                    COALESCE(debt.taxAmount, 0)
-                  + COALESCE(debt.dutyAmount, 0)
-                  + COALESCE(debt.penaltyArticle22, 0)
-                  + COALESCE(debt.penaltyArticle23, 0)
-                  - COALESCE(debt.taxPaidAmount, 0)
-                  - COALESCE(debt.penaltyPaidAmount, 0)
-              ) >= :minDebt)
-              AND (:maxDebt IS NULL OR (
-                    COALESCE(debt.taxAmount, 0)
-                  + COALESCE(debt.dutyAmount, 0)
-                  + COALESCE(debt.penaltyArticle22, 0)
-                  + COALESCE(debt.penaltyArticle23, 0)
-                  - COALESCE(debt.taxPaidAmount, 0)
-                  - COALESCE(debt.penaltyPaidAmount, 0)
-              ) <= :maxDebt)
             """,
             countQuery = """
             SELECT COUNT(DISTINCT ep)
@@ -107,6 +93,8 @@ public interface ExecutionPaperRepository extends JpaRepository<ExecutionPaper, 
             LEFT JOIN ep.taxpayer taxpayer
             LEFT JOIN taxpayer.naturalPerson np
             LEFT JOIN taxpayer.legalPerson lp
+            LEFT JOIN np.extraInfo ninfo
+            LEFT JOIN lp.extraInfo linfo
             LEFT JOIN DebtInformation debt ON debt.executionPaper = ep
             LEFT JOIN ExecutionPaperNotification notification ON notification.executionPaper = ep
             WHERE (:assignmentMode IS NULL
@@ -114,10 +102,10 @@ public interface ExecutionPaperRepository extends JpaRepository<ExecutionPaper, 
                 OR (:assignmentMode = 'UNASSIGNED' AND ep.currentState = :unassignedState))
               AND (:uniqueCode IS NULL OR LOWER(ep.executionPaperUniqueCode) LIKE LOWER(CONCAT('%', :uniqueCode, '%')))
               AND (:taxpayerName IS NULL
-                OR LOWER(np.firstName) LIKE LOWER(CONCAT('%', :taxpayerName, '%'))
-                OR LOWER(np.lastName) LIKE LOWER(CONCAT('%', :taxpayerName, '%'))
-                OR LOWER(CONCAT(np.firstName, ' ', np.lastName)) LIKE LOWER(CONCAT('%', :taxpayerName, '%'))
-                OR LOWER(lp.name) LIKE LOWER(CONCAT('%', :taxpayerName, '%')))
+                OR LOWER(ninfo.firstName) LIKE LOWER(CONCAT('%', :taxpayerName, '%'))
+                OR LOWER(ninfo.lastName) LIKE LOWER(CONCAT('%', :taxpayerName, '%'))
+                OR LOWER(CONCAT(ninfo.firstName, ' ', ninfo.lastName)) LIKE LOWER(CONCAT('%', :taxpayerName, '%'))
+                OR LOWER(linfo.name) LIKE LOWER(CONCAT('%', :taxpayerName, '%')))
               AND (:taxpayerNationalId IS NULL
                 OR np.nationalCode LIKE CONCAT('%', :taxpayerNationalId, '%')
                 OR lp.nationalId LIKE CONCAT('%', :taxpayerNationalId, '%'))
@@ -126,22 +114,6 @@ public interface ExecutionPaperRepository extends JpaRepository<ExecutionPaper, 
               AND (:notificationStatus IS NULL
                 OR (:notificationStatus = 'NOTIFIED' AND notification.electronicNotificationDate IS NOT NULL)
                 OR (:notificationStatus = 'NOT_NOTIFIED' AND notification.electronicNotificationDate IS NULL))
-              AND (:minDebt IS NULL OR (
-                    COALESCE(debt.taxAmount, 0)
-                  + COALESCE(debt.dutyAmount, 0)
-                  + COALESCE(debt.penaltyArticle22, 0)
-                  + COALESCE(debt.penaltyArticle23, 0)
-                  - COALESCE(debt.taxPaidAmount, 0)
-                  - COALESCE(debt.penaltyPaidAmount, 0)
-              ) >= :minDebt)
-              AND (:maxDebt IS NULL OR (
-                    COALESCE(debt.taxAmount, 0)
-                  + COALESCE(debt.dutyAmount, 0)
-                  + COALESCE(debt.penaltyArticle22, 0)
-                  + COALESCE(debt.penaltyArticle23, 0)
-                  - COALESCE(debt.taxPaidAmount, 0)
-                  - COALESCE(debt.penaltyPaidAmount, 0)
-              ) <= :maxDebt)
             """)
     Page<ExecutionPaper> search(
             @Param("assignmentMode") String assignmentMode,
@@ -152,8 +124,6 @@ public interface ExecutionPaperRepository extends JpaRepository<ExecutionPaper, 
             @Param("currentState") String currentState,
             @Param("notificationStatus") String notificationStatus,
             @Param("taxUnitId") Long taxUnitId,
-            @Param("minDebt") Double minDebt,
-            @Param("maxDebt") Double maxDebt,
             Pageable pageable);
 
     @Query("SELECT ep FROM ExecutionPaper ep WHERE ep.currentState = :state")

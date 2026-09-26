@@ -22,6 +22,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 @Slf4j
 @Configuration
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name="app.demo.enabled", havingValue="true")
 @RequiredArgsConstructor
 public class DemoDataInitializer {
 
@@ -64,14 +65,12 @@ public class DemoDataInitializer {
         legalPerson = legalPersonRepository.save(legalPerson);
 
         Taxpayer firstTaxpayer = taxpayerRepository.save(Taxpayer.builder()
-                .debtPaperUniqueCode("DEMO-DEBT-001")
-                .debtPaperIssueDate("1403/01/20")
+                .tin("10001").registrationTraceCode("DEMO-REG-001")
                 .naturalPerson(naturalPerson)
                 .build());
 
         Taxpayer secondTaxpayer = taxpayerRepository.save(Taxpayer.builder()
-                .debtPaperUniqueCode("DEMO-DEBT-002")
-                .debtPaperIssueDate("1403/02/10")
+                .tin("10002").registrationTraceCode("DEMO-REG-002")
                 .legalPerson(legalPerson)
                 .build());
 
@@ -92,20 +91,18 @@ public class DemoDataInitializer {
                 .finalizedDebtPaper(FinalizedDebtPaper.builder().id(1000L + Math.abs(code.hashCode() % 1000)).build())
                 .taxpayer(Taxpayer.builder().id(taxpayerId).build())
                 .taxUnit(TaxUnit.builder().id(111L).build())
-                .finalizationReason("داده نمونه برای نمایش داشبورد")
                 .taxSource("مالیات بر ارزش افزوده")
                 .currentState(state.name())
                 .build());
 
         debtInformationRepository.save(DebtInformation.builder()
                 .executionPaper(executionPaper)
-                .taxAmount(remainingTax)
-                .dutyAmount(remainingTax * 0.09)
-                .penaltyArticle22(remainingTax * 0.02)
-                .penaltyArticle23(remainingTax * 0.015)
-                .taxPaidAmount(remainingTax * 0.1)
-                .penaltyPaidAmount(remainingTax * 0.01)
-                .remainingTax(remainingTax)
+                .currentAmounts(com.mparsict.vosolmaliat.domain.model.sanim.SanimAmounts.builder()
+                    .outstandingDebtAmount(java.math.BigDecimal.valueOf(remainingTax))
+                    .totalTaxAmount(java.math.BigDecimal.valueOf(remainingTax))
+                    .totalDutyAmount(java.math.BigDecimal.ZERO).totalPenaltyAmount(java.math.BigDecimal.ZERO)
+                    .totalPaidAmount(java.math.BigDecimal.ZERO).totalCreditAmount(java.math.BigDecimal.ZERO)
+                    .totalRemissionAmount(java.math.BigDecimal.ZERO).build())
                 .build());
     }
 }

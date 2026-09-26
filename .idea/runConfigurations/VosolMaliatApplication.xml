@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="VosolMaliatApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
-    <module name="VosolMaliat (1)" />
+    <module name="vosol-maliat" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="com.mparsict.vosolmaliat.VosolMaliatApplication" />
     <method v="2">
       <option name="Make" enabled="true" />

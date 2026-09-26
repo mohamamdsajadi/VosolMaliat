@@ -34,8 +34,9 @@ class DebtStatusUpdateServiceUnitTest {
                 .build();
         DebtInformation existingDebt = DebtInformation.builder()
                 .executionPaper(paper)
-                .taxAmount(900_000D)
-                .dutyAmount(100_000D)
+                .currentAmounts(com.mparsict.vosolmaliat.domain.model.sanim.SanimAmounts.builder()
+                    .totalTaxAmount(new java.math.BigDecimal("900000"))
+                    .totalDutyAmount(new java.math.BigDecimal("100000")).build())
                 .build();
         AtomicReference<DebtInquiryResult> savedResult = new AtomicReference<>();
         AtomicReference<DebtInformation> savedDebt = new AtomicReference<>();
@@ -84,7 +85,7 @@ class DebtStatusUpdateServiceUnitTest {
                 sanim,
                 auditLog,
                 new ObjectMapper().findAndRegisterModules()
-        );
+        , org.mockito.Mockito.mock(com.mparsict.vosolmaliat.domain.repository.DebtInformationHistoryRepository.class));
 
         service.update(99L, "debt-inquiry-700", status);
 
@@ -95,14 +96,13 @@ class DebtStatusUpdateServiceUnitTest {
         assertThat(result.getResponseJson()).contains("\"outstandingDebtRials\":800000");
         assertThat(result.getHash()).hasSize(64);
 
-        assertThat(existingDebt.getTaxAmount()).isEqualTo(900_000D);
-        assertThat(existingDebt.getDutyAmount()).isEqualTo(100_000D);
-        assertThat(existingDebt.getSanimTotalDebtRials()).isEqualTo(1_000_000L);
-        assertThat(existingDebt.getSanimTotalPenaltyRials()).isEqualTo(200_000L);
-        assertThat(existingDebt.getSanimTotalPaymentRials()).isEqualTo(300_000L);
-        assertThat(existingDebt.getSanimTotalCreditRials()).isEqualTo(100_000L);
-        assertThat(existingDebt.getSanimOutstandingDebtRials()).isEqualTo(800_000L);
-        assertThat(existingDebt.getSanimLastActivityAt()).isEqualTo(status.lastActivityAt());
+        assertThat(existingDebt.getCurrentAmounts().getTotalTaxAmount()).isEqualByComparingTo("900000");
+        assertThat(existingDebt.getCurrentAmounts().getTotalDutyAmount()).isEqualByComparingTo("100000");
+        assertThat(existingDebt.getCurrentAmounts().getTotalPenaltyAmount()).isEqualByComparingTo("200000");
+        assertThat(existingDebt.getCurrentAmounts().getTotalPaidAmount()).isEqualByComparingTo("300000");
+        assertThat(existingDebt.getCurrentAmounts().getTotalCreditAmount()).isEqualByComparingTo("100000");
+        assertThat(existingDebt.getCurrentAmounts().getOutstandingDebtAmount()).isEqualByComparingTo("800000");
+        assertThat(existingDebt.getCurrentAmountsAsOf()).isEqualTo(status.lastActivityAt());
         assertThat(existingDebt.getLastDebtInquiryAt()).isNotNull();
         assertThat(savedDebt.get()).isSameAs(existingDebt);
     }

@@ -13,6 +13,11 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class NaturalPersonExtraInfo extends BaseEntity {
+    @Version private Long version;
+    private String firstName;
+    private String lastName;
+    private String fatherName;
+    private String birthDate;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,8 +47,8 @@ public class NaturalPersonExtraInfo extends BaseEntity {
     @Column(name = "passport_expiry_date")
     private String passportExpiryDate;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "natural_person_id")
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "natural_person_id", unique=true, nullable=false)
     private NaturalPerson naturalPerson;
 
     public Long getNaturalPersonId() {

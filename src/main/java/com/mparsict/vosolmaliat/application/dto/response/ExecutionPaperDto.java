@@ -22,7 +22,8 @@ public record ExecutionPaperDto(
         String taxpayerType,
         String notificationDate,
         String paymentDeadlineStatus,
-        Double totalDebt,
+        @com.fasterxml.jackson.databind.annotation.JsonSerialize(using = com.mparsict.vosolmaliat.domain.model.sanim.ExactDecimalSerializer.class)
+        java.math.BigDecimal totalDebt,
         String notificationStatus,
         String currentState
 ) {}

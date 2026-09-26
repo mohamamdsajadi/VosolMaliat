@@ -38,18 +38,26 @@ public record DashboardStatsResponse(
         long arrestOrderNotIssued,
         long awaitingArrestOrder,
         // Debt totals aligned with pie chart groups
-        Double debtSumNotInformedExecutionPapers,
-        Double debtSumInformedExecutionPapers,
-        Double debtSumRejectedDebtPapers,
-        Double debtSumTotalIssuedExecutionPapers,
+        @com.fasterxml.jackson.databind.annotation.JsonSerialize(using = com.mparsict.vosolmaliat.domain.model.sanim.ExactDecimalSerializer.class)
+        java.math.BigDecimal debtSumNotInformedExecutionPapers,
+        @com.fasterxml.jackson.databind.annotation.JsonSerialize(using = com.mparsict.vosolmaliat.domain.model.sanim.ExactDecimalSerializer.class)
+        java.math.BigDecimal debtSumInformedExecutionPapers,
+        @com.fasterxml.jackson.databind.annotation.JsonSerialize(using = com.mparsict.vosolmaliat.domain.model.sanim.ExactDecimalSerializer.class)
+        java.math.BigDecimal debtSumRejectedDebtPapers,
+        @com.fasterxml.jackson.databind.annotation.JsonSerialize(using = com.mparsict.vosolmaliat.domain.model.sanim.ExactDecimalSerializer.class)
+        java.math.BigDecimal debtSumTotalIssuedExecutionPapers,
         // My actions
         long myActionsNew,
         long myActionsAwaitingCompletion,
         long myActionsCompleted,
         long myActionsCancelled,
         // Financial collection status
-        Double totalDebtAwaitingSeizure,
-        Double totalDebtWithSeizureOrder,
-        Double collectedAmounts,
-        Double uncollectedAmounts
+        @com.fasterxml.jackson.databind.annotation.JsonSerialize(using = com.mparsict.vosolmaliat.domain.model.sanim.ExactDecimalSerializer.class)
+        java.math.BigDecimal totalDebtAwaitingSeizure,
+        @com.fasterxml.jackson.databind.annotation.JsonSerialize(using = com.mparsict.vosolmaliat.domain.model.sanim.ExactDecimalSerializer.class)
+        java.math.BigDecimal totalDebtWithSeizureOrder,
+        @com.fasterxml.jackson.databind.annotation.JsonSerialize(using = com.mparsict.vosolmaliat.domain.model.sanim.ExactDecimalSerializer.class)
+        java.math.BigDecimal collectedAmounts,
+        @com.fasterxml.jackson.databind.annotation.JsonSerialize(using = com.mparsict.vosolmaliat.domain.model.sanim.ExactDecimalSerializer.class)
+        java.math.BigDecimal uncollectedAmounts
 ) {}

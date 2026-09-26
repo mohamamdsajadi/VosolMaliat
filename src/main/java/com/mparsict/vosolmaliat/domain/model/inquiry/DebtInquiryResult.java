@@ -20,6 +20,12 @@ import java.time.LocalDateTime;
 @Builder
 public class DebtInquiryResult extends BaseEntity {
 
+    @Embedded
+    private com.mparsict.vosolmaliat.domain.model.sanim.SanimAmounts amounts;
+
+    private LocalDateTime effectiveAt;
+    private String mappingVersion;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

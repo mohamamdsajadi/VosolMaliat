@@ -44,7 +44,6 @@ final class ExecutionPaperWorkerVariables {
         );
         return executionPaperRepository
                 .findByFinalizedDebtPaperDebtPaperUniqueCode(debtPaperUniqueCode)
-                .or(() -> executionPaperRepository.findByTaxpayerDebtPaperUniqueCode(debtPaperUniqueCode))
                 .map(executionPaper -> executionPaper.getId())
                 .orElseThrow(() -> new IllegalArgumentException(
                         "Could not resolve executionPaperId for debtPaperUniqueCode: "

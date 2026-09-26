@@ -11,6 +11,15 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class TaxpayerActivityType extends BaseEntity {
+    @Version private Long version;
+    @OneToMany(mappedBy="activity", cascade=CascadeType.ALL)
+    @Builder.Default private java.util.List<TaxpayerActivityTypeHistory> history = new java.util.ArrayList<>();
+    public void updateTitle(String title) {
+        if (java.util.Objects.equals(activityTypeTitle,title)) return;
+        if (id != null) history.add(TaxpayerActivityTypeHistory.builder().activity(this)
+            .activityTypeCode(activityTypeCode).activityTypeTitle(activityTypeTitle).build());
+        activityTypeTitle=title;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,8 +31,8 @@ public class TaxpayerActivityType extends BaseEntity {
     @Column(name = "activity_type_title")
     private String activityTypeTitle;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "taxpayer_id")
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "taxpayer_id", unique=true, nullable=false)
     private Taxpayer taxpayer;
 
     public Long getTaxpayerId() {

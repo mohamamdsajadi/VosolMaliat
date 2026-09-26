@@ -124,14 +124,18 @@ export default function FinalizedDebtPaperEntryPage() {
           <FormSectionTitle tone="blue" icon={<DocumentIcon />} title="مشخصات برگ بدهی" />
           <FieldGrid>
             <Input label="شناسه یکتا" name="debtPaperUniqueCode" value={form.debtPaperUniqueCode} onChange={updateForm} required />
-            <Input label="تاریخ صدور/قطعیت" name="debtPaperIssueDate" value={form.debtPaperIssueDate} onChange={updateForm} required />
-            <Input label="شماره ابلاغ" name="notificationId" value={form.notificationId} onChange={updateForm} />
-            <Input label="علت قطعیت" name="finalizationReason" value={form.finalizationReason} onChange={updateForm} required />
+            <Input label="تاریخ صدور سند" name="issueDateRaw" value={form.issueDateRaw} onChange={updateForm} required />
+            <Input label="شماره سند" name="documentNumber" value={form.documentNumber} onChange={updateForm} />
+            <Input label="تاریخ مبنای صدور (برگ قطعی / اظهارنامه)" name="basisDocumentDateRaw" value={form.basisDocumentDateRaw} onChange={updateForm} required />
+            <Input label="شروع دوره مالی" name="taxPeriodStartRaw" value={form.taxPeriodStartRaw} onChange={updateForm} />
+            <Input label="پایان دوره مالی" name="taxPeriodEndRaw" value={form.taxPeriodEndRaw} onChange={updateForm} />
+            <Input label="شناسه مؤدی (TIN)" name="taxpayerIdentifier" value={form.taxpayerIdentifier} onChange={updateForm} required />
+            <Input label="کد رهگیری ثبت‌نام" name="registrationTraceCode" value={form.registrationTraceCode} onChange={updateForm} required />
+            <Input label="دلیل صدور" name="issuanceReason" value={form.issuanceReason} onChange={updateForm} required />
             <Input label="منبع مالیاتی" name="taxSource" value={form.taxSource} onChange={updateForm} required />
-            <Input label="سال عملکرد" name="performanceYear" value={form.performanceYear} onChange={updateForm} />
-            <Input label="دوره عملکرد" name="performancePeriod" value={form.performancePeriod} onChange={updateForm} />
-            <Input label="کد فعالیت" name="activityTypeCode" value={form.activityTypeCode} onChange={updateForm} />
-            <Input label="عنوان فعالیت" name="activityTypeTitle" value={form.activityTypeTitle} onChange={updateForm} />
+            <Input label="سال عملکرد" name="taxYear" value={form.taxYear} onChange={updateForm} />
+            <Input label="دوره عملکرد" name="taxPeriod" value={form.taxPeriod} onChange={updateForm} />
+            <Input label="عنوان فعالیت" name="activityTitle" value={form.activityTitle} onChange={updateForm} />
           </FieldGrid>
 
           <FormSectionTitle tone="green" icon={<OrganizationIcon />} title="ساختار سازمانی پرونده" />

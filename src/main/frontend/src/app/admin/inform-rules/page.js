@@ -12,10 +12,14 @@ const FIELD_OPTIONS = [
   { value: 'taxBureauId', label: 'اداره امور مالیاتی', type: 'number', placeholder: 'مثلاً 1203' },
   { value: 'taxUnitId', label: 'واحد مالیاتی', type: 'number', placeholder: 'مثلاً 45' },
   { value: 'taxSource', label: 'منبع مالیاتی', type: 'text', placeholder: 'مثلاً VAT' },
-  { value: 'activityTypeCode', label: 'نوع فعالیت', type: 'text', placeholder: 'مثلاً 2' },
-  { value: 'totalFinalizedAmount', label: 'کل مبلغ قطعی‌شده', type: 'number', placeholder: 'مثلاً 156000000' },
-  { value: 'finalizedTaxAndNonDeductibleAmount', label: 'مبلغ قطعی‌شده اصل و جریمه غ.ق.ب', type: 'number', placeholder: 'مثلاً 151000000' },
-  { value: 'debtAmount', label: 'مانده بدهی', type: 'number', placeholder: 'مثلاً 75000000' },
+  { value: 'activityTitle', label: 'نوع فعالیت', type: 'text', placeholder: 'مثلاً 2' },
+  { value: 'outstandingDebtAmount', label: 'مانده بدهی', type: 'decimal', placeholder: 'ریال؛ مقدار دقیق' },
+  { value: 'totalTaxAmount', label: 'مالیات', type: 'decimal', placeholder: 'ریال؛ مقدار دقیق' },
+  { value: 'totalDutyAmount', label: 'عوارض', type: 'decimal', placeholder: 'ریال؛ مقدار دقیق' },
+  { value: 'totalPenaltyAmount', label: 'جرایم', type: 'decimal', placeholder: 'ریال؛ مقدار دقیق' },
+  { value: 'totalPaidAmount', label: 'پرداختی', type: 'decimal', placeholder: 'ریال؛ مقدار دقیق' },
+  { value: 'totalCreditAmount', label: 'اعتبار', type: 'decimal', placeholder: 'ریال؛ مقدار دقیق' },
+  { value: 'totalRemissionAmount', label: 'بخشودگی', type: 'decimal', placeholder: 'ریال؛ مقدار دقیق' },
 ]
 
 const OPERATORS = [

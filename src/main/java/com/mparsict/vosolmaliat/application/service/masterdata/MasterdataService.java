@@ -75,6 +75,8 @@ public class MasterdataService {
         TaxAffairsOffice saved = taxAffairsOfficeRepository.save(TaxAffairsOffice.builder()
                 .generalDirectorateOfTaxAffairs(general)
                 .officeName(request.officeName())
+                .officeType(request.officeType() == null ? 0 : request.officeType())
+                .officeCode(request.officeCode())
                 .postalCode(request.postalCode())
                 .address(request.address())
                 .phone(request.phone())
@@ -88,6 +90,8 @@ public class MasterdataService {
         TaxAffairsOffice existing = findTaxAffairsOffice(id);
         existing.setGeneralDirectorateOfTaxAffairs(general);
         existing.setOfficeName(request.officeName());
+        existing.setOfficeType(request.officeType() == null ? 0 : request.officeType());
+        existing.setOfficeCode(request.officeCode());
         existing.setPostalCode(request.postalCode());
         existing.setAddress(request.address());
         existing.setPhone(request.phone());
@@ -179,7 +183,7 @@ public class MasterdataService {
                 entity.getOfficeName(),
                 entity.getPostalCode(),
                 entity.getAddress(),
-                entity.getPhone()
+                entity.getPhone(), entity.getOfficeType(), entity.getOfficeCode()
         );
     }
 

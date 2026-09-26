@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.stream.Collectors;
 
 @Slf4j
+@org.springframework.core.annotation.Order(org.springframework.core.Ordered.HIGHEST_PRECEDENCE)
 @RestControllerAdvice(assignableTypes = DebtPaperPushController.class)
 public class DebtPaperPushExceptionHandler {
 
@@ -53,6 +54,12 @@ public class DebtPaperPushExceptionHandler {
         return invalidRequest(request, "Debt Paper JSON is invalid or contains an unsupported value.");
     }
 
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<ApiGatewayResponse<DebtPaperPushData>> handleBusiness(BusinessException exception, HttpServletRequest request) {
+        return ResponseEntity.unprocessableEntity().body(ApiGatewayResponse.failure(DebtPaperPushData.empty(),
+                DebtPaperTraceFilter.traceId(request),true,-7,exception.getErrorCode()+": "+exception.getMessage()));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiGatewayResponse<DebtPaperPushData>> handleUnexpected(
             Exception exception,
@@ -80,7 +87,7 @@ public class DebtPaperPushExceptionHandler {
 
     private String externalFieldName(String field) {
         return switch (field) {
-            case "referenceId" -> "refrenceID";
+            case "referenceId" -> "referenceID";
             case "taxOfficeId" -> "taxOfficeID";
             default -> field;
         };

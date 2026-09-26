@@ -19,8 +19,8 @@ public record ExecutionPaperSearchCriteria(
         String currentState,
         String notificationStatus,
         Long taxUnitId,
-        Double minDebt,
-        Double maxDebt
+        java.math.BigDecimal minDebt,
+        java.math.BigDecimal maxDebt
 ) {
     /** @return معیار جست‌وجوی بدون فیلتر */
     public static ExecutionPaperSearchCriteria empty() {

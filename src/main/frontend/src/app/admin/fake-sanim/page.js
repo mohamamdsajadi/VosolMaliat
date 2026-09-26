@@ -11,7 +11,7 @@ import { fetchGeneralDirectorates, fetchTaxAffairsOffices, fetchTaxUnits } from 
 import {
   randomDebtPaperSample,
   randomLegalPersonDebtPaperSample,
-  toDebtPaperPayload
+  toDebtPaperPayload, MoneyFields
 } from '../data-entry/form-parts'
 
 const CHART_COLORS = ['#1d4ed8', '#dc2626', '#059669']
@@ -308,16 +308,16 @@ export default function FakeSanimPage() {
                   <input name="debtPaperUniqueCode" value={sampleForm.debtPaperUniqueCode} onChange={updateSampleForm} />
                 </label>
                 <label>
-                  <span>تاریخ صدور/قطعیت</span>
-                  <input name="debtPaperIssueDate" value={sampleForm.debtPaperIssueDate} onChange={updateSampleForm} />
+                  <span>تاریخ صدور سند</span>
+                  <input name="issueDateRaw" value={sampleForm.issueDateRaw} onChange={updateSampleForm} />
                 </label>
                 <label>
-                  <span>شماره ابلاغ</span>
-                  <input name="notificationId" value={sampleForm.notificationId} onChange={updateSampleForm} />
+                  <span>شماره سند</span>
+                  <input name="documentNumber" value={sampleForm.documentNumber} onChange={updateSampleForm} />
                 </label>
                 <label>
-                  <span>علت قطعیت</span>
-                  <input name="finalizationReason" value={sampleForm.finalizationReason} onChange={updateSampleForm} />
+                  <span>دلیل صدور</span>
+                  <input name="issuanceReason" value={sampleForm.issuanceReason} onChange={updateSampleForm} />
                 </label>
                 <label>
                   <span>منبع مالیاتی</span>
@@ -325,19 +325,15 @@ export default function FakeSanimPage() {
                 </label>
                 <label>
                   <span>سال عملکرد</span>
-                  <input name="performanceYear" value={sampleForm.performanceYear} onChange={updateSampleForm} />
+                  <input name="taxYear" value={sampleForm.taxYear} onChange={updateSampleForm} />
                 </label>
                 <label>
                   <span>دوره عملکرد</span>
-                  <input name="performancePeriod" value={sampleForm.performancePeriod} onChange={updateSampleForm} />
-                </label>
-                <label>
-                  <span>کد فعالیت</span>
-                  <input name="activityTypeCode" value={sampleForm.activityTypeCode} onChange={updateSampleForm} />
+                  <input name="taxPeriod" value={sampleForm.taxPeriod} onChange={updateSampleForm} />
                 </label>
                 <label>
                   <span>عنوان فعالیت</span>
-                  <input name="activityTypeTitle" value={sampleForm.activityTypeTitle} onChange={updateSampleForm} />
+                  <input name="activityTitle" value={sampleForm.activityTitle} onChange={updateSampleForm} />
                 </label>
 
                 <div className="fake-sanim-sample-section-title">ساختار سازمانی</div>
@@ -427,64 +423,13 @@ export default function FakeSanimPage() {
                   <input name="address" value={sampleForm.address} onChange={updateSampleForm} />
                 </label>
 
-                <div className="fake-sanim-sample-section-title">ریز بدهی</div>
-                <label>
-                  <span>مالیات</span>
-                  <input name="taxAmount" value={sampleForm.taxAmount} onChange={updateSampleForm} />
-                </label>
-                <label>
-                  <span>عوارض</span>
-                  <input name="dutyAmount" value={sampleForm.dutyAmount} onChange={updateSampleForm} />
-                </label>
-                <label>
-                  <span>جریمه ماده ۲۲</span>
-                  <input name="penaltyArticle22" value={sampleForm.penaltyArticle22} onChange={updateSampleForm} />
-                </label>
-                <label>
-                  <span>جریمه ماده ۲۳</span>
-                  <input name="penaltyArticle23" value={sampleForm.penaltyArticle23} onChange={updateSampleForm} />
-                </label>
-                <label>
-                  <span>جریمه قابل بخشودگی</span>
-                  <input name="deductiblePenalty" value={sampleForm.deductiblePenalty} onChange={updateSampleForm} />
-                </label>
-                <label>
-                  <span>جریمه غیرقابل بخشودگی</span>
-                  <input name="nonDeductiblePenalty" value={sampleForm.nonDeductiblePenalty} onChange={updateSampleForm} />
-                </label>
-                <label>
-                  <span>مالیات پرداخت‌شده</span>
-                  <input name="taxPaidAmount" value={sampleForm.taxPaidAmount} onChange={updateSampleForm} />
-                </label>
-                <label>
-                  <span>جریمه پرداخت‌شده</span>
-                  <input name="penaltyPaidAmount" value={sampleForm.penaltyPaidAmount} onChange={updateSampleForm} />
-                </label>
-                <label>
-                  <span>اعتبار مالیاتی</span>
-                  <input name="taxCredit" value={sampleForm.taxCredit} onChange={updateSampleForm} />
-                </label>
-                <label>
-                  <span>باقی‌مانده</span>
-                  <input name="remainingTax" value={sampleForm.remainingTax} onChange={updateSampleForm} />
-                </label>
-                <label>
-                  <span>سهم شهرداری</span>
-                  <input name="municipalityShare" value={sampleForm.municipalityShare} onChange={updateSampleForm} />
-                </label>
-                <label>
-                  <span>سهم اصناف</span>
-                  <input name="guildShare" value={sampleForm.guildShare} onChange={updateSampleForm} />
-                </label>
-                <label>
-                  <span>جایزه خوش‌حسابی</span>
-                  <input name="complianceBonus" value={sampleForm.complianceBonus} onChange={updateSampleForm} />
-                </label>
+                <div className="fake-sanim-sample-section-title">مبالغ تجمیعی</div>
+                <MoneyFields form={sampleForm} onChange={updateSampleForm} />
               </div>
               <div className="fake-sanim-modal__summary">
                 <span>نوع مودی: {sampleForm.taxpayerType === 'LEGAL' ? 'حقوقی' : 'حقیقی'}</span>
-                <span>مبلغ مالیات: {money(sampleForm.taxAmount)} ریال</span>
-                <span>باقی‌مانده: {money(sampleForm.remainingTax)} ریال</span>
+                <span>مبلغ مالیات: {money(sampleForm.totalTaxAmount)} ریال</span>
+                <span>باقی‌مانده: {money(sampleForm.outstandingDebtAmount)} ریال</span>
               </div>
               <div className="fake-sanim-modal__actions">
                 <button type="button" className="ghost-action" onClick={() => setSampleModalOpen(false)}>انصراف</button>

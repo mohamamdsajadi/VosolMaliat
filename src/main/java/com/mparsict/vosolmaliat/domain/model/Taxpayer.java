@@ -8,29 +8,33 @@ import lombok.*;
 
 @Entity
 @Table(name = "taxpayer")
+@org.hibernate.annotations.Check(constraints="(natural_person_id IS NOT NULL AND legal_person_id IS NULL) OR (natural_person_id IS NULL AND legal_person_id IS NOT NULL)")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class Taxpayer extends BaseEntity {
+    @OneToOne(mappedBy="taxpayer", cascade=CascadeType.ALL, fetch=FetchType.EAGER)
+    private TaxpayerActivityType activityType;
+    public void updateActivity(String title) {
+        if (title == null || title.isBlank()) return;
+        if (activityType == null) activityType=TaxpayerActivityType.builder().taxpayer(this).build();
+        activityType.updateTitle(title);
+    }
+    @Column(name="tin", nullable=false, unique=true, updatable=false) private String tin;
+    @Column(name="registration_trace_code", nullable=false, unique=true, updatable=false) private String registrationTraceCode;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(name = "debt_paper_unique_code")
-    private String debtPaperUniqueCode;
-
-    @Column(name = "debt_paper_issue_date")
-    private String debtPaperIssueDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "natural_person_id")
     private NaturalPerson naturalPerson;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "legal_person_id")
+    @JoinColumn(name = "legal_person_id", unique = true)
     private LegalPerson legalPerson;
 
     @Transient

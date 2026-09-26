@@ -30,6 +30,7 @@ public class RuleEngineService extends AbstractRuleEngineService<ExecutionPaperR
     ) {}
 
     public RuleEvaluationResult evaluate(DebtPaperIssuanceRequest request) {
+        SanimModelValidation.requireDocument(request.sourceDocument());
         String today = LocalDate.now().toString();
         List<ExecutionPaperRejectionRule> activeRules = ruleRepository.findActiveRules(today);
 
@@ -51,46 +52,20 @@ public class RuleEngineService extends AbstractRuleEngineService<ExecutionPaperR
 
     @Override
     protected Object resolveField(String field, DebtPaperIssuanceRequest request) {
+        var d = request.sourceDocument();
         return switch (field == null ? "" : field) {
-            case "performanceYear", "performanceYearPeriod" -> request.performanceYear();
-            case "performancePeriod" -> request.performancePeriod();
+            case "performanceYear", "performanceYearPeriod", "taxYear" -> d.getTaxYear();
+            case "performancePeriod", "taxPeriod" -> d.getTaxPeriod();
             case "mainTaxBureauId" -> request.mainTaxBureauId();
             case "taxBureauId" -> request.taxBureauId();
             case "taxUnitId" -> request.taxUnitId();
             case "taxOffice" -> request.taxBureauId() != null ? request.taxBureauId() : request.mainTaxBureauId();
             case "taxSource" -> request.taxSource();
-            case "activityTypeCode" -> request.activityTypeCode();
-            case "totalFinalizedAmount" -> computeTotalFinalizedAmount(request);
-            case "finalizedTaxAndNonDeductibleAmount" -> computeFinalizedTaxAndNonDeductibleAmount(request);
-            case "debtAmount" -> computeTotalDebtAmount(request);
-            case "taxpayerType" -> request.taxpayer() != null ? request.taxpayer().type() : null;
-            case "finalizationReason" -> request.finalizationReason();
-            default -> null;
+            case "sourceTaxOfficeCode" -> d.getSourceTaxOfficeCode();
+            case "activityTitle" -> d.getActivityTitle();
+            case "taxpayerType" -> request.taxpayer() == null ? null : request.taxpayer().type();
+            case "issuanceReason" -> d.getIssuanceReason();
+            default -> SanimModelValidation.amount(field, d.getAmounts());
         };
-    }
-
-    private double computeTotalFinalizedAmount(DebtPaperIssuanceRequest request) {
-        if (request.debtInfo() == null) return 0.0;
-        DebtPaperIssuanceRequest.DebtInfo d = request.debtInfo();
-        return orZero(d.taxAmount()) + orZero(d.penaltyArticle22()) + orZero(d.nonDeductiblePenalty());
-    }
-
-    private double computeFinalizedTaxAndNonDeductibleAmount(DebtPaperIssuanceRequest request) {
-        if (request.debtInfo() == null) return 0.0;
-        DebtPaperIssuanceRequest.DebtInfo d = request.debtInfo();
-        return orZero(d.taxAmount()) + orZero(d.nonDeductiblePenalty());
-    }
-
-    private double computeTotalDebtAmount(DebtPaperIssuanceRequest request) {
-        if (request.debtInfo() == null) return 0.0;
-        DebtPaperIssuanceRequest.DebtInfo d = request.debtInfo();
-        return orZero(d.taxAmount()) + orZero(d.dutyAmount())
-                + orZero(d.penaltyArticle22()) + orZero(d.penaltyArticle23())
-                + orZero(d.deductiblePenalty()) + orZero(d.nonDeductiblePenalty())
-                - orZero(d.taxPaidAmount()) - orZero(d.penaltyPaidAmount());
-    }
-
-    private double orZero(Double val) {
-        return val != null ? val : 0.0;
     }
 }

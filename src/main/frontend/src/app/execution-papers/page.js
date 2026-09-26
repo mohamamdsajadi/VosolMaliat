@@ -14,7 +14,8 @@ function toPersianDigits(str) {
 
 function formatDebt(amount) {
   if (amount == null) return '—'
-  return `${toPersianDigits(Number(amount).toLocaleString('en-US'))} ریال`
+  const [integer, fraction] = String(amount).split('.')
+  return `${toPersianDigits(integer.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + (fraction == null ? '' : '.' + fraction))} ریال`
 }
 
 function taxpayerTypeLabel(type) {

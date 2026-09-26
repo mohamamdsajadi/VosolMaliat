@@ -31,14 +31,14 @@ public record AdminDataSummaryResponse(
      * خلاصه مؤدی متصل به برگ بدهی.
      *
      * @param id شناسه داخلی مؤدی
-     * @param debtPaperUniqueCode کد یکتای برگ بدهی مؤدی
-     * @param debtPaperIssueDate تاریخ صدور برگ بدهی
+     * @param tin شناسه مؤدی
+     * @param registrationTraceCode کد رهگیری ثبت‌نام
      * @param type نوع مؤدی
      */
     public record TaxpayerSummary(
             Long id,
-            String debtPaperUniqueCode,
-            String debtPaperIssueDate,
+            String tin,
+            String registrationTraceCode,
             String type
     ) {}
 

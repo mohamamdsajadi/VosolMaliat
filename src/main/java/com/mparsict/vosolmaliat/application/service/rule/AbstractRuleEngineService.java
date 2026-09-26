@@ -44,6 +44,8 @@ public abstract class AbstractRuleEngineService<R, C> {
                         endDates.add(endDate);
                     }
                 }
+            } catch (com.mparsict.vosolmaliat.common.exception.DebtPaperPushException ex) {
+                throw ex;
             } catch (Exception ex) {
                 log.error("Error evaluating {} rule id={}: {}", ruleTypeLabel, ruleIdResolver.apply(rule), ex.getMessage());
             }
@@ -63,11 +65,10 @@ public abstract class AbstractRuleEngineService<R, C> {
 
     private RuleDefinition parseRuleDefinition(String ruleJson, String ruleTypeLabel) {
         try {
-            Map<String, Object> map = objectMapper.readValue(ruleJson, new TypeReference<>() {});
-            List<Map<String, Object>> conditionMaps = objectMapper.convertValue(
-                    map.get("conditions"),
-                    new TypeReference<>() {}
-            );
+            Map<String, Object> map = objectMapper.readerFor(new TypeReference<Map<String, Object>>() {})
+                    .with(com.fasterxml.jackson.databind.DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS).readValue(ruleJson);
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> conditionMaps = (List<Map<String, Object>>) map.get("conditions");
             List<Condition> conditions = new ArrayList<>();
             if (conditionMaps != null) {
                 for (Map<String, Object> condition : conditionMaps) {
@@ -113,12 +114,14 @@ public abstract class AbstractRuleEngineService<R, C> {
         }
 
         return switch (condition.operator().toUpperCase()) {
-            case "EQUALS" -> fieldValue.toString().equalsIgnoreCase(conditionValue.toString());
-            case "NOT_EQUALS" -> !fieldValue.toString().equalsIgnoreCase(conditionValue.toString());
-            case "GREATER_THAN" -> toDouble(fieldValue) > toDouble(conditionValue);
-            case "LESS_THAN" -> toDouble(fieldValue) < toDouble(conditionValue);
-            case "GREATER_THAN_OR_EQUAL" -> toDouble(fieldValue) >= toDouble(conditionValue);
-            case "LESS_THAN_OR_EQUAL" -> toDouble(fieldValue) <= toDouble(conditionValue);
+            case "EQUALS" -> fieldValue instanceof Number ? compareNumbers(fieldValue, conditionValue) == 0
+                    : fieldValue.toString().equalsIgnoreCase(conditionValue.toString());
+            case "NOT_EQUALS" -> fieldValue instanceof Number ? compareNumbers(fieldValue, conditionValue) != 0
+                    : !fieldValue.toString().equalsIgnoreCase(conditionValue.toString());
+            case "GREATER_THAN" -> compareNumbers(fieldValue, conditionValue) > 0;
+            case "LESS_THAN" -> compareNumbers(fieldValue, conditionValue) < 0;
+            case "GREATER_THAN_OR_EQUAL" -> compareNumbers(fieldValue, conditionValue) >= 0;
+            case "LESS_THAN_OR_EQUAL" -> compareNumbers(fieldValue, conditionValue) <= 0;
             case "IN" -> toList(conditionValue).stream()
                     .filter(Objects::nonNull)
                     .anyMatch(value -> value.toString().equalsIgnoreCase(fieldValue.toString()));
@@ -136,6 +139,10 @@ public abstract class AbstractRuleEngineService<R, C> {
 
     protected String ruleTypeLabel() {
         return getClass().getSimpleName();
+    }
+
+    private int compareNumbers(Object left, Object right) {
+        return new java.math.BigDecimal(left.toString()).compareTo(new java.math.BigDecimal(right.toString()));
     }
 
     protected double toDouble(Object value) {

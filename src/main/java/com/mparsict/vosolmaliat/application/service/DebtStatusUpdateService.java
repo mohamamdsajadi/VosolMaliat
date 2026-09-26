@@ -32,6 +32,7 @@ public class DebtStatusUpdateService {
     private final SanimAuditService sanimAuditService;
     private final AuditLogService auditLogService;
     private final ObjectMapper objectMapper;
+    private final com.mparsict.vosolmaliat.domain.repository.DebtInformationHistoryRepository historyRepository;
 
     @Transactional
     public void update(Long executionPaperId, String requestId, SanimDebtStatusResponse status) {
@@ -41,25 +42,49 @@ public class DebtStatusUpdateService {
 
         String responseJson = serialize(status);
         String responseHash = sha256(responseJson);
-        debtInquiryResultRepository.findByRequestId(requestId).ifPresentOrElse(
-                existing -> validateExistingResult(existing, executionPaperId, responseHash),
-                () -> debtInquiryResultRepository.save(DebtInquiryResult.builder()
-                        .requestId(requestId)
-                        .executionPaper(executionPaper)
-                        .responseJson(responseJson)
-                        .hash(responseHash)
-                        .receivedAt(LocalDateTime.now())
-                        .build())
-        );
+        var existing = debtInquiryResultRepository.findByRequestId(requestId);
+        if (existing.isPresent()) {
+            validateExistingResult(existing.get(), executionPaperId, responseHash);
+            return; // identical delivery cannot revert a newer result
+        }
+        var patch = status.amounts() != null ? status.amounts().copy()
+                : com.mparsict.vosolmaliat.domain.model.sanim.SanimAmounts.builder()
+                    .outstandingDebtAmount(java.math.BigDecimal.valueOf(status.outstandingDebtRials()))
+                    .totalPenaltyAmount(java.math.BigDecimal.valueOf(status.totalPenaltyRials()))
+                    .totalPaidAmount(java.math.BigDecimal.valueOf(status.totalPaymentRials()))
+                    .totalCreditAmount(java.math.BigDecimal.valueOf(status.totalCreditRials())).build();
+        var effectiveAt = status.lastActivityAt();
+        debtInquiryResultRepository.save(DebtInquiryResult.builder()
+                .requestId(requestId).executionPaper(executionPaper).responseJson(responseJson).hash(responseHash)
+                .receivedAt(LocalDateTime.now()).effectiveAt(effectiveAt).amounts(patch.copy())
+                .mappingVersion("sanim-inquiry-v1").build());
 
         DebtInformation debt = debtInformationRepository.findByExecutionPaperId(executionPaperId)
                 .orElseGet(() -> DebtInformation.builder().executionPaper(executionPaper).build());
-        debt.setSanimTotalDebtRials(status.totalDebtRials());
-        debt.setSanimTotalPenaltyRials(status.totalPenaltyRials());
-        debt.setSanimTotalPaymentRials(status.totalPaymentRials());
-        debt.setSanimTotalCreditRials(status.totalCreditRials());
-        debt.setSanimOutstandingDebtRials(status.outstandingDebtRials());
-        debt.setSanimLastActivityAt(status.lastActivityAt());
+        if (debt.getCurrentAmountsAsOf() != null
+                && (effectiveAt == null || !effectiveAt.isAfter(debt.getCurrentAmountsAsOf()))) return;
+        // Without an effective timestamp a Sanim document cannot safely be overwritten.
+        if (effectiveAt == null && debt.getCurrentAmounts() != null) return;
+        if (debt.getId() != null && debt.getCurrentAmounts() != null) {
+            historyRepository.save(com.mparsict.vosolmaliat.domain.model.execution.DebtInformationHistory.builder()
+                .debtInformation(debt).amounts(debt.getCurrentAmounts().copy())
+                .financialDetails(debt.getFinancialDetails() == null ? null : debt.getFinancialDetails().copy())
+                .effectiveAt(debt.getCurrentAmountsAsOf()).archivedAt(LocalDateTime.now()).inquiryRequestId(requestId).build());
+            // Inquiry responses carry aggregates only; old breakdowns remain in the source snapshot/history.
+            if (debt.getFinancialDetails() != null) {
+                var details=debt.getFinancialDetails(); var old=debt.getCurrentAmounts();
+                if (changed(old.getTotalTaxAmount(),patch.getTotalTaxAmount())) details.setTaxLiabilityDetails(null);
+                if (changed(old.getTotalCreditAmount(),patch.getTotalCreditAmount())) details.setTaxCreditDetails(null);
+                if (changed(old.getTotalPenaltyAmount(),patch.getTotalPenaltyAmount())) details.setTotalPenaltiesDetails(null);
+                if (changed(old.getTotalPaidAmount(),patch.getTotalPaidAmount())) details.setTotalPaymentsDetails(null);
+                if (changed(old.getTotalRemissionAmount(),patch.getTotalRemissionAmount())) details.setTotalRemissionsDetails(null);
+                if (changed(old.getOutstandingDebtAmount(),patch.getOutstandingDebtAmount())) details.setOutstandingDebtDetails(null);
+            }
+        }
+        if (debt.getCurrentAmounts() == null)
+            debt.setCurrentAmounts(new com.mparsict.vosolmaliat.domain.model.sanim.SanimAmounts());
+        debt.getCurrentAmounts().merge(patch);
+        debt.setCurrentAmountsAsOf(effectiveAt);
         debt.setLastDebtInquiryAt(LocalDateTime.now());
         debtInformationRepository.save(debt);
 
@@ -69,9 +94,11 @@ public class DebtStatusUpdateService {
                 "EXECUTION_PAPER",
                 executionPaperId.toString(),
                 null,
-                requestId + ":" + status.outstandingDebtRials()
+                requestId + ":" + debt.getCurrentAmounts().getOutstandingDebtAmount()
         );
     }
+
+    private boolean changed(java.math.BigDecimal old, java.math.BigDecimal next) { return next != null && (old == null || old.compareTo(next) != 0); }
 
     private void validateTaxpayer(ExecutionPaper executionPaper, SanimDebtStatusResponse status) {
         if (executionPaper.getTaxpayerId() == null) {

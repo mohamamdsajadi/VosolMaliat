@@ -21,7 +21,7 @@ import java.util.Map;
 @Component
 public class DebtPaperXmlReader {
 
-    public Map<String, String> read(String xml) {
+    public Document parse(String xml) {
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setNamespaceAware(true);
@@ -35,10 +35,7 @@ public class DebtPaperXmlReader {
 
             var builder = factory.newDocumentBuilder();
             builder.setErrorHandler(new DefaultHandler());
-            Document document = builder.parse(new InputSource(new StringReader(xml)));
-            Map<String, String> values = new LinkedHashMap<>();
-            collect(document.getDocumentElement(), "", values);
-            return values;
+            return builder.parse(new InputSource(new StringReader(xml)));
         } catch (Exception exception) {
             throw new DebtPaperPushException(
                     HttpStatus.BAD_REQUEST,
@@ -48,6 +45,12 @@ public class DebtPaperXmlReader {
                     exception
             );
         }
+    }
+
+    public Map<String, String> read(String xml) {
+        Map<String, String> values = new LinkedHashMap<>();
+        collect(parse(xml).getDocumentElement(), "", values);
+        return values;
     }
 
     private void collect(Element element, String parentPath, Map<String, String> values) {

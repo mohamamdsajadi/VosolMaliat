@@ -36,6 +36,8 @@ public class SqliteLegacySchemaMigrator
 
     public static void migrate(String jdbcUrl) {
         try (Connection connection = DriverManager.getConnection(jdbcUrl)) {
+            SanimDocumentSchemaMigration.migrate(connection);
+            SanimLegacyFieldCleanup.migrate(connection);
             if (!tableExists(connection, DEBT_INQUIRY_RESULT)) {
                 return;
             }

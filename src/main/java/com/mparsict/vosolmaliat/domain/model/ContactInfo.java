@@ -13,6 +13,12 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class ContactInfo extends BaseEntity {
+    @Version private Long version;
+    @OneToMany(mappedBy="contactInfo", cascade=CascadeType.ALL)
+    @Builder.Default private java.util.List<ContactInfoHistory> history = new java.util.ArrayList<>();
+    public void snapshot() {
+        if (id != null) history.add(ContactInfoHistory.builder().contactInfo(this).phoneNo(phoneNo).postalCode(postalCode).legalAddress(legalAddress).build());
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -28,6 +28,8 @@ public class DebtPaperPushController {
             HttpServletRequest httpRequest) {
         String traceId = DebtPaperTraceFilter.traceId(httpRequest);
         Long executionPaperId = debtPaperPushService.push(request, traceId);
+        if (executionPaperId == null) return ResponseEntity.accepted().body(ApiGatewayResponse.success(
+                new DebtPaperPushData(null), traceId, "درخواست دریافت شد و در انتظار تأیید هویت است؛ هنوز برگه‌ای صادر نشده است."));
         return ResponseEntity.ok(ApiGatewayResponse.success(
                 new DebtPaperPushData(executionPaperId),
                 traceId,

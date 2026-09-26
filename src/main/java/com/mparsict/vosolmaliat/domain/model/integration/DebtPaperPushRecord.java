@@ -35,6 +35,19 @@ import java.time.OffsetDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DebtPaperPushRecord extends BaseEntity {
+    private Long issuanceRequestId;
+
+    @Column(name = "announcement_type")
+    private String announcementType;
+
+    @Column(name = "source_tax_office_code", columnDefinition = "TEXT", updatable = false)
+    private String sourceTaxOfficeCode;
+
+    private String mappingVersion;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "source_document_id")
+    private com.mparsict.vosolmaliat.domain.model.execution.FinalizedDebtPaper sourceDocument;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -73,9 +86,6 @@ public class DebtPaperPushRecord extends BaseEntity {
 
     @Column(name = "source_period", nullable = false, updatable = false)
     private Integer period;
-
-    @Column(name = "tax_office_id", nullable = false, updatable = false)
-    private Long taxOfficeId;
 
     @Column(name = "tax_amount", updatable = false)
     private String taxAmount;

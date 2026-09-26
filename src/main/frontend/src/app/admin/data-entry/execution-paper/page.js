@@ -122,11 +122,10 @@ export default function ExecutionPaperEntryPage() {
 
         <form className="admin-form wide-form" onSubmit={submit}>
           <FieldGrid>
-            <Input label="شناسه برگ اجرا" name="executionPaperUniqueCode" value={form.executionPaperUniqueCode} onChange={updateForm} />
+            <p>شماره برگ اجرا هنگام ثبت، با سال جاری و شمارنده هفت‌رقمی تخصیص می‌یابد.</p>
             <Select label="برگ بدهی قطعی" name="finalizedDebtPaperId" value={form.finalizedDebtPaperId} onChange={updateForm} required options={(summary.finalizedDebtPapers || []).map((item) => ({ value: item.id, label: `${item.debtPaperUniqueCode} (${item.id})` }))} />
-            <Select label="مودی" name="taxpayerId" value={form.taxpayerId} onChange={updateForm} required options={(summary.taxpayers || []).map((item) => ({ value: item.id, label: `${item.debtPaperUniqueCode} (${item.id})` }))} />
+            <Select label="مودی" name="taxpayerId" value={form.taxpayerId} onChange={updateForm} required options={(summary.taxpayers || []).map((item) => ({ value: item.id, label: `${item.tin} (${item.id})` }))} />
             <Input label="وضعیت" name="currentState" value={form.currentState} onChange={updateForm} />
-            <Input label="علت قطعیت" name="finalizationReason" value={form.finalizationReason} onChange={updateForm} required />
             <Input label="منبع مالیاتی" name="taxSource" value={form.taxSource} onChange={updateForm} required />
           </FieldGrid>
 

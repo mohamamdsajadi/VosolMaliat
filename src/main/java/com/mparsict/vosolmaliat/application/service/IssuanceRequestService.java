@@ -24,6 +24,7 @@ public class IssuanceRequestService {
 
     @Transactional
     public ExecutionPaperIssuanceRequest createAndSave(DebtPaperIssuanceRequest request) {
+        SanimModelValidation.requireDocument(request.sourceDocument());
         String json;
         try {
             json = objectMapper.writeValueAsString(request);
@@ -42,12 +43,32 @@ public class IssuanceRequestService {
         ExecutionPaperIssuanceRequest entity = ExecutionPaperIssuanceRequest.builder()
                 .debtPaperUniqueCode(request.debtPaperUniqueCode())
                 .payload(json)
+                .xml(request.sourceDocument().getXml())
+                .identityStatus("PENDING")
                 .hash(hash)
                 .build();
 
         ExecutionPaperIssuanceRequest saved = repository.save(entity);
         log.debug("Saved issuance request id={}, code={}", saved.getId(), saved.getDebtPaperUniqueCode());
         return saved;
+    }
+
+    @Transactional(readOnly = true)
+    public DebtPaperIssuanceRequest loadRequest(Long requestId) {
+        ExecutionPaperIssuanceRequest entity = repository.findById(requestId)
+                .orElseThrow(() -> new BusinessException(
+                        "ISSUANCE_REQUEST_NOT_FOUND", "درخواست صدور با شناسه " + requestId + " یافت نشد"));
+        if (entity.getPayload() == null || entity.getPayload().isBlank()) {
+            throw new BusinessException("ISSUANCE_PAYLOAD_MISSING", "بدنه درخواست صدور ذخیره نشده است");
+        }
+        try {
+            DebtPaperIssuanceRequest request = objectMapper.readValue(entity.getPayload(), DebtPaperIssuanceRequest.class);
+            if (request == null) throw new BusinessException("ISSUANCE_PAYLOAD_INVALID", "بدنه درخواست صدور خالی است");
+            return request;
+        } catch (JsonProcessingException exception) {
+            throw new BusinessException("ISSUANCE_PAYLOAD_INVALID",
+                    "بدنه درخواست صدور قابل خواندن نیست: " + exception.getOriginalMessage(), exception);
+        }
     }
 
     @Transactional

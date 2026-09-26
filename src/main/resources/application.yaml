@@ -3,11 +3,16 @@ spring:
     name: vosol-maliat
 
   datasource:
-    url: jdbc:sqlite:${DB_PATH:/home/mohammad/IdeaProjects/VosolMaliat/identifier.sqlite}
+    url: jdbc:sqlite:${DB_PATH:/home/mohammad/IdeaProjects/VosolMaliat/ef03.sqlite}
     driver-class-name: org.sqlite.JDBC
+    hikari:
+      connection-init-sql: PRAGMA foreign_keys=ON
+      data-source-properties:
+        busy_timeout: 30000
+        foreign_keys: true
 
   jpa:
-    database-platform: org.hibernate.community.dialect.SQLiteDialect
+    database-platform: com.mparsict.vosolmaliat.common.config.RelationalSqliteDialect
     open-in-view: false
     hibernate:
       ddl-auto: update
@@ -60,6 +65,9 @@ server:
       force: true
 
 app:
+  ef03:
+    samples-path: ${EF03_SAMPLES_PATH:docs/sample-execution-papers/EF03-samples.ods}
+
   integration:
     debt-paper:
       security:

@@ -27,10 +27,17 @@ public class IssuanceController {
     private final IssuanceRequestService issuanceRequestService;
     private final CamundaProcessService camundaProcessService;
     private final ObjectMapper objectMapper;
+    private final com.mparsict.vosolmaliat.application.service.Ef03ReceptionService ef03Reception;
 
     @PostMapping("/issue")
     public ResponseEntity<?> issue(@RequestBody JsonNode body) {
         DebtPaperIssuanceRequest request = toIssuanceRequest(body);
+        if ("LTR_EF03".equals(request.sourceDocument().getTemplateCode()) || "EF03".equals(request.sourceDocument().getTemplateCode())) {
+            var source=request.sourceDocument();
+            if(source.getXml()==null || source.getXml().isBlank()) throw new com.mparsict.vosolmaliat.common.exception.BusinessException("EF03_XML_REQUIRED","XML اصلی EF03 لازم است");
+            var result=ef03Reception.receive(source.getXml(),request.debtPaperUniqueCode(),source.getRegistrationTraceCode(),source.getSourceTaxOfficeCode(),request.taxSource());
+            return ResponseEntity.status(result.executionPaperId()==null?202:200).body(result);
+        }
         String json;
         try {
             json = objectMapper.writeValueAsString(request);
@@ -68,89 +75,15 @@ public class IssuanceController {
     }
 
     private DebtPaperIssuanceRequest toIssuanceRequest(JsonNode body) {
-        if (body.hasNonNull("debtPaperUniqueCode")) {
-            return objectMapper.convertValue(body, DebtPaperIssuanceRequest.class);
+        if (!body.hasNonNull("sourceDocument") || body.has("debtInfo"))
+            throw new org.springframework.web.server.ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY,
+                    "Send sourceDocument with seven aggregate amounts; legacy detail payload is no longer supported.");
+        try {
+            var request = objectMapper.convertValue(body, DebtPaperIssuanceRequest.class);
+            com.mparsict.vosolmaliat.application.service.SanimModelValidation.requireDocument(request.sourceDocument());
+            return request;
+        } catch (IllegalArgumentException ex) {
+            throw new org.springframework.web.server.ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid source document", ex);
         }
-
-        String taxType = text(body, "bedehitype");
-        String nationalCode = firstText(body, "CodeMelli_tbz", "NationalID_tbz");
-        String nationalId = firstText(body, "Economiccode_Tbz", "NationalID_tbz");
-        String taxpayerType = "2".equals(taxType) ? "LEGAL" : "NATURAL";
-
-        DebtPaperIssuanceRequest.TaxpayerInfo taxpayer = new DebtPaperIssuanceRequest.TaxpayerInfo(
-                taxpayerType,
-                "LEGAL".equals(taxpayerType) ? null : nationalCode,
-                null,
-                text(body, "FName_tbz"),
-                text(body, "LName_tbz"),
-                null,
-                text(body, "BirthDate_tbz"),
-                firstText(body, "PostalCode_tbz", "PostCode_tbz", "postalCode"),
-                firstText(body, "Address_tbz", "address", "TaxpayerAddress_tbz"),
-                "LEGAL".equals(taxpayerType) ? nationalId : null,
-                text(body, "SNO_tbz"),
-                null,
-                text(body, "Tbz_Business_reputation")
-        );
-
-        DebtPaperIssuanceRequest.DebtInfo debtInfo = new DebtPaperIssuanceRequest.DebtInfo(
-                number(body, "tbz_AslMaliat"),
-                number(body, "tbz_AslAvarez"),
-                number(body, "JarimeSabet_tbz"),
-                number(body, "JarimeDirkard_tbz"),
-                number(body, "penaltyoff_Tbz"),
-                number(body, "penaltycs_Tbz"),
-                number(body, "pardakhtoasl_Tbz"),
-                number(body, "pardakhtijarime_Tbz"),
-                number(body, "Etebar_tbz"),
-                number(body, "MandeBedehi_tbz"),
-                0.0,
-                0.0,
-                0.0
-        );
-
-        return new DebtPaperIssuanceRequest(
-                firstText(body, "ID_REF_PORTAL", "GatiNo_tbz", "EblagLetterNo_tbz"),
-                firstText(body, "GatiDate_tbz", "EblagLetterDate_tbz"),
-                text(body, "EblagLetterNo_tbz"),
-                text(body, "ElatGatiat_tbz"),
-                firstText(body, "taxtypecode_Tbz", "tbz_AmalKard"),
-                firstText(body, "tbz_Dore", "tbz_AmalKard"),
-                text(body, "tbz_Dore"),
-                text(body, "CODE_ACTIVITY_tbz"),
-                firstText(body, "ACTIVITY_TITLE_tbz", "ActivityTitle_tbz", "activityTypeTitle"),
-                longNumber(body, "OmurCode_tbz"),
-                longNumber(body, "VahedCode_tbz"),
-                longNumber(body, "KelaseID_tbz"),
-                longNumber(body, "SenderVahedCode_tbz"),
-                taxpayer,
-                debtInfo,
-                null
-        );
-    }
-
-    private String firstText(JsonNode body, String... keys) {
-        for (String key : keys) {
-            String value = text(body, key);
-            if (value != null && !value.isBlank()) return value;
-        }
-        return null;
-    }
-
-    private String text(JsonNode body, String key) {
-        JsonNode value = body.get(key);
-        return value == null || value.isNull() ? null : value.asText();
-    }
-
-    private Double number(JsonNode body, String key) {
-        String value = text(body, key);
-        if (value == null || value.isBlank()) return 0.0;
-        return Double.valueOf(value.replace(",", ""));
-    }
-
-    private Long longNumber(JsonNode body, String key) {
-        String value = text(body, key);
-        if (value == null || value.isBlank()) return null;
-        return Long.valueOf(value.replace(",", ""));
     }
 }

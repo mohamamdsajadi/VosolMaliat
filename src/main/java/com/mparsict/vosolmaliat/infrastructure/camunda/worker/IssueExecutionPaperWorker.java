@@ -35,9 +35,16 @@ public class IssueExecutionPaperWorker {
         try {
             Map<String, Object> variables = job.getVariablesAsMap();
             Object payload = variables.get(ProcessConstants.VAR_DEBT_PAPER_PAYLOAD);
-            Long requestId = ((Number) variables.get(ProcessConstants.VAR_ISSUANCE_REQUEST_ID)).longValue();
+            Object requestIdValue = variables.get(ProcessConstants.VAR_ISSUANCE_REQUEST_ID);
+            if (!(requestIdValue instanceof Number number)) {
+                throw new IllegalArgumentException("issuanceRequestId is missing from the issuance job");
+            }
+            Long requestId = number.longValue();
 
-            DebtPaperIssuanceRequest request = toRequest(payload);
+            DebtPaperIssuanceRequest request = payload == null
+                    ? issuanceRequestService.loadRequest(requestId)
+                    : toRequest(payload);
+            if (request == null) throw new IllegalArgumentException("Debt Paper issuance payload is empty");
             ExecutionPaper ep = executionPaperService.createFromRequest(request);
             Map<String, Object> outputVars = workflowVariablesFactory.create(ep, request);
 

@@ -17,6 +17,18 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(DebtPaperPushException.class)
+    public ResponseEntity<Map<String, Object>> handleSourceDocumentValidation(DebtPaperPushException ex) {
+        return ResponseEntity.status(ex.getHttpStatus())
+                .body(Map.of("error", "SOURCE_DOCUMENT_INVALID", "message", ex.getMessage()));
+    }
+
+    @ExceptionHandler(org.springframework.web.server.ResponseStatusException.class)
+    public ResponseEntity<Map<String, Object>> handleStatus(org.springframework.web.server.ResponseStatusException ex) {
+        return ResponseEntity.status(ex.getStatusCode())
+                .body(Map.of("error", "INVALID_REQUEST", "message", ex.getReason() == null ? "Invalid request" : ex.getReason()));
+    }
+
     @ExceptionHandler(RuleViolationException.class)
     public ResponseEntity<Map<String, Object>> handleRuleViolation(RuleViolationException ex) {
         log.warn("Rule violation: code={}, desc={}", ex.getRejectionReasonCode(), ex.getRejectionReasonDescription());
@@ -57,6 +69,13 @@ public class GlobalExceptionHandler {
         body.put("error", "INSUFFICIENT_PERMISSIONS");
         body.put("message", "دسترسی کافی برای انجام این عملیات وجود ندارد");
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
+    }
+
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String,Object>> handleIntegrity(org.springframework.dao.DataIntegrityViolationException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
+                "error", "DATA_RELATION_CONFLICT",
+                "message", "این عملیات با رابطه یا یکتایی داده‌ها ناسازگار است؛ رکورد دارای وابستگی را نمی‌توان حذف کرد."));
     }
 
     @ExceptionHandler(Exception.class)

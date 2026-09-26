@@ -13,6 +13,10 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class LegalPersonExtraInfo extends BaseEntity {
+    @Version private Long version;
+    private String name;
+    @Column(unique=true) private String registrationNumber;
+    private String registrationDate;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,8 +34,8 @@ public class LegalPersonExtraInfo extends BaseEntity {
     @Column(name = "date_of_termination")
     private String dateOfTermination;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "legal_person_id")
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "legal_person_id",unique=true,nullable=false)
     private LegalPerson legalPerson;
 
     public Long getLegalPersonId() {

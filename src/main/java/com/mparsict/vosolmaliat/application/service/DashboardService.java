@@ -42,10 +42,10 @@ public class DashboardService {
         long awaitingArrestOrder = executionPaperRepository.countByCurrentState(ExecutionPaperState.AWAITING_ARREST_ORDER.name());
 
         // Debt totals aligned with the visible pie chart groups
-        Double debtSumNotInformedExecutionPapers = orZero(debtInformationRepository.sumTotalDebtForNotInformedExecutionPapers());
-        Double debtSumInformedExecutionPapers = orZero(debtInformationRepository.sumTotalDebtForInformedExecutionPapers());
-        Double debtSumRejectedDebtPapers = sumRejectedDebtPapers();
-        Double debtSumTotalIssuedExecutionPapers = orZero(debtInformationRepository.sumTotalDebtForIssuedExecutionPapers());
+        java.math.BigDecimal debtSumNotInformedExecutionPapers = debtInformationRepository.sumTotalDebtForNotInformedExecutionPapers();
+        java.math.BigDecimal debtSumInformedExecutionPapers = debtInformationRepository.sumTotalDebtForInformedExecutionPapers();
+        java.math.BigDecimal debtSumRejectedDebtPapers = sumRejectedDebtPapers();
+        java.math.BigDecimal debtSumTotalIssuedExecutionPapers = debtInformationRepository.sumTotalDebtForIssuedExecutionPapers();
 
         // My actions
         long myActionsNew = unassigned;
@@ -58,14 +58,10 @@ public class DashboardService {
         long myActionsCancelled = executionPaperRepository.countByCurrentState(ExecutionPaperState.CANCELLED.name());
 
         // Financial totals
-        Double totalDebtAwaitingSeizure = orZero(
-                debtInformationRepository.sumRemainingTaxByState(ExecutionPaperState.UNASSIGNED.name()));
-        Double totalDebtWithSeizureOrder = orZero(
-                debtInformationRepository.sumRemainingTaxByState(ExecutionPaperState.ARREST_ORDER_ISSUED.name()));
-        Double collectedAmounts = orZero(
-                debtInformationRepository.sumRemainingTaxByState(ExecutionPaperState.COMPLETED.name()));
-        Double uncollectedAmounts = orZero(
-                debtInformationRepository.sumRemainingTaxByState(ExecutionPaperState.CANCELLED.name()));
+        java.math.BigDecimal totalDebtAwaitingSeizure = debtInformationRepository.sumOutstandingByState(ExecutionPaperState.UNASSIGNED.name());
+        java.math.BigDecimal totalDebtWithSeizureOrder = debtInformationRepository.sumOutstandingByState(ExecutionPaperState.ARREST_ORDER_ISSUED.name());
+        java.math.BigDecimal collectedAmounts = debtInformationRepository.sumPaidByState(ExecutionPaperState.COMPLETED.name());
+        java.math.BigDecimal uncollectedAmounts = debtInformationRepository.sumOutstandingByState(ExecutionPaperState.CANCELLED.name());
 
         return new DashboardStatsResponse(
                 notInformedExecutionPapers,
@@ -92,38 +88,16 @@ public class DashboardService {
         );
     }
 
-    private Double orZero(Double val) {
-        return val != null ? val : 0.0;
-    }
-
-    private Double sumRejectedDebtPapers() {
-        return issuanceRequestRepository.findByRejectionReasonIsNotNull().stream()
-                .mapToDouble(this::rejectedDebtAmount)
-                .sum();
-    }
-
-    private double rejectedDebtAmount(ExecutionPaperIssuanceRequest request) {
-        if (request.getPayload() == null || request.getPayload().isBlank()) {
-            return 0.0;
+    private java.math.BigDecimal sumRejectedDebtPapers() {
+        java.math.BigDecimal total = java.math.BigDecimal.ZERO;
+        for (var request : issuanceRequestRepository.findByRejectionReasonIsNotNull()) {
+            try {
+                var payload = objectMapper.readValue(request.getPayload(), DebtPaperIssuanceRequest.class);
+                if (payload.sourceDocument() == null || payload.sourceDocument().getAmounts() == null
+                        || payload.sourceDocument().getAmounts().getOutstandingDebtAmount() == null) return null;
+                total = total.add(payload.sourceDocument().getAmounts().getOutstandingDebtAmount());
+            } catch (Exception ex) { return null; }
         }
-        try {
-            DebtPaperIssuanceRequest payload = objectMapper.readValue(request.getPayload(), DebtPaperIssuanceRequest.class);
-            return totalDebt(payload.debtInfo());
-        } catch (Exception ex) {
-            log.warn("Could not parse rejected issuance payload id={}: {}", request.getId(), ex.getMessage());
-            return 0.0;
-        }
-    }
-
-    private double totalDebt(DebtPaperIssuanceRequest.DebtInfo debtInfo) {
-        if (debtInfo == null) {
-            return 0.0;
-        }
-        return orZero(debtInfo.taxAmount())
-                + orZero(debtInfo.dutyAmount())
-                + orZero(debtInfo.penaltyArticle22())
-                + orZero(debtInfo.penaltyArticle23())
-                - orZero(debtInfo.taxPaidAmount())
-                - orZero(debtInfo.penaltyPaidAmount());
+        return total;
     }
 }

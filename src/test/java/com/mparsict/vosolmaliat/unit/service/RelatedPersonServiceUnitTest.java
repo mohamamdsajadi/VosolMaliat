@@ -129,7 +129,7 @@ class RelatedPersonServiceUnitTest {
             legalPeopleByNationalId.put(owner.getNationalId(), owner);
             finalizedDebtPaper = FinalizedDebtPaper.builder()
                     .id(2L)
-                    .performanceYear(debtYear)
+                    .sourceDocument(com.mparsict.vosolmaliat.domain.model.sanim.SanimDocumentDetails.builder().taxYear(debtYear).build())
                     .build();
             taxpayer = Taxpayer.builder().id(3L).legalPerson(owner).build();
             executionPaper = ExecutionPaper.builder()

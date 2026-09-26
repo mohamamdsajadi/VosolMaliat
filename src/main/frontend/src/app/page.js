@@ -20,8 +20,9 @@ function toPersianDigits(str) {
 }
 
 function formatRial(amount) {
-  if (amount == null || amount === "") return "۰ ریال";
-  return `${toPersianDigits(Number(amount).toLocaleString("en-US"))} ریال`;
+  if (amount == null || amount === "") return "نیازمند تکمیل اطلاعات";
+  const [integer, fraction] = String(amount).split('.')
+  return `${toPersianDigits(integer.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + (fraction == null ? '' : '.' + fraction))} ریال`;
 }
 
 const EXECUTION_STATS = [

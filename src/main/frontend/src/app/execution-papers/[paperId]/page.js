@@ -34,7 +34,7 @@ function isDateTimeField(key) {
     'rejectedAt',
     'InformDate',
     'notificationDate',
-    'sanimLastActivityAt',
+
     'lastDebtInquiryAt'
   ].includes(key)
 }
@@ -55,98 +55,6 @@ function orgDisplay(name, id) {
   if (name) return name
   if (id) return `کد ${id}`
   return ''
-}
-
-function prepareDetailData(sectionKey, data) {
-  if (!data) return data
-  if (sectionKey === 'executionPaper') {
-    return {
-      ...data,
-      currentStateDisplay: data.currentStateDisplay || data.currentState,
-      taxSourceDisplay: data.taxSourceDisplay || data.taxSource,
-      mainTaxBureauDisplay: orgDisplay(data.mainTaxBureauName || data.generalDirectorateName, data.mainTaxBureauId),
-      taxBureauDisplay: orgDisplay(data.taxBureauName || data.taxAffairsOfficeName, data.taxBureauId),
-      taxUnitDisplay: orgDisplay(data.taxUnitName, data.taxUnitId)
-    }
-  }
-  if (sectionKey === 'finalizedDebtPaper') {
-    return {
-      ...data,
-      taxSourceDisplay: data.taxSourceDisplay || data.taxSource,
-      activityTypeDisplay: data.activityTypeDisplay || orgDisplay(data.activityTypeTitle, data.activityTypeCode),
-      mainTaxBureauDisplay: orgDisplay(data.mainTaxBureauName || data.generalDirectorateName, data.mainTaxBureauId),
-      taxBureauDisplay: orgDisplay(data.taxBureauName || data.taxAffairsOfficeName, data.taxBureauId),
-      taxUnitDisplay: orgDisplay(data.taxUnitName, data.taxUnitId)
-    }
-  }
-  if (sectionKey === 'taxpayer') {
-    return {
-      ...data,
-      typeDisplay: data.typeDisplay || data.typeLabel || data.type
-    }
-  }
-  return data
-}
-
-const SECTIONS = [
-  {
-    key: 'executionPaper',
-    title: 'اطلاعات برگ اجرا',
-    labels: {
-      uniqueCode: 'شناسه یکتای برگ اجرا', currentStateDisplay: 'وضعیت فعلی', finalizationReason: 'علت قطعیت', taxSourceDisplay: 'منبع مالیات',
-      mainTaxBureauDisplay: 'اداره کل امور مالیاتی', taxBureauDisplay: 'اداره امور مالیاتی', taxUnitDisplay: 'واحد مالیاتی',
-      createdAt: 'تاریخ ایجاد'
-    }
-  },
-  {
-    key: 'finalizedDebtPaper',
-    title: 'اطلاعات برگ بدهی قطعی',
-    labels: { debtPaperUniqueCode: 'شناسه یکتا/ارجاع پرونده', debtPaperIssueDate: 'تاریخ قطعیت', notificationId: 'شماره ابلاغ', finalizationReason: 'علت قطعیت', taxSourceDisplay: 'منبع مالیاتی', performanceYear: 'سال عملکرد', performancePeriod: 'دوره عملکرد', activityTypeDisplay: 'نوع فعالیت', mainTaxBureauDisplay: 'اداره کل امور مالیاتی', taxBureauDisplay: 'اداره امور مالیاتی', taxUnitDisplay: 'واحد مالیاتی', totalFinalizedAmount: 'کل مبلغ قطعی‌شده', finalizedTaxAndNonDeductibleAmount: 'مبلغ قطعی‌شده بدون جریمه ق.ب', createdAt: 'تاریخ ثبت' }
-  },
-  {
-    key: 'taxpayer',
-    title: 'اطلاعات مودی',
-    labels: { typeDisplay: 'نوع مودی', firstName: 'نام', lastName: 'نام خانوادگی', nationalCode: 'کد ملی', birthDate: 'تاریخ تولد', fatherName: 'نام پدر', nationalId: 'شناسه ملی', companyName: 'نام/شهرت تجاری', registrationNumber: 'شماره ثبت', postalCode: 'کد پستی', address: 'اقامتگاه قانونی' }
-  },
-  {
-    key: 'debtInformation',
-    title: 'ریز مبالغ بدهی',
-    labels: { taxAmount: 'اصل مالیات', dutyAmount: 'اصل عوارض', penaltyArticle22: 'جریمه ثابت', penaltyArticle23: 'جریمه دیرکرد', nonDeductiblePenalty: 'جریمه غیرقابل بخشش', deductiblePenalty: 'بخشودگی/کسر جریمه', taxPaidAmount: 'پرداخت اصل', penaltyPaidAmount: 'پرداخت جریمه', taxCredit: 'اعتبار', remainingTax: 'مانده بدهی ارسالی', totalDebt: 'مانده محاسبه‌شده', sanimTotalDebtRials: 'اصل بدهی در آخرین پاسخ سنیم', sanimTotalPenaltyRials: 'جرایم در آخرین پاسخ سنیم', sanimTotalPaymentRials: 'پرداخت‌ها در آخرین پاسخ سنیم', sanimTotalCreditRials: 'اعتبار در آخرین پاسخ سنیم', sanimOutstandingDebtRials: 'مانده بدهی در آخرین پاسخ سنیم', sanimLastActivityAt: 'آخرین رویداد مالی سنیم', lastDebtInquiryAt: 'زمان آخرین استعلام سنیم' }
-  },
-  {
-    key: 'notification',
-    title: 'اطلاعات ابلاغ',
-    labels: {
-      informStatusLabel: 'وضعیت ابلاغ',
-      electronicNotificationDate: 'تاریخ ابلاغ الکترونیکی',
-      informRejectionReason: 'علت رد ابلاغ',
-      informRejectedAt: 'زمان رد ابلاغ',
-      reInformDate: 'زمان بررسی مجدد ابلاغ',
-      nextDebtInquiryDate: 'زمان استعلام بعدی بدهی',
-      createdAt: 'تاریخ ثبت ابلاغ'
-    }
-  },
-]
-
-function DetailSection({ section, data }) {
-  const displayData = useMemo(() => prepareDetailData(section.key, data), [section.key, data])
-  const entries = useMemo(() => Object.entries(section.labels).filter(([key]) => displayData && Object.prototype.hasOwnProperty.call(displayData, key)), [section, displayData])
-  if (section.hideWhenEmpty && entries.length === 0) return null
-  return (
-    <section style={cardStyle}>
-      <h3 style={sectionTitleStyle}>{section.title}</h3>
-      {entries.length === 0 ? <p style={{ color: '#9ca3af', margin: 0 }}>اطلاعاتی ثبت نشده است.</p> : (
-        <div style={gridStyle}>
-          {entries.map(([key, label]) => (
-            <div key={key} style={itemStyle}>
-              <span style={labelStyle}>{label}</span>
-              <strong style={valueStyle}>{formatDetailValue(key, displayData[key])}</strong>
-            </div>
-          ))}
-        </div>
-      )}
-    </section>
-  )
 }
 
 const CRITICAL_TRACE_FIELD_LABELS = {
@@ -201,13 +109,13 @@ const EXTERNAL_REQUEST_FIELD_LABELS = {
   taxSource: 'منبع مالیاتی',
   taxSourceLabel: 'عنوان منبع مالیاتی',
   taxSourceDisplay: 'منبع مالیاتی',
-  finalizationReason: 'علت قطعیت',
+
   debtPaperUniqueCode: 'شناسه یکتای برگ بدهی',
   debtPaperIssueDate: 'تاریخ صدور برگ بدهی',
   notificationId: 'شناسه ابلاغ',
   performanceYear: 'سال عملکرد',
   performancePeriod: 'دوره عملکرد',
-  activityTypeCode: 'کد نوع فعالیت',
+
   activityTypeTitle: 'عنوان نوع فعالیت',
   activityTypeDisplay: 'نوع فعالیت',
   mainTaxBureauId: 'شناسه اداره کل مالیاتی',
@@ -216,8 +124,8 @@ const EXTERNAL_REQUEST_FIELD_LABELS = {
   taxBureauId: 'شناسه اداره مالیاتی',
   taxBureauName: 'اداره مالیاتی',
   taxAffairsOfficeName: 'اداره مالیاتی',
-  totalFinalizedAmount: 'کل مبلغ قطعی‌شده',
-  finalizedTaxAndNonDeductibleAmount: 'مبلغ قطعی بدون جرایم قابل بخشش',
+
+
   id: 'شناسه داخلی',
   type: 'نوع مؤدی',
   typeLabel: 'عنوان نوع مؤدی',
@@ -233,16 +141,16 @@ const EXTERNAL_REQUEST_FIELD_LABELS = {
   registrationDate: 'تاریخ ثبت',
   postalCode: 'کد پستی',
   address: 'نشانی قانونی',
-  taxAmount: 'اصل مالیات',
-  dutyAmount: 'اصل عوارض',
-  penaltyArticle22: 'جریمه ثابت',
-  penaltyArticle23: 'جریمه دیرکرد',
-  deductiblePenalty: 'جریمه قابل بخشش',
-  nonDeductiblePenalty: 'جریمه غیرقابل بخشش',
-  taxPaidAmount: 'پرداخت اصل مالیات',
-  penaltyPaidAmount: 'پرداخت جریمه',
-  taxCredit: 'اعتبار مالیاتی',
-  remainingTax: 'مانده مالیات',
+
+
+
+
+
+
+
+
+
+
   totalDebt: 'جمع کل بدهی',
   electronicNotificationDate: 'تاریخ ابلاغ الکترونیکی',
   informStatus: 'وضعیت ابلاغ',
@@ -263,16 +171,16 @@ const EXTERNAL_REQUEST_SECTION_LABELS = {
   executionPaper: 'مشخصات برگ اجرا',
   finalizedDebtPaper: 'مشخصات برگ بدهی قطعی',
   taxpayer: 'مشخصات مؤدی',
-  debtInformation: 'ریز مبالغ بدهی',
+  debtInformation: 'مبالغ تجمیعی بدهی',
   notification: 'اطلاعات ابلاغ',
   ruleRejection: 'اطلاعات رد مبتنی بر قانون',
   relatedPersons: 'اشخاص مرتبط مشمول محدودیت'
 }
 
 const EXTERNAL_MONEY_FIELDS = new Set([
-  'totalFinalizedAmount', 'finalizedTaxAndNonDeductibleAmount', 'taxAmount', 'dutyAmount',
-  'penaltyArticle22', 'penaltyArticle23', 'deductiblePenalty', 'nonDeductiblePenalty',
-  'taxPaidAmount', 'penaltyPaidAmount', 'taxCredit', 'remainingTax', 'totalDebt'
+
+
+      'totalDebt'
 ])
 
 const RELATED_PERSON_POST_LABELS = {
@@ -822,173 +730,317 @@ function BackIcon() {
   )
 }
 
-function PrintExecutionPaper({ data }) {
-  if (!data) return null
+const SANIM_AMOUNT_LABELS = {
+  outstandingDebtAmount: 'مانده بدهی',
+  totalTaxAmount: 'مجموع مالیات',
+  totalDutyAmount: 'مجموع عوارض',
+  totalPenaltyAmount: 'مجموع جرایم',
+  totalPaidAmount: 'مجموع پرداختی',
+  totalCreditAmount: 'مجموع اعتبار',
+  totalRemissionAmount: 'مجموع بخشودگی'
+}
+
+const FINANCIAL_DETAIL_LABELS = {
+  taxLiabilityDetails: 'تفصیل مالیات',
+  taxCreditDetails: 'تفصیل اعتبار',
+  totalPenaltiesDetails: 'تفصیل جرایم',
+  totalPaymentsDetails: 'تفصیل پرداختی‌ها',
+  totalRemissionsDetails: 'تفصیل بخشودگی و معافیت',
+  outstandingDebtDetails: 'تفصیل مانده بدهی'
+}
+
+const FINALIZATION_LABELS = {
+  SELF_DECLARATION: 'خوداظهاری',
+  FINAL_NOTICE: 'برگ قطعی'
+}
+
+const VALIDATION_LABELS = {
+  VALIDATED: 'اعتبارسنجی‌شده',
+  VALIDATED_WITH_PROVISIONAL_MAPPING: 'اعتبارسنجی با نگاشت موقت',
+  LEGACY_REVIEW_REQUIRED: 'نیازمند بررسی سند قدیمی'
+}
+
+function exactSanimMoney(value) {
+  if (value == null || value === '') return '—'
+  const [integer, fraction] = String(value).split('.')
+  return toPersianDigits(integer.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + (fraction == null ? '' : '.' + fraction))
+}
+
+function readableEnum(value, labels = {}) {
+  if (value == null || value === '') return '—'
+  return labels[value] || formatValue(value)
+}
+
+function personName(taxpayer, source) {
+  if (taxpayer?.type === 'LEGAL') return taxpayer.companyName || source?.taxpayerName
+  return [taxpayer?.firstName, taxpayer?.lastName].filter(Boolean).join(' ') || source?.taxpayerName
+}
+
+function DetailIcon({ type }) {
+  const paths = {
+    document: <><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v5h5M10 12h5M10 16h5"/></>,
+    person: <><circle cx="12" cy="8" r="4"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/></>,
+    calendar: <><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></>,
+    office: <><path d="M4 21V7l8-4 8 4v14M9 21v-5h6v5"/><path d="M8 9h.01M12 9h.01M16 9h.01M8 13h.01M12 13h.01M16 13h.01"/></>,
+    money: <><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M7 9H6v1M17 15h1v-1"/></>,
+    bell: <><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></>,
+    technical: <><path d="M8 9 4 12l4 3M16 9l4 3-4 3M14 6l-4 12"/></>
+  }
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[type] || paths.document}</svg>
+}
+
+function InfoGroup({ title, subtitle, icon, tone = 'blue', children, wide = false }) {
+  return <section className={`epd-card epd-card--${tone} ${wide ? 'epd-card--wide' : ''}`}>
+    <header className="epd-card__header">
+      <span className="epd-card__icon"><DetailIcon type={icon} /></span>
+      <div><h3>{title}</h3>{subtitle && <p>{subtitle}</p>}</div>
+    </header>
+    <div className="epd-info-grid">{children}</div>
+  </section>
+}
+
+function InfoItem({ label, value, ltr = false, wide = false, emphasize = false }) {
+  return <div className={`epd-info-item ${wide ? 'epd-info-item--wide' : ''} ${emphasize ? 'epd-info-item--emphasize' : ''}`}>
+    <span>{label}</span>
+    <strong dir={ltr ? 'ltr' : undefined}>{value == null || value === '' ? '—' : value}</strong>
+  </div>
+}
+
+function AmountComparison({ sourceAmounts = {}, currentAmounts = {} }) {
+  return <section className="epd-card epd-card--wide epd-card--money">
+    <header className="epd-card__header epd-card__header--with-note">
+      <span className="epd-card__icon"><DetailIcon type="money" /></span>
+      <div>
+        <h3>خلاصه مبالغ برگه</h3>
+        <p>مقایسه مبلغ ثبت‌شده هنگام دریافت EF03 با آخرین مقدار جاری</p>
+      </div>
+      <span className="epd-unit-badge">مبالغ به ریال</span>
+    </header>
+    <div className="epd-amount-grid">
+      {Object.entries(SANIM_AMOUNT_LABELS).map(([key, label]) => {
+        const currentValue = currentAmounts?.[key]
+        const initialValue = sourceAmounts?.[key]
+        const changed = currentValue != null && initialValue != null && String(currentValue) !== String(initialValue)
+        return <article className={`epd-amount ${key === 'outstandingDebtAmount' ? 'epd-amount--primary' : ''}`} key={key}>
+          <span>{label}</span>
+          <strong dir="ltr">{exactSanimMoney(currentValue)}</strong>
+          <small>
+            هنگام دریافت: <b dir="ltr">{exactSanimMoney(initialValue)}</b>
+            {changed && <em>به‌روزرسانی شده</em>}
+          </small>
+        </article>
+      })}
+    </div>
+  </section>
+}
+
+function parseFinancialRows(value) {
+  if (!value) return []
+  if (Array.isArray(value)) return value
+  try {
+    const parsed = JSON.parse(value)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return null
+  }
+}
+
+function FinancialBreakdowns({ details, title, defaultOpen = false }) {
+  if (!details) return null
+  const groups = Object.entries(FINANCIAL_DETAIL_LABELS)
+    .map(([key, label]) => ({ key, label, rows: parseFinancialRows(details[key]) }))
+    .filter(group => group.rows === null || group.rows.length > 0)
+  if (!groups.length) return null
+
+  return <details className="epd-breakdown" open={defaultOpen}>
+    <summary>
+      <span>{title}</span>
+      <small>{toPersianDigits(groups.length)} گروه اطلاعات تفصیلی</small>
+    </summary>
+    <div className="epd-breakdown__body">
+      {groups.map(group => <section className="epd-breakdown__group" key={group.key}>
+        <h4>{group.label}</h4>
+        {group.rows === null
+          ? <p className="epd-empty">جزئیات این بخش قابل خواندن نیست.</p>
+          : <div className="epd-table-scroll"><table className="epd-table">
+              <thead><tr><th>ردیف</th><th>شرح</th><th>وضعیت گزارش</th><th>مبلغ (ریال)</th></tr></thead>
+              <tbody>{group.rows.map((row, index) => <tr key={index}>
+                <td>{toPersianDigits(index + 1)}</td>
+                <td>{formatValue(row.description || group.label)}</td>
+                <td><span className={row.reported === 'false' || row.reported === false ? 'epd-row-status epd-row-status--muted' : 'epd-row-status'}>{row.reported === 'false' || row.reported === false ? 'در XML گزارش نشده' : 'گزارش شده'}</span></td>
+                <td dir="ltr">{exactSanimMoney(row.amount)}</td>
+              </tr>)}</tbody>
+            </table></div>}
+      </section>)}
+    </div>
+  </details>
+}
+
+function StatusPill({ value, label }) {
+  const warning = String(value || '').includes('REJECT') || String(value || '').includes('REVIEW')
+  return <span className={`epd-status ${warning ? 'epd-status--warning' : ''}`}><i />{label || formatValue(value)}</span>
+}
+
+function SanimDocumentSection({ data }) {
   const execution = data.executionPaper || {}
   const finalized = data.finalizedDebtPaper || {}
+  const source = finalized.sourceDocument
   const taxpayer = data.taxpayer || {}
   const debt = data.debtInformation || {}
-  const fullName = taxpayer.type === 'LEGAL'
-    ? taxpayer.companyName
-    : [taxpayer.firstName, taxpayer.lastName].filter(Boolean).join(' ')
-  const identityCode = taxpayer.type === 'LEGAL' ? taxpayer.nationalId : taxpayer.nationalCode
-  const totalTax = sumValues([
-    debt.taxAmount,
-    debt.dutyAmount,
-    debt.remainingTax
-  ])
-  const totalPenalty = sumValues([
-    debt.penaltyArticle22,
-    debt.penaltyArticle23,
-    debt.nonDeductiblePenalty
-  ])
-  const totalDebt = Number(debt.totalDebt ?? totalTax + totalPenalty)
-  const issueDate = jalaliDate(execution.createdAt || finalized.createdAt)
-  const legalDeadlineDate = addDaysJalali(execution.createdAt || finalized.createdAt, 10)
-  const generalId = execution.mainTaxBureauId || finalized.mainTaxBureauId
-  const officeId = execution.taxBureauId || finalized.taxBureauId
-  const unitId = execution.taxUnitId || finalized.taxUnitId
-  const generalName = execution.mainTaxBureauName || execution.generalDirectorateName || finalized.mainTaxBureauName || finalized.generalDirectorateName
-  const officeName = execution.taxBureauName || execution.taxAffairsOfficeName || finalized.taxBureauName || finalized.taxAffairsOfficeName
-  const unitName = execution.taxUnitName || finalized.taxUnitName
-  const generalDisplay = orgDisplay(generalName, generalId)
-  const officeDisplay = orgDisplay(officeName, officeId)
-  const unitDisplay = orgDisplay(unitName, unitId)
-  const officePhone = finalized.taxAffairsOfficePhone || execution.taxAffairsOfficePhone || finalized.generalDirectoratePhone || execution.generalDirectoratePhone
-  const officeAddress = finalized.taxAffairsOfficeAddress || execution.taxAffairsOfficeAddress || finalized.generalDirectorateAddress || execution.generalDirectorateAddress
-  const activityType = finalized.activityTypeDisplay || orgDisplay(finalized.activityTypeTitle, finalized.activityTypeCode) || finalized.taxSourceDisplay || execution.taxSourceDisplay
+  const notification = data.notification || {}
+  const rejection = data.ruleRejection || {}
+  const current = debt.currentAmounts || {}
+  const sourceAmounts = source?.amounts || {}
+  const taxpayerDisplayName = personName(taxpayer, source)
+  const identity = taxpayer.nationalCode || taxpayer.nationalId || source?.identityNumber
+  const hasNotification = Object.keys(notification).length > 0
+  const hasRejection = Object.keys(rejection).length > 0
 
-  return (
-    <div className="execution-print-template" dir="rtl">
-      <section className="execution-print-page">
-        <header className="print-header">
-          <div className="print-heading">
-            <strong>برگ اجرایی</strong>
-            <span>سال مالیاتی {formatValue(finalized.performanceYear || '-')}</span>
-          </div>
-          <div className="print-logo-block">
-            <img src="/images/iran-tax-logo.png" alt="سازمان امور مالیاتی کشور" />
-            <strong>وزارت امور اقتصادی و دارایی</strong>
-            <span>سازمان امور مالیاتی کشور</span>
-          </div>
-          <div className="print-barcode-block">
-            <div className="print-barcode" aria-hidden="true" />
-          </div>
+  if (!source) return <section className="epd-empty-card">
+    <DetailIcon type="document" />
+    <div><h3>اطلاعات سند کامل نیست</h3><p>این برگه برای نمایش مطابق مدل جدید به بررسی و تکمیل اطلاعات منبع نیاز دارد.</p></div>
+  </section>
+
+  return <div className="epd-page" dir="rtl">
+    <section className="epd-hero">
+      <div className="epd-hero__main">
+        <div className="epd-hero__eyebrow"><span>برگه اجرای مالیاتی</span><StatusPill value={execution.currentState} label={execution.currentStateDisplay} /></div>
+        <h1>{execution.uniqueCode ? toPersianDigits(execution.uniqueCode) : 'شماره برگه ثبت نشده'}</h1>
+        <p>{taxpayerDisplayName || 'نام مؤدی ثبت نشده'} <span>•</span> {readableEnum(taxpayer.type, { NATURAL: 'شخص حقیقی', LEGAL: 'شخص حقوقی' })}</p>
+      </div>
+      <div className="epd-hero__facts">
+        <div><span>تاریخ صدور</span><strong>{formatPersianDateTime(execution.issuanceDate)}</strong></div>
+        <div><span>مانده بدهی</span><strong dir="ltr">{exactSanimMoney(current.outstandingDebtAmount)}</strong><small>ریال</small></div>
+        <div><span>منبع مالیاتی</span><strong>{execution.taxSourceDisplay || execution.taxSource || '—'}</strong></div>
+      </div>
+    </section>
+
+    {source.validationStatus === 'LEGACY_REVIEW_REQUIRED' && <div className="epd-alert" role="alert">
+      این سند قدیمی برای انطباق با مدل جدید نیازمند بررسی و تکمیل است؛ مبالغ نامشخص صفر فرض نشده‌اند.
+    </div>}
+
+    <div className="epd-card-grid">
+      <InfoGroup title="مشخصات برگه اجرا" subtitle="شناسه‌ها و وضعیت صدور" icon="document" tone="blue">
+        <InfoItem label="شناسه داخلی" value={formatValue(execution.id)} />
+        <InfoItem label="شماره برگه اجرا" value={formatValue(execution.uniqueCode)} ltr emphasize />
+        <InfoItem label="وضعیت فعلی" value={execution.currentStateDisplay || execution.currentState} />
+        <InfoItem label="تاریخ صدور" value={formatPersianDateTime(execution.issuanceDate)} />
+        <InfoItem label="مبنای صدور" value={readableEnum(execution.finalizationReason, FINALIZATION_LABELS)} />
+        <InfoItem label="تاریخ ثبت در سیستم" value={formatPersianDateTime(execution.createdAt)} />
+      </InfoGroup>
+
+      <InfoGroup title="مشخصات مؤدی" subtitle="اطلاعات هویتی و ثبت‌نام مالیاتی" icon="person" tone="green">
+        <InfoItem label="نام مؤدی" value={taxpayerDisplayName} wide emphasize />
+        <InfoItem label="نوع مؤدی" value={readableEnum(taxpayer.type, { NATURAL: 'حقیقی', LEGAL: 'حقوقی' })} />
+        <InfoItem label={taxpayer.type === 'LEGAL' ? 'شناسه ملی' : 'کد ملی'} value={formatValue(identity)} ltr />
+        <InfoItem label="شناسه مؤدی (TIN)" value={formatValue(taxpayer.tin || source.taxpayerIdentifier)} ltr />
+        <InfoItem label="کد رهگیری ثبت‌نام" value={formatValue(taxpayer.registrationTraceCode || source.registrationTraceCode)} ltr />
+        <InfoItem label="نوع فعالیت" value={taxpayer.activityType || source.activityTitle} />
+        {taxpayer.type === 'NATURAL' && <InfoItem label="نام پدر" value={taxpayer.fatherName} />}
+        {taxpayer.type === 'NATURAL' && <InfoItem label="تاریخ تولد" value={formatPersianDate(taxpayer.birthDate)} />}
+        {taxpayer.type === 'LEGAL' && <InfoItem label="شماره ثبت" value={formatValue(taxpayer.registrationNumber)} ltr />}
+        {taxpayer.type === 'LEGAL' && <InfoItem label="تاریخ ثبت" value={formatPersianDate(taxpayer.registrationDate)} />}
+        <InfoItem label="نام تجاری" value={source.tradeName} />
+        <InfoItem label="شماره تماس" value={formatValue(source.phone)} ltr />
+        <InfoItem label="کد پستی" value={formatValue(taxpayer.postalCode || source.postalCode)} ltr />
+        <InfoItem label="نشانی" value={taxpayer.address || source.address} wide />
+      </InfoGroup>
+
+      <InfoGroup title="سند بدهی قطعی و مبنای صدور" subtitle="اطلاعات ثبت‌شده در سند سنیم" icon="document" tone="indigo">
+        <InfoItem label="شماره نامه سنیم" value={formatValue(source.documentNumber)} ltr emphasize />
+        <InfoItem label="تاریخ نامه سنیم" value={formatValue(source.issueDateRaw)} />
+        <InfoItem label="شماره سند مبنا" value={formatValue(source.basisDocumentNumber || finalized.debtPaperUniqueCode)} ltr />
+        <InfoItem label="تاریخ سند مبنا" value={formatValue(source.basisDocumentDateRaw || finalized.basisIssueDate)} />
+        <InfoItem label="علت قطعیت" value={readableEnum(source.issuanceReason || finalized.finalizationReason, FINALIZATION_LABELS)} />
+        <InfoItem label="منبع مالیاتی" value={finalized.taxSourceDisplay || finalized.taxSource} />
+      </InfoGroup>
+
+      <InfoGroup title="دوره و حوزه مالیاتی" subtitle="سال، بازه عملکرد و اداره صادرکننده" icon="calendar" tone="amber">
+        <InfoItem label="سال مالیاتی" value={formatValue(source.taxYear)} emphasize />
+        <InfoItem label="دوره مالیاتی" value={formatValue(source.taxPeriod)} />
+        <InfoItem label="از تاریخ" value={formatValue(source.taxPeriodStartRaw)} />
+        <InfoItem label="تا تاریخ" value={formatValue(source.taxPeriodEndRaw)} />
+        <InfoItem label="اداره کل امور مالیاتی" value={source.generalDirectorateName || finalized.generalDirectorateName || execution.generalDirectorateName} wide />
+        <InfoItem label="کد داخلی اداره کل" value={formatValue(finalized.mainTaxBureauId || execution.mainTaxBureauId)} ltr />
+        <InfoItem label="اداره امور مالیاتی" value={source.taxOfficeName || finalized.taxAffairsOfficeName || execution.taxAffairsOfficeName} wide />
+        <InfoItem label="کد اداره در سنیم" value={formatValue(source.sourceTaxOfficeCode)} ltr />
+        <InfoItem label="شناسه داخلی اداره" value={formatValue(finalized.taxBureauId || execution.taxBureauId)} ltr />
+        <InfoItem label="واحد مالیاتی" value={orgDisplay(execution.taxUnitName || finalized.taxUnitName, execution.taxUnitId || finalized.taxUnitId)} />
+        <InfoItem label="تلفن اداره" value={formatValue(finalized.taxAffairsOfficePhone || execution.taxAffairsOfficePhone)} ltr />
+        <InfoItem label="کد پستی اداره" value={formatValue(finalized.taxAffairsOfficePostalCode || execution.taxAffairsOfficePostalCode)} ltr />
+        <InfoItem label="نشانی اداره" value={finalized.taxAffairsOfficeAddress || execution.taxAffairsOfficeAddress} wide />
+        <InfoItem label="نشانی اداره کل" value={finalized.generalDirectorateAddress || execution.generalDirectorateAddress} wide />
+      </InfoGroup>
+
+      <AmountComparison sourceAmounts={sourceAmounts} currentAmounts={current} />
+
+      <section className="epd-card epd-card--wide epd-card--details">
+        <header className="epd-card__header">
+          <span className="epd-card__icon"><DetailIcon type="money" /></span>
+          <div><h3>اطلاعات تفصیلی مبالغ</h3><p>ریز اقلام مالی به تفکیک زمان دریافت و وضعیت جاری</p></div>
         </header>
+        <div className="epd-breakdown-stack">
+          <FinancialBreakdowns details={debt.financialDetails} title="جزئیات جاری بدهی" defaultOpen />
+          <FinancialBreakdowns details={source.financialDetails} title="جزئیات ثبت‌شده هنگام دریافت EF03" />
+          {!debt.financialDetails && !source.financialDetails && <p className="epd-empty">جزئیات مالی برای این برگه ثبت نشده است.</p>}
+        </div>
+        <div className="epd-data-freshness">
+          <span>زمان مبنای مبالغ جاری: <b>{formatPersianDateTime(debt.currentAmountsAsOf)}</b></span>
+          <span>آخرین استعلام بدهی: <b>{formatPersianDateTime(debt.lastDebtInquiryAt)}</b></span>
+        </div>
+      </section>
 
-        <table className="print-meta-table">
-          <tbody>
-            <tr>
-              <th>شماره</th>
-              <td>{formatValue(execution.uniqueCode)}</td>
-              <th>اداره کل امور مالیاتی</th>
-              <td>{formatValue(generalDisplay)}</td>
-            </tr>
-            <tr>
-              <th>تاریخ</th>
-              <td>{formatValue(issueDate)}</td>
-              <th>اداره امور مالیاتی</th>
-              <td>{formatValue(officeDisplay)}</td>
-            </tr>
-            <tr>
-              <th>صفحه</th>
-              <td>۱ از ۱</td>
-              <th>تلفن</th>
-              <td>{formatValue(officePhone)}</td>
-            </tr>
-            <tr>
-              <th>واحد مالیاتی</th>
-              <td>{formatValue(unitDisplay)}</td>
-              <th>نشانی</th>
-              <td>{formatValue(officeAddress)}</td>
-            </tr>
-          </tbody>
-        </table>
+      <InfoGroup title="وضعیت ابلاغ" subtitle="آخرین اطلاعات ابلاغ و پیگیری" icon="bell" tone="violet" wide>
+        {hasNotification ? <>
+          <InfoItem label="وضعیت ابلاغ" value={notification.informStatusLabel || notification.informStatus} emphasize />
+          <InfoItem label="تاریخ ابلاغ الکترونیکی" value={formatPersianDateTime(notification.electronicNotificationDate)} />
+          <InfoItem label="زمان رد ابلاغ" value={formatPersianDateTime(notification.informRejectedAt)} />
+          <InfoItem label="زمان بررسی مجدد" value={formatPersianDateTime(notification.reInformDate)} />
+          <InfoItem label="استعلام بعدی بدهی" value={formatPersianDateTime(notification.nextDebtInquiryDate)} />
+          <InfoItem label="علت رد ابلاغ" value={notification.informRejectionReason} wide />
+        </> : <p className="epd-empty epd-info-item--wide">هنوز اطلاعات ابلاغی برای این برگه ثبت نشده است.</p>}
+      </InfoGroup>
 
-        <table className="print-info-table">
-          <caption>مشخصات مؤدی</caption>
-          <tbody>
-            <tr>
-              <th>شناسه مؤدی</th>
-              <td>{formatValue(identityCode)}</td>
-              <th>نوع شخص</th>
-              <td>{taxpayer.type === 'LEGAL' ? 'حقوقی' : 'حقیقی'}</td>
-            </tr>
-            <tr>
-              <th>نام شخص حقوقی / نام و نام خانوادگی</th>
-              <td>{formatValue(fullName)}</td>
-              <th>نام تجاری / شهرت کسبی</th>
-              <td>{formatValue(taxpayer.companyName || fullName)}</td>
-            </tr>
-            <tr>
-              <th>نوع فعالیت</th>
-              <td>{formatValue(activityType)}</td>
-              <th>شماره پستی</th>
-              <td>{formatValue(taxpayer.postalCode)}</td>
-            </tr>
-            <tr>
-              <th>اقامتگاه قانونی</th>
-              <td colSpan="3">{formatValue(taxpayer.address)}</td>
-            </tr>
-          </tbody>
-        </table>
+      {hasRejection && <InfoGroup title="اطلاعات رد و کنترل‌ها" subtitle="دلایل ثبت‌شده توسط موتور قوانین" icon="bell" tone="red" wide>
+        <InfoItem label="نوع رد صدور" value={rejection.rejectionTypeLabel || rejection.rejectionType} />
+        <InfoItem label="شناسه دلیل رد" value={formatValue(rejection.rejectionReasonId)} ltr />
+        <InfoItem label="زمان رد" value={formatPersianDateTime(rejection.rejectedAt || rejection.informRejectedAt)} />
+        <InfoItem label="شرح رد صدور" value={rejection.rejectionReason} wide />
+        <InfoItem label="شرح رد ابلاغ" value={rejection.informRejectionReason} wide />
+      </InfoGroup>}
 
-        <p className="print-legal-text">
-          به دلیل عدم پرداخت مالیات موضوع برگ قطعی به شماره {formatValue(finalized.debtPaperUniqueCode)} که طی برگ تشخیص/قطعی
-          مربوط به عملکرد {formatValue(finalized.performanceYear || '-')} ابلاغ گردیده است، حسب مقررات قانون مالیات‌های مستقیم
-          اخطار می‌شود چنانچه ظرف مدت ده روز از تاریخ ابلاغ این برگ نسبت به پرداخت / ترتیب پرداخت بدهی مالیاتی خود به شرح
-          جداول زیر اقدام ننمایید، عملیات اجرایی وصول مطالبات مالیاتی شامل توقیف اموال، ممنوع‌الخروجی و سایر اقدامات قانونی
-          برابر مقررات انجام خواهد شد. تاریخ پایان مهلت اقدام: {formatValue(legalDeadlineDate)}.
-        </p>
-
-        <table className="print-amount-table">
-          <caption>جدول محاسبه مالیات متعلقه</caption>
-          <thead>
-            <tr>
-              <th>شرح</th>
-              <th>مبلغ (ریال)</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>مالیات متعلقه</td><td>{formatMoney(debt.taxAmount)}</td></tr>
-            <tr><td>عوارض و بدهی‌های مرتبط</td><td>{formatMoney(debt.dutyAmount)}</td></tr>
-            <tr><td>مانده مالیات ارسالی</td><td>{formatMoney(debt.remainingTax)}</td></tr>
-            <tr><td>جمع بدهی مالیاتی به عدد</td><td>{formatMoney(totalTax)}</td></tr>
-            <tr><td>جمع بدهی مالیاتی به حروف</td><td>{numberToPersianWords(totalTax)} ریال</td></tr>
-          </tbody>
-        </table>
-
-        <table className="print-amount-table">
-          <caption>جدول محاسبه جرایم مالیاتی</caption>
-          <thead>
-            <tr>
-              <th>ردیف</th>
-              <th>شرح جریمه</th>
-              <th>مبلغ (ریال)</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>۱</td><td>جریمه ثابت موضوع پرونده</td><td>{formatMoney(debt.penaltyArticle22)}</td></tr>
-            <tr><td>۲</td><td>جریمه دیرکرد پرداخت</td><td>{formatMoney(debt.penaltyArticle23)}</td></tr>
-            <tr><td>۳</td><td>جرایم غیرقابل بخشش</td><td>{formatMoney(debt.nonDeductiblePenalty)}</td></tr>
-            <tr><td colSpan="2">جمع جرایم</td><td>{formatMoney(totalPenalty)}</td></tr>
-            <tr><td colSpan="2">جمع کل قابل وصول</td><td>{formatMoney(totalDebt)}</td></tr>
-          </tbody>
-        </table>
-
-        <footer className="print-signature">
-          <div>
-            <strong>مشخصات صادرکننده</strong>
-            <span>نام و نام خانوادگی:</span>
-            <span>سمت:</span>
+      <section className="epd-card epd-card--wide epd-card--technical">
+        <details>
+          <summary>
+            <span className="epd-card__icon"><DetailIcon type="technical" /></span>
+            <div><h3>اطلاعات فنی و داده منبع</h3><p>قالب، نسخه نگاشت، مبانی محاسبه و XML اصلی</p></div>
+            <b>مشاهده جزئیات</b>
+          </summary>
+          <div className="epd-technical__body">
+            <div className="epd-info-grid">
+              <InfoItem label="قالب سند" value={source.templateCode || 'ورود دستی / مشخص‌نشده'} ltr />
+              <InfoItem label="نسخه نگاشت" value={source.mappingVersion} ltr />
+              <InfoItem label="وضعیت اعتبارسنجی" value={readableEnum(source.validationStatus, VALIDATION_LABELS)} />
+              <InfoItem label="واحد پول" value={source.currencyCode} ltr />
+              <InfoItem label="مبنای مبلغ مالیات" value={source.taxAmountBasis} ltr />
+              <InfoItem label="مبنای بخشودگی" value={source.remissionBasis} ltr />
+              <InfoItem label="نوع شناسه هویتی" value={source.identityType} ltr />
+              <InfoItem label="نوع شناسه مؤدی" value={source.taxpayerIdentifierType} ltr />
+            </div>
+            <details className="epd-xml">
+              <summary>مشاهده XML اصلی دریافتی</summary>
+              <pre dir="ltr">{source.xml || 'XML ذخیره نشده است.'}</pre>
+            </details>
           </div>
-          <div>
-            <strong>مهر و امضاء</strong>
-          </div>
-        </footer>
+        </details>
       </section>
     </div>
-  )
+  </div>
+}
+
+function PrintExecutionPaper({ data }) {
+  if (!data) return null
+  return <div className="execution-print-template"><SanimDocumentSection data={data} /></div>
 }
 
 export default function ExecutionPaperDetailsPage() {
@@ -1140,7 +1192,7 @@ export default function ExecutionPaperDetailsPage() {
         title="دستیار هوشمند حسابرسی"
         eyebrow="برگ‌های اجرا"
       >
-        <main style={{ maxWidth: 1200, margin: '0 auto' }}>
+        <main className="epd-shell">
           <div style={pageTitleRowStyle}>
             <h2 style={pageTitleStyle}>مشاهده جزئیات برگ اجرا</h2>
             <div style={pageActionGroupStyle}>
@@ -1164,7 +1216,7 @@ export default function ExecutionPaperDetailsPage() {
           </div>
           {loading && <div style={cardStyle}>در حال دریافت اطلاعات...</div>}
           {!loading && error && <div style={{ ...cardStyle, color: '#dc2626' }}>خطا در دریافت اطلاعات: {error}</div>}
-          {!loading && !error && data && SECTIONS.map(section => <DetailSection key={section.key} section={section} data={data[section.key]} />)}
+          {!loading && !error && data && <SanimDocumentSection data={data} />}
           {!loading && !error && data?.taxpayer?.type === 'LEGAL' && (
             <RelatedPersonsSection
               data={relatedPersons}

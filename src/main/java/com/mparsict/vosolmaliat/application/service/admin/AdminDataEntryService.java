@@ -56,28 +56,32 @@ public class AdminDataEntryService {
 
     @Transactional
     public ExecutionPaperDetailResponse createManualExecutionPaper(ManualExecutionPaperRequest request) {
+        uniqueCodeGenerator.lockIssuance();
+        if (blankToNull(request.executionPaperUniqueCode()) != null)
+            throw new BusinessException("GENERATED_NUMBER_REQUIRED", "شماره برگ اجرا فقط توسط سامانه تخصیص می‌یابد");
         FinalizedDebtPaper finalizedDebtPaper = finalizedDebtPaperRepository.findById(request.finalizedDebtPaperId())
                 .orElseThrow(() -> new BusinessException("FINALIZED_DEBT_PAPER_NOT_FOUND", "برگ بدهی قطعی یافت نشد"));
         Taxpayer taxpayer = taxpayerRepository.findById(request.taxpayerId())
                 .orElseThrow(() -> new BusinessException("TAXPAYER_NOT_FOUND", "مودی یافت نشد"));
 
+        if (finalizedDebtPaper.getSourceDocument() != null && "LTR_EF03".equals(finalizedDebtPaper.getSourceDocument().getTemplateCode()))
+            throw new BusinessException("EF03_RECEIPT_REQUIRED", "برای EF03 از مسیر دریافت و تأیید هویت استفاده کنید");
         ExecutionPaper saved = executionPaperRepository.save(ExecutionPaper.builder()
-                .executionPaperUniqueCode(blankToNull(request.executionPaperUniqueCode()) == null
-                        ? uniqueCodeGenerator.generateExecutionPaperCode()
-                        : request.executionPaperUniqueCode())
+                .executionPaperUniqueCode(uniqueCodeGenerator.generateExecutionPaperCode())
+                .issuanceDate(java.time.LocalDateTime.now(java.time.ZoneId.of("Asia/Tehran")))
+                .finalizationReason(finalizedDebtPaper.getFinalizationReason())
                 .finalizedDebtPaper(finalizedDebtPaper)
                 .taxpayer(taxpayer)
                 .taxUnit(request.taxUnitId() == null ? null : TaxUnit.builder().id(request.taxUnitId()).build())
-                .finalizationReason(request.finalizationReason())
                 .taxSource(request.taxSource())
                 .currentState(blankToNull(request.currentState()) == null
                         ? ExecutionPaperState.UNASSIGNED.name()
                         : request.currentState())
                 .build());
 
-        if (request.debtInfo() != null) {
-            debtInformationRepository.save(toDebtInformation(saved.getId(), request.debtInfo()));
-        }
+        com.mparsict.vosolmaliat.application.service.SanimModelValidation.requireAmounts(request.currentAmounts());
+        debtInformationRepository.save(DebtInformation.builder().executionPaper(saved).finalizedDebtPaper(finalizedDebtPaper)
+                .currentAmounts(request.currentAmounts().copy()).build());
         return executionPaperService.getDetails(saved.getId());
     }
 
@@ -94,8 +98,8 @@ public class AdminDataEntryService {
                 taxpayerRepository.findAll().stream()
                         .map(item -> new AdminDataSummaryResponse.TaxpayerSummary(
                                 item.getId(),
-                                item.getDebtPaperUniqueCode(),
-                                item.getDebtPaperIssueDate(),
+                                item.getTin(),
+                                item.getRegistrationTraceCode(),
                                 item.getType().name()
                         ))
                         .toList(),
@@ -107,29 +111,6 @@ public class AdminDataEntryService {
                         ))
                         .toList()
         );
-    }
-
-    private DebtInformation toDebtInformation(Long executionPaperId, ManualExecutionPaperRequest.DebtInformationInput input) {
-        return DebtInformation.builder()
-                .executionPaper(ExecutionPaper.builder().id(executionPaperId).build())
-                .taxAmount(orZero(input.taxAmount()))
-                .dutyAmount(orZero(input.dutyAmount()))
-                .penaltyArticle22(orZero(input.penaltyArticle22()))
-                .penaltyArticle23(orZero(input.penaltyArticle23()))
-                .deductiblePenalty(orZero(input.deductiblePenalty()))
-                .nonDeductiblePenalty(orZero(input.nonDeductiblePenalty()))
-                .taxPaidAmount(orZero(input.taxPaidAmount()))
-                .penaltyPaidAmount(orZero(input.penaltyPaidAmount()))
-                .taxCredit(orZero(input.taxCredit()))
-                .remainingTax(orZero(input.remainingTax()))
-                .municipalityShare(orZero(input.municipalityShare()))
-                .guildShare(orZero(input.guildShare()))
-                .complianceBonus(orZero(input.complianceBonus()))
-                .build();
-    }
-
-    private Double orZero(Double value) {
-        return value == null ? 0.0 : value;
     }
 
     private String blankToNull(String value) {

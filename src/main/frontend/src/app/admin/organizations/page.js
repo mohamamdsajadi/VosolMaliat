@@ -19,7 +19,7 @@ import {
 } from '../../lib/security';
 
 const initialGeneral = { name: '', postalCode: '', address: '', phone: '' };
-const initialOffice = { generalDirectorateOfTaxAffairsId: '', officeName: '', postalCode: '', address: '', phone: '' };
+const initialOffice = { officeType: 0, officeCode: '', generalDirectorateOfTaxAffairsId: '', officeName: '', postalCode: '', address: '', phone: '' };
 const initialUnit = { taxAffairsOfficeId: '', taxUnitName: '', postalCode: '', address: '', phone: '' };
 
 export default function AdminOrganizationsPage() {
@@ -82,6 +82,7 @@ export default function AdminOrganizationsPage() {
     const payload = {
       generalDirectorateOfTaxAffairsId: Number(officeForm.generalDirectorateOfTaxAffairsId),
       officeName: officeForm.officeName,
+      officeType: Number(officeForm.officeType), officeCode: officeForm.officeCode || null,
       postalCode: officeForm.postalCode,
       address: officeForm.address,
       phone: officeForm.phone
@@ -220,6 +221,8 @@ export default function AdminOrganizationsPage() {
                   {generals.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
                 </select>
               </label>
+              <label><span>نوع اداره</span><select value={officeForm.officeType} onChange={event => setOfficeForm(current => ({...current, officeType: Number(event.target.value)}))}><option value={0}>امور مالیاتی</option><option value={1}>امور اجرائیات</option></select></label>
+              <label><span>کد اداره</span><input value={officeForm.officeCode} onChange={event => setOfficeForm(current => ({...current, officeCode: event.target.value}))} /></label>
               <label>
                 <span>نام اداره مالیات</span>
                 <input value={officeForm.officeName} onChange={(event) => setOfficeForm((current) => ({ ...current, officeName: event.target.value }))} required />
@@ -251,6 +254,7 @@ export default function AdminOrganizationsPage() {
                 setOfficeForm({
                   generalDirectorateOfTaxAffairsId: String(item.generalDirectorateOfTaxAffairsId),
                   officeName: item.officeName,
+                  officeType: item.officeType ?? 0, officeCode: item.officeCode || "",
                   postalCode: item.postalCode || '',
                   address: item.address || '',
                   phone: item.phone || ''

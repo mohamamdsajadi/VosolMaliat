@@ -220,6 +220,32 @@ class CamundaJobWorkersUnitTest {
     }
 
     @Test
+    void issueExecutionPaperLoadsStoredRequestWhenOperatePayloadIsMissing() {
+        StubExecutionPaperService executionPaperService = new StubExecutionPaperService(ExecutionPaper.builder()
+                .id(100L)
+                .executionPaperUniqueCode("EP-100")
+                .taxUnit(com.mparsict.vosolmaliat.domain.model.masterdata.TaxUnit.builder().id(7L).build())
+                .build());
+        StubIssuanceRequestService issuanceRequests = new StubIssuanceRequestService();
+        issuanceRequests.requestToLoad = sampleLegalDebtPaper();
+        IssueExecutionPaperWorker worker = new IssueExecutionPaperWorker(
+                executionPaperService,
+                issuanceRequests,
+                new ExecutionPaperWorkflowVariablesFactory(taxUnitRepository(70L, 700L)),
+                objectMapper
+        );
+        CamundaJobClientStub client = new CamundaJobClientStub();
+
+        worker.handle(client.proxy(), job(Map.of(ProcessConstants.VAR_ISSUANCE_REQUEST_ID, 456L)));
+
+        assertThat(issuanceRequests.loadedRequestId).isEqualTo(456L);
+        assertThat(executionPaperService.createdRequest).isEqualTo(issuanceRequests.requestToLoad);
+        assertThat(client.completed).isTrue();
+        assertThat(client.failed).isFalse();
+    }
+
+
+    @Test
     void sendRejectionResponseMarksIssuanceRejectedAndNotifiesFakeSanim() {
         StubIssuanceRequestService issuanceRequestService = new StubIssuanceRequestService();
         StubFakeSanimInformService fakeSanimInformService = new StubFakeSanimInformService();
@@ -275,7 +301,7 @@ class CamundaJobWorkersUnitTest {
     }
 
     @Test
-    void sendExecutionPaperIdToSanimSupportsLegacyTaxpayerDebtPaperRelationship() {
+    void sendExecutionPaperIdToSanimRejectsRemovedTaxpayerDebtPaperRelationship() {
         StubFakeSanimInformService fakeSanimInformService = new StubFakeSanimInformService();
         SendExecutionPaperIdToSanimWorker worker = new SendExecutionPaperIdToSanimWorker(
                 fakeSanimInformService,
@@ -288,9 +314,9 @@ class CamundaJobWorkersUnitTest {
                 Map.of("debtPaperUniqueCode", "DEBT-LEGACY")
         )));
 
-        assertThat(fakeSanimInformService.executionPaperId).isEqualTo(101L);
-        assertThat(client.completed).isTrue();
-        assertThat(client.failed).isFalse();
+        assertThat(fakeSanimInformService.executionPaperId).isNull();
+        assertThat(client.completed).isFalse();
+        assertThat(client.failed).isTrue();
     }
 
     @Test
@@ -639,16 +665,8 @@ class CamundaJobWorkersUnitTest {
     }
 
     private DebtPaperIssuanceRequest sampleDebtPaper() {
-        return new DebtPaperIssuanceRequest(
-                "DEBT-1001",
-                "2026-07-18",
-                "NOTICE-1",
-                "قطعی",
+        return new DebtPaperIssuanceRequest("DEBT-1001",
                 "VAT",
-                "1405",
-                "SPRING",
-                "A01",
-                "فعالیت نمونه",
                 700L,
                 70L,
                 7L,
@@ -668,37 +686,14 @@ class CamundaJobWorkersUnitTest {
                         null,
                         null
                 ),
-                new DebtPaperIssuanceRequest.DebtInfo(
-                        1000d,
-                        200d,
-                        50d,
-                        25d,
-                        0d,
-                        10d,
-                        100d,
-                        0d,
-                        0d,
-                        1185d,
-                        0d,
-                        0d,
-                        0d
-                ),
-                java.util.List.of()
-        );
+                java.util.List.of(),
+                com.mparsict.vosolmaliat.TestSanimDocuments.document("DEBT-1001", "2026-07-18", "1405", "SPRING", "فعالیت نمونه"));
     }
 
     private DebtPaperIssuanceRequest sampleLegalDebtPaper() {
         DebtPaperIssuanceRequest source = sampleDebtPaper();
-        return new DebtPaperIssuanceRequest(
-                source.debtPaperUniqueCode(),
-                source.debtPaperIssueDate(),
-                source.notificationId(),
-                source.finalizationReason(),
+        return new DebtPaperIssuanceRequest(source.debtPaperUniqueCode(),
                 source.taxSource(),
-                source.performanceYear(),
-                source.performancePeriod(),
-                source.activityTypeCode(),
-                source.activityTypeTitle(),
                 source.mainTaxBureauId(),
                 source.taxBureauId(),
                 source.taxUnitId(),
@@ -718,9 +713,8 @@ class CamundaJobWorkersUnitTest {
                         "1390-01-01",
                         "شرکت نمونه"
                 ),
-                source.debtInfo(),
-                source.relatedPersons()
-        );
+                source.relatedPersons(),
+                source.sourceDocument());
     }
 
     private static Object defaultValue(Class<?> type) {
@@ -864,7 +858,7 @@ class CamundaJobWorkersUnitTest {
         private DebtPaperIssuanceRequest createdRequest;
 
         private StubExecutionPaperService(ExecutionPaper executionPaper) {
-            super(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+            super(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
             this.executionPaper = executionPaper;
         }
 
@@ -878,9 +872,17 @@ class CamundaJobWorkersUnitTest {
     private static class StubIssuanceRequestService extends IssuanceRequestService {
         private Long rejectedRequestId;
         private String rejectionReason;
+        private DebtPaperIssuanceRequest requestToLoad;
+        private Long loadedRequestId;
 
         private StubIssuanceRequestService() {
             super(null, new ObjectMapper());
+        }
+
+        @Override
+        public DebtPaperIssuanceRequest loadRequest(Long requestId) {
+            loadedRequestId = requestId;
+            return requestToLoad;
         }
 
         @Override
@@ -940,7 +942,7 @@ class CamundaJobWorkersUnitTest {
         private com.mparsict.vosolmaliat.application.dto.response.SanimDebtStatusResponse status;
 
         private StubDebtStatusUpdateService() {
-            super(null, null, null, null, null, new ObjectMapper());
+            super(null, null, null, null, null, new ObjectMapper(), null);
         }
 
         @Override

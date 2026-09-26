@@ -1,247 +1,85 @@
 'use client'
 
+export const aggregateLabels = {
+  outstandingDebtAmount: 'مانده بدهی',
+  totalTaxAmount: 'مالیات',
+  totalDutyAmount: 'عوارض',
+  totalPenaltyAmount: 'جرایم',
+  totalPaidAmount: 'پرداختی',
+  totalCreditAmount: 'اعتبار',
+  totalRemissionAmount: 'بخشودگی',
+}
+const emptyAmounts = Object.fromEntries(Object.keys(aggregateLabels).map(key => [key, '']))
 export const initialDebtPaper = {
-  debtPaperUniqueCode: '',
-  debtPaperIssueDate: '',
-  notificationId: '',
-  finalizationReason: '',
-  taxSource: '',
-  performanceYear: '',
-  performancePeriod: '',
-  activityTypeCode: '',
-  activityTypeTitle: '',
-  mainTaxBureauId: '',
-  taxBureauId: '',
-  taxUnitId: '',
-  sendingUnitId: '',
-  taxpayerType: 'NATURAL',
-  nationalCode: '',
-  firstName: '',
-  lastName: '',
-  fatherName: '',
-  birthDate: '',
-  postalCode: '',
-  address: '',
-  nationalId: '',
-  registrationNumber: '',
-  registrationDate: '',
-  companyName: '',
-  taxAmount: '',
-  dutyAmount: '',
-  penaltyArticle22: '',
-  penaltyArticle23: '',
-  deductiblePenalty: '',
-  nonDeductiblePenalty: '',
-  taxPaidAmount: '',
-  penaltyPaidAmount: '',
-  taxCredit: '',
-  remainingTax: '',
-  municipalityShare: '',
-  guildShare: '',
-  complianceBonus: ''
-};
-
+  taxpayerIdentifier: '', registrationTraceCode: '', basisDocumentDateRaw: '', taxPeriodStartRaw: '', taxPeriodEndRaw: '',
+  debtPaperUniqueCode: '', documentNumber: '', issueDateRaw: '', issuanceReason: '', taxSource: '',
+  taxYear: '', taxPeriod: '', activityTitle: '', sourceTaxOfficeCode: '',
+  mainTaxBureauId: '', taxBureauId: '', taxUnitId: '', sendingUnitId: '',
+  taxpayerType: 'NATURAL', nationalCode: '', firstName: '', lastName: '', fatherName: '', birthDate: '',
+  postalCode: '', address: '', nationalId: '', registrationNumber: '', registrationDate: '', companyName: '',
+  ...emptyAmounts
+}
 export const initialExecutionPaper = {
-  executionPaperUniqueCode: '',
-  finalizedDebtPaperId: '',
-  taxpayerId: '',
-  mainTaxBureauId: '',
-  taxBureauId: '',
-  taxUnitId: '',
-  finalizationReason: '',
-  taxSource: '',
-  currentState: 'UNASSIGNED',
-  taxAmount: '',
-  dutyAmount: '',
-  penaltyArticle22: '',
-  penaltyArticle23: '',
-  deductiblePenalty: '',
-  nonDeductiblePenalty: '',
-  taxPaidAmount: '',
-  penaltyPaidAmount: '',
-  taxCredit: '',
-  remainingTax: ''
-};
-
-const firstNames = ['علی', 'مریم', 'رضا', 'زهرا', 'حسین', 'فاطمه'];
-const lastNames = ['محمدی', 'کریمی', 'احمدی', 'رضایی', 'حسینی', 'جعفری'];
-const companyNames = ['شرکت پارس تجارت آریا', 'توسعه مالیات مهر', 'بازرگانی سپهر شرق', 'صنایع داده پردازان'];
-const taxSources = ['VAT', 'INCOME_TAX', 'CORPORATE_TAX', 'SALARY_TAX'];
-const activityTitles = ['خدمات عمومی', 'خرده‌فروشی', 'تولید صنعتی', 'بازرگانی', 'پیمانکاری'];
-const finalizationReasons = ['قطعیت پس از رسیدگی', 'عدم اعتراض در مهلت قانونی', 'رای قطعی هیات حل اختلاف', 'ابلاغ قطعی'];
-const sampleAddresses = [
-  'تهران، خیابان ولیعصر، بالاتر از میدان ونک، پلاک ۲۴',
-  'اصفهان، خیابان چهارباغ بالا، کوچه بهار، پلاک ۱۲',
-  'شیراز، بلوار زند، خیابان رودکی، پلاک ۸',
-  'مشهد، احمدآباد، خیابان عارف، پلاک ۳۱'
-];
-
+  executionPaperUniqueCode: '', finalizedDebtPaperId: '', taxpayerId: '', mainTaxBureauId: '',
+  taxBureauId: '', taxUnitId: '', taxSource: '', currentState: 'UNASSIGNED', ...emptyAmounts
+}
 export function randomDebtPaperSample(masterdata = {}, forcedTaxpayerType = null) {
-  const natural = forcedTaxpayerType
-    ? forcedTaxpayerType === 'NATURAL'
-    : randomInt(1, 10) <= 7;
-  const taxAmount = randomAmount(80_000_000, 850_000_000);
-  const dutyAmount = randomAmount(5_000_000, 80_000_000);
-  const penaltyArticle22 = randomAmount(2_000_000, 45_000_000);
-  const penaltyArticle23 = randomAmount(1_000_000, 35_000_000);
-  const taxPaidAmount = randomAmount(0, Math.floor(taxAmount * 0.25));
-  const penaltyPaidAmount = randomAmount(0, Math.floor((penaltyArticle22 + penaltyArticle23) * 0.2));
-  const selected = sampleMasterdata(masterdata);
-
+  const natural = forcedTaxpayerType !== 'LEGAL'
+  const selected = sampleHierarchicalMasterdata(masterdata)
   return {
-    ...initialDebtPaper,
-    debtPaperUniqueCode: `FDP-${Date.now()}-${randomInt(100, 999)}`,
-    debtPaperIssueDate: randomJalaliDate(),
-    notificationId: `NOT-${randomInt(100000, 999999)}`,
-    finalizationReason: pick(finalizationReasons),
-    taxSource: pick(taxSources),
-    performanceYear: String(randomInt(1399, 1403)),
-    performancePeriod: String(randomInt(1, 4)),
-    activityTypeCode: String(randomInt(1000, 9999)),
-    activityTypeTitle: pick(activityTitles),
-    mainTaxBureauId: selected.generalId,
-    taxBureauId: selected.officeId,
-    taxUnitId: selected.unitId,
-    sendingUnitId: selected.unitId,
-    taxpayerType: natural ? 'NATURAL' : 'LEGAL',
-    nationalCode: natural ? randomNationalCode() : '',
-    firstName: natural ? pick(firstNames) : '',
-    lastName: natural ? pick(lastNames) : '',
-    fatherName: natural ? pick(firstNames) : '',
-    birthDate: natural ? randomJalaliDate(1345, 1379) : '',
-    postalCode: randomPostalCode(),
-    address: pick(sampleAddresses),
-    nationalId: natural ? '' : randomNationalId(),
-    registrationNumber: natural ? '' : String(randomInt(100000, 999999)),
-    registrationDate: natural ? '' : randomJalaliDate(1380, 1402),
-    companyName: natural ? '' : pick(companyNames),
-    taxAmount: String(taxAmount),
-    dutyAmount: String(dutyAmount),
-    penaltyArticle22: String(penaltyArticle22),
-    penaltyArticle23: String(penaltyArticle23),
-    deductiblePenalty: String(randomAmount(0, 15_000_000)),
-    nonDeductiblePenalty: String(randomAmount(0, 30_000_000)),
-    taxPaidAmount: String(taxPaidAmount),
-    penaltyPaidAmount: String(penaltyPaidAmount),
-    taxCredit: String(randomAmount(0, 20_000_000)),
-    remainingTax: String(Math.max(0, taxAmount + dutyAmount + penaltyArticle22 + penaltyArticle23 - taxPaidAmount - penaltyPaidAmount)),
-    municipalityShare: String(randomAmount(0, 10_000_000)),
-    guildShare: String(randomAmount(0, 8_000_000)),
-    complianceBonus: String(randomAmount(0, 5_000_000))
-  };
+    ...initialDebtPaper, taxpayerIdentifier: String(Date.now()), registrationTraceCode: `REG-${Date.now()}`, basisDocumentDateRaw: randomJalaliDate(), debtPaperUniqueCode: `DOC-${Date.now()}`, documentNumber: `LETTER-${Date.now()}`,
+    issueDateRaw: randomJalaliDate(), taxYear: '1403', taxPeriod: '1', taxSource: 'VAT', activityTitle: 'خدمات عمومی',
+    mainTaxBureauId: selected.generalId, taxBureauId: selected.officeId, taxUnitId: selected.unitId,
+    taxpayerType: natural ? 'NATURAL' : 'LEGAL', nationalCode: natural ? randomNationalCode() : '',
+    firstName: natural ? 'علی' : '', lastName: natural ? 'نمونه' : '',
+    nationalId: natural ? '' : randomNationalId(), companyName: natural ? '' : 'شرکت نمونه',
+    address: 'تهران، نشانی نمونه', postalCode: randomPostalCode(),
+    outstandingDebtAmount: '105000000.25', totalTaxAmount: '100000000.25', totalDutyAmount: '5000000',
+    totalPenaltyAmount: '10000000', totalPaidAmount: '10000000', totalCreditAmount: '0', totalRemissionAmount: '0'
+  }
 }
-
-export function randomLegalPersonDebtPaperSample(masterdata = {}) {
-  return randomDebtPaperSample(masterdata, 'LEGAL');
-}
-
+export function randomLegalPersonDebtPaperSample(masterdata = {}) { return randomDebtPaperSample(masterdata, 'LEGAL') }
 export function randomExecutionPaperSample(summary = {}, masterdata = {}) {
-  const selected = sampleHierarchicalMasterdata(masterdata);
-  const debtPaper = pick(summary.finalizedDebtPapers || []);
-  const taxpayer = pick(summary.taxpayers || []);
-  const taxAmount = randomAmount(60_000_000, 700_000_000);
-  const dutyAmount = randomAmount(5_000_000, 70_000_000);
-  const penaltyArticle22 = randomAmount(2_000_000, 35_000_000);
-  const penaltyArticle23 = randomAmount(1_000_000, 25_000_000);
-  const taxPaidAmount = randomAmount(0, Math.floor(taxAmount * 0.2));
-  const penaltyPaidAmount = randomAmount(0, Math.floor((penaltyArticle22 + penaltyArticle23) * 0.2));
-
-  return {
-    ...initialExecutionPaper,
-    executionPaperUniqueCode: `EP-${Date.now()}-${randomInt(100, 999)}`,
-    finalizedDebtPaperId: debtPaper?.id ? String(debtPaper.id) : '',
-    taxpayerId: taxpayer?.id ? String(taxpayer.id) : '',
-    mainTaxBureauId: selected.generalId,
-    taxBureauId: selected.officeId,
-    taxUnitId: selected.unitId,
-    finalizationReason: pick(finalizationReasons),
-    taxSource: pick(taxSources),
-    currentState: 'UNASSIGNED',
-    taxAmount: String(taxAmount),
-    dutyAmount: String(dutyAmount),
-    penaltyArticle22: String(penaltyArticle22),
-    penaltyArticle23: String(penaltyArticle23),
-    deductiblePenalty: String(randomAmount(0, 12_000_000)),
-    nonDeductiblePenalty: String(randomAmount(0, 25_000_000)),
-    taxPaidAmount: String(taxPaidAmount),
-    penaltyPaidAmount: String(penaltyPaidAmount),
-    taxCredit: String(randomAmount(0, 16_000_000)),
-    remainingTax: String(Math.max(0, taxAmount + dutyAmount + penaltyArticle22 + penaltyArticle23 - taxPaidAmount - penaltyPaidAmount))
-  };
+  return { ...initialExecutionPaper, ...randomDebtPaperSample(masterdata), executionPaperUniqueCode: '',
+    finalizedDebtPaperId: String(pick(summary.finalizedDebtPapers || [])?.id || ''),
+    taxpayerId: String(pick(summary.taxpayers || [])?.id || '') }
 }
-
+export function aggregatePayload(form) {
+  // Exact decimal strings: no Number coercion, no default-zero for unspecified amounts.
+  return Object.fromEntries(Object.keys(aggregateLabels).map(key => [key, form[key]?.trim() || null]))
+}
 export function toDebtPaperPayload(form) {
+  const natural = form.taxpayerType === 'NATURAL'
   return {
-    debtPaperUniqueCode: form.debtPaperUniqueCode,
-    debtPaperIssueDate: form.debtPaperIssueDate,
-    notificationId: form.notificationId,
-    finalizationReason: form.finalizationReason,
-    taxSource: form.taxSource,
-    performanceYear: form.performanceYear,
-    performancePeriod: form.performancePeriod,
-    activityTypeCode: form.activityTypeCode,
-    activityTypeTitle: form.activityTypeTitle,
-    mainTaxBureauId: numberOrNull(form.mainTaxBureauId),
-    taxBureauId: numberOrNull(form.taxBureauId),
-    taxUnitId: numberOrNull(form.taxUnitId),
-    sendingUnitId: numberOrNull(form.sendingUnitId),
-    taxpayer: {
-      type: form.taxpayerType,
-      nationalCode: form.nationalCode,
-      firstName: form.firstName,
-      lastName: form.lastName,
-      fatherName: form.fatherName,
-      birthDate: form.birthDate,
-      postalCode: form.postalCode,
-      address: form.address,
-      nationalId: form.nationalId,
-      registrationNumber: form.registrationNumber,
-      registrationDate: form.registrationDate,
-      companyName: form.companyName
-    },
-    debtInfo: debtInfoPayload(form),
-    relatedPersons: []
-  };
+    debtPaperUniqueCode: form.debtPaperUniqueCode, taxSource: form.taxSource,
+    mainTaxBureauId: numberOrNull(form.mainTaxBureauId), taxBureauId: numberOrNull(form.taxBureauId),
+    taxUnitId: numberOrNull(form.taxUnitId), sendingUnitId: numberOrNull(form.sendingUnitId),
+    taxpayer: { type: form.taxpayerType, nationalCode: form.nationalCode || null,
+      firstName: form.firstName, lastName: form.lastName, fatherName: form.fatherName, birthDate: form.birthDate,
+      postalCode: form.postalCode, address: form.address, nationalId: form.nationalId || null,
+      registrationNumber: form.registrationNumber, registrationDate: form.registrationDate, companyName: form.companyName },
+    relatedPersons: [],
+    sourceDocument: {
+      documentNumber: form.documentNumber, issueDateRaw: form.issueDateRaw,
+      taxpayerIdentifier: form.taxpayerIdentifier, registrationTraceCode: form.registrationTraceCode,
+      basisDocumentNumber: form.debtPaperUniqueCode, basisDocumentDateRaw: form.basisDocumentDateRaw,
+      taxPeriodStartRaw: form.taxPeriodStartRaw, taxPeriodEndRaw: form.taxPeriodEndRaw,
+      issuanceReason: form.issuanceReason, taxYear: form.taxYear, taxPeriod: form.taxPeriod,
+      activityTitle: form.activityTitle, sourceTaxOfficeCode: form.sourceTaxOfficeCode || null,
+      personType: form.taxpayerType, identityNumber: natural ? form.nationalCode : form.nationalId,
+      taxpayerName: natural ? [form.firstName, form.lastName].filter(Boolean).join(' ') : form.companyName,
+      address: form.address, postalCode: form.postalCode, currencyCode: 'IRR',
+      validationStatus: 'MANUAL_ENTRY', amounts: aggregatePayload(form)
+    }
+  }
 }
-
 export function toExecutionPayload(form) {
-  return {
-    executionPaperUniqueCode: form.executionPaperUniqueCode || null,
-    finalizedDebtPaperId: numberOrNull(form.finalizedDebtPaperId),
-    taxpayerId: numberOrNull(form.taxpayerId),
-    taxUnitId: numberOrNull(form.taxUnitId),
-    finalizationReason: form.finalizationReason,
-    taxSource: form.taxSource,
-    currentState: form.currentState,
-    debtInfo: debtInfoPayload(form)
-  };
+  return { executionPaperUniqueCode: form.executionPaperUniqueCode || null,
+    finalizedDebtPaperId: numberOrNull(form.finalizedDebtPaperId), taxpayerId: numberOrNull(form.taxpayerId),
+    taxUnitId: numberOrNull(form.taxUnitId), taxSource: form.taxSource, currentState: form.currentState,
+    currentAmounts: aggregatePayload(form) }
 }
-
-export function debtInfoPayload(form) {
-  return {
-    taxAmount: numberOrZero(form.taxAmount),
-    dutyAmount: numberOrZero(form.dutyAmount),
-    penaltyArticle22: numberOrZero(form.penaltyArticle22),
-    penaltyArticle23: numberOrZero(form.penaltyArticle23),
-    deductiblePenalty: numberOrZero(form.deductiblePenalty),
-    nonDeductiblePenalty: numberOrZero(form.nonDeductiblePenalty),
-    taxPaidAmount: numberOrZero(form.taxPaidAmount),
-    penaltyPaidAmount: numberOrZero(form.penaltyPaidAmount),
-    taxCredit: numberOrZero(form.taxCredit),
-    remainingTax: numberOrZero(form.remainingTax),
-    municipalityShare: numberOrZero(form.municipalityShare),
-    guildShare: numberOrZero(form.guildShare),
-    complianceBonus: numberOrZero(form.complianceBonus)
-  };
-}
-
-function numberOrNull(value) {
-  return value === '' || value == null ? null : Number(value);
-}
-
-function numberOrZero(value) {
-  return value === '' || value == null ? 0 : Number(value);
-}
+function numberOrNull(value) { return value === '' || value == null ? null : Number(value) }
 
 function sampleMasterdata(masterdata) {
   const general = pick(masterdata.generals || []);
@@ -326,20 +164,10 @@ export function Select({ label, options = [], ...props }) {
 }
 
 export function MoneyFields({ form, onChange }) {
-  return (
-    <FieldGrid>
-      <Input label="اصل مالیات" name="taxAmount" type="number" value={form.taxAmount} onChange={onChange} />
-      <Input label="عوارض" name="dutyAmount" type="number" value={form.dutyAmount} onChange={onChange} />
-      <Input label="جریمه ماده ۲۲" name="penaltyArticle22" type="number" value={form.penaltyArticle22} onChange={onChange} />
-      <Input label="جریمه ماده ۲۳" name="penaltyArticle23" type="number" value={form.penaltyArticle23} onChange={onChange} />
-      <Input label="جریمه قابل بخشش" name="deductiblePenalty" type="number" value={form.deductiblePenalty} onChange={onChange} />
-      <Input label="جریمه غیرقابل بخشش" name="nonDeductiblePenalty" type="number" value={form.nonDeductiblePenalty} onChange={onChange} />
-      <Input label="پرداخت اصل" name="taxPaidAmount" type="number" value={form.taxPaidAmount} onChange={onChange} />
-      <Input label="پرداخت جریمه" name="penaltyPaidAmount" type="number" value={form.penaltyPaidAmount} onChange={onChange} />
-      <Input label="اعتبار مالیاتی" name="taxCredit" type="number" value={form.taxCredit} onChange={onChange} />
-      <Input label="مانده بدهی" name="remainingTax" type="number" value={form.remainingTax} onChange={onChange} />
-    </FieldGrid>
-  );
+  return <FieldGrid>{Object.entries(aggregateLabels).map(([key, label]) =>
+    <Input key={key} label={label + ' (ریال)'} name={key} type="text" inputMode="decimal"
+      value={form[key]} onChange={onChange} required />
+  )}</FieldGrid>
 }
 
 export function DataList({ title, items, render }) {

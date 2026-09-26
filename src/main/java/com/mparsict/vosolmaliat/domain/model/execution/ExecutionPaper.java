@@ -15,6 +15,10 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class ExecutionPaper extends BaseEntity {
+    @Column(name="issuance_date", updatable=false) private java.time.LocalDateTime issuanceDate;
+    @Column(name="issuance_finalization_reason", updatable=false) private String finalizationReason;
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="sending_unit_id", updatable=false) private TaxUnit sendingUnit;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,9 +26,6 @@ public class ExecutionPaper extends BaseEntity {
 
     @Column(name = "execution_paper_unique_code", unique = true)
     private String executionPaperUniqueCode;
-
-    @Column(name = "finalization_reason")
-    private String finalizationReason;
 
     @Column(name = "tax_source")
     private String taxSource;

@@ -18,5 +18,7 @@ public record TaxAffairsOfficeResponse(
         String officeName,
         String postalCode,
         String address,
-        String phone
+        String phone,
+        Integer officeType,
+        String officeCode
 ) {}

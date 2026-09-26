@@ -74,6 +74,30 @@ class DebtPaperPushControllerTest {
         verifyNoInteractions(service);
     }
 
+    @Test void pendingIdentityReturnsAcceptedWithoutAnIssuedPaper() throws Exception {
+        when(service.push(any(),anyString())).thenReturn(null);
+        mockMvc.perform(post(DebtPaperTraceFilter.ENDPOINT).contentType(MediaType.APPLICATION_JSON).content(validRequest()))
+                .andExpect(status().isAccepted())
+                .andExpect(jsonPath("$.apiGatewayData.executionPaperID").doesNotExist());
+    }
+
+    @Test void missingRegistrationTraceIsRejectedBeforeProcessing() throws Exception {
+        var body=new ObjectMapper().readTree(validRequest());
+        ((com.fasterxml.jackson.databind.node.ObjectNode)body).remove("followCode");
+        mockMvc.perform(post(DebtPaperTraceFilter.ENDPOINT).contentType(MediaType.APPLICATION_JSON).content(body.toString()))
+                .andExpect(status().isBadRequest());
+        verifyNoInteractions(service);
+    }
+
+    @Test void misspelledReferenceIdIsRejected() throws Exception {
+        mockMvc.perform(post(DebtPaperTraceFilter.ENDPOINT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(validRequest().replace("\"referenceID\"", "\"refrenceID\"")))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.apiGatewayMessages[0]").value(org.hamcrest.Matchers.containsString("referenceID")));
+        verifyNoInteractions(service);
+    }
+
     private String validRequest() {
         return """
                 {
@@ -81,14 +105,15 @@ class DebtPaperPushControllerTest {
                   "xml":"<DebtPaper><taxpayer><type>NATURAL</type></taxpayer><taxUnitId>7</taxUnitId></DebtPaper>",
                   "hash":"external-hash",
                   "produceDate":"2023-05-17T11:33:45.123Z",
-                  "refrenceID":"1234",
+                  "referenceID":"1234",
                   "followCode":"1234567890",
                   "secondParameter":"284",
                   "year":1400,
                   "period":2,
                   "taxOfficeID":3,
                   "taxAmount":"1000",
-                  "taxSource":"TAXB"
+                  "taxSource":"TAXB",
+                  "announcementType":"LTR_EF03"
                 }
                 """;
     }

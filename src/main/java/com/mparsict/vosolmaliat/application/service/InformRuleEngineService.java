@@ -58,6 +58,8 @@ public class InformRuleEngineService extends AbstractRuleEngineService<Execution
                 : finalizedDebtPaperRepository.findById(executionPaper.getFinalizedDebtPaperId()).orElse(null);
         DebtInformation debtInformation = debtInformationRepository.findByExecutionPaperId(executionPaperId).orElse(null);
 
+        SanimModelValidation.requireDocument(finalizedDebtPaper == null ? null : finalizedDebtPaper.getSourceDocument());
+        SanimModelValidation.requireAmounts(debtInformation == null ? null : debtInformation.getCurrentAmounts());
         String today = LocalDate.now().toString();
         List<ExecutionPaperInformRejectionRule> activeRules = ruleRepository.findActiveRules(today);
         GenericRuleEvaluationResult result = evaluateRules(
@@ -91,19 +93,18 @@ public class InformRuleEngineService extends AbstractRuleEngineService<Execution
             ExecutionPaper executionPaper,
             FinalizedDebtPaper finalizedDebtPaper,
             DebtInformation debtInformation) {
+        var d = finalizedDebtPaper.getSourceDocument();
         return switch (field == null ? "" : field) {
-            case "performanceYear", "performanceYearPeriod" -> finalizedDebtPaper == null ? null : finalizedDebtPaper.getPerformanceYear();
-            case "performancePeriod" -> finalizedDebtPaper == null ? null : finalizedDebtPaper.getPerformancePeriod();
-            case "mainTaxBureauId" -> finalizedDebtPaper == null ? null : finalizedDebtPaper.getMainTaxBureauId();
-            case "taxBureauId" -> finalizedDebtPaper == null ? null : finalizedDebtPaper.getTaxBureauId();
+            case "performanceYear", "performanceYearPeriod", "taxYear" -> d.getTaxYear();
+            case "performancePeriod", "taxPeriod" -> d.getTaxPeriod();
+            case "mainTaxBureauId" -> finalizedDebtPaper.getMainTaxBureauId();
+            case "taxBureauId" -> finalizedDebtPaper.getTaxBureauId();
             case "taxUnitId" -> executionPaper.getTaxUnitId();
             case "taxSource" -> executionPaper.getTaxSource();
-            case "activityTypeCode" -> finalizedDebtPaper == null ? null : finalizedDebtPaper.getActivityTypeCode();
-            case "totalFinalizedAmount" -> finalizedDebtPaper == null ? null : finalizedDebtPaper.getTotalFinalizedAmount();
-            case "finalizedTaxAndNonDeductibleAmount" -> finalizedDebtPaper == null ? null : finalizedDebtPaper.getFinalizedTaxAndNonDeductibleAmount();
-            case "debtAmount" -> debtInformation == null ? null : debtInformation.getTotalDebt();
-            case "finalizationReason" -> executionPaper.getFinalizationReason();
-            default -> null;
+            case "sourceTaxOfficeCode" -> d.getSourceTaxOfficeCode();
+            case "activityTitle" -> d.getActivityTitle();
+            case "issuanceReason" -> d.getIssuanceReason();
+            default -> SanimModelValidation.amount(field, debtInformation.getCurrentAmounts());
         };
     }
 }
