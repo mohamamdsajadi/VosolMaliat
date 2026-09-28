@@ -27,7 +27,19 @@ public class DebtPaperPushPersistenceService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Long receive(DebtPaperPushRequest source, String traceId) {
         codes.lockIssuance();
-        rejectExistingReference(source.referenceId());
+        var existing = pushRecordRepository.findByReferenceId(source.referenceId());
+        if (existing.isPresent()) {
+            DebtPaperPushRecord record = existing.get();
+            if (record.getProcessingStatus() == DebtPaperProcessingStatus.WORKFLOW_START_FAILED
+                    && record.getExecutionPaperId() == null
+                    && sameRequest(record, source)) {
+                record.setProcessingStatus(DebtPaperProcessingStatus.RECEIVED);
+                record.setFailureReason(null);
+                pushRecordRepository.saveAndFlush(record);
+                return record.getId();
+            }
+            throw duplicate(record.getExecutionPaperId());
+        }
         DebtPaperPushRecord record = pushRecordRepository.saveAndFlush(DebtPaperPushRecord.builder()
                 .referenceId(source.referenceId())
                 .traceId(traceId)
@@ -57,11 +69,13 @@ public class DebtPaperPushPersistenceService {
         if (record.getProcessingStatus() != DebtPaperProcessingStatus.RECEIVED) {
             throw duplicate(record.getExecutionPaperId());
         }
-        var saved = issuanceRequestService.createAndSave(request);
-        record.setIssuanceRequestId(saved.getId());
+        if (record.getIssuanceRequestId() == null) {
+            var saved = issuanceRequestService.createAndSave(request);
+            record.setIssuanceRequestId(saved.getId());
+        }
         record.setProcessingStatus(DebtPaperProcessingStatus.PROCESSING);
         pushRecordRepository.save(record);
-        return saved.getId();
+        return record.getIssuanceRequestId();
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -104,6 +118,20 @@ public class DebtPaperPushPersistenceService {
             record.setFailureReason(failureReason);
             pushRecordRepository.save(record);
         });
+    }
+
+    private boolean sameRequest(DebtPaperPushRecord record, DebtPaperPushRequest source) {
+        return java.util.Objects.equals(record.getSourceHash(), source.hash())
+                && java.util.Objects.equals(record.getXmlPayload(), source.xml())
+                && java.util.Objects.equals(record.getNationalId(), source.nationalID())
+                && java.util.Objects.equals(record.getFollowCode(), source.followCode())
+                && java.util.Objects.equals(record.getSecondParameter(), source.secondParameter())
+                && java.util.Objects.equals(record.getYear(), source.year())
+                && java.util.Objects.equals(record.getPeriod(), source.period())
+                && java.util.Objects.equals(record.getSourceTaxOfficeCode(), source.taxOfficeId())
+                && java.util.Objects.equals(record.getTaxAmount(), source.taxAmount())
+                && java.util.Objects.equals(record.getTaxSource(), source.taxSource())
+                && java.util.Objects.equals(record.getAnnouncementType(), source.announcementType());
     }
 
     public void rejectExistingReference(String referenceId) {

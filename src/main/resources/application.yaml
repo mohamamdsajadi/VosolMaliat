@@ -19,6 +19,9 @@ spring:
     show-sql: false
     properties:
       hibernate:
+        # Avoid SQLite compound SELECT limits when inspecting schema metadata.
+        hbm2ddl:
+          jdbc_metadata_extraction_strategy: individually
         format_sql: false
         jdbc:
           time_zone: UTC

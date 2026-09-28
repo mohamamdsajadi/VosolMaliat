@@ -4,7 +4,6 @@ import com.mparsict.vosolmaliat.application.dto.request.DebtPaperIssuanceRequest
 import com.mparsict.vosolmaliat.application.dto.request.DebtPaperPushRequest;
 import com.mparsict.vosolmaliat.application.dto.response.IssuanceResponse;
 import com.mparsict.vosolmaliat.common.exception.DebtPaperPushException;
-import com.mparsict.vosolmaliat.infrastructure.camunda.service.CamundaProcessService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -18,7 +17,8 @@ public class DebtPaperPushService {
 
     private final DebtPaperPushMapper mapper;
     private final DebtPaperPushPersistenceService persistenceService;
-    private final CamundaProcessService camundaProcessService;
+    private final RuleEngineService ruleEngineService;
+    private final ExecutionPaperService executionPaperService;
 
     public IssuanceResponse push(DebtPaperPushRequest request, String traceId) {
         requireEf03(request);
@@ -33,28 +33,31 @@ public class DebtPaperPushService {
         }
 
         DebtPaperIssuanceRequest issuanceRequest;
-        Long issuanceRequestId;
         try {
             issuanceRequest = mapper.map(request);
-            issuanceRequestId = persistenceService.prepareWorkflow(recordId, issuanceRequest);
+            persistenceService.prepareWorkflow(recordId, issuanceRequest);
         } catch (RuntimeException exception) {
             persistenceService.markNeedsReview(recordId, exception.getMessage());
             throw exception;
         }
 
         try {
-            IssuanceResponse result = camundaProcessService.startExecutionPaperIssuanceProcess(
-                    issuanceRequestId, issuanceRequest);
-            if (result.success()) {
-                if (result.executionPaperId() == null) {
-                    throw new IllegalStateException("Camunda completed issuance without executionPaperId");
-                }
-                persistenceService.markSuccessful(recordId, result.executionPaperId());
-            } else {
+            RuleEngineService.RuleEvaluationResult evaluation = ruleEngineService.evaluate(issuanceRequest);
+            if (!evaluation.canIssue()) {
+                IssuanceResponse result = new IssuanceResponse(
+                        false, null, null, evaluation.rejectionReasonCode(),
+                        evaluation.rejectionReasonDescription(), evaluation.restrictionRemovalDate(),
+                        "صدور برگ اجرا توسط قوانین رد شد");
                 persistenceService.markRejected(recordId,
                         rejectionMessage(result), result.restrictionRemovalDate());
+                return result;
             }
-            return result;
+
+            var paper = executionPaperService.createFromRequest(issuanceRequest);
+            persistenceService.markSuccessful(recordId, paper.getId());
+            return new IssuanceResponse(
+                    true, paper.getId(), paper.getExecutionPaperUniqueCode(),
+                    null, null, null, "برگ اجرا با موفقیت صادر شد");
         } catch (RuntimeException exception) {
             persistenceService.markWorkflowFailed(recordId, exception.getMessage());
             throw exception;
