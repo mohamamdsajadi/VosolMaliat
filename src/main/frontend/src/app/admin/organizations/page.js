@@ -6,29 +6,22 @@ import RefreshButton from '../../components/refresh-button';
 import {
   createGeneralDirectorate,
   createTaxAffairsOffice,
-  createTaxUnit,
   deleteGeneralDirectorate,
   deleteTaxAffairsOffice,
-  deleteTaxUnit,
   fetchGeneralDirectorates,
   fetchTaxAffairsOffices,
-  fetchTaxUnits,
   updateGeneralDirectorate,
-  updateTaxAffairsOffice,
-  updateTaxUnit
+  updateTaxAffairsOffice
 } from '../../lib/security';
 
 const initialGeneral = { name: '', postalCode: '', address: '', phone: '' };
 const initialOffice = { officeType: 0, officeCode: '', generalDirectorateOfTaxAffairsId: '', officeName: '', postalCode: '', address: '', phone: '' };
-const initialUnit = { taxAffairsOfficeId: '', taxUnitName: '', postalCode: '', address: '', phone: '' };
 
 export default function AdminOrganizationsPage() {
   const [generals, setGenerals] = useState([]);
   const [offices, setOffices] = useState([]);
-  const [units, setUnits] = useState([]);
   const [generalForm, setGeneralForm] = useState(initialGeneral);
   const [officeForm, setOfficeForm] = useState(initialOffice);
-  const [unitForm, setUnitForm] = useState(initialUnit);
   const [editing, setEditing] = useState({ type: null, id: null });
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
@@ -37,14 +30,12 @@ export default function AdminOrganizationsPage() {
     setLoading(true);
     setMessage('');
     try {
-      const [generalResult, officeResult, unitResult] = await Promise.all([
+      const [generalResult, officeResult] = await Promise.all([
         fetchGeneralDirectorates(),
-        fetchTaxAffairsOffices(),
-        fetchTaxUnits()
+        fetchTaxAffairsOffices()
       ]);
       setGenerals(generalResult);
       setOffices(officeResult);
-      setUnits(unitResult);
     } catch (error) {
       setMessage(error.message || 'دریافت اطلاعات سازمانی ناموفق بود.');
     } finally {
@@ -100,33 +91,10 @@ export default function AdminOrganizationsPage() {
     }
   };
 
-  const saveUnit = async (event) => {
-    event.preventDefault();
-    const payload = {
-      taxAffairsOfficeId: Number(unitForm.taxAffairsOfficeId),
-      taxUnitName: unitForm.taxUnitName,
-      postalCode: unitForm.postalCode,
-      address: unitForm.address,
-      phone: unitForm.phone
-    };
-    try {
-      if (editing.type === 'unit') {
-        await updateTaxUnit(editing.id, payload);
-      } else {
-        await createTaxUnit(payload);
-      }
-      resetForms();
-      await load();
-    } catch (error) {
-      setMessage(error.message || 'ذخیره واحد مالیاتی ناموفق بود.');
-    }
-  };
-
   const resetForms = () => {
     setEditing({ type: null, id: null });
     setGeneralForm(initialGeneral);
     setOfficeForm(initialOffice);
-    setUnitForm(initialUnit);
   };
 
   const remove = async (type, item) => {
@@ -138,8 +106,6 @@ export default function AdminOrganizationsPage() {
         await deleteGeneralDirectorate(item.id);
       } else if (type === 'office') {
         await deleteTaxAffairsOffice(item.id);
-      } else {
-        await deleteTaxUnit(item.id);
       }
       await load();
     } catch (error) {
@@ -155,8 +121,7 @@ export default function AdminOrganizationsPage() {
       actions={<RefreshButton onClick={load} loading={loading} />}
       contextItems={[
         `اداره کل: ${generals.length.toLocaleString('fa-IR')}`,
-        `اداره مالیات: ${offices.length.toLocaleString('fa-IR')}`,
-        `واحد مالیاتی: ${units.length.toLocaleString('fa-IR')}`
+        `اداره مالیات: ${offices.length.toLocaleString('fa-IR')}`
       ]}
     >
       {message && <div className="notice error">{message}</div>}
@@ -265,59 +230,6 @@ export default function AdminOrganizationsPage() {
           ))}
         </MasterdataPanel>
 
-        <MasterdataPanel
-          title="واحد مالیاتی"
-          eyebrow="TaxUnit"
-          onSubmit={saveUnit}
-          form={(
-            <>
-              <label>
-                <span>اداره مالیات</span>
-                <select value={unitForm.taxAffairsOfficeId} onChange={(event) => setUnitForm((current) => ({ ...current, taxAffairsOfficeId: event.target.value }))} required>
-                  <option value="">انتخاب کنید</option>
-                  {offices.map((item) => <option key={item.id} value={item.id}>{item.officeName}</option>)}
-                </select>
-              </label>
-              <label>
-                <span>نام واحد مالیاتی</span>
-                <input value={unitForm.taxUnitName} onChange={(event) => setUnitForm((current) => ({ ...current, taxUnitName: event.target.value }))} required />
-              </label>
-              <label>
-                <span>کد پستی</span>
-                <input value={unitForm.postalCode} onChange={(event) => setUnitForm((current) => ({ ...current, postalCode: event.target.value }))} />
-              </label>
-              <label>
-                <span>نشانی</span>
-                <input value={unitForm.address} onChange={(event) => setUnitForm((current) => ({ ...current, address: event.target.value }))} />
-              </label>
-              <label>
-                <span>تلفن</span>
-                <input value={unitForm.phone} onChange={(event) => setUnitForm((current) => ({ ...current, phone: event.target.value }))} />
-              </label>
-            </>
-          )}
-          editing={editing.type === 'unit'}
-          onCancel={resetForms}
-        >
-          {units.map((item) => (
-            <MasterdataRow
-              key={item.id}
-              title={item.taxUnitName}
-              subtitle={contactSubtitle(item, `${item.taxAffairsOfficeName || 'بدون اداره مالیات'} · ${item.generalDirectorateName || 'بدون اداره کل'}`)}
-              onEdit={() => {
-                setEditing({ type: 'unit', id: item.id });
-                setUnitForm({
-                  taxAffairsOfficeId: String(item.taxAffairsOfficeId),
-                  taxUnitName: item.taxUnitName,
-                  postalCode: item.postalCode || '',
-                  address: item.address || '',
-                  phone: item.phone || ''
-                });
-              }}
-              onDelete={() => remove('unit', item)}
-            />
-          ))}
-        </MasterdataPanel>
       </section>
     </AppShell>
   );

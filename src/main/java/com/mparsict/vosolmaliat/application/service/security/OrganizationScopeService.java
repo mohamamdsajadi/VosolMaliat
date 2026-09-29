@@ -24,9 +24,9 @@ public class OrganizationScopeService {
             case TAX_OFFICE_HEAD -> matches(
                     user.organization().taxAffairsOfficeId(),
                     firstPresent(variables, "taxAffairsOfficeId", "taxBureauId", "tax_affairs_office_id", "tax_bureau_id"));
-            case TAX_UNIT_HEAD, TAX_EXPERT -> matches(
-                    user.organization().taxUnitId(),
-                    firstPresent(variables, "taxUnitId", "tax_unit_id"));
+            case TAX_EXPERT -> matches(
+                    user.organization().taxAffairsOfficeId(),
+                    firstPresent(variables, "taxAffairsOfficeId", "taxBureauId", "tax_affairs_office_id", "tax_bureau_id"));
             case ADMIN -> true;
         };
     }

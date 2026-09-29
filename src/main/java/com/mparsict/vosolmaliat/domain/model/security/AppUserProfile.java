@@ -4,7 +4,6 @@ import com.mparsict.vosolmaliat.domain.model.BaseEntity;
 import com.mparsict.vosolmaliat.domain.enums.BusinessRole;
 import com.mparsict.vosolmaliat.domain.model.masterdata.GeneralDirectorateOfTaxAffairs;
 import com.mparsict.vosolmaliat.domain.model.masterdata.TaxAffairsOffice;
-import com.mparsict.vosolmaliat.domain.model.masterdata.TaxUnit;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -46,10 +45,6 @@ public class AppUserProfile extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "business_role")
     private BusinessRole businessRole;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "tax_unit_id")
-    private TaxUnit taxUnit;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "general_directorate_id")

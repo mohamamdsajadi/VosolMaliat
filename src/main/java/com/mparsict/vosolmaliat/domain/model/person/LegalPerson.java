@@ -19,7 +19,7 @@ public class LegalPerson extends BaseEntity {
     }
     public void updateProfile(String name,String registrationNumber,String registrationDate) {
         if (java.util.Objects.equals(getName(),name) && java.util.Objects.equals(getRegistrationNumber(),registrationNumber) && java.util.Objects.equals(getRegistrationDate(),registrationDate)) return;
-        if (id != null && extraInfo != null) profileHistory.add(LegalPersonExtraInfoHistory.builder().legalPerson(this).name(getName()).registrationNumber(getRegistrationNumber()).registrationDate(getRegistrationDate()).build());
+        if (id != null && extraInfo != null) profileHistory.add(LegalPersonExtraInfoHistory.from(this, extraInfo));
         setName(name); setRegistrationNumber(registrationNumber); setRegistrationDate(registrationDate);
     }
     private LegalPersonExtraInfo profile() {

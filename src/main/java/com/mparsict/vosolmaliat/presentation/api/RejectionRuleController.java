@@ -52,12 +52,8 @@ public class RejectionRuleController {
         log.debug("PUT /api/v1/admin/rejection-rules/{}", id);
         ExecutionPaperRejectionRule existing = ruleRepository.findById(id)
                 .orElseThrow(() -> new BusinessException("RULE_NOT_FOUND", "قانون رد با شناسه " + id + " یافت نشد"));
-        existing.setRuleJson(request.ruleJson());
-        existing.setStartDate(request.startDate());
-        existing.setEndDate(request.endDate());
-        existing.setDocumentNo(request.documentNo());
-        existing.setFilePath(request.filePath());
-        existing.setDescription(request.description());
+        existing.update(request.ruleJson(), request.startDate(), request.endDate(),
+                request.documentNo(), request.filePath(), request.description());
         return ResponseEntity.ok(ruleRepository.save(existing));
     }
 
@@ -67,7 +63,10 @@ public class RejectionRuleController {
         if (!ruleRepository.existsById(id)) {
             throw new BusinessException("RULE_NOT_FOUND", "قانون رد با شناسه " + id + " یافت نشد");
         }
-        ruleRepository.deleteById(id);
+        ExecutionPaperRejectionRule rule = ruleRepository.findById(id)
+                .orElseThrow(() -> new BusinessException("RULE_NOT_FOUND", "قانون رد با شناسه " + id + " یافت نشد"));
+        rule.deactivate();
+        ruleRepository.save(rule);
         return ResponseEntity.noContent().build();
     }
 }

@@ -15,6 +15,7 @@ import lombok.*;
 public class LegalPersonExtraInfo extends BaseEntity {
     @Version private Long version;
     private String name;
+    @Column(name = "trade_name") private String tradeName;
     @Column(unique=true) private String registrationNumber;
     private String registrationDate;
 

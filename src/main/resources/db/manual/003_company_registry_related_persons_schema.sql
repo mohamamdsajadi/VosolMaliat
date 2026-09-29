@@ -40,14 +40,15 @@ INSERT OR IGNORE INTO related_person_post (code, is_deleted) VALUES
 
 CREATE TABLE related_persons_normalized (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    taxpayer_id INTEGER NOT NULL,
     owner_legal_person_id INTEGER NOT NULL,
     post_id INTEGER NOT NULL,
     start_date VARCHAR(255),
     end_date VARCHAR(255),
     position_expiry_date VARCHAR(255),
-    is_non_board_member INTEGER,
-    is_non_partner INTEGER,
-    has_signatory_authority INTEGER,
+    is_board_member BOOLEAN NOT NULL,
+    is_partner BOOLEAN NOT NULL,
+    has_signatory_authority BOOLEAN NOT NULL,
     management_declaration INTEGER,
     source_system VARCHAR(255),
     source_record_id VARCHAR(255),
@@ -63,6 +64,8 @@ CREATE TABLE related_persons_normalized (
     is_deleted BOOLEAN,
     CONSTRAINT fk_related_person_owner
         FOREIGN KEY (owner_legal_person_id) REFERENCES legal_person(id),
+    CONSTRAINT fk_related_person_taxpayer
+        FOREIGN KEY (taxpayer_id) REFERENCES taxpayer(id),
     CONSTRAINT fk_related_person_post
         FOREIGN KEY (post_id) REFERENCES related_person_post(id),
     CONSTRAINT fk_related_person_natural_target
@@ -80,13 +83,14 @@ CREATE TABLE related_persons_normalized (
 -- constraint, rolling back instead of silently losing or misclassifying data.
 INSERT INTO related_persons_normalized (
     id,
+    taxpayer_id,
     owner_legal_person_id,
     post_id,
     start_date,
     end_date,
     position_expiry_date,
-    is_non_board_member,
-    is_non_partner,
+    is_board_member,
+    is_partner,
     has_signatory_authority,
     management_declaration,
     source_system,
@@ -104,13 +108,14 @@ INSERT INTO related_persons_normalized (
 )
 SELECT
     relationship.id,
+    (SELECT taxpayer.id FROM taxpayer WHERE taxpayer.legal_person_id = relationship.owner_legal_person_id LIMIT 1),
     relationship.owner_legal_person_id,
     (SELECT post.id FROM related_person_post post WHERE post.code = relationship.role),
     relationship.start_date,
     relationship.end_date,
     relationship.position_expiry_date,
-    relationship.is_non_board_member,
-    relationship.is_non_partner,
+    CASE WHEN relationship.is_non_board_member = 0 THEN 1 ELSE 0 END,
+    CASE WHEN relationship.is_non_partner = 0 THEN 1 ELSE 0 END,
     relationship.has_signatory_authority,
     relationship.management_declaration,
     relationship.source_system,
@@ -132,6 +137,9 @@ ALTER TABLE related_persons_normalized RENAME TO related_persons;
 
 CREATE INDEX idx_related_person_owner
     ON related_persons(owner_legal_person_id);
+
+CREATE INDEX idx_related_person_taxpayer
+    ON related_persons(taxpayer_id);
 
 CREATE INDEX idx_related_person_post
     ON related_persons(post_id);

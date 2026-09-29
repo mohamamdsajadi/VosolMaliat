@@ -17,7 +17,9 @@ public class ContactInfo extends BaseEntity {
     @OneToMany(mappedBy="contactInfo", cascade=CascadeType.ALL)
     @Builder.Default private java.util.List<ContactInfoHistory> history = new java.util.ArrayList<>();
     public void snapshot() {
-        if (id != null) history.add(ContactInfoHistory.builder().contactInfo(this).phoneNo(phoneNo).postalCode(postalCode).legalAddress(legalAddress).build());
+        if (id != null) history.add(ContactInfoHistory.builder()
+                .contactInfo(this).phoneNo(phoneNo).mobileNo(mobileNo).faxNo(faxNo)
+                .postalCode(postalCode).legalAddress(legalAddress).email(email).website(website).build());
     }
 
     @Id
@@ -52,6 +54,14 @@ public class ContactInfo extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "legal_person_id")
     private LegalPerson legalPerson;
+
+    @PrePersist
+    @PreUpdate
+    private void validateOwner() {
+        if ((naturalPerson == null) == (legalPerson == null)) {
+            throw new IllegalStateException("Contact information must belong to exactly one natural or legal person");
+        }
+    }
 
     public Long getNaturalPersonId() {
         return naturalPerson == null ? null : naturalPerson.getId();

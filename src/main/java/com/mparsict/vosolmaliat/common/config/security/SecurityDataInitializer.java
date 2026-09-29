@@ -3,13 +3,11 @@ package com.mparsict.vosolmaliat.common.config.security;
 import com.mparsict.vosolmaliat.domain.enums.BusinessRole;
 import com.mparsict.vosolmaliat.domain.model.masterdata.GeneralDirectorateOfTaxAffairs;
 import com.mparsict.vosolmaliat.domain.model.masterdata.TaxAffairsOffice;
-import com.mparsict.vosolmaliat.domain.model.masterdata.TaxUnit;
 import com.mparsict.vosolmaliat.domain.model.security.AppUserProfile;
 import com.mparsict.vosolmaliat.domain.model.security.GroupPermission;
 import com.mparsict.vosolmaliat.domain.model.security.Permission;
 import com.mparsict.vosolmaliat.domain.repository.GeneralDirectorateOfTaxAffairsRepository;
 import com.mparsict.vosolmaliat.domain.repository.TaxAffairsOfficeRepository;
-import com.mparsict.vosolmaliat.domain.repository.TaxUnitRepository;
 import com.mparsict.vosolmaliat.domain.repository.security.AppUserProfileRepository;
 import com.mparsict.vosolmaliat.domain.repository.security.GroupPermissionRepository;
 import com.mparsict.vosolmaliat.domain.repository.security.PermissionRepository;
@@ -47,7 +45,6 @@ public class SecurityDataInitializer {
     private final AppUserProfileRepository userProfileRepository;
     private final GeneralDirectorateOfTaxAffairsRepository generalDirectorateRepository;
     private final TaxAffairsOfficeRepository taxAffairsOfficeRepository;
-    private final TaxUnitRepository taxUnitRepository;
     private final TransactionTemplate transactionTemplate;
     private final KeycloakAdminBootstrapService keycloakAdminBootstrapService;
 
@@ -77,10 +74,7 @@ public class SecurityDataInitializer {
             for (String code : PERMISSIONS) {
                 ensureGroupPermission("ADMIN", code);
             }
-            for (String code : OPERATIONAL_TASK_PERMISSIONS) {
-                ensureGroupPermission("TAX_UNIT_USER", code);
-            }
-            for (String role : List.of("GENERAL_OFFICE_HEAD", "TAX_OFFICE_HEAD", "TAX_UNIT_HEAD")) {
+            for (String role : List.of("GENERAL_OFFICE_HEAD", "TAX_OFFICE_HEAD")) {
                 for (String code : MANAGER_TASK_PERMISSIONS) {
                     ensureGroupPermission(role, code);
                 }
@@ -137,8 +131,6 @@ public class SecurityDataInitializer {
     private void seedProvinceOperationalUsers(ProvinceSample sample) {
         GeneralDirectorateOfTaxAffairs general = findOrCreateGeneralDirectorate(sample);
         TaxAffairsOffice office = findOrCreateTaxAffairsOffice(sample, general);
-        TaxUnit taxUnit = findOrCreateTaxUnit(sample, office);
-
         seedSampleUser(
                 "sample-" + sample.slug() + "-general-office-head",
                 sample.slug() + "_general_office_head",
@@ -147,7 +139,6 @@ public class SecurityDataInitializer {
                 sample.lastName(),
                 BusinessRole.GENERAL_OFFICE_HEAD,
                 general.getId(),
-                null,
                 null
         );
         seedSampleUser(
@@ -158,19 +149,7 @@ public class SecurityDataInitializer {
                 sample.lastName(),
                 BusinessRole.TAX_OFFICE_HEAD,
                 general.getId(),
-                office.getId(),
-                null
-        );
-        seedSampleUser(
-                "sample-" + sample.slug() + "-tax-unit-head",
-                sample.slug() + "_tax_unit_head",
-                sample.slug() + ".tax.unit.head@vosol-maliat.local",
-                "رئیس واحد",
-                sample.lastName(),
-                BusinessRole.TAX_UNIT_HEAD,
-                general.getId(),
-                office.getId(),
-                taxUnit
+                office.getId()
         );
         seedSampleUser(
                 "sample-" + sample.slug() + "-tax-expert",
@@ -180,8 +159,7 @@ public class SecurityDataInitializer {
                 sample.lastName(),
                 BusinessRole.TAX_EXPERT,
                 general.getId(),
-                office.getId(),
-                taxUnit
+                office.getId()
         );
     }
 
@@ -212,46 +190,6 @@ public class SecurityDataInitializer {
                         .build()));
     }
 
-    private TaxUnit findOrCreateTaxUnit(ProvinceSample sample, TaxAffairsOffice office) {
-        String name = "واحد مالیاتی نمونه " + sample.provinceName();
-        return taxUnitRepository.findByTaxAffairsOfficeId(office.getId()).stream()
-                .filter(item -> name.equals(item.getTaxUnitName()))
-                .findFirst()
-                .orElseGet(() -> taxUnitRepository.save(TaxUnit.builder()
-                        .taxAffairsOffice(office)
-                        .taxUnitName(name)
-                        .postalCode(sample.postalCode("300"))
-                        .address("مرکز استان " + sample.provinceName() + "، واحد مالیاتی نمونه")
-                        .phone(sample.phonePrefix() + "0000300")
-                        .build()));
-    }
-
-    private TaxUnit sampleTaxUnit() {
-        if (taxUnitRepository.count() > 0) {
-            return taxUnitRepository.findAll().getFirst();
-        }
-        GeneralDirectorateOfTaxAffairs general = generalDirectorateRepository.save(GeneralDirectorateOfTaxAffairs.builder()
-                .generalDirectorateName("اداره کل نمونه امور مالیاتی")
-                .postalCode("1111111111")
-                .address("تهران، ساختمان نمونه اداره کل")
-                .phone("02111111111")
-                .build());
-        TaxAffairsOffice office = taxAffairsOfficeRepository.save(TaxAffairsOffice.builder()
-                .generalDirectorateOfTaxAffairs(general)
-                .officeName("اداره مالیات نمونه")
-                .postalCode("2222222222")
-                .address("تهران، ساختمان نمونه اداره مالیات")
-                .phone("02122222222")
-                .build());
-        return taxUnitRepository.save(TaxUnit.builder()
-                .taxAffairsOffice(office)
-                .taxUnitName("واحد مالیاتی نمونه")
-                .postalCode("3333333333")
-                .address("تهران، ساختمان نمونه واحد مالیاتی")
-                .phone("02133333333")
-                .build());
-    }
-
     private void seedSampleUser(
             String keycloakUserId,
             String username,
@@ -260,8 +198,7 @@ public class SecurityDataInitializer {
             String lastName,
             BusinessRole businessRole,
             Long generalDirectorateId,
-            Long taxAffairsOfficeId,
-            TaxUnit taxUnit) {
+            Long taxAffairsOfficeId) {
         String effectiveKeycloakUserId = keycloakAdminBootstrapService
                 .ensureUser(username, email, firstName, lastName, businessRole)
                 .orElse(keycloakUserId);
@@ -269,7 +206,7 @@ public class SecurityDataInitializer {
         AppUserProfile existingByUsername = userProfileRepository.findByUsername(username).orElse(null);
         if (existingByUsername != null) {
             updateSampleUser(existingByUsername, effectiveKeycloakUserId, email, firstName, lastName,
-                    businessRole, generalDirectorateId, taxAffairsOfficeId, taxUnit);
+                    businessRole, generalDirectorateId, taxAffairsOfficeId);
             return;
         }
 
@@ -288,7 +225,6 @@ public class SecurityDataInitializer {
                 .businessRole(businessRole)
                 .generalDirectorate(generalDirectorateId == null ? null : GeneralDirectorateOfTaxAffairs.builder().id(generalDirectorateId).build())
                 .taxAffairsOffice(taxAffairsOfficeId == null ? null : TaxAffairsOffice.builder().id(taxAffairsOfficeId).build())
-                .taxUnit(taxUnit)
                 .enabledInBusinessSystem(true)
                 .lockedInBusinessSystem(false)
                 .build());
@@ -302,8 +238,7 @@ public class SecurityDataInitializer {
             String lastName,
             BusinessRole businessRole,
             Long generalDirectorateId,
-            Long taxAffairsOfficeId,
-            TaxUnit taxUnit) {
+            Long taxAffairsOfficeId) {
         userProfileRepository.findByKeycloakUserId(keycloakUserId)
                 .filter(other -> !other.getId().equals(profile.getId()))
                 .ifPresent(other -> {
@@ -317,7 +252,6 @@ public class SecurityDataInitializer {
         profile.setBusinessRole(businessRole);
         profile.setGeneralDirectorate(generalDirectorateId == null ? null : GeneralDirectorateOfTaxAffairs.builder().id(generalDirectorateId).build());
         profile.setTaxAffairsOffice(taxAffairsOfficeId == null ? null : TaxAffairsOffice.builder().id(taxAffairsOfficeId).build());
-        profile.setTaxUnit(taxUnit);
         profile.setEnabledInBusinessSystem(true);
         profile.setLockedInBusinessSystem(false);
         userProfileRepository.save(profile);

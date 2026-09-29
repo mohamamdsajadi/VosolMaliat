@@ -12,8 +12,6 @@ public record DebtPaperIssuanceRequest(
         @NotBlank String taxSource,
         Long mainTaxBureauId,
         Long taxBureauId,
-        Long taxUnitId,
-        Long sendingUnitId,
         @NotNull @Valid TaxpayerInfo taxpayer,
         List<RelatedPersonInfo> relatedPersons,
         @NotNull @Valid SanimDocumentDetails sourceDocument

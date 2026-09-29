@@ -11,6 +11,6 @@ import java.util.List;
 @Repository
 public interface ExecutionPaperRejectionRuleRepository extends JpaRepository<ExecutionPaperRejectionRule, Long> {
 
-    @Query("SELECT r FROM ExecutionPaperRejectionRule r WHERE r.startDate <= :today AND r.endDate >= :today")
+    @Query("SELECT r FROM ExecutionPaperRejectionRule r WHERE (r.active = true OR r.active IS NULL) AND r.startDate <= :today AND r.endDate >= :today")
     List<ExecutionPaperRejectionRule> findActiveRules(@Param("today") String today);
 }

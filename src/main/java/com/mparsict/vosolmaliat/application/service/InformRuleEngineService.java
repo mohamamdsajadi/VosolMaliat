@@ -99,7 +99,8 @@ public class InformRuleEngineService extends AbstractRuleEngineService<Execution
             case "performancePeriod", "taxPeriod" -> d.getTaxPeriod();
             case "mainTaxBureauId" -> finalizedDebtPaper.getMainTaxBureauId();
             case "taxBureauId" -> finalizedDebtPaper.getTaxBureauId();
-            case "taxUnitId" -> executionPaper.getTaxUnitId();
+            case "taxAffairsOfficeId" -> executionPaper.getFinalizedDebtPaper() == null
+                    ? null : executionPaper.getFinalizedDebtPaper().getTaxBureauId();
             case "taxSource" -> executionPaper.getTaxSource();
             case "sourceTaxOfficeCode" -> d.getSourceTaxOfficeCode();
             case "activityTitle" -> d.getActivityTitle();

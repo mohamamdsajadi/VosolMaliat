@@ -16,7 +16,6 @@ import com.mparsict.vosolmaliat.domain.model.execution.ExecutionPaper;
 import com.mparsict.vosolmaliat.domain.model.rule.ExecutionPaperRejectionRule;
 import com.mparsict.vosolmaliat.domain.repository.ExecutionPaperRepository;
 import com.mparsict.vosolmaliat.domain.repository.ExecutionPaperRejectionRuleRepository;
-import com.mparsict.vosolmaliat.domain.repository.TaxUnitRepository;
 import com.mparsict.vosolmaliat.infrastructure.camunda.ProcessConstants;
 import com.mparsict.vosolmaliat.infrastructure.camunda.service.ExecutionPaperWorkflowVariablesFactory;
 import com.mparsict.vosolmaliat.infrastructure.camunda.worker.CheckInformPossibilityWorker;
@@ -185,12 +184,15 @@ class CamundaJobWorkersUnitTest {
         StubExecutionPaperService executionPaperService = new StubExecutionPaperService(ExecutionPaper.builder()
                 .id(99L)
                 .executionPaperUniqueCode("EP-99")
-                .taxUnit(com.mparsict.vosolmaliat.domain.model.masterdata.TaxUnit.builder().id(7L).build())
+                .finalizedDebtPaper(com.mparsict.vosolmaliat.domain.model.execution.FinalizedDebtPaper.builder()
+                        .mainTaxBureau(com.mparsict.vosolmaliat.domain.model.masterdata.GeneralDirectorateOfTaxAffairs.builder().id(700L).build())
+                        .taxBureau(com.mparsict.vosolmaliat.domain.model.masterdata.TaxAffairsOffice.builder().id(70L).build())
+                        .build())
                 .build());
         IssueExecutionPaperWorker worker = new IssueExecutionPaperWorker(
                 executionPaperService,
                 new StubIssuanceRequestService(),
-                new ExecutionPaperWorkflowVariablesFactory(taxUnitRepository(70L, 700L)),
+                new ExecutionPaperWorkflowVariablesFactory(),
                 objectMapper
         );
         CamundaJobClientStub client = new CamundaJobClientStub();
@@ -206,13 +208,11 @@ class CamundaJobWorkersUnitTest {
         assertThat(client.completeVariables)
                 .containsEntry(ProcessConstants.VAR_EXECUTION_PAPER_ID, 99L)
                 .containsEntry(ProcessConstants.VAR_EXECUTION_PAPER_CODE, "EP-99")
-                .containsEntry(ProcessConstants.VAR_TAX_UNIT_ID, 7L)
                 .containsEntry(ProcessConstants.VAR_TAX_AFFAIRS_OFFICE_ID, 70L)
                 .containsEntry(ProcessConstants.VAR_GENERAL_DIRECTORATE_ID, 700L)
                 .containsEntry(ProcessConstants.VAR_GENERAL_OFFICE_HEAD_CANDIDATE_GROUPS, List.of("GENERAL_OFFICE_HEAD:700"))
                 .containsEntry(ProcessConstants.VAR_TAX_OFFICE_HEAD_CANDIDATE_GROUPS, List.of("TAX_OFFICE_HEAD:70"))
-                .containsEntry(ProcessConstants.VAR_TAX_UNIT_HEAD_CANDIDATE_GROUPS, List.of("TAX_UNIT_HEAD:7"))
-                .containsEntry(ProcessConstants.VAR_TAX_EXPERT_CANDIDATE_GROUPS, List.of("TAX_EXPERT:7"))
+                .containsEntry(ProcessConstants.VAR_TAX_EXPERT_CANDIDATE_GROUPS, List.of("TAX_EXPERT:70"))
                 .containsEntry(ProcessConstants.VAR_LEGAL_PERSON_NATIONAL_ID, "14001234567")
                 .containsEntry(ProcessConstants.VAR_DEBT_PAPER_DATE, "2026-07-18")
                 .containsKey(ProcessConstants.VAR_DEBT_PAPER_PAYLOAD)
@@ -224,14 +224,17 @@ class CamundaJobWorkersUnitTest {
         StubExecutionPaperService executionPaperService = new StubExecutionPaperService(ExecutionPaper.builder()
                 .id(100L)
                 .executionPaperUniqueCode("EP-100")
-                .taxUnit(com.mparsict.vosolmaliat.domain.model.masterdata.TaxUnit.builder().id(7L).build())
+                .finalizedDebtPaper(com.mparsict.vosolmaliat.domain.model.execution.FinalizedDebtPaper.builder()
+                        .mainTaxBureau(com.mparsict.vosolmaliat.domain.model.masterdata.GeneralDirectorateOfTaxAffairs.builder().id(700L).build())
+                        .taxBureau(com.mparsict.vosolmaliat.domain.model.masterdata.TaxAffairsOffice.builder().id(70L).build())
+                        .build())
                 .build());
         StubIssuanceRequestService issuanceRequests = new StubIssuanceRequestService();
         issuanceRequests.requestToLoad = sampleLegalDebtPaper();
         IssueExecutionPaperWorker worker = new IssueExecutionPaperWorker(
                 executionPaperService,
                 issuanceRequests,
-                new ExecutionPaperWorkflowVariablesFactory(taxUnitRepository(70L, 700L)),
+                new ExecutionPaperWorkflowVariablesFactory(),
                 objectMapper
         );
         CamundaJobClientStub client = new CamundaJobClientStub();
@@ -617,18 +620,6 @@ class CamundaJobWorkersUnitTest {
         );
     }
 
-    private TaxUnitRepository taxUnitRepository(Long taxOfficeId, Long generalDirectorateId) {
-        return (TaxUnitRepository) Proxy.newProxyInstance(
-                TaxUnitRepository.class.getClassLoader(),
-                new Class<?>[]{TaxUnitRepository.class},
-                (proxy, method, args) -> switch (method.getName()) {
-                    case "findTaxAffairsOfficeIdByTaxUnitId" -> Optional.of(taxOfficeId);
-                    case "findGeneralDirectorateIdByTaxUnitId" -> Optional.of(generalDirectorateId);
-                    default -> defaultValue(method.getReturnType());
-                }
-        );
-    }
-
     private ExecutionPaperRepository executionPaperRepositoryByDebtPaperCode(
             String debtPaperUniqueCode,
             Long executionPaperId) {
@@ -669,8 +660,6 @@ class CamundaJobWorkersUnitTest {
                 "VAT",
                 700L,
                 70L,
-                7L,
-                null,
                 new DebtPaperIssuanceRequest.TaxpayerInfo(
                         "NATURAL",
                         "0012345678",
@@ -696,8 +685,6 @@ class CamundaJobWorkersUnitTest {
                 source.taxSource(),
                 source.mainTaxBureauId(),
                 source.taxBureauId(),
-                source.taxUnitId(),
-                source.sendingUnitId(),
                 new DebtPaperIssuanceRequest.TaxpayerInfo(
                         "LEGAL",
                         null,
@@ -858,7 +845,7 @@ class CamundaJobWorkersUnitTest {
         private DebtPaperIssuanceRequest createdRequest;
 
         private StubExecutionPaperService(ExecutionPaper executionPaper) {
-            super(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+            super(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
             this.executionPaper = executionPaper;
         }
 

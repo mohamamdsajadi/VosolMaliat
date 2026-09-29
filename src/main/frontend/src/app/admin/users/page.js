@@ -8,7 +8,6 @@ import {
   deleteUserProfile,
   fetchGeneralDirectorates,
   fetchTaxAffairsOffices,
-  fetchTaxUnits,
   fetchUsers,
   updateUserProfile,
   setUserLock,
@@ -24,14 +23,12 @@ const initialForm = {
   phoneNumber: '',
   businessRole: 'TAX_EXPERT',
   generalDirectorateId: '',
-  taxAffairsOfficeId: '',
-  taxUnitId: ''
+  taxAffairsOfficeId: ''
 };
 
 const businessRoles = [
   { value: 'GENERAL_OFFICE_HEAD', label: 'رئیس اداره کل' },
   { value: 'TAX_OFFICE_HEAD', label: 'رئیس اداره مالیات' },
-  { value: 'TAX_UNIT_HEAD', label: 'رئیس واحد مالیاتی' },
   { value: 'TAX_EXPERT', label: 'کارشناس مالیاتی' },
   { value: 'ADMIN', label: 'مدیر سامانه' }
 ];
@@ -40,7 +37,6 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState([]);
   const [generals, setGenerals] = useState([]);
   const [offices, setOffices] = useState([]);
-  const [taxUnits, setTaxUnits] = useState([]);
   const [form, setForm] = useState(initialForm);
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -51,16 +47,14 @@ export default function AdminUsersPage() {
     setLoading(true);
     setMessage('');
     try {
-      const [userResult, generalResult, officeResult, organizationResult] = await Promise.all([
+      const [userResult, generalResult, officeResult] = await Promise.all([
         fetchUsers(),
         fetchGeneralDirectorates(),
-        fetchTaxAffairsOffices(),
-        fetchTaxUnits()
+        fetchTaxAffairsOffices()
       ]);
       setUsers(userResult);
       setGenerals(generalResult);
       setOffices(officeResult);
-      setTaxUnits(organizationResult);
     } catch (error) {
       setMessage(error.message || 'دریافت کاربران ناموفق بود.');
     } finally {
@@ -84,8 +78,7 @@ export default function AdminUsersPage() {
       await createUserProfile({
         ...form,
         generalDirectorateId: form.generalDirectorateId ? Number(form.generalDirectorateId) : null,
-        taxAffairsOfficeId: form.taxAffairsOfficeId ? Number(form.taxAffairsOfficeId) : null,
-        taxUnitId: form.taxUnitId ? Number(form.taxUnitId) : null
+        taxAffairsOfficeId: form.taxAffairsOfficeId ? Number(form.taxAffairsOfficeId) : null
       });
       setForm(initialForm);
       await loadUsers();
@@ -107,8 +100,7 @@ export default function AdminUsersPage() {
       phoneNumber: user.phoneNumber || '',
       businessRole: user.businessRole || 'TAX_EXPERT',
       generalDirectorateId: user.organization?.generalDirectorateId ? String(user.organization.generalDirectorateId) : '',
-      taxAffairsOfficeId: user.organization?.taxAffairsOfficeId ? String(user.organization.taxAffairsOfficeId) : '',
-      taxUnitId: user.organization?.taxUnitId ? String(user.organization.taxUnitId) : ''
+      taxAffairsOfficeId: user.organization?.taxAffairsOfficeId ? String(user.organization.taxAffairsOfficeId) : ''
     });
   };
 
@@ -129,8 +121,7 @@ export default function AdminUsersPage() {
         phoneNumber: form.phoneNumber,
         businessRole: form.businessRole,
         generalDirectorateId: form.generalDirectorateId ? Number(form.generalDirectorateId) : null,
-        taxAffairsOfficeId: form.taxAffairsOfficeId ? Number(form.taxAffairsOfficeId) : null,
-        taxUnitId: form.taxUnitId ? Number(form.taxUnitId) : null
+        taxAffairsOfficeId: form.taxAffairsOfficeId ? Number(form.taxAffairsOfficeId) : null
       });
       cancelEdit();
       await loadUsers();
@@ -227,17 +218,6 @@ export default function AdminUsersPage() {
               <select name="taxAffairsOfficeId" value={form.taxAffairsOfficeId} onChange={updateForm}>
                 <option value="">بدون اداره مالیات</option>
                 {offices.map((office) => <option value={office.id} key={office.id}>{office.officeName}</option>)}
-              </select>
-            </label>
-          </div>
-          <div className="form-grid">
-            <label>
-              <span>واحد مالیاتی</span>
-              <select name="taxUnitId" value={form.taxUnitId} onChange={updateForm}>
-                <option value="">بدون واحد</option>
-                {taxUnits.map((unit) => (
-                  <option value={unit.id} key={unit.id}>{unit.taxUnitName} - {unit.taxAffairsOfficeName || 'اداره نامشخص'}</option>
-                ))}
               </select>
             </label>
           </div>

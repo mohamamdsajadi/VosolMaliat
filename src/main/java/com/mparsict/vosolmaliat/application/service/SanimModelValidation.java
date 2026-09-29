@@ -8,7 +8,7 @@ public final class SanimModelValidation {
         if (document == null || "LEGACY_REVIEW_REQUIRED".equals(document.getValidationStatus()))
             throw SanimXmlValues.invalid("Source document requires review before processing.");
         requireAmounts(document.getAmounts());
-        if ("LTR_EF03".equals(document.getTemplateCode())) {
+        if (document.getPaperType() == com.mparsict.vosolmaliat.domain.enums.PaperType.EF03) {
             if (document.getRegistrationTraceCode() == null || document.getRegistrationTraceCode().isBlank())
                 throw SanimXmlValues.invalid("Registration followCode is required.");
             if (document.getTaxpayerIdentifier() == null || !document.getTaxpayerIdentifier().matches("[0-9]+"))

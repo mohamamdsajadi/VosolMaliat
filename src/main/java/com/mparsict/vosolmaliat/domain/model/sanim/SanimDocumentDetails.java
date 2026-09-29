@@ -1,4 +1,5 @@
 package com.mparsict.vosolmaliat.domain.model.sanim;
+import com.mparsict.vosolmaliat.domain.enums.PaperType;
 import jakarta.persistence.*;
 import lombok.*;
 /** Immutable-in-use facts as printed on the source document, independent of mutable master data. */
@@ -12,8 +13,11 @@ public class SanimDocumentDetails {
     @Column(name="registration_trace_code") private String registrationTraceCode;
     @Column(name="source_xml", columnDefinition="TEXT") private String xml;
     @Embedded private DebtFinancialDetails financialDetails;
-    @Column(name = "source_template_code", columnDefinition = "TEXT")
-    private String templateCode;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "paper_type", length = 32)
+    private PaperType paperType;
+    @Column(name = "paper_name", columnDefinition = "TEXT")
+    private String paperName;
     @Column(name = "source_mapping_version", columnDefinition = "TEXT")
     private String mappingVersion;
     @Column(name = "source_document_number", columnDefinition = "TEXT")
@@ -76,4 +80,10 @@ public class SanimDocumentDetails {
     @jakarta.validation.Valid
     @jakarta.validation.constraints.NotNull
     private SanimAmounts amounts;
+
+    @PrePersist
+    @PreUpdate
+    public void normalizePaperName() {
+        paperName = paperType == null ? null : paperType.getPersianTitle();
+    }
 }

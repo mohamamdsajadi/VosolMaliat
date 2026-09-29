@@ -5,7 +5,6 @@ import com.mparsict.vosolmaliat.domain.model.Taxpayer;
 import com.mparsict.vosolmaliat.domain.model.execution.DebtInformation;
 import com.mparsict.vosolmaliat.domain.model.execution.ExecutionPaper;
 import com.mparsict.vosolmaliat.domain.model.execution.FinalizedDebtPaper;
-import com.mparsict.vosolmaliat.domain.model.masterdata.TaxUnit;
 import com.mparsict.vosolmaliat.domain.model.person.LegalPerson;
 import com.mparsict.vosolmaliat.domain.model.person.NaturalPerson;
 import com.mparsict.vosolmaliat.domain.repository.DebtInformationRepository;
@@ -93,7 +92,6 @@ public class DemoDataInitializer {
                 .executionPaperUniqueCode(code)
                 .finalizedDebtPaper(FinalizedDebtPaper.builder().id(1000L + Math.abs(code.hashCode() % 1000)).build())
                 .taxpayer(Taxpayer.builder().id(taxpayerId).build())
-                .taxUnit(TaxUnit.builder().id(111L).build())
                 .taxSource("مالیات بر ارزش افزوده")
                 .currentState(state.name())
                 .build());

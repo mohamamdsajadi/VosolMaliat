@@ -12,7 +12,6 @@ import com.mparsict.vosolmaliat.domain.enums.BusinessRole;
  * @param businessRole نقش سازمانی کاربر
  * @param generalDirectorateId شناسه اداره کل محل خدمت
  * @param taxAffairsOfficeId شناسه اداره امور مالیاتی محل خدمت
- * @param taxUnitId شناسه واحد مالیاتی محل خدمت
  */
 public record UpdateAppUserProfileRequest(
         String email,
@@ -21,6 +20,5 @@ public record UpdateAppUserProfileRequest(
         String phoneNumber,
         BusinessRole businessRole,
         Long generalDirectorateId,
-        Long taxAffairsOfficeId,
-        Long taxUnitId
+        Long taxAffairsOfficeId
 ) {}

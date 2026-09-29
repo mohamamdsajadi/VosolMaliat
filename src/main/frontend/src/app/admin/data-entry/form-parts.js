@@ -14,14 +14,14 @@ export const initialDebtPaper = {
   taxpayerIdentifier: '', registrationTraceCode: '', basisDocumentDateRaw: '', taxPeriodStartRaw: '', taxPeriodEndRaw: '',
   debtPaperUniqueCode: '', documentNumber: '', issueDateRaw: '', issuanceReason: '', taxSource: '',
   taxYear: '', taxPeriod: '', activityTitle: '', sourceTaxOfficeCode: '',
-  mainTaxBureauId: '', taxBureauId: '', taxUnitId: '', sendingUnitId: '',
+  mainTaxBureauId: '', taxBureauId: '',
   taxpayerType: 'NATURAL', nationalCode: '', firstName: '', lastName: '', fatherName: '', birthDate: '',
   postalCode: '', address: '', nationalId: '', registrationNumber: '', registrationDate: '', companyName: '',
   ...emptyAmounts
 }
 export const initialExecutionPaper = {
   executionPaperUniqueCode: '', finalizedDebtPaperId: '', taxpayerId: '', mainTaxBureauId: '',
-  taxBureauId: '', taxUnitId: '', taxSource: '', currentState: 'UNASSIGNED', ...emptyAmounts
+  taxBureauId: '', taxSource: '', currentState: 'UNASSIGNED', ...emptyAmounts
 }
 export function randomDebtPaperSample(masterdata = {}, forcedTaxpayerType = null) {
   const natural = forcedTaxpayerType !== 'LEGAL'
@@ -29,7 +29,7 @@ export function randomDebtPaperSample(masterdata = {}, forcedTaxpayerType = null
   return {
     ...initialDebtPaper, taxpayerIdentifier: String(Date.now()), registrationTraceCode: `REG-${Date.now()}`, basisDocumentDateRaw: randomJalaliDate(), debtPaperUniqueCode: `DOC-${Date.now()}`, documentNumber: `LETTER-${Date.now()}`,
     issueDateRaw: randomJalaliDate(), taxYear: '1403', taxPeriod: '1', taxSource: 'VAT', activityTitle: 'خدمات عمومی',
-    mainTaxBureauId: selected.generalId, taxBureauId: selected.officeId, taxUnitId: selected.unitId,
+    mainTaxBureauId: selected.generalId, taxBureauId: selected.officeId,
     taxpayerType: natural ? 'NATURAL' : 'LEGAL', nationalCode: natural ? randomNationalCode() : '',
     firstName: natural ? 'علی' : '', lastName: natural ? 'نمونه' : '',
     nationalId: natural ? '' : randomNationalId(), companyName: natural ? '' : 'شرکت نمونه',
@@ -53,7 +53,6 @@ export function toDebtPaperPayload(form) {
   return {
     debtPaperUniqueCode: form.debtPaperUniqueCode, taxSource: form.taxSource,
     mainTaxBureauId: numberOrNull(form.mainTaxBureauId), taxBureauId: numberOrNull(form.taxBureauId),
-    taxUnitId: numberOrNull(form.taxUnitId), sendingUnitId: numberOrNull(form.sendingUnitId),
     taxpayer: { type: form.taxpayerType, nationalCode: form.nationalCode || null,
       firstName: form.firstName, lastName: form.lastName, fatherName: form.fatherName, birthDate: form.birthDate,
       postalCode: form.postalCode, address: form.address, nationalId: form.nationalId || null,
@@ -76,34 +75,19 @@ export function toDebtPaperPayload(form) {
 export function toExecutionPayload(form) {
   return { executionPaperUniqueCode: form.executionPaperUniqueCode || null,
     finalizedDebtPaperId: numberOrNull(form.finalizedDebtPaperId), taxpayerId: numberOrNull(form.taxpayerId),
-    taxUnitId: numberOrNull(form.taxUnitId), taxSource: form.taxSource, currentState: form.currentState,
+    taxSource: form.taxSource, currentState: form.currentState,
     currentAmounts: aggregatePayload(form) }
 }
 function numberOrNull(value) { return value === '' || value == null ? null : Number(value) }
 
-function sampleMasterdata(masterdata) {
-  const general = pick(masterdata.generals || []);
-  const office = pick(masterdata.offices || []);
-  const unit = pick(masterdata.units || []);
-  return {
-    generalId: general?.id ? String(general.id) : '',
-    officeId: office?.id ? String(office.id) : '',
-    unitId: unit?.id ? String(unit.id) : ''
-  };
-}
-
 function sampleHierarchicalMasterdata(masterdata) {
-  const unit = pick(masterdata.units || []);
-  const office = unit
-    ? (masterdata.offices || []).find((item) => String(item.id) === String(unit.taxAffairsOfficeId))
-    : pick(masterdata.offices || []);
+  const office = pick(masterdata.offices || []);
   const general = office
     ? (masterdata.generals || []).find((item) => String(item.id) === String(office.generalDirectorateOfTaxAffairsId))
     : pick(masterdata.generals || []);
   return {
     generalId: general?.id ? String(general.id) : '',
-    officeId: office?.id ? String(office.id) : '',
-    unitId: unit?.id ? String(unit.id) : ''
+    officeId: office?.id ? String(office.id) : ''
   };
 }
 

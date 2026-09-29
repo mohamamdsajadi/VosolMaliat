@@ -45,12 +45,8 @@ public class InformRejectionRuleController {
     public ExecutionPaperInformRejectionRule update(@PathVariable Long id, @RequestBody @Valid RejectionRuleRequest request) {
         ExecutionPaperInformRejectionRule existing = ruleRepository.findById(id)
                 .orElseThrow(() -> new BusinessException("INFORM_RULE_NOT_FOUND", "قانون ابلاغ با شناسه " + id + " یافت نشد"));
-        existing.setRuleJson(request.ruleJson());
-        existing.setStartDate(request.startDate());
-        existing.setEndDate(request.endDate());
-        existing.setDocumentNo(request.documentNo());
-        existing.setFilePath(request.filePath());
-        existing.setDescription(request.description());
+        existing.update(request.ruleJson(), request.startDate(), request.endDate(),
+                request.documentNo(), request.filePath(), request.description());
         return ruleRepository.save(existing);
     }
 
@@ -59,7 +55,10 @@ public class InformRejectionRuleController {
         if (!ruleRepository.existsById(id)) {
             throw new BusinessException("INFORM_RULE_NOT_FOUND", "قانون ابلاغ با شناسه " + id + " یافت نشد");
         }
-        ruleRepository.deleteById(id);
+        ExecutionPaperInformRejectionRule rule = ruleRepository.findById(id)
+                .orElseThrow(() -> new BusinessException("INFORM_RULE_NOT_FOUND", "قانون ابلاغ با شناسه " + id + " یافت نشد"));
+        rule.deactivate();
+        ruleRepository.save(rule);
         return ResponseEntity.noContent().build();
     }
 }

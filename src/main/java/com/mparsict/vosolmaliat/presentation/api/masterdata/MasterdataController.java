@@ -2,10 +2,8 @@ package com.mparsict.vosolmaliat.presentation.api.masterdata;
 
 import com.mparsict.vosolmaliat.application.dto.request.masterdata.GeneralDirectorateRequest;
 import com.mparsict.vosolmaliat.application.dto.request.masterdata.TaxAffairsOfficeRequest;
-import com.mparsict.vosolmaliat.application.dto.request.masterdata.TaxUnitRequest;
 import com.mparsict.vosolmaliat.application.dto.response.masterdata.GeneralDirectorateResponse;
 import com.mparsict.vosolmaliat.application.dto.response.masterdata.TaxAffairsOfficeResponse;
-import com.mparsict.vosolmaliat.application.dto.response.masterdata.TaxUnitResponse;
 import com.mparsict.vosolmaliat.application.service.masterdata.MasterdataService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -76,29 +74,4 @@ public class MasterdataController {
         masterdataService.deleteTaxAffairsOffice(id);
     }
 
-    @GetMapping("/tax-units")
-    @PreAuthorize("hasAnyAuthority('USER_PROFILE_VIEW','USER_PROFILE_ASSIGN_ORGANIZATION')")
-    public List<TaxUnitResponse> listTaxUnits(@RequestParam(required = false) Long taxAffairsOfficeId) {
-        return masterdataService.listTaxUnits(taxAffairsOfficeId);
-    }
-
-    @PostMapping("/tax-units")
-    @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasAuthority('USER_PROFILE_ASSIGN_ORGANIZATION')")
-    public TaxUnitResponse createTaxUnit(@RequestBody @Valid TaxUnitRequest request) {
-        return masterdataService.createTaxUnit(request);
-    }
-
-    @PutMapping("/tax-units/{id}")
-    @PreAuthorize("hasAuthority('USER_PROFILE_ASSIGN_ORGANIZATION')")
-    public TaxUnitResponse updateTaxUnit(@PathVariable Long id, @RequestBody @Valid TaxUnitRequest request) {
-        return masterdataService.updateTaxUnit(id, request);
-    }
-
-    @DeleteMapping("/tax-units/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PreAuthorize("hasAuthority('USER_PROFILE_ASSIGN_ORGANIZATION')")
-    public void deleteTaxUnit(@PathVariable Long id) {
-        masterdataService.deleteTaxUnit(id);
-    }
 }

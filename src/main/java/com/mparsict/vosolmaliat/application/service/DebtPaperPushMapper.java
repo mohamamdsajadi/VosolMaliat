@@ -1,6 +1,7 @@
 package com.mparsict.vosolmaliat.application.service;
 
 import com.mparsict.vosolmaliat.application.dto.request.*;
+import com.mparsict.vosolmaliat.domain.enums.PaperType;
 import com.mparsict.vosolmaliat.domain.model.sanim.*;
 import com.mparsict.vosolmaliat.domain.repository.NaturalPersonRepository;
 import com.mparsict.vosolmaliat.domain.repository.LegalPersonRepository;
@@ -18,14 +19,18 @@ public class DebtPaperPushMapper {
 
     public DebtPaperIssuanceRequest map(DebtPaperPushRequest source) {
         if (source.announcementType() == null) throw invalid("announcementType is required.");
-        String template = source.announcementType().trim().toUpperCase(Locale.ROOT);
-        if (template.equals("EF03")) template = "LTR_EF03";
+        PaperType paperType;
+        try {
+            paperType = PaperType.fromCode(source.announcementType());
+        } catch (IllegalArgumentException exception) {
+            throw invalid("Unsupported announcementType: " + source.announcementType());
+        }
         if (source.followCode() == null || source.followCode().isBlank()) throw invalid("Registration followCode is required.");
         var parsedXml = xmlReader.parse(source.xml());
         SanimXmlValues xml = new SanimXmlValues(parsedXml);
-        SanimAmounts amounts = SanimAggregateMapper.map(template, xml);
-        boolean direct = template.equals("LTR_EF03");
-        boolean penalty = template.equals("LTR_EF104");
+        SanimAmounts amounts = SanimAggregateMapper.map(paperType, xml);
+        boolean direct = paperType == PaperType.EF03;
+        boolean penalty = paperType == PaperType.EF104;
         String identifier = digits(xml.required(direct ? "R" : penalty ? "K" : "P"));
         if (!identifier.equals(digits(source.nationalID().trim())))
             throw invalid("nationalID conflicts with XML identity.");
@@ -44,7 +49,7 @@ public class DebtPaperPushMapper {
                 && decimal(source.taxAmount(), "taxAmount").compareTo(amounts.getTotalTaxAmount()) != 0)
             throw invalid("Envelope taxAmount differs from mapped totalTaxAmount; review required.");
         SanimDocumentDetails details = SanimDocumentDetails.builder()
-                .templateCode(template).mappingVersion(SanimAggregateMapper.VERSION)
+                .paperType(paperType).paperName(paperType.getPersianTitle()).mappingVersion(SanimAggregateMapper.VERSION)
                 .registrationTraceCode(source.followCode().trim()).xml(source.xml())
                 .financialDetails(direct ? Ef03FinancialDetailsMapper.map(parsedXml, xml) : null)
                 .documentNumber(xml.required(direct ? "F" : penalty ? "F" : "D"))
@@ -65,7 +70,7 @@ public class DebtPaperPushMapper {
                 .generalDirectorateName(xml.text(direct ? "H" : penalty ? "D" : "F"))
                 .taxOfficeName(xml.text(direct ? "I" : penalty ? "E" : "G"))
                 .sourceTaxOfficeCode(source.taxOfficeId()).currencyCode("IRR")
-                .taxAmountBasis(template.equals("LTR_EF23_2") ? "NET_REPORTED" : penalty ? "NOT_REPORTED" : "GROSS_REPORTED")
+                .taxAmountBasis(paperType == PaperType.EF23_2 ? "NET_REPORTED" : penalty ? "NOT_REPORTED" : "GROSS_REPORTED")
                 .remissionBasis(direct ? "COMBINED_EXEMPTION_REMISSION" : penalty ? "REPORTED" : "NOT_REPORTED")
                 .validationStatus(direct ? "VALIDATED" : "VALIDATED_WITH_PROVISIONAL_MAPPING").amounts(amounts).build();
         var taxpayer = new DebtPaperIssuanceRequest.TaxpayerInfo(type,
@@ -73,7 +78,7 @@ public class DebtPaperPushMapper {
                 type.equals("NATURAL") ? name : null, null, null, null, details.getPostalCode(), details.getAddress(),
                 type.equals("LEGAL") ? identifier : null, null, null, type.equals("LEGAL") ? name : null);
         return new DebtPaperIssuanceRequest(direct ? details.getBasisDocumentNumber() : source.referenceId(), source.taxSource(),
-                null, null, null, null, taxpayer, null, details);
+                null, null, taxpayer, null, details);
     }
 
     private String resolveType(String raw, String identifier) {

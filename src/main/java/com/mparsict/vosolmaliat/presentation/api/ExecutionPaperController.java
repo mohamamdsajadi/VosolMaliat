@@ -36,11 +36,10 @@ public class ExecutionPaperController {
             @RequestParam(required = false) String taxpayerNationalId,
             @RequestParam(required = false) String currentState,
             @RequestParam(required = false) String notificationStatus,
-            @RequestParam(required = false) Long taxUnitId,
             @RequestParam(required = false) java.math.BigDecimal minDebt,
             @RequestParam(required = false) java.math.BigDecimal maxDebt) {
         ExecutionPaperSearchCriteria criteria = new ExecutionPaperSearchCriteria(
-                uniqueCode, taxpayerName, taxpayerNationalId, currentState, notificationStatus, taxUnitId, minDebt, maxDebt);
+                uniqueCode, taxpayerName, taxpayerNationalId, currentState, notificationStatus, minDebt, maxDebt);
         log.debug("GET /api/v1/execution-papers page={}, size={}, criteria={}", page, size, criteria);
         return executionPaperService.getAll(page, size, criteria);
     }
@@ -90,11 +89,10 @@ public class ExecutionPaperController {
             @RequestParam(required = false) String taxpayerNationalId,
             @RequestParam(required = false) String currentState,
             @RequestParam(required = false) String notificationStatus,
-            @RequestParam(required = false) Long taxUnitId,
             @RequestParam(required = false) java.math.BigDecimal minDebt,
             @RequestParam(required = false) java.math.BigDecimal maxDebt) {
         ExecutionPaperSearchCriteria criteria = new ExecutionPaperSearchCriteria(
-                uniqueCode, taxpayerName, taxpayerNationalId, currentState, notificationStatus, taxUnitId, minDebt, maxDebt);
+                uniqueCode, taxpayerName, taxpayerNationalId, currentState, notificationStatus, minDebt, maxDebt);
         log.debug("GET /api/v1/execution-papers/assigned page={}, size={}, criteria={}", page, size, criteria);
         return executionPaperService.getAssigned(page, size, criteria);
     }
@@ -109,11 +107,10 @@ public class ExecutionPaperController {
             @RequestParam(required = false) String taxpayerNationalId,
             @RequestParam(required = false) String currentState,
             @RequestParam(required = false) String notificationStatus,
-            @RequestParam(required = false) Long taxUnitId,
             @RequestParam(required = false) java.math.BigDecimal minDebt,
             @RequestParam(required = false) java.math.BigDecimal maxDebt) {
         ExecutionPaperSearchCriteria criteria = new ExecutionPaperSearchCriteria(
-                uniqueCode, taxpayerName, taxpayerNationalId, currentState, notificationStatus, taxUnitId, minDebt, maxDebt);
+                uniqueCode, taxpayerName, taxpayerNationalId, currentState, notificationStatus, minDebt, maxDebt);
         log.debug("GET /api/v1/execution-papers/unassigned page={}, size={}, criteria={}", page, size, criteria);
         return executionPaperService.getUnassigned(page, size, criteria);
     }

@@ -73,8 +73,8 @@ public class IssuanceController {
         try {
             var request = objectMapper.convertValue(body, DebtPaperIssuanceRequest.class);
             com.mparsict.vosolmaliat.application.service.SanimModelValidation.requireDocument(request.sourceDocument());
-            if ("LTR_EF03".equals(request.sourceDocument().getTemplateCode())
-                    || "EF03".equals(request.sourceDocument().getTemplateCode())) {
+            if (request.sourceDocument().getPaperType()
+                    == com.mparsict.vosolmaliat.domain.enums.PaperType.EF03) {
                 throw new org.springframework.web.server.ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY,
                         "EF03 must be submitted through POST /api/v1/debt-papers/push");
             }

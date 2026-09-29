@@ -353,7 +353,6 @@ function roleLabel(value) {
   return {
     GENERAL_OFFICE_HEAD: 'رئیس اداره کل',
     TAX_OFFICE_HEAD: 'رئیس اداره مالیات',
-    TAX_UNIT_HEAD: 'رئیس واحد مالیاتی',
     TAX_EXPERT: 'کارشناس مالیاتی',
     ADMIN: 'مدیر سامانه'
   }[value] || value;

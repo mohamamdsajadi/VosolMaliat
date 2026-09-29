@@ -7,6 +7,10 @@ public class ContactInfoHistory extends BaseEntity {
     @Id @GeneratedValue(strategy=GenerationType.IDENTITY) private Long id;
     @ManyToOne(fetch=FetchType.LAZY) @JoinColumn(nullable=false) private ContactInfo contactInfo;
     private String phoneNo;
+    private String mobileNo;
+    private String faxNo;
     private String postalCode;
     private String legalAddress;
+    private String email;
+    private String website;
 }

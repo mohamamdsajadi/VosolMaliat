@@ -20,11 +20,11 @@ public class RestrictionRequest extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "finalized_debt_paper_notification_id")
+    @Column(name = "finalized_debt_paper_notification_id", nullable = false, updatable = false)
     private String finalizedDebtPaperNotificationId;
 
-    @Column(name = "result")
-    private Integer result;
+    @Column(name = "result", nullable = false)
+    private Boolean result;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "natural_person_id")
@@ -33,6 +33,14 @@ public class RestrictionRequest extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "legal_person_id")
     private LegalPerson legalPerson;
+
+    @PrePersist
+    @PreUpdate
+    private void validateTarget() {
+        if ((naturalPerson == null) == (legalPerson == null)) {
+            throw new IllegalStateException("Restriction must target exactly one natural or legal person");
+        }
+    }
 
     public Long getNaturalPersonId() {
         return naturalPerson == null ? null : naturalPerson.getId();

@@ -64,7 +64,6 @@ const EMPTY_FILTERS = {
   taxpayerNationalId: '',
   currentState: '',
   notificationStatus: '',
-  taxUnitId: '',
   minDebt: '',
   maxDebt: '',
 }
@@ -261,10 +260,6 @@ export default function ExecutionPapersPage() {
                 <option value="NOTIFIED">ابلاغ شده</option>
                 <option value="NOT_NOTIFIED">عدم ابلاغ</option>
               </select>
-            </label>
-            <label>
-              <span>کد واحد مالیاتی</span>
-              <input name="taxUnitId" type="number" value={filterForm.taxUnitId} onChange={updateFilter} placeholder="مثلاً ۱۰۱" />
             </label>
             <label>
               <span>حداقل مبلغ بدهی</span>

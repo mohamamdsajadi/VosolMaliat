@@ -23,7 +23,7 @@ public class NaturalPerson extends BaseEntity {
     }
     public void updateProfile(String firstName,String lastName,String fatherName,String birthDate) {
         if (java.util.Objects.equals(getFirstName(),firstName) && java.util.Objects.equals(getLastName(),lastName) && java.util.Objects.equals(getFatherName(),fatherName) && java.util.Objects.equals(getBirthDate(),birthDate)) return;
-        if (id != null && extraInfo != null) profileHistory.add(NaturalPersonExtraInfoHistory.builder().naturalPerson(this).firstName(getFirstName()).lastName(getLastName()).fatherName(getFatherName()).birthDate(getBirthDate()).build());
+        if (id != null && extraInfo != null) profileHistory.add(NaturalPersonExtraInfoHistory.from(this, extraInfo));
         setFirstName(firstName); setLastName(lastName); setFatherName(fatherName); setBirthDate(birthDate);
     }
     private NaturalPersonExtraInfo profile() {

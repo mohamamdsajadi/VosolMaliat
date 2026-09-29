@@ -42,8 +42,8 @@ public class AdminDataEntryController {
     }
 
     private void rejectEf03(DebtPaperIssuanceRequest request) {
-        if (request.sourceDocument() != null && ("LTR_EF03".equals(request.sourceDocument().getTemplateCode())
-                || "EF03".equals(request.sourceDocument().getTemplateCode()))) {
+        if (request.sourceDocument() != null && request.sourceDocument().getPaperType()
+                == com.mparsict.vosolmaliat.domain.enums.PaperType.EF03) {
             throw new com.mparsict.vosolmaliat.common.exception.BusinessException("EF03_PUSH_REQUIRED",
                     "EF03 must be submitted through POST /api/v1/debt-papers/push");
         }

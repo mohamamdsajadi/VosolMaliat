@@ -48,10 +48,32 @@ class SqliteSchemaStartupTest {
             }
         }
         try (var connection = DriverManager.getConnection("jdbc:sqlite:" + directory.resolve("startup.db"));
-             var statement = connection.createStatement();
-             var result = statement.executeQuery("PRAGMA integrity_check")) {
-            assertThat(result.next()).isTrue();
-            assertThat(result.getString(1)).isEqualTo("ok");
+             var statement = connection.createStatement()) {
+            try (var result = statement.executeQuery("PRAGMA integrity_check")) {
+                assertThat(result.next()).isTrue();
+                assertThat(result.getString(1)).isEqualTo("ok");
+            }
+            assertThat(tableNames(connection)).contains(
+                    "paper_type",
+                    "debt_information_history",
+                    "taxpayer_activity_type_history",
+                    "natural_person_extra_info_history",
+                    "legal_person_extra_info_history",
+                    "contact_info_history",
+                    "execution_paper_rejection_rule_history",
+                    "execution_paper_inform_rejection_rule_history",
+                    "general_directorate_of_tax_affairs_history",
+                    "tax_affairs_office_history"
+            );
         }
+    }
+
+    private java.util.Set<String> tableNames(java.sql.Connection connection) throws Exception {
+        java.util.Set<String> names = new java.util.HashSet<>();
+        try (var statement = connection.createStatement();
+             var rows = statement.executeQuery("SELECT name FROM sqlite_master WHERE type='table'")) {
+            while (rows.next()) names.add(rows.getString(1));
+        }
+        return names;
     }
 }

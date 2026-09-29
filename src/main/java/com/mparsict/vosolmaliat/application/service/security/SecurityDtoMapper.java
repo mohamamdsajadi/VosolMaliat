@@ -4,7 +4,6 @@ import com.mparsict.vosolmaliat.application.dto.response.security.AppUserProfile
 import com.mparsict.vosolmaliat.application.dto.response.security.GroupPermissionResponse;
 import com.mparsict.vosolmaliat.application.dto.response.security.MasterdataOrganizationResponse;
 import com.mparsict.vosolmaliat.application.dto.response.security.PermissionResponse;
-import com.mparsict.vosolmaliat.domain.model.masterdata.TaxUnit;
 import com.mparsict.vosolmaliat.domain.model.security.AppUserProfile;
 import com.mparsict.vosolmaliat.domain.model.security.GroupPermission;
 import com.mparsict.vosolmaliat.domain.model.security.Permission;
@@ -13,32 +12,15 @@ public final class SecurityDtoMapper {
     private SecurityDtoMapper() {
     }
 
-    public static MasterdataOrganizationResponse toOrganizationResponse(TaxUnit taxUnit) {
-        if (taxUnit == null) {
-            return null;
-        }
-        return new MasterdataOrganizationResponse(
-                null,
-                null,
-                taxUnit.getTaxAffairsOfficeId(),
-                null,
-                taxUnit.getId(),
-                taxUnit.getTaxUnitName()
-        );
-    }
-
     public static MasterdataOrganizationResponse toOrganizationResponse(AppUserProfile profile) {
         if (profile == null) {
             return null;
         }
-        TaxUnit taxUnit = profile.getTaxUnit();
         return new MasterdataOrganizationResponse(
                 profile.getGeneralDirectorateId(),
                 null,
-                profile.getTaxAffairsOfficeId() != null ? profile.getTaxAffairsOfficeId() : taxUnit == null ? null : taxUnit.getTaxAffairsOfficeId(),
-                null,
-                taxUnit == null ? null : taxUnit.getId(),
-                taxUnit == null ? null : taxUnit.getTaxUnitName()
+                profile.getTaxAffairsOfficeId(),
+                null
         );
     }
 

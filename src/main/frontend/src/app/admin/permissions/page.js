@@ -19,9 +19,7 @@ const roleOptions = [
   { value: 'ADMIN', label: 'مدیر سامانه' },
   { value: 'GENERAL_OFFICE_HEAD', label: 'رئیس اداره کل' },
   { value: 'TAX_OFFICE_HEAD', label: 'رئیس اداره مالیات' },
-  { value: 'TAX_UNIT_HEAD', label: 'رئیس واحد مالیاتی' },
   { value: 'TAX_EXPERT', label: 'کارشناس مالیاتی' },
-  { value: 'TAX_UNIT_USER', label: 'کاربر واحد مالیاتی' }
 ];
 
 const permissionLabels = {

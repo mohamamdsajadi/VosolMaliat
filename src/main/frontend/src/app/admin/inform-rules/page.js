@@ -10,7 +10,7 @@ const FIELD_OPTIONS = [
   { value: 'performanceYear', label: 'سال (و دوره) عملکرد', type: 'text', placeholder: 'مثلاً 1403' },
   { value: 'mainTaxBureauId', label: 'اداره کل مالیاتی', type: 'number', placeholder: 'مثلاً 12' },
   { value: 'taxBureauId', label: 'اداره امور مالیاتی', type: 'number', placeholder: 'مثلاً 1203' },
-  { value: 'taxUnitId', label: 'واحد مالیاتی', type: 'number', placeholder: 'مثلاً 45' },
+  { value: 'taxAffairsOfficeId', label: 'اداره مالیاتی', type: 'number', placeholder: 'مثلاً 45' },
   { value: 'taxSource', label: 'منبع مالیاتی', type: 'text', placeholder: 'مثلاً VAT' },
   { value: 'activityTitle', label: 'نوع فعالیت', type: 'text', placeholder: 'مثلاً 2' },
   { value: 'outstandingDebtAmount', label: 'مانده بدهی', type: 'decimal', placeholder: 'ریال؛ مقدار دقیق' },

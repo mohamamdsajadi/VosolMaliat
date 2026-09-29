@@ -15,7 +15,7 @@ public final class OrganizationCandidateGroup {
         return switch (role) {
             case GENERAL_OFFICE_HEAD -> forOrganization(role, organization.generalDirectorateId());
             case TAX_OFFICE_HEAD -> forOrganization(role, organization.taxAffairsOfficeId());
-            case TAX_UNIT_HEAD, TAX_EXPERT -> forOrganization(role, organization.taxUnitId());
+            case TAX_EXPERT -> forOrganization(role, organization.taxAffairsOfficeId());
             case ADMIN -> null;
         };
     }

@@ -6,7 +6,6 @@ create table if not exists app_user_profile (
   first_name varchar(255),
   last_name varchar(255),
   phone_number varchar(255),
-  tax_unit_id integer,
   enabled_in_business_system boolean not null,
   locked_in_business_system boolean not null,
   created_at timestamp,
@@ -15,8 +14,7 @@ create table if not exists app_user_profile (
   updated_by varchar(255),
   deleted_at timestamp,
   deleted_by varchar(255),
-  is_deleted boolean,
-  foreign key (tax_unit_id) references tax_unit(id)
+  is_deleted boolean
 );
 
 create table if not exists permission (

@@ -160,10 +160,14 @@ public class RelatedPersonService {
                     .orElseGet(RelatedPerson::new);
 
             relationship.setOwnerLegalPerson(context.owner());
+            relationship.setTaxpayer(context.taxpayer());
             relationship.setPost(resolvePost(item));
             relationship.setStartDate(normalizeJalaliDate(item.startDate()));
             relationship.setEndDate(normalizeJalaliDate(item.endDate()));
-            relationship.setHasSignatoryAuthority(item.hasSignatoryAuthority() ? 1 : 0);
+            relationship.setHasSignatoryAuthority(item.hasSignatoryAuthority());
+            String postCode = item.postCode().name();
+            relationship.setBoardMember(postCode.contains("BOARD") || postCode.equals("CEO"));
+            relationship.setPartner(postCode.contains("PARTNER") || postCode.equals("SHAREHOLDER"));
             relationship.setSourceSystem(sourceSystem);
             relationship.setSourceRecordId(item.sourceRecordId());
             relationship.setLastSyncedAt(syncedAt);
@@ -239,7 +243,9 @@ public class RelatedPersonService {
                                 "FINALIZED_DEBT_PAPER_NOT_FOUND",
                                 "برگ بدهی قطعی مرتبط یافت نشد"
                         ));
-        return new ExecutionContext(executionPaper, owner, normalizeYear(finalizedDebtPaper.getSourceDocument() == null ? null : finalizedDebtPaper.getSourceDocument().getTaxYear()));
+        return new ExecutionContext(executionPaper, taxpayer, owner,
+                normalizeYear(finalizedDebtPaper.getSourceDocument() == null
+                        ? null : finalizedDebtPaper.getSourceDocument().getTaxYear()));
     }
 
     private NaturalPerson resolveNaturalPerson(CompanyRegistryRelatedPersonData item) {
@@ -421,6 +427,7 @@ public class RelatedPersonService {
 
     private record ExecutionContext(
             ExecutionPaper executionPaper,
+            Taxpayer taxpayer,
             LegalPerson owner,
             String debtYear
     ) {

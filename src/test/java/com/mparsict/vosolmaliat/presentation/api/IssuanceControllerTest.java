@@ -21,7 +21,7 @@ class IssuanceControllerTest {
     private final CamundaProcessService workflow = mock(CamundaProcessService.class);
     private MockMvc mvc;
     private final String payload = """
-        {"debtPaperUniqueCode":"ref-1","taxSource":"VAT","taxUnitId":7,
+        {"debtPaperUniqueCode":"ref-1","taxSource":"VAT","taxBureauId":7,
          "taxpayer":{"type":"NATURAL","nationalCode":"0012345678"},
          "sourceDocument":{"documentNumber":"doc-1","issueDateRaw":"1400/01/01",
             "amounts":{"outstandingDebtAmount":"-12345678901234567890.54","totalTaxAmount":"100",
@@ -37,7 +37,7 @@ class IssuanceControllerTest {
         var captor = ArgumentCaptor.forClass(DebtPaperIssuanceRequest.class);
         verify(issuance).createAndSave(captor.capture());
         assertThat(captor.getValue().sourceDocument().getAmounts().getOutstandingDebtAmount()).isEqualByComparingTo("-12345678901234567890.54");
-        assertThat(captor.getValue().taxUnitId()).isEqualTo(7L);
+        assertThat(captor.getValue().taxBureauId()).isEqualTo(7L);
     }
     @Test void incompleteNewAmountsReturn422WithoutPersistenceOrWorkflow() throws Exception {
         mvc.perform(post("/api/v1/debt-papers/issue").contentType(MediaType.APPLICATION_JSON)

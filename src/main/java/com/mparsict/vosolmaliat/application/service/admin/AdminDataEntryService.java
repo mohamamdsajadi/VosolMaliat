@@ -14,7 +14,6 @@ import com.mparsict.vosolmaliat.domain.model.Taxpayer;
 import com.mparsict.vosolmaliat.domain.model.execution.DebtInformation;
 import com.mparsict.vosolmaliat.domain.model.execution.ExecutionPaper;
 import com.mparsict.vosolmaliat.domain.model.execution.FinalizedDebtPaper;
-import com.mparsict.vosolmaliat.domain.model.masterdata.TaxUnit;
 import com.mparsict.vosolmaliat.domain.model.rule.ExecutionPaperIssuanceRequest;
 import com.mparsict.vosolmaliat.domain.repository.DebtInformationRepository;
 import com.mparsict.vosolmaliat.domain.repository.ExecutionPaperRepository;
@@ -64,7 +63,8 @@ public class AdminDataEntryService {
         Taxpayer taxpayer = taxpayerRepository.findById(request.taxpayerId())
                 .orElseThrow(() -> new BusinessException("TAXPAYER_NOT_FOUND", "مودی یافت نشد"));
 
-        if (finalizedDebtPaper.getSourceDocument() != null && "LTR_EF03".equals(finalizedDebtPaper.getSourceDocument().getTemplateCode()))
+        if (finalizedDebtPaper.getSourceDocument() != null && finalizedDebtPaper.getSourceDocument().getPaperType()
+                == com.mparsict.vosolmaliat.domain.enums.PaperType.EF03)
             throw new BusinessException("EF03_RECEIPT_REQUIRED", "برای EF03 از مسیر دریافت و تأیید هویت استفاده کنید");
         var number = uniqueCodeGenerator.generateExecutionPaperNumber();
         ExecutionPaper saved = executionPaperRepository.save(ExecutionPaper.builder()
@@ -74,7 +74,6 @@ public class AdminDataEntryService {
                 .finalizationReason(finalizedDebtPaper.getFinalizationReason())
                 .finalizedDebtPaper(finalizedDebtPaper)
                 .taxpayer(taxpayer)
-                .taxUnit(request.taxUnitId() == null ? null : TaxUnit.builder().id(request.taxUnitId()).build())
                 .taxSource(request.taxSource())
                 .currentState(blankToNull(request.currentState()) == null
                         ? ExecutionPaperState.UNASSIGNED.name()

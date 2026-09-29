@@ -3,6 +3,7 @@ package com.mparsict.vosolmaliat.unit.service;
 import com.mparsict.vosolmaliat.application.dto.request.DebtPaperPushRequest;
 import com.mparsict.vosolmaliat.application.service.*;
 import com.mparsict.vosolmaliat.common.exception.DebtPaperPushException;
+import com.mparsict.vosolmaliat.domain.enums.PaperType;
 import com.mparsict.vosolmaliat.domain.model.person.NaturalPerson;
 import com.mparsict.vosolmaliat.domain.repository.*;
 import org.junit.jupiter.api.Test;
@@ -31,8 +32,9 @@ class DebtPaperPushMapperUnitTest {
         assertThat(source.getSourceTaxOfficeCode()).isEqualTo("00123");
         assertThat(source.getTaxpayerName()).isEqualTo("نام کامل");
         assertThat(mapped.debtPaperIssueDate()).isEqualTo("1400/01/01");
-        assertThat(mapped.taxUnitId()).isNull();
         assertThat(mapped.taxBureauId()).isNull();
+        assertThat(source.getPaperType()).isEqualTo(PaperType.EF03);
+        assertThat(source.getPaperName()).isEqualTo("برگ اجرایی");
     }
     @ParameterizedTest @ValueSource(strings={"LTR_EF23", "LTR_EF23_1"})
     void vatUsesReportedTotalsWithoutDoubleCountingDetails(String template) {

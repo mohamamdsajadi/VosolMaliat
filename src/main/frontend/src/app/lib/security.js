@@ -36,13 +36,6 @@ export function deleteUserProfile(id) {
   });
 }
 
-export function assignUserTaxUnit(id, taxUnitId) {
-  return apiJson(`/api/v1/users/${id}/tax-unit`, {
-    method: 'PATCH',
-    body: JSON.stringify({ taxUnitId })
-  });
-}
-
 export function setUserStatus(id, enabled) {
   return apiJson(`/api/v1/users/${id}/status`, {
     method: 'PATCH',
@@ -124,31 +117,6 @@ export function updateTaxAffairsOffice(id, office) {
 
 export function deleteTaxAffairsOffice(id) {
   return apiJson(`/api/v1/masterdata/tax-affairs-offices/${id}`, {
-    method: 'DELETE'
-  });
-}
-
-export function fetchTaxUnits(taxAffairsOfficeId) {
-  const query = taxAffairsOfficeId ? `?taxAffairsOfficeId=${encodeURIComponent(taxAffairsOfficeId)}` : '';
-  return apiJson(`/api/v1/masterdata/tax-units${query}`);
-}
-
-export function createTaxUnit(unit) {
-  return apiJson('/api/v1/masterdata/tax-units', {
-    method: 'POST',
-    body: JSON.stringify(unit)
-  });
-}
-
-export function updateTaxUnit(id, unit) {
-  return apiJson(`/api/v1/masterdata/tax-units/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(unit)
-  });
-}
-
-export function deleteTaxUnit(id) {
-  return apiJson(`/api/v1/masterdata/tax-units/${id}`, {
     method: 'DELETE'
   });
 }

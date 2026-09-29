@@ -7,7 +7,7 @@ import RefreshButton from '../../components/refresh-button'
 import { sendFinalizedDebtPaper } from '../../lib/admin-data-entry'
 import { apiJson } from '../../lib/api'
 import { formatJalaliDateTime } from '../../lib/display'
-import { fetchGeneralDirectorates, fetchTaxAffairsOffices, fetchTaxUnits } from '../../lib/security'
+import { fetchGeneralDirectorates, fetchTaxAffairsOffices } from '../../lib/security'
 import {
   randomDebtPaperSample,
   randomLegalPersonDebtPaperSample,
@@ -146,12 +146,11 @@ export default function FakeSanimPage() {
     setMessage('')
     setSendingRandom(true)
     try {
-      const [generals, offices, units] = await Promise.all([
+      const [generals, offices] = await Promise.all([
         fetchGeneralDirectorates(),
-        fetchTaxAffairsOffices(),
-        fetchTaxUnits()
+        fetchTaxAffairsOffices()
       ])
-      const loadedMasterdata = { generals, offices, units }
+      const loadedMasterdata = { generals, offices }
       setMasterdata(loadedMasterdata)
       setSampleForm(
         taxpayerType === 'LEGAL'
@@ -351,21 +350,6 @@ export default function FakeSanimPage() {
                     {masterdata.offices.map(item => <option key={item.id} value={item.id}>{item.officeName}</option>)}
                   </select>
                 </label>
-                <label>
-                  <span>واحد مالیاتی</span>
-                  <select name="taxUnitId" value={sampleForm.taxUnitId} onChange={updateSampleForm}>
-                    <option value="">انتخاب نشده</option>
-                    {masterdata.units.map(item => <option key={item.id} value={item.id}>{item.taxUnitName}</option>)}
-                  </select>
-                </label>
-                <label>
-                  <span>واحد ارسال‌کننده</span>
-                  <select name="sendingUnitId" value={sampleForm.sendingUnitId} onChange={updateSampleForm}>
-                    <option value="">انتخاب نشده</option>
-                    {masterdata.units.map(item => <option key={item.id} value={item.id}>{item.taxUnitName}</option>)}
-                  </select>
-                </label>
-
                 <div className="fake-sanim-sample-section-title">اطلاعات مودی</div>
                 <label>
                   <span>نوع مودی</span>

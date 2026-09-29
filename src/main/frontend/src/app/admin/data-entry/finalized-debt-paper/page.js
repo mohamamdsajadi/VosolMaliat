@@ -9,7 +9,7 @@ import {
   fetchAdminDataSummary,
   sendFinalizedDebtPaper
 } from '../../../lib/admin-data-entry';
-import { fetchGeneralDirectorates, fetchTaxAffairsOffices, fetchTaxUnits } from '../../../lib/security';
+import { fetchGeneralDirectorates, fetchTaxAffairsOffices } from '../../../lib/security';
 import {
   FieldGrid,
   Input,
@@ -23,7 +23,7 @@ import {
 export default function FinalizedDebtPaperEntryPage() {
   const [form, setForm] = useState(initialDebtPaper);
   const [summary, setSummary] = useState({ finalizedDebtPapers: [] });
-  const [masterdata, setMasterdata] = useState({ generals: [], offices: [], units: [] });
+  const [masterdata, setMasterdata] = useState({ generals: [], offices: [] });
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -31,14 +31,13 @@ export default function FinalizedDebtPaperEntryPage() {
     setLoading(true);
     setMessage('');
     try {
-      const [summaryResult, generalResult, officeResult, unitResult] = await Promise.all([
+      const [summaryResult, generalResult, officeResult] = await Promise.all([
         fetchAdminDataSummary(),
         fetchGeneralDirectorates(),
-        fetchTaxAffairsOffices(),
-        fetchTaxUnits()
+        fetchTaxAffairsOffices()
       ]);
       setSummary(summaryResult);
-      setMasterdata({ generals: generalResult, offices: officeResult, units: unitResult });
+      setMasterdata({ generals: generalResult, offices: officeResult });
     } catch (error) {
       setMessage(error.message || 'دریافت اطلاعات اولیه ناموفق بود.');
     } finally {
@@ -142,8 +141,6 @@ export default function FinalizedDebtPaperEntryPage() {
           <FieldGrid>
             <Select label="اداره کل" name="mainTaxBureauId" value={form.mainTaxBureauId} onChange={updateForm} options={masterdata.generals.map((item) => ({ value: item.id, label: item.name }))} />
             <Select label="اداره مالیات" name="taxBureauId" value={form.taxBureauId} onChange={updateForm} options={masterdata.offices.map((item) => ({ value: item.id, label: item.officeName }))} />
-            <Select label="واحد مالیاتی" name="taxUnitId" value={form.taxUnitId} onChange={updateForm} options={masterdata.units.map((item) => ({ value: item.id, label: item.taxUnitName }))} />
-            <Select label="واحد ارسال‌کننده" name="sendingUnitId" value={form.sendingUnitId} onChange={updateForm} options={masterdata.units.map((item) => ({ value: item.id, label: item.taxUnitName }))} />
           </FieldGrid>
 
           <FormSectionTitle tone="indigo" icon={<UserIcon />} title="اطلاعات مودی" />

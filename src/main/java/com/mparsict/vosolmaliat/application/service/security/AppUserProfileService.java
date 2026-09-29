@@ -5,9 +5,7 @@ import com.mparsict.vosolmaliat.application.dto.response.security.AppUserProfile
 import com.mparsict.vosolmaliat.common.exception.BusinessException;
 import com.mparsict.vosolmaliat.domain.model.masterdata.GeneralDirectorateOfTaxAffairs;
 import com.mparsict.vosolmaliat.domain.model.masterdata.TaxAffairsOffice;
-import com.mparsict.vosolmaliat.domain.model.masterdata.TaxUnit;
 import com.mparsict.vosolmaliat.domain.model.security.AppUserProfile;
-import com.mparsict.vosolmaliat.domain.repository.TaxUnitRepository;
 import com.mparsict.vosolmaliat.domain.repository.security.AppUserProfileRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,14 +18,12 @@ import java.util.List;
 public class AppUserProfileService {
 
     private final AppUserProfileRepository userProfileRepository;
-    private final TaxUnitRepository taxUnitRepository;
     private final SecurityIdentityService securityIdentityService;
     private final AuditLogService auditLogService;
 
     @Transactional
     public AppUserProfileResponse create(CreateAppUserProfileRequest request) {
         validateUniqueForCreate(request);
-        TaxUnit taxUnit = request.taxUnitId() == null ? null : findTaxUnit(request.taxUnitId());
         AppUserProfile profile = AppUserProfile.builder()
                 .keycloakUserId(request.keycloakUserId())
                 .username(request.username())
@@ -38,7 +34,6 @@ public class AppUserProfileService {
                 .businessRole(request.businessRole())
                 .generalDirectorate(generalReference(request.generalDirectorateId()))
                 .taxAffairsOffice(taxAffairsOfficeReference(request.taxAffairsOfficeId()))
-                .taxUnit(taxUnit)
                 .enabledInBusinessSystem(true)
                 .lockedInBusinessSystem(false)
                 .build();
@@ -76,8 +71,6 @@ public class AppUserProfileService {
         }
         profile.setGeneralDirectorate(generalReference(request.generalDirectorateId()));
         profile.setTaxAffairsOffice(taxAffairsOfficeReference(request.taxAffairsOfficeId()));
-        TaxUnit taxUnit = request.taxUnitId() == null ? null : findTaxUnit(request.taxUnitId());
-        profile.setTaxUnit(taxUnit);
         AppUserProfile saved = userProfileRepository.save(profile);
         auditLogService.record(securityIdentityService.currentUser(), "USER_PROFILE_UPDATED", "APP_USER_PROFILE",
                 saved.getId().toString(), oldValue, saved.getEmail() + "|" + saved.getFirstName() + "|" + saved.getLastName());
@@ -107,18 +100,6 @@ public class AppUserProfileService {
     }
 
     @Transactional
-    public AppUserProfileResponse assignTaxUnit(Long id, AssignTaxUnitRequest request) {
-        AppUserProfile profile = findProfile(id);
-        Long oldValue = profile.getTaxUnit() == null ? null : profile.getTaxUnit().getId();
-        TaxUnit taxUnit = findTaxUnit(request.taxUnitId());
-        profile.setTaxUnit(taxUnit);
-        AppUserProfile saved = userProfileRepository.save(profile);
-        auditLogService.record(securityIdentityService.currentUser(), "USER_PROFILE_TAX_UNIT_ASSIGNED", "APP_USER_PROFILE",
-                saved.getId().toString(), String.valueOf(oldValue), taxUnit.getId().toString());
-        return SecurityDtoMapper.toAppUserProfileResponse(saved);
-    }
-
-    @Transactional
     public void delete(Long id) {
         AppUserProfile profile = findProfile(id);
         userProfileRepository.delete(profile);
@@ -129,11 +110,6 @@ public class AppUserProfileService {
     private AppUserProfile findProfile(Long id) {
         return userProfileRepository.findById(id)
                 .orElseThrow(() -> new BusinessException("USER_PROFILE_NOT_FOUND", "پروفایل کاربر یافت نشد"));
-    }
-
-    private TaxUnit findTaxUnit(Long id) {
-        return taxUnitRepository.findById(id)
-                .orElseThrow(() -> new BusinessException("TAX_UNIT_NOT_FOUND", "واحد مالیاتی یافت نشد"));
     }
 
     private GeneralDirectorateOfTaxAffairs generalReference(Long id) {

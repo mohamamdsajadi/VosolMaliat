@@ -19,7 +19,10 @@ public class ExecutionPaperNotification extends BaseEntity {
     private Long id;
 
     @Column(name = "electronic_notification_id")
-    private Long electronicNotificationId;
+    private String electronicNotificationId;
+
+    @Column(name = "notification_date")
+    private String notificationDate;
 
     @Column(name = "electronic_notification_date")
     private String electronicNotificationDate;
@@ -43,7 +46,7 @@ public class ExecutionPaperNotification extends BaseEntity {
     private String nextDebtInquiryDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "execution_paper_id")
+    @JoinColumn(name = "execution_paper_id", nullable = false)
     private ExecutionPaper executionPaper;
 
     public Long getExecutionPaperId() {

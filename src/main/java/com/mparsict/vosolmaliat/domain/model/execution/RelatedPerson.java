@@ -4,6 +4,7 @@ import com.mparsict.vosolmaliat.domain.model.BaseEntity;
 import com.mparsict.vosolmaliat.domain.enums.RelatedPersonType;
 import com.mparsict.vosolmaliat.domain.model.person.LegalPerson;
 import com.mparsict.vosolmaliat.domain.model.person.NaturalPerson;
+import com.mparsict.vosolmaliat.domain.model.Taxpayer;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -20,6 +21,10 @@ public class RelatedPerson extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "taxpayer_id", nullable = false)
+    private Taxpayer taxpayer;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_legal_person_id")
@@ -41,14 +46,14 @@ public class RelatedPerson extends BaseEntity {
     @Column(name = "position_expiry_date")
     private String positionExpiryDate;
 
-    @Column(name = "is_non_board_member")
-    private Integer isNonBoardMember;
+    @Column(name = "is_board_member", nullable = false)
+    private Boolean boardMember;
 
-    @Column(name = "is_non_partner")
-    private Integer isNonPartner;
+    @Column(name = "is_partner", nullable = false)
+    private Boolean partner;
 
-    @Column(name = "has_signatory_authority")
-    private Integer hasSignatoryAuthority;
+    @Column(name = "has_signatory_authority", nullable = false)
+    private Boolean hasSignatoryAuthority;
 
     @Column(name = "management_declaration")
     private Integer managementDeclaration;
@@ -105,6 +110,9 @@ public class RelatedPerson extends BaseEntity {
     private void validateRelationship() {
         if (ownerLegalPerson == null) {
             throw new IllegalStateException("Related person must belong to an owner legal person");
+        }
+        if (taxpayer == null) {
+            throw new IllegalStateException("Related person must belong to a taxpayer");
         }
         if ((naturalPerson == null) == (legalPerson == null)) {
             throw new IllegalStateException("Related person must reference exactly one natural or legal person");

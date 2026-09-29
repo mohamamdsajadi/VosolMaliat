@@ -295,12 +295,6 @@ public class CartableService {
                     && actor.organization().taxAffairsOfficeId() != null
                     && Objects.equals(actor.organization().taxAffairsOfficeId(), target.getTaxAffairsOfficeId());
         }
-        if (actor.businessRole() == BusinessRole.TAX_UNIT_HEAD) {
-            return actor.organization() != null
-                    && actor.organization().taxUnitId() != null
-                    && target.getTaxUnit() != null
-                    && Objects.equals(actor.organization().taxUnitId(), target.getTaxUnit().getId());
-        }
         return false;
     }
 
@@ -390,7 +384,7 @@ public class CartableService {
         Object value = switch (role) {
             case GENERAL_OFFICE_HEAD -> firstPresent(variables, "generalDirectorateId", "mainTaxBureauId", "general_directorate_id", "main_tax_bureau_id");
             case TAX_OFFICE_HEAD -> firstPresent(variables, "taxAffairsOfficeId", "taxBureauId", "tax_affairs_office_id", "tax_bureau_id");
-            case TAX_UNIT_HEAD, TAX_EXPERT -> firstPresent(variables, "taxUnitId", "tax_unit_id");
+            case TAX_EXPERT -> firstPresent(variables, "taxAffairsOfficeId", "taxBureauId", "tax_affairs_office_id", "tax_bureau_id");
             case ADMIN -> null;
         };
         if (value instanceof Number number) {

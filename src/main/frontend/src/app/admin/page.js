@@ -4,13 +4,13 @@ import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import AppShell from '../components/app-shell';
 import RefreshButton from '../components/refresh-button';
-import { fetchCurrentUser, fetchGroupPermissions, fetchPermissions, fetchTaxUnits, fetchUsers } from '../lib/security';
+import { fetchCurrentUser, fetchGroupPermissions, fetchPermissions, fetchTaxAffairsOffices, fetchUsers } from '../lib/security';
 
 function enabledUsers(users) {
   return users.filter((user) => user.enabledInBusinessSystem).length;
 }
 
-function moduleCards(users, permissions, taxUnits) {
+function moduleCards(users, permissions, offices) {
   return [
     {href:'/admin/ef03-receipts',eyebrow:'دریافت',title:'دریافت EF03',description:'ورود فایل برگه سنیم و ثبت درخواست صدور.',stat:'',statLabel:''},
     {
@@ -33,9 +33,9 @@ function moduleCards(users, permissions, taxUnits) {
       href: '/admin/organizations',
       eyebrow: 'سازمان',
       title: 'واحدهای سازمانی',
-      description: 'مدیریت اداره کل، اداره مالیات و واحدهای مالیاتی مرتبط با کاربران و پرونده‌ها.',
-      stat: taxUnits.length,
-      statLabel: 'واحد'
+      description: 'مدیریت اداره‌های کل و اداره‌های مالیاتی مرتبط با کاربران و پرونده‌ها.',
+      stat: offices.length,
+      statLabel: 'اداره'
     }
   ];
 }
@@ -45,7 +45,7 @@ export default function AdminDashboardPage() {
   const [users, setUsers] = useState([]);
   const [permissions, setPermissions] = useState([]);
   const [groupPermissions, setGroupPermissions] = useState([]);
-  const [taxUnits, setTaxUnits] = useState([]);
+  const [offices, setOffices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
 
@@ -57,7 +57,7 @@ export default function AdminDashboardPage() {
       fetchUsers(),
       fetchPermissions(),
       fetchGroupPermissions(),
-      fetchTaxUnits()
+      fetchTaxAffairsOffices()
     ]);
 
     if (meResult.status === 'fulfilled') {
@@ -73,7 +73,7 @@ export default function AdminDashboardPage() {
       setGroupPermissions(groupPermissionsResult.value);
     }
     if (organizationResult.status === 'fulfilled') {
-      setTaxUnits(organizationResult.value);
+      setOffices(organizationResult.value);
     }
 
     const failed = [meResult, usersResult, permissionsResult, groupPermissionsResult, organizationResult].find((item) => item.status === 'rejected');
@@ -95,7 +95,7 @@ export default function AdminDashboardPage() {
       contextItems={[
         `کاربران: ${users.length.toLocaleString('fa-IR')}`,
         `مجوزها: ${permissions.length.toLocaleString('fa-IR')}`,
-        `واحدها: ${taxUnits.length.toLocaleString('fa-IR')}`
+        `اداره‌ها: ${offices.length.toLocaleString('fa-IR')}`
       ]}
       actions={<RefreshButton onClick={loadAdmin} loading={loading} />}
     >
@@ -126,14 +126,14 @@ export default function AdminDashboardPage() {
           <small>{groupPermissions.length.toLocaleString('fa-IR')} نگاشت نقش/گروه</small>
         </article>
         <article>
-          <span>واحدهای مالیاتی</span>
-          <strong>{taxUnits.length.toLocaleString('fa-IR')}</strong>
-          <small>متصل به ساختار اداری</small>
+          <span>اداره‌های مالیاتی</span>
+          <strong>{offices.length.toLocaleString('fa-IR')}</strong>
+          <small>متصل به اداره‌های کل</small>
         </article>
       </section>
 
       <section className="admin-module-grid">
-        {moduleCards(users, permissions, taxUnits).map((card) => (
+        {moduleCards(users, permissions, offices).map((card) => (
           <Link className="admin-module-card" href={card.href} key={card.href}>
             <div>
               <p className="eyebrow">{card.eyebrow}</p>
@@ -177,21 +177,21 @@ export default function AdminDashboardPage() {
           <div className="admin-preview-panel__header">
             <div>
               <p className="eyebrow">سازمان</p>
-              <h2>واحدهای مالیاتی</h2>
+              <h2>اداره‌های مالیاتی</h2>
             </div>
-            <Link href="/admin/organizations">مدیریت واحدها</Link>
+            <Link href="/admin/organizations">مدیریت ساختار</Link>
           </div>
           <div className="admin-preview-list">
-            {taxUnits.slice(0, 6).map((unit) => (
-              <div className="admin-preview-row" key={unit.id}>
+            {offices.slice(0, 6).map((office) => (
+              <div className="admin-preview-row" key={office.id}>
                 <div>
-                  <strong>{unit.taxUnitName}</strong>
-                  <span>{unit.taxAffairsOfficeName || 'بدون اداره مالیات'} · {unit.generalDirectorateName || 'بدون اداره کل'}</span>
+                  <strong>{office.officeName}</strong>
+                  <span>{office.generalDirectorateName || 'بدون اداره کل'}</span>
                 </div>
                 <em className="admin-preview-status admin-preview-status--ok">ثبت‌شده</em>
               </div>
             ))}
-            {!loading && taxUnits.length === 0 && <div className="empty-state compact">هنوز واحد مالیاتی ثبت نشده است.</div>}
+            {!loading && offices.length === 0 && <div className="empty-state compact">هنوز اداره مالیاتی ثبت نشده است.</div>}
           </div>
         </div>
       </section>

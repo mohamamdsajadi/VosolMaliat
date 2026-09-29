@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import AppShell from '../../../components/app-shell';
 import RefreshButton from '../../../components/refresh-button';
 import { createManualExecutionPaper, fetchAdminDataSummary } from '../../../lib/admin-data-entry';
-import { fetchGeneralDirectorates, fetchTaxAffairsOffices, fetchTaxUnits } from '../../../lib/security';
+import { fetchGeneralDirectorates, fetchTaxAffairsOffices } from '../../../lib/security';
 import {
   DataList,
   FieldGrid,
@@ -20,7 +20,7 @@ import {
 export default function ExecutionPaperEntryPage() {
   const [form, setForm] = useState(initialExecutionPaper);
   const [summary, setSummary] = useState({ finalizedDebtPapers: [], taxpayers: [], executionPapers: [] });
-  const [masterdata, setMasterdata] = useState({ generals: [], offices: [], units: [] });
+  const [masterdata, setMasterdata] = useState({ generals: [], offices: [] });
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -28,14 +28,13 @@ export default function ExecutionPaperEntryPage() {
     setLoading(true);
     setMessage('');
     try {
-      const [summaryResult, generalResult, officeResult, unitResult] = await Promise.all([
+      const [summaryResult, generalResult, officeResult] = await Promise.all([
         fetchAdminDataSummary(),
         fetchGeneralDirectorates(),
-        fetchTaxAffairsOffices(),
-        fetchTaxUnits()
+        fetchTaxAffairsOffices()
       ]);
       setSummary(summaryResult);
-      setMasterdata({ generals: generalResult, offices: officeResult, units: unitResult });
+      setMasterdata({ generals: generalResult, offices: officeResult });
     } catch (error) {
       setMessage(error.message || 'دریافت اطلاعات اولیه ناموفق بود.');
     } finally {
@@ -54,21 +53,11 @@ export default function ExecutionPaperEntryPage() {
     return masterdata.offices.filter((item) => String(item.generalDirectorateOfTaxAffairsId) === String(form.mainTaxBureauId));
   }, [form.mainTaxBureauId, masterdata.offices]);
 
-  const filteredUnits = useMemo(() => {
-    if (!form.taxBureauId) {
-      return [];
-    }
-    return masterdata.units.filter((item) => String(item.taxAffairsOfficeId) === String(form.taxBureauId));
-  }, [form.taxBureauId, masterdata.units]);
-
   const updateForm = (event) => {
     const { name, value } = event.target;
     setForm((current) => {
       if (name === 'mainTaxBureauId') {
-        return { ...current, mainTaxBureauId: value, taxBureauId: '', taxUnitId: '' };
-      }
-      if (name === 'taxBureauId') {
-        return { ...current, taxBureauId: value, taxUnitId: '' };
+        return { ...current, mainTaxBureauId: value, taxBureauId: '' };
       }
       return { ...current, [name]: value };
     });
@@ -132,7 +121,6 @@ export default function ExecutionPaperEntryPage() {
           <FieldGrid>
             <Select label="اداره کل امور مالیاتی" name="mainTaxBureauId" value={form.mainTaxBureauId} onChange={updateForm} required options={masterdata.generals.map((item) => ({ value: item.id, label: item.name }))} />
             <Select label="اداره مالیات" name="taxBureauId" value={form.taxBureauId} onChange={updateForm} required disabled={!form.mainTaxBureauId} options={filteredOffices.map((item) => ({ value: item.id, label: item.officeName }))} />
-            <Select label="واحد مالیاتی" name="taxUnitId" value={form.taxUnitId} onChange={updateForm} required disabled={!form.taxBureauId} options={filteredUnits.map((item) => ({ value: item.id, label: item.taxUnitName }))} />
           </FieldGrid>
 
           <div className="form-subtitle">ریز بدهی اختیاری</div>

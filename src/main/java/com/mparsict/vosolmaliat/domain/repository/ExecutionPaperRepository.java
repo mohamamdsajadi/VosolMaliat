@@ -82,7 +82,6 @@ public interface ExecutionPaperRepository extends JpaRepository<ExecutionPaper, 
                 OR np.nationalCode LIKE CONCAT('%', :taxpayerNationalId, '%')
                 OR lp.nationalId LIKE CONCAT('%', :taxpayerNationalId, '%'))
               AND (:currentState IS NULL OR ep.currentState = :currentState)
-              AND (:taxUnitId IS NULL OR ep.taxUnit.id = :taxUnitId)
               AND (:notificationStatus IS NULL
                 OR (:notificationStatus = 'NOTIFIED' AND notification.electronicNotificationDate IS NOT NULL)
                 OR (:notificationStatus = 'NOT_NOTIFIED' AND notification.electronicNotificationDate IS NULL))
@@ -110,7 +109,6 @@ public interface ExecutionPaperRepository extends JpaRepository<ExecutionPaper, 
                 OR np.nationalCode LIKE CONCAT('%', :taxpayerNationalId, '%')
                 OR lp.nationalId LIKE CONCAT('%', :taxpayerNationalId, '%'))
               AND (:currentState IS NULL OR ep.currentState = :currentState)
-              AND (:taxUnitId IS NULL OR ep.taxUnit.id = :taxUnitId)
               AND (:notificationStatus IS NULL
                 OR (:notificationStatus = 'NOTIFIED' AND notification.electronicNotificationDate IS NOT NULL)
                 OR (:notificationStatus = 'NOT_NOTIFIED' AND notification.electronicNotificationDate IS NULL))
@@ -123,7 +121,6 @@ public interface ExecutionPaperRepository extends JpaRepository<ExecutionPaper, 
             @Param("taxpayerNationalId") String taxpayerNationalId,
             @Param("currentState") String currentState,
             @Param("notificationStatus") String notificationStatus,
-            @Param("taxUnitId") Long taxUnitId,
             Pageable pageable);
 
     @Query("SELECT ep FROM ExecutionPaper ep WHERE ep.currentState = :state")

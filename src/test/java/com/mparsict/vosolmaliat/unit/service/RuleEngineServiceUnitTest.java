@@ -28,10 +28,10 @@ class RuleEngineServiceUnitTest {
                 """
                         {
                           "logicalOperator": "AND",
-                          "rejectionReasonCode": "TAX_UNIT_SUSPENDED",
-                          "rejectionReasonDescription": "Execution-paper issuance is suspended for this tax unit",
+                          "rejectionReasonCode": "TAX_OFFICE_SUSPENDED",
+                          "rejectionReasonDescription": "Execution-paper issuance is suspended for this tax office",
                           "conditions": [
-                            { "field": "taxUnitId", "operator": "EQUALS", "value": 7 }
+                            { "field": "taxAffairsOfficeId", "operator": "EQUALS", "value": 7 }
                           ]
                         }
                         """,
@@ -54,24 +54,24 @@ class RuleEngineServiceUnitTest {
                 )
                 .containsExactly("2026-01-01", "2026-12-31", "DOC-2026-10");
         assertThat(result.canIssue()).isFalse();
-        assertThat(result.rejectionReasonCode()).isEqualTo("TAX_UNIT_SUSPENDED");
+        assertThat(result.rejectionReasonCode()).isEqualTo("TAX_OFFICE_SUSPENDED");
         assertThat(result.rejectionReasonDescription())
-                .isEqualTo("Execution-paper issuance is suspended for this tax unit");
+                .isEqualTo("Execution-paper issuance is suspended for this tax office");
         assertThat(result.restrictionRemovalDate()).isEqualTo("2026-12-31");
     }
 
     @Test
-    void evaluateSupportsTaxUnitIdRulesForIssuanceFlow() {
+    void evaluateSupportsTaxAffairsOfficeIdRulesForIssuanceFlow() {
         ExecutionPaperRejectionRule rule = ExecutionPaperRejectionRule.builder()
                 .id(1L)
                 .endDate("2026-08-01")
                 .ruleJson("""
                         {
                           "logicalOperator": "AND",
-                          "rejectionReasonCode": "TAX_UNIT_BLOCKED",
-                          "rejectionReasonDescription": "Tax unit is blocked",
+                          "rejectionReasonCode": "TAX_OFFICE_BLOCKED",
+                          "rejectionReasonDescription": "Tax office is blocked",
                           "conditions": [
-                            { "field": "taxUnitId", "operator": "EQUALS", "value": 7 }
+                            { "field": "taxAffairsOfficeId", "operator": "EQUALS", "value": 7 }
                           ]
                         }
                         """)
@@ -81,7 +81,7 @@ class RuleEngineServiceUnitTest {
         RuleEngineService.RuleEvaluationResult result = service.evaluate(sampleRequest(7L));
 
         assertThat(result.canIssue()).isFalse();
-        assertThat(result.rejectionReasonCode()).isEqualTo("TAX_UNIT_BLOCKED");
+        assertThat(result.rejectionReasonCode()).isEqualTo("TAX_OFFICE_BLOCKED");
         assertThat(result.restrictionRemovalDate()).isEqualTo("2026-08-01");
     }
 
@@ -92,7 +92,7 @@ class RuleEngineServiceUnitTest {
                 .ruleJson("""
                         {
                           "conditions": [
-                            { "field": "taxUnitId", "operator": "EQUALS", "value": 8 }
+                            { "field": "taxAffairsOfficeId", "operator": "EQUALS", "value": 8 }
                           ]
                         }
                         """)
@@ -133,13 +133,11 @@ class RuleEngineServiceUnitTest {
         );
     }
 
-    private DebtPaperIssuanceRequest sampleRequest(Long taxUnitId) {
+    private DebtPaperIssuanceRequest sampleRequest(Long taxAffairsOfficeId) {
         return new DebtPaperIssuanceRequest("DEBT-1001",
                 "VAT",
                 700L,
-                70L,
-                taxUnitId,
-                null,
+                taxAffairsOfficeId,
                 new DebtPaperIssuanceRequest.TaxpayerInfo(
                         "NATURAL",
                         "0012345678",

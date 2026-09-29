@@ -109,8 +109,6 @@ const EXTERNAL_REQUEST_FIELD_LABELS = {
   currentState: 'وضعیت برگ اجرا',
   currentStateLabel: 'عنوان وضعیت برگ اجرا',
   currentStateDisplay: 'وضعیت برگ اجرا',
-  taxUnitId: 'شناسه واحد مالیاتی',
-  taxUnitName: 'واحد مالیاتی',
   taxSource: 'منبع مالیاتی',
   taxSourceLabel: 'عنوان منبع مالیاتی',
   taxSourceDisplay: 'منبع مالیاتی',
@@ -970,7 +968,6 @@ function SanimDocumentSection({ data }) {
         <InfoItem label="اداره امور مالیاتی" value={source.taxOfficeName || finalized.taxAffairsOfficeName || execution.taxAffairsOfficeName} wide />
         <InfoItem label="کد اداره در سنیم" value={formatValue(source.sourceTaxOfficeCode)} ltr />
         <InfoItem label="شناسه داخلی اداره" value={formatValue(finalized.taxBureauId || execution.taxBureauId)} ltr />
-        <InfoItem label="واحد مالیاتی" value={orgDisplay(execution.taxUnitName || finalized.taxUnitName, execution.taxUnitId || finalized.taxUnitId)} />
         <InfoItem label="تلفن اداره" value={formatValue(finalized.taxAffairsOfficePhone || execution.taxAffairsOfficePhone)} ltr />
         <InfoItem label="کد پستی اداره" value={formatValue(finalized.taxAffairsOfficePostalCode || execution.taxAffairsOfficePostalCode)} ltr />
         <InfoItem label="نشانی اداره" value={finalized.taxAffairsOfficeAddress || execution.taxAffairsOfficeAddress} wide />
@@ -1023,7 +1020,8 @@ function SanimDocumentSection({ data }) {
           </summary>
           <div className="epd-technical__body">
             <div className="epd-info-grid">
-              <InfoItem label="قالب سند" value={source.templateCode || 'ورود دستی / مشخص‌نشده'} ltr />
+              <InfoItem label="نوع برگه" value={source.paperType || 'ورود دستی / مشخص‌نشده'} ltr />
+              <InfoItem label="عنوان فارسی برگه" value={source.paperName || '-'} />
               <InfoItem label="نسخه نگاشت" value={source.mappingVersion} ltr />
               <InfoItem label="وضعیت اعتبارسنجی" value={readableEnum(source.validationStatus, VALIDATION_LABELS)} />
               <InfoItem label="واحد پول" value={source.currencyCode} ltr />

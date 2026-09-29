@@ -8,7 +8,6 @@ package com.mparsict.vosolmaliat.application.dto.request;
  * @param taxpayerNationalId شناسه ملی یا کد ملی مؤدی
  * @param currentState وضعیت جاری برگ اجرا
  * @param notificationStatus وضعیت ابلاغ
- * @param taxUnitId شناسه واحد مالیاتی
  * @param minDebt حداقل مبلغ بدهی
  * @param maxDebt حداکثر مبلغ بدهی
  */
@@ -18,12 +17,11 @@ public record ExecutionPaperSearchCriteria(
         String taxpayerNationalId,
         String currentState,
         String notificationStatus,
-        Long taxUnitId,
         java.math.BigDecimal minDebt,
         java.math.BigDecimal maxDebt
 ) {
     /** @return معیار جست‌وجوی بدون فیلتر */
     public static ExecutionPaperSearchCriteria empty() {
-        return new ExecutionPaperSearchCriteria(null, null, null, null, null, null, null, null);
+        return new ExecutionPaperSearchCriteria(null, null, null, null, null, null, null);
     }
 }

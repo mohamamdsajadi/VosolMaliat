@@ -48,7 +48,7 @@ public class TaskAuthorizationService {
     }
 
     public boolean canAssign(CurrentUserContext user) {
-        return !user.isAdmin() && user.hasPermission("TASK_ASSIGN");
+        return user.isAdmin() || user.hasPermission("TASK_ASSIGN");
     }
 
     public boolean canDelegate(CurrentUserContext user, UserTask task, Map<String, Object> variables) {

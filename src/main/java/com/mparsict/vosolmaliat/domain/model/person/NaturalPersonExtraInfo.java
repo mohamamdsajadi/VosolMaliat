@@ -16,6 +16,7 @@ public class NaturalPersonExtraInfo extends BaseEntity {
     @Version private Long version;
     private String firstName;
     private String lastName;
+    @Column(name = "full_name") private String fullName;
     private String fatherName;
     private String birthDate;
 
@@ -33,7 +34,7 @@ public class NaturalPersonExtraInfo extends BaseEntity {
     private Integer certificateOfNoCriminalRecord;
 
     @Column(name = "is_foreign")
-    private Integer isForeign;
+    private Boolean isForeign;
 
     @Column(name = "first_name_en")
     private String firstNameEn;

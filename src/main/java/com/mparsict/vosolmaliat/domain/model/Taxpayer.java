@@ -25,21 +25,38 @@ public class Taxpayer extends BaseEntity {
     @Column(name="tin", nullable=false, unique=true, updatable=false) private String tin;
     @Column(name="registration_trace_code", nullable=false, unique=true, updatable=false) private String registrationTraceCode;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "taxpayer_type", nullable = false, updatable = false)
+    private TaxpayerType taxpayerType;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "natural_person_id")
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "natural_person_id", unique = true)
     private NaturalPerson naturalPerson;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "legal_person_id", unique = true)
     private LegalPerson legalPerson;
 
-    @Transient
     public TaxpayerType getType() {
-        return (naturalPerson != null) ? TaxpayerType.NATURAL : TaxpayerType.LEGAL;
+        return taxpayerType != null ? taxpayerType
+                : (naturalPerson != null ? TaxpayerType.NATURAL : TaxpayerType.LEGAL);
+    }
+
+    @PrePersist
+    @PreUpdate
+    private void validateIdentity() {
+        if ((naturalPerson == null) == (legalPerson == null)) {
+            throw new IllegalStateException("Taxpayer must reference exactly one natural or legal person");
+        }
+        TaxpayerType derived = naturalPerson != null ? TaxpayerType.NATURAL : TaxpayerType.LEGAL;
+        if (taxpayerType == null) taxpayerType = derived;
+        if (taxpayerType != derived) {
+            throw new IllegalStateException("Taxpayer type conflicts with its person reference");
+        }
     }
 
     public Long getNaturalPersonId() {

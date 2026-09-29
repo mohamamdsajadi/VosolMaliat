@@ -7,14 +7,10 @@ package com.mparsict.vosolmaliat.application.dto.response.security;
  * @param generalDirectorateName نام اداره کل
  * @param taxAffairsOfficeId شناسه اداره امور مالیاتی
  * @param taxAffairsOfficeName نام اداره امور مالیاتی
- * @param taxUnitId شناسه واحد مالیاتی
- * @param taxUnitName نام واحد مالیاتی
  */
 public record MasterdataOrganizationResponse(
         Long generalDirectorateId,
         String generalDirectorateName,
         Long taxAffairsOfficeId,
-        String taxAffairsOfficeName,
-        Long taxUnitId,
-        String taxUnitName
+        String taxAffairsOfficeName
 ) {}

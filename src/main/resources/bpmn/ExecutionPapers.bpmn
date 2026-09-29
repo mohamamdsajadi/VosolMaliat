@@ -52,14 +52,12 @@
         <zeebe:ioMapping>
           <zeebe:output source="=executionPaperId" target="executionPaperId" />
           <zeebe:output source="=executionPaperCode" target="executionPaperCode" />
-          <zeebe:output source="=taxUnitId" target="taxUnitId" />
           <zeebe:output source="=debtPaperPayload" target="debtPaperPayload" />
           <zeebe:output source="=success" target="success" />
           <zeebe:output source="=taxAffairsOfficeId" target="taxAffairsOfficeId" />
           <zeebe:output source="=generalDirectorateId" target="generalDirectorateId" />
           <zeebe:output source="=generalOfficeHeadCandidateGroups" target="generalOfficeHeadCandidateGroups" />
           <zeebe:output source="=taxOfficeHeadCandidateGroups" target="taxOfficeHeadCandidateGroups" />
-          <zeebe:output source="=taxUnitHeadCandidateGroups" target="taxUnitHeadCandidateGroups" />
           <zeebe:output source="=taxExpertCandidateGroups" target="taxExpertCandidateGroups" />
           <zeebe:output source="=if debtPaperPayload.taxpayer.type = &#34;LEGAL&#34; then legalPersonNationalId else null" target="legalPersonNationalId" />
           <zeebe:output source="=if debtPaperPayload.taxpayer.type = &#34;LEGAL&#34; then debtPaperDate else null" target="debtPaperDate" />

@@ -3,7 +3,6 @@ import { apiJson } from './api';
 const EXECUTION_PAPER_REVIEW_TASK_IDS = new Set([
   'Activity_0generalHeadReview',
   'Activity_0taxOfficeHeadReview',
-  'Activity_0taxUnitHeadReview',
   'Activity_0taxExpertProcess'
 ]);
 

@@ -23,19 +23,19 @@ class TaskAuthorizationServiceTest {
     );
 
     @Test
-    void taxUnitUserCanClaimCandidateTaskInsideScope() {
-        CurrentUserContext user = user(Set.of("TAX_UNIT_USER"), Set.of(), Set.of("TASK_CLAIM"), organization(10L));
-        UserTask task = task(null, List.of("TAX_UNIT_USER"), List.of());
+    void taxExpertCanClaimCandidateTaskInsideOfficeScope() {
+        CurrentUserContext user = user(Set.of("TAX_EXPERT"), Set.of(), Set.of("TASK_CLAIM"), organization(10L));
+        UserTask task = task(null, List.of("TAX_EXPERT"), List.of());
 
-        assertThat(service.canClaim(user, task, Map.of("taxUnitId", 10L))).isTrue();
+        assertThat(service.canClaim(user, task, Map.of("taxAffairsOfficeId", 10L))).isTrue();
     }
 
     @Test
     void userCanCompleteOnlyOwnAssignedTaskUnlessAdmin() {
-        CurrentUserContext user = user(Set.of("TAX_UNIT_USER"), Set.of(), Set.of("TASK_COMPLETE"), organization(10L));
+        CurrentUserContext user = user(Set.of("TAX_EXPERT"), Set.of(), Set.of("TASK_COMPLETE"), organization(10L));
 
-        assertThat(service.canComplete(user, task("ali", List.of(), List.of()), Map.of("taxUnitId", 10L))).isTrue();
-        assertThat(service.canComplete(user, task("sara", List.of(), List.of()), Map.of("taxUnitId", 10L))).isFalse();
+        assertThat(service.canComplete(user, task("ali", List.of(), List.of()), Map.of("taxAffairsOfficeId", 10L))).isTrue();
+        assertThat(service.canComplete(user, task("sara", List.of(), List.of()), Map.of("taxAffairsOfficeId", 10L))).isFalse();
     }
 
     @Test
@@ -53,7 +53,7 @@ class TaskAuthorizationServiceTest {
                 BusinessRole.GENERAL_OFFICE_HEAD,
                 Set.of("GENERAL_OFFICE_HEAD"),
                 Set.of("TASK_CLAIM"),
-                new MasterdataOrganizationResponse(700L, "Tehran", null, null, null, null));
+                new MasterdataOrganizationResponse(700L, "Tehran", null, null));
         UserTask task = task(null, List.of("GENERAL_OFFICE_HEAD:700"), List.of());
 
         assertThat(service.canClaim(tehranHead, task, Map.of("generalDirectorateId", 700L))).isTrue();
@@ -66,7 +66,7 @@ class TaskAuthorizationServiceTest {
                 BusinessRole.TAX_OFFICE_HEAD,
                 Set.of("TAX_OFFICE_HEAD"),
                 Set.of("TASK_CLAIM"),
-                new MasterdataOrganizationResponse(700L, "Tehran", 70L, "Office 70", null, null));
+                new MasterdataOrganizationResponse(700L, "Tehran", 70L, "Office 70"));
         UserTask task = task(null, List.of("TAX_OFFICE_HEAD:70"), List.of());
 
         assertThat(service.canClaim(officeHead, task,
@@ -81,7 +81,7 @@ class TaskAuthorizationServiceTest {
                 BusinessRole.GENERAL_OFFICE_HEAD,
                 Set.of("GENERAL_OFFICE_HEAD"),
                 Set.of(),
-                new MasterdataOrganizationResponse(700L, "Tehran", null, null, null, null));
+                new MasterdataOrganizationResponse(700L, "Tehran", null, null));
 
         assertThat(new CamundaIdentityMappingService().toCamundaCandidateGroups(user))
                 .contains("GENERAL_OFFICE_HEAD", "GENERAL_OFFICE_HEAD:700");
@@ -123,7 +123,7 @@ class TaskAuthorizationServiceTest {
     }
 
     private MasterdataOrganizationResponse organization(Long id) {
-        return new MasterdataOrganizationResponse(null, null, null, null, id, "Unit " + id);
+        return new MasterdataOrganizationResponse(null, null, id, "Office " + id);
     }
 
     private UserTask task(String assignee, List<String> candidateGroups, List<String> candidateUsers) {

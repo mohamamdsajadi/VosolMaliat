@@ -2,7 +2,6 @@ package com.mparsict.vosolmaliat.domain.model.execution;
 
 import com.mparsict.vosolmaliat.domain.model.BaseEntity;
 import com.mparsict.vosolmaliat.domain.model.Taxpayer;
-import com.mparsict.vosolmaliat.domain.model.masterdata.TaxUnit;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -15,15 +14,14 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class ExecutionPaper extends BaseEntity {
-    @Column(name="issuance_date", updatable=false) private java.time.LocalDateTime issuanceDate;
+    @Column(name="issuance_date", nullable=false, updatable=false) private java.time.LocalDateTime issuanceDate;
     @Column(name="issuance_finalization_reason", updatable=false) private String finalizationReason;
-    @ManyToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name="sending_unit_id", updatable=false) private TaxUnit sendingUnit;
-
+    @Column(name="old_execution_letter_number", updatable=false) private String oldExecutionLetterNumber;
+    @Column(name="old_execution_letter_date", updatable=false) private String oldExecutionLetterDate;
     @Id
     private Long id;
 
-    @Column(name = "execution_paper_unique_code", unique = true)
+    @Column(name = "execution_paper_unique_code", nullable = false, unique = true, updatable = false)
     private String executionPaperUniqueCode;
 
     @Column(name = "tax_source")
@@ -34,16 +32,12 @@ public class ExecutionPaper extends BaseEntity {
     private String currentState;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "finalized_debt_paper_id")
+    @JoinColumn(name = "finalized_debt_paper_id", nullable = false, updatable = false)
     private FinalizedDebtPaper finalizedDebtPaper;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "taxpayer_id")
+    @JoinColumn(name = "taxpayer_id", nullable = false, updatable = false)
     private Taxpayer taxpayer;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "tax_unit_id")
-    private TaxUnit taxUnit;
 
     public Long getFinalizedDebtPaperId() {
         return finalizedDebtPaper == null ? null : finalizedDebtPaper.getId();
@@ -61,11 +55,4 @@ public class ExecutionPaper extends BaseEntity {
         this.taxpayer = taxpayerId == null ? null : Taxpayer.builder().id(taxpayerId).build();
     }
 
-    public Long getTaxUnitId() {
-        return taxUnit == null ? null : taxUnit.getId();
-    }
-
-    public void setTaxUnitId(Long taxUnitId) {
-        this.taxUnit = taxUnitId == null ? null : TaxUnit.builder().id(taxUnitId).build();
-    }
 }

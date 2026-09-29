@@ -24,7 +24,15 @@ class SanimLegacyFieldCleanupTest {
             s.execute("CREATE TABLE debt_paper_push_record(id INTEGER PRIMARY KEY, reference_id TEXT UNIQUE, source_document_id INTEGER REFERENCES finalized_debt_paper(id), execution_paper_id INTEGER REFERENCES execution_paper(id), xml_payload TEXT)");
             s.execute("CREATE TABLE debt_inquiry_result(id INTEGER PRIMARY KEY, execution_paper_id INTEGER REFERENCES execution_paper(id), request_id TEXT UNIQUE, response_json TEXT)");
             for (var entry : SanimLegacyFieldCleanup.COLUMNS.entrySet()) {
-                for (String column : entry.getValue()) s.execute("ALTER TABLE " + entry.getKey() + " ADD COLUMN " + column + " TEXT");
+                if (!tableExists(c, entry.getKey())) {
+                    continue;
+                }
+                Set<String> existingColumns = columns(c, entry.getKey());
+                for (String column : entry.getValue()) {
+                    if (!existingColumns.contains(column)) {
+                        s.execute("ALTER TABLE " + entry.getKey() + " ADD COLUMN " + column + " TEXT");
+                    }
+                }
                 before.put(entry.getKey(), foreignKeys(c, entry.getKey()));
             }
             SanimDocumentSchemaMigration.migrate(c);
@@ -38,7 +46,14 @@ class SanimLegacyFieldCleanupTest {
         SqliteLegacySchemaMigrator.migrate(url);
         try (var c = DriverManager.getConnection(url); var s = c.createStatement()) {
             for (var entry : SanimLegacyFieldCleanup.COLUMNS.entrySet()) {
-                assertThat(foreignKeys(c,entry.getKey())).isEqualTo(before.get(entry.getKey()));
+                if (!tableExists(c, entry.getKey())) {
+                    continue;
+                }
+                List<String> retainedForeignKeys = before.get(entry.getKey()).stream()
+                        .filter(key -> entry.getValue().stream()
+                                .noneMatch(column -> key.contains(":" + column + ":")))
+                        .toList();
+                assertThat(foreignKeys(c,entry.getKey())).isEqualTo(retainedForeignKeys);
                 var columns = columns(c, entry.getKey());
                 assertThat(columns).doesNotContainAnyElementsOf(entry.getValue());
             }
@@ -74,6 +89,12 @@ class SanimLegacyFieldCleanupTest {
         Set<String> result=new HashSet<>();
         try(var s=c.createStatement();var rows=s.executeQuery("PRAGMA table_info("+table+")")) { while(rows.next())result.add(rows.getString("name")); }
         return result;
+    }
+    private boolean tableExists(Connection c, String table) throws Exception {
+        try (var statement = c.prepareStatement("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?")) {
+            statement.setString(1, table);
+            try (var rows = statement.executeQuery()) { return rows.next(); }
+        }
     }
     private List<String> foreignKeys(Connection c,String table) throws Exception {
         List<String> result=new ArrayList<>();

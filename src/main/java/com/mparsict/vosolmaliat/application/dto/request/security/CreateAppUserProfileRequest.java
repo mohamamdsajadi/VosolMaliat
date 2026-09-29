@@ -16,7 +16,6 @@ import com.mparsict.vosolmaliat.domain.enums.BusinessRole;
  * @param businessRole نقش سازمانی کاربر
  * @param generalDirectorateId شناسه اداره کل محل خدمت
  * @param taxAffairsOfficeId شناسه اداره امور مالیاتی محل خدمت
- * @param taxUnitId شناسه واحد مالیاتی محل خدمت
  */
 public record CreateAppUserProfileRequest(
         @NotBlank String keycloakUserId,
@@ -27,6 +26,5 @@ public record CreateAppUserProfileRequest(
         String phoneNumber,
         @NotNull BusinessRole businessRole,
         Long generalDirectorateId,
-        Long taxAffairsOfficeId,
-        Long taxUnitId
+        Long taxAffairsOfficeId
 ) {}

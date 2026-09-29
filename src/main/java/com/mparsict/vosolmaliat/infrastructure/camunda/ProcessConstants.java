@@ -57,10 +57,8 @@ public final class ProcessConstants {
     public static final String VAR_EXECUTION_PAPER_CODE = "executionPaperCode";
     public static final String VAR_GENERAL_DIRECTORATE_ID = "generalDirectorateId";
     public static final String VAR_TAX_AFFAIRS_OFFICE_ID = "taxAffairsOfficeId";
-    public static final String VAR_TAX_UNIT_ID = "taxUnitId";
     public static final String VAR_GENERAL_OFFICE_HEAD_CANDIDATE_GROUPS = "generalOfficeHeadCandidateGroups";
     public static final String VAR_TAX_OFFICE_HEAD_CANDIDATE_GROUPS = "taxOfficeHeadCandidateGroups";
-    public static final String VAR_TAX_UNIT_HEAD_CANDIDATE_GROUPS = "taxUnitHeadCandidateGroups";
     public static final String VAR_TAX_EXPERT_CANDIDATE_GROUPS = "taxExpertCandidateGroups";
     public static final String VAR_SUCCESS = "success";
     public static final String VAR_CAN_INFORM = "canInform";
