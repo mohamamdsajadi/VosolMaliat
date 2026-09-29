@@ -23,6 +23,19 @@ class DebtPaperPushMapperUnitTest {
         return new DebtPaperPushRequest("1234567890", "<content><MAIN>" + xml + "</MAIN></content>", "hash",
                 OffsetDateTime.parse("2026-01-01T00:00:00Z"), "ref-1", "follow-1", null, 1400, 2, "00123", null, "TAXB", template);
     }
+    @Test void everyPaperTypeHasEditableTagAndValueConfiguration() {
+        assertThat(DebtPaperMappingConfig.values())
+                .extracting(DebtPaperMappingConfig::paperType)
+                .containsExactlyInAnyOrder(PaperType.values());
+        assertThat(DebtPaperMappingConfig.EF03.tag(DebtPaperXmlField.IDENTITY_NUMBER))
+                .isEqualTo(SanimXmlTag.R);
+        assertThat(DebtPaperMappingConfig.EF104.tag(DebtPaperXmlField.IDENTITY_NUMBER))
+                .isEqualTo(SanimXmlTag.K);
+        assertThat(DebtPaperMappingConfig.EF23_2.taxAmountBasis())
+                .isEqualTo(DebtPaperMappedValue.NET_REPORTED.value());
+        assertThat(DebtPaperMappingConfig.EF03.label(DebtPaperXmlField.IDENTITY_NUMBER))
+                .isEqualTo("شناسه هویتی");
+    }
     @Test void directTaxPreservesExactAmountsAndSourceFacts() {
         var mapped = mapper.map(request("LTR_EF03", EF03 + "<HB>1226.36</HB><CB>1,234.56</CB><NB>2</NB><DB>3.2</DB><GB>2</GB><EB>7</EB>"));
         var source = mapped.sourceDocument();
