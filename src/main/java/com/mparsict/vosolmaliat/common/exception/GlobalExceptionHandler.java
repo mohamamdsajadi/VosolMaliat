@@ -78,6 +78,12 @@ public class GlobalExceptionHandler {
                 "message", "این عملیات با رابطه یا یکتایی داده‌ها ناسازگار است؛ رکورد دارای وابستگی را نمی‌توان حذف کرد."));
     }
 
+    @ExceptionHandler(jakarta.validation.ConstraintViolationException.class)
+    public ResponseEntity<Map<String,Object>> handleConstraint(jakarta.validation.ConstraintViolationException ex) {
+        return ResponseEntity.unprocessableEntity().body(Map.of("error", "MODEL_VALIDATION_FAILED",
+                "message", "درخواست با الزامات مدل داده سازگار نیست؛ اطلاعات اجباری را تکمیل کنید."));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneric(Exception ex) {
         log.error("Unhandled exception", ex);

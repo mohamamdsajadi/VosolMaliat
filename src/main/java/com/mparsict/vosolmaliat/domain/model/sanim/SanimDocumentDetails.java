@@ -10,6 +10,9 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class SanimDocumentDetails {
+    @Column(name="source_activity_type_id") private Long activityTypeId;
+    @Column(name="source_activity_code") private String activityCode;
+    @Column(name="source_mobile") private String mobile;
     @Column(name="registration_trace_code") private String registrationTraceCode;
     @Column(name="source_xml", columnDefinition="TEXT") private String xml;
     @Embedded private DebtFinancialDetails financialDetails;

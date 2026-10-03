@@ -18,15 +18,15 @@ public class GeneralDirectorateOfTaxAffairs extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "general_directorate_name")
+    @Column(name = "general_directorate_name", nullable=false)
     private String generalDirectorateName;
 
-    @Column(name = "postal_code")
+    @Column(name = "postal_code", nullable=false)
     private String postalCode;
 
-    @Column(name = "address")
+    @Column(name = "address", nullable=false)
     private String address;
 
-    @Column(name = "phone")
+    @Column(name = "phone", nullable=false)
     private String phone;
 }

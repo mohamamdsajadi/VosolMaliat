@@ -43,6 +43,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ExecutionPaperService {
 
+    private final DebtInformationHistoryRepository debtHistoryRepository;
+    private final ActivityTypeRepository activityTypeRepository;
     private final ExecutionPaperRepository executionPaperRepository;
     private final FinalizedDebtPaperRepository finalizedDebtPaperRepository;
     private final TaxpayerRepository taxpayerRepository;
@@ -61,6 +63,7 @@ public class ExecutionPaperService {
     @Transactional
     public ExecutionPaper createFromRequest(DebtPaperIssuanceRequest request) {
         uniqueCodeGenerator.lockIssuance();
+        ModelRequestValidation.requireRequest(request);
         SanimModelValidation.requireDocument(request.sourceDocument());
         var organization = resolveOrganization(request);
         // 1. Find or create FinalizedDebtPaper
@@ -69,17 +72,17 @@ public class ExecutionPaperService {
                 .orElseGet(() ->
                         FinalizedDebtPaper.builder()
                                 .debtPaperUniqueCode(request.debtPaperUniqueCode())
-                                .basisIssueDate(request.sourceDocument().getBasisDocumentDateRaw())
-                                .finalizationReason(request.sourceDocument().getIssuanceReason())
+                                .basisIssueDate(com.mparsict.vosolmaliat.domain.value.PersianDates.parse(request.sourceDocument().getBasisDocumentDateRaw()))
+                                .finalizationReason(com.mparsict.vosolmaliat.domain.enums.FinalizationReason.fromSourceValue(request.sourceDocument().getIssuanceReason()))
                                 .taxReturnNumber(request.sourceDocument().getBasisDocumentNumber())
-                                .taxReturnDate(request.sourceDocument().getBasisDocumentDateRaw())
+                                .taxReturnDate(com.mparsict.vosolmaliat.domain.value.PersianDates.parse(request.sourceDocument().getBasisDocumentDateRaw()))
                                 .finalTaxDebtNotificationNumber(request.sourceDocument().getDocumentNumber())
                                 .finalTaxDebtNotificationViewDate(null)
-                                .taxYear(request.sourceDocument().getTaxYear())
-                                .taxPeriod(request.sourceDocument().getTaxPeriod())
-                                .periodStartDate(request.sourceDocument().getTaxPeriodStartRaw())
-                                .periodEndDate(request.sourceDocument().getTaxPeriodEndRaw())
-                                .taxSource(request.taxSource())
+                                .taxYear(Integer.valueOf(request.sourceDocument().getTaxYear()))
+                                .taxPeriod(request.sourceDocument().getTaxPeriod() == null ? null : com.mparsict.vosolmaliat.domain.enums.TaxPeriod.of(Integer.parseInt(request.sourceDocument().getTaxPeriod())))
+                                .periodStartDate(com.mparsict.vosolmaliat.domain.value.PersianDates.parse(request.sourceDocument().getTaxPeriodStartRaw()))
+                                .periodEndDate(com.mparsict.vosolmaliat.domain.value.PersianDates.parse(request.sourceDocument().getTaxPeriodEndRaw()))
+                                .taxSource(TaxSourceType.valueOf(request.taxSource()))
 
                                 .mainTaxBureau(organization.generalId() == null ? null : com.mparsict.vosolmaliat.domain.model.masterdata.GeneralDirectorateOfTaxAffairs.builder().id(organization.generalId()).build())
                                 .taxBureau(organization.officeId() == null ? null : com.mparsict.vosolmaliat.domain.model.masterdata.TaxAffairsOffice.builder().id(organization.officeId()).build())
@@ -93,10 +96,10 @@ public class ExecutionPaperService {
         DebtPaperIssuanceRequest.TaxpayerInfo tpInfo = request.taxpayer();
 
         if ("NATURAL".equalsIgnoreCase(tpInfo.type())) {
-            NaturalPerson np = resolveNaturalPerson(tpInfo);
+            NaturalPerson np = resolveNaturalPerson(tpInfo, request.sourceDocument().getTaxpayerName());
             naturalPersonId = np.getId();
         } else {
-            LegalPerson lp = resolveLegalPerson(tpInfo);
+            LegalPerson lp = resolveLegalPerson(tpInfo, request.sourceDocument().getTradeName());
             legalPersonId = lp.getId();
         }
 
@@ -124,7 +127,7 @@ public class ExecutionPaperService {
                 || !java.util.Objects.equals(taxpayer.getLegalPersonId(), finalLegalPersonId)
                 || !java.util.Objects.equals(taxpayer.getRegistrationTraceCode(), request.sourceDocument().getRegistrationTraceCode()))
             throw new com.mparsict.vosolmaliat.common.exception.BusinessException("TIN_IDENTITY_CONFLICT", "شناسه مؤدی با شخص یا کد رهگیری ثبت‌نام سازگار نیست");
-        taxpayer.updateActivity(request.sourceDocument().getActivityTitle());
+        taxpayer.updateActivity(resolveActivity(request.sourceDocument()));
         taxpayer = taxpayerRepository.save(taxpayer);
         if (fdp.getTaxpayer() == null) {
             fdp.setTaxpayer(taxpayer);
@@ -133,14 +136,13 @@ public class ExecutionPaperService {
             throw new com.mparsict.vosolmaliat.common.exception.BusinessException(
                     "DEBT_PAPER_TAXPAYER_CONFLICT", "برگ بدهی قطعی به مؤدی دیگری تعلق دارد");
         }
-        upsertContactInfo(tpInfo, finalNaturalPersonId, finalLegalPersonId,request.sourceDocument().getPhone());
+        upsertContactInfo(tpInfo, finalNaturalPersonId, finalLegalPersonId,request.sourceDocument().getPhone(),request.sourceDocument().getMobile());
 
         // 3. Create ExecutionPaper with UNASSIGNED state
         LocalDateTime issuanceDate = LocalDateTime.now(java.time.ZoneId.of("Asia/Tehran"));
         var number = uniqueCodeGenerator.generateNumberForYear(
                 UniqueCodeGenerator.persianYear(issuanceDate.toLocalDate()));
         ExecutionPaper ep = ExecutionPaper.builder()
-                .id(number.id())
                 .executionPaperUniqueCode(number.code())
                 .issuanceDate(issuanceDate)
                 .finalizationReason(request.sourceDocument().getIssuanceReason())
@@ -170,10 +172,22 @@ public class ExecutionPaperService {
                 .currentAmountsAsOf(ep.getIssuanceDate())
                 .currentAmounts(request.sourceDocument().getAmounts().copy()).build();
         debtInformationRepository.save(debtInfo);
+        debtHistoryRepository.save(DebtInformationHistory.current(debtInfo, null, ep.getIssuanceDate()));
         executionPaperRepository.flush();
 
         log.info("Created ExecutionPaper id={}, code={}", ep.getId(), ep.getExecutionPaperUniqueCode());
         return ep;
+    }
+
+    private com.mparsict.vosolmaliat.domain.model.masterdata.ActivityType resolveActivity(
+            com.mparsict.vosolmaliat.domain.model.sanim.SanimDocumentDetails source) {
+        if (source.getActivityTypeId() != null) return activityTypeRepository.findById(source.getActivityTypeId())
+            .orElseThrow(() -> new com.mparsict.vosolmaliat.common.exception.BusinessException("ACTIVITY_TYPE_NOT_FOUND", "نوع فعالیت یافت نشد"));
+        if (hasText(source.getActivityCode())) return activityTypeRepository.findByIntaCode(source.getActivityCode())
+            .orElseThrow(() -> new com.mparsict.vosolmaliat.common.exception.BusinessException("ACTIVITY_TYPE_NOT_FOUND", "اینتاکد در جدول نوع فعالیت تعریف نشده است"));
+        var matches = activityTypeRepository.findByTitle(source.getActivityTitle());
+        if (matches.size() == 1) return matches.getFirst();
+        throw new com.mparsict.vosolmaliat.common.exception.BusinessException("ACTIVITY_TYPE_REQUIRED", "نوع فعالیت باید به یک ردیف مشخص از جدول نوع فعالیت ارجاع دهد");
     }
 
     private record Organization(Long generalId, Long officeId) {}
@@ -193,7 +207,7 @@ public class ExecutionPaperService {
                   && java.util.Objects.equals(o.getGeneralDirectorateOfTaxAffairs().getGeneralDirectorateName(),source.getGeneralDirectorateName()))
             .toList();
         if (matching.size() == 1) return new Organization(matching.getFirst().getGeneralDirectorateOfTaxAffairsId(),matching.getFirst().getId());
-        return new Organization(request.mainTaxBureauId(),null);
+        throw new com.mparsict.vosolmaliat.common.exception.BusinessException("TAX_OFFICE_REQUIRED", "اداره امور مالیاتی باید در اطلاعات پایه تعریف شده و بدون ابهام مشخص باشد");
     }
 
     public ExecutionPaperPageResponse getAll(int page, int size) {
@@ -324,8 +338,8 @@ public class ExecutionPaperService {
 
 
             finalized.put("taxSource", fdp.getTaxSource());
-            finalized.put("taxSourceLabel", TaxSourceType.labelOf(fdp.getTaxSource()));
-            finalized.put("taxSourceDisplay", TaxSourceType.displayOf(fdp.getTaxSource()));
+            finalized.put("taxSourceLabel", TaxSourceType.labelOf(fdp.getTaxSource().name()));
+            finalized.put("taxSourceDisplay", TaxSourceType.displayOf(fdp.getTaxSource().name()));
 
 
             finalized.put("mainTaxBureauId", fdp.getMainTaxBureauId());
@@ -389,6 +403,14 @@ public class ExecutionPaperService {
             notification.put("createdAt", n.getCreatedAt());
         });
 
+        if (ep.getWorkflowState() != null) {
+            var workflow = ep.getWorkflowState();
+            notification.put("informStatus", workflow.getInformStatus());
+            notification.put("informRejectionReason", workflow.getInformRejectionReason());
+            notification.put("informRejectedAt", workflow.getInformRejectedAt());
+            notification.put("reInformDate", workflow.getReInformDate());
+            notification.put("nextDebtInquiryDate", workflow.getNextDebtInquiryDate());
+        }
         Map<String, Object> ruleRejection = new LinkedHashMap<>();
         String debtPaperUniqueCode = stringValue(finalized.get("debtPaperUniqueCode"));
         if (debtPaperUniqueCode != null) {
@@ -450,7 +472,7 @@ public class ExecutionPaperService {
         return hasCode ? code : null;
     }
 
-    private void upsertContactInfo(DebtPaperIssuanceRequest.TaxpayerInfo taxpayerInfo, Long naturalPersonId, Long legalPersonId, String phone) {
+    private void upsertContactInfo(DebtPaperIssuanceRequest.TaxpayerInfo taxpayerInfo, Long naturalPersonId, Long legalPersonId, String phone, String mobile) {
         if (!hasText(taxpayerInfo.postalCode()) && !hasText(taxpayerInfo.address()) && !hasText(phone)) {
             return;
         }
@@ -459,9 +481,10 @@ public class ExecutionPaperService {
                         .orElseGet(() -> ContactInfo.builder().naturalPerson(NaturalPerson.builder().id(naturalPersonId).build()).build())
                 : contactInfoRepository.findFirstByLegalPersonId(legalPersonId)
                         .orElseGet(() -> ContactInfo.builder().legalPerson(LegalPerson.builder().id(legalPersonId).build()).build());
-        if ((hasText(phone) && !java.util.Objects.equals(phone, contactInfo.getPhoneNo()))
+        if (!java.util.Objects.equals(mobile, contactInfo.getMobileNo()) || (hasText(phone) && !java.util.Objects.equals(phone, contactInfo.getPhoneNo()))
                 || (hasText(taxpayerInfo.postalCode()) && !java.util.Objects.equals(taxpayerInfo.postalCode(),contactInfo.getPostalCode()))
                 || (hasText(taxpayerInfo.address()) && !java.util.Objects.equals(taxpayerInfo.address(),contactInfo.getLegalAddress()))) contactInfo.snapshot();
+        contactInfo.setMobileNo(mobile);
         if (hasText(phone)) contactInfo.setPhoneNo(phone);
         if (hasText(taxpayerInfo.postalCode())) {
             contactInfo.setPostalCode(taxpayerInfo.postalCode());
@@ -639,9 +662,10 @@ public class ExecutionPaperService {
             if (notificationDate != null) {
                 notificationStatus = "NOTIFIED";
                 try {
-                    LocalDate notifLocalDate = LocalDate.parse(notificationDate.substring(0, 10));
+                    if (notif.getTaxpayerNotificationViewDate() == null) throw new IllegalStateException("تاریخ رویت ثبت نشده است");
+                    LocalDate notifLocalDate = notif.getTaxpayerNotificationViewDate().toLocalDate();
                     long daysSince = java.time.temporal.ChronoUnit.DAYS.between(notifLocalDate, LocalDate.now());
-                    paymentDeadlineStatus = daysSince > 30 ? "DEADLINE_EXPIRED" : "AWAITING_PAYMENT";
+                    paymentDeadlineStatus = daysSince >= 30 ? "DEADLINE_EXPIRED" : "AWAITING_PAYMENT";
                 } catch (Exception e) {
                     log.warn("Could not parse notification date: {}", notificationDate);
                 }
@@ -669,12 +693,13 @@ public class ExecutionPaperService {
         );
     }
 
-    private NaturalPerson resolveNaturalPerson(DebtPaperIssuanceRequest.TaxpayerInfo info) {
+    private NaturalPerson resolveNaturalPerson(DebtPaperIssuanceRequest.TaxpayerInfo info, String fullName) {
         if (info.nationalCode() != null) {
             Optional<NaturalPerson> existing = naturalPersonRepository.findByNationalCode(info.nationalCode());
             if (existing.isPresent()) {
                 var person = existing.get();
                 person.updateProfile(info.firstName(),info.lastName(),info.fatherName(),info.birthDate());
+                person.completeFullName(fullName);
                 return person;
             }
         }
@@ -683,6 +708,7 @@ public class ExecutionPaperService {
             if (existing.isPresent()) {
                 var person = existing.get();
                 person.updateProfile(info.firstName(),info.lastName(),info.fatherName(),info.birthDate());
+                person.completeFullName(fullName);
                 return person;
             }
         }
@@ -694,15 +720,17 @@ public class ExecutionPaperService {
                 .fatherName(info.fatherName() != null ? info.fatherName() : "")
                 .birthDate(info.birthDate() != null ? info.birthDate() : "")
                 .build();
+        np.completeFullName(fullName);
         return naturalPersonRepository.save(np);
     }
 
-    private LegalPerson resolveLegalPerson(DebtPaperIssuanceRequest.TaxpayerInfo info) {
+    private LegalPerson resolveLegalPerson(DebtPaperIssuanceRequest.TaxpayerInfo info, String tradeName) {
         if (info.nationalId() != null) {
             Optional<LegalPerson> existing = legalPersonRepository.findByNationalId(info.nationalId());
             if (existing.isPresent()) {
                 var person = existing.get();
                 person.updateProfile(info.companyName(),info.registrationNumber(),info.registrationDate());
+                person.updateTradeName(tradeName);
                 return person;
             }
         }
@@ -711,6 +739,7 @@ public class ExecutionPaperService {
             if (existing.isPresent()) {
                 var person = existing.get();
                 person.updateProfile(info.companyName(),info.registrationNumber(),info.registrationDate());
+                person.updateTradeName(tradeName);
                 return person;
             }
         }
@@ -720,6 +749,7 @@ public class ExecutionPaperService {
                 .registrationDate(info.registrationDate() != null ? info.registrationDate() : "")
                 .name(info.companyName() != null ? info.companyName() : "")
                 .build();
+        lp.updateTradeName(tradeName);
         return legalPersonRepository.save(lp);
     }
 

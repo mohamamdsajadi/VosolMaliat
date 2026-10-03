@@ -20,6 +20,14 @@ public class CamundaMessageService {
 
     private final CamundaClient camundaClient;
 
+    public void publishNotificationViewed(Long executionPaperId, Long version, String viewDate) {
+        camundaClient.newPublishMessageCommand().messageName("ExecutionPaperViewed")
+                .correlationKey(executionPaperId.toString())
+                .messageId("execution-view-" + executionPaperId + "-" + version)
+                .timeToLive(Duration.ofDays(30))
+                .variables(Map.of("taxpayerNotificationViewDate", viewDate)).send().join();
+    }
+
     public void publishExecutionPaperInformed(Long executionPaperId, String informDate) {
         try {
             camundaClient.newPublishMessageCommand()

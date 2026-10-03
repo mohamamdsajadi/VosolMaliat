@@ -69,6 +69,8 @@ export default function InformRuleDashboardPage() {
   const [startDate, setStartDate] = useState(new Date().toISOString().slice(0, 10))
   const [endDate, setEndDate] = useState('2026-12-29')
   const [documentNo, setDocumentNo] = useState('')
+  const [filePath, setFilePath] = useState('')
+  const [parentRuleId, setParentRuleId] = useState('')
 
   const preview = useMemo(() => ({
     logicalOperator,
@@ -104,7 +106,7 @@ export default function InformRuleDashboardPage() {
         startDate,
         endDate,
         documentNo,
-        filePath: null,
+        filePath, errorCode: reasonCode, errorMessage: description, parentRuleId: parentRuleId ? Number(parentRuleId) : null,
         description,
       }),
     })
@@ -197,11 +199,13 @@ export default function InformRuleDashboardPage() {
                 <JalaliInput value={endDate} onChangeValue={setEndDate} style={inputStyle} required />
               </label>
               <label style={fieldStyle}>شماره مستند
-                <input value={documentNo} onChange={e => setDocumentNo(e.target.value)} style={inputStyle} />
+                <input required value={documentNo} onChange={e => setDocumentNo(e.target.value)} style={inputStyle} />
               </label>
             </div>
 
             <label style={fieldStyle}>شرح قانون
+              <input required aria-label="آدرس فایل سند" placeholder="آدرس فایل سند" value={filePath} onChange={e => setFilePath(e.target.value)} style={inputStyle} />
+              <input aria-label="شناسه قاعده والد" placeholder="شناسه قاعده والد (برای الحاقیه)" value={parentRuleId} onChange={e => setParentRuleId(e.target.value)} style={inputStyle} />
               <textarea value={description} onChange={e => setDescription(e.target.value)} style={{ ...inputStyle, minHeight: 90 }} />
             </label>
 

@@ -16,9 +16,9 @@ public class NaturalPersonExtraInfo extends BaseEntity {
     @Version private Long version;
     private String firstName;
     private String lastName;
-    @Column(name = "full_name") private String fullName;
-    private String fatherName;
-    private String birthDate;
+    @Column(name = "full_name", nullable=false) private String fullName;
+    @Column(nullable=false) private String fatherName;
+    @Column(nullable=false) private java.time.LocalDateTime birthDate;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,7 +33,7 @@ public class NaturalPersonExtraInfo extends BaseEntity {
     @Column(name = "certificate_of_no_criminal_record")
     private Integer certificateOfNoCriminalRecord;
 
-    @Column(name = "is_foreign")
+    @Column(name = "is_foreign", nullable=false)
     private Boolean isForeign;
 
     @Column(name = "first_name_en")

@@ -2,6 +2,8 @@ package com.mparsict.vosolmaliat.domain.model.person;
 import com.mparsict.vosolmaliat.domain.model.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+@org.hibernate.annotations.Immutable
+@jakarta.persistence.EntityListeners(com.mparsict.vosolmaliat.domain.model.ImmutableEntityListener.class)
 @Entity @Table(name="legal_person") @Getter @Setter @NoArgsConstructor
 public class LegalPerson extends BaseEntity {
     @Id @GeneratedValue(strategy=GenerationType.IDENTITY) private Long id;
@@ -14,7 +16,7 @@ public class LegalPerson extends BaseEntity {
     public LegalPerson(Long id,String nationalId,String registrationNumber,String registrationDate,String name) {
         this.id=id;this.nationalId=nationalId;
         if(registrationNumber!=null || registrationDate!=null || name!=null) {
-            profile().setRegistrationNumber(registrationNumber);profile().setRegistrationDate(registrationDate);profile().setName(name);
+            profile().setRegistrationNumber(registrationNumber);profile().setRegistrationDate(com.mparsict.vosolmaliat.domain.value.PersianDates.parse(registrationDate));profile().setName(name);
         }
     }
     public void updateProfile(String name,String registrationNumber,String registrationDate) {
@@ -26,10 +28,15 @@ public class LegalPerson extends BaseEntity {
         if(extraInfo==null) extraInfo=LegalPersonExtraInfo.builder().legalPerson(this).build();
         return extraInfo;
     }
+    public void updateTradeName(String name) {
+        if (java.util.Objects.equals(profile().getTradeName(), name)) return;
+        if (id != null && extraInfo.getId() != null) profileHistory.add(LegalPersonExtraInfoHistory.from(this, extraInfo));
+        extraInfo.setTradeName(name);
+    }
     public String getRegistrationNumber(){return extraInfo==null?null:extraInfo.getRegistrationNumber();}
-    public String getRegistrationDate(){return extraInfo==null?null:extraInfo.getRegistrationDate();}
+    public String getRegistrationDate(){return extraInfo==null?null:com.mparsict.vosolmaliat.domain.value.PersianDates.format(extraInfo.getRegistrationDate());}
     public String getName(){return extraInfo==null?null:extraInfo.getName();}
     public void setRegistrationNumber(String v){profile().setRegistrationNumber(v);}
-    public void setRegistrationDate(String v){profile().setRegistrationDate(v);}
+    public void setRegistrationDate(String v){profile().setRegistrationDate(com.mparsict.vosolmaliat.domain.value.PersianDates.parse(v));}
     public void setName(String v){profile().setName(v);}
 }

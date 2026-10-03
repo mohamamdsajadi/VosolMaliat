@@ -37,13 +37,15 @@ public class RelatedPerson extends BaseEntity {
     @JoinColumn(name = "post_id")
     private RelatedPersonPost post;
 
-    @Column(name = "start_date")
+    @Column(name="post_name", nullable=false) private String postName;
+
+    @Column(name = "start_date", nullable=false)
     private String startDate;
 
-    @Column(name = "end_date")
+    @Column(name = "end_date", nullable=false)
     private String endDate;
 
-    @Column(name = "position_expiry_date")
+    @Column(name = "position_expiry_date", nullable=false)
     private String positionExpiryDate;
 
     @Column(name = "is_board_member", nullable = false)
@@ -123,6 +125,7 @@ public class RelatedPerson extends BaseEntity {
         if (legalPerson == null && legalRepresentativeNaturalPerson != null) {
             throw new IllegalStateException("A natural related person cannot have a legal-person representative");
         }
+        if (post != null && post.getCode() != null) postName = post.getCode().name();
         RelatedPersonType personType = naturalPerson != null
                 ? RelatedPersonType.NATURAL
                 : RelatedPersonType.LEGAL;

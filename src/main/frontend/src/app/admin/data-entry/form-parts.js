@@ -13,7 +13,7 @@ const emptyAmounts = Object.fromEntries(Object.keys(aggregateLabels).map(key => 
 export const initialDebtPaper = {
   taxpayerIdentifier: '', registrationTraceCode: '', basisDocumentDateRaw: '', taxPeriodStartRaw: '', taxPeriodEndRaw: '',
   debtPaperUniqueCode: '', documentNumber: '', issueDateRaw: '', issuanceReason: '', taxSource: '',
-  taxYear: '', taxPeriod: '', activityTitle: '', sourceTaxOfficeCode: '',
+  taxYear: '', taxPeriod: '', activityTitle: '', activityTypeId: '', phone: '', mobile: '', tradeName: '', paperType: 'EF03', sourceTaxOfficeCode: '',
   mainTaxBureauId: '', taxBureauId: '',
   taxpayerType: 'NATURAL', nationalCode: '', firstName: '', lastName: '', fatherName: '', birthDate: '',
   postalCode: '', address: '', nationalId: '', registrationNumber: '', registrationDate: '', companyName: '',
@@ -28,7 +28,7 @@ export function randomDebtPaperSample(masterdata = {}, forcedTaxpayerType = null
   const selected = sampleHierarchicalMasterdata(masterdata)
   return {
     ...initialDebtPaper, taxpayerIdentifier: String(Date.now()), registrationTraceCode: `REG-${Date.now()}`, basisDocumentDateRaw: randomJalaliDate(), debtPaperUniqueCode: `DOC-${Date.now()}`, documentNumber: `LETTER-${Date.now()}`,
-    issueDateRaw: randomJalaliDate(), taxYear: '1403', taxPeriod: '1', taxSource: 'VAT', activityTitle: 'خدمات عمومی',
+    issueDateRaw: randomJalaliDate(), taxYear: '1403', taxPeriod: '1', taxSource: 'VAT', issuanceReason: 'SELF_DECLARATION', activityTypeId: String(masterdata.activities?.[0]?.id || ''), activityTitle: masterdata.activities?.[0]?.title || '', phone: '02112345678', mobile: '09121234567', tradeName: 'نمونه', fatherName: 'حسن', birthDate: '1360/01/01', registrationNumber: '12345', registrationDate: '1390/01/01',
     mainTaxBureauId: selected.generalId, taxBureauId: selected.officeId,
     taxpayerType: natural ? 'NATURAL' : 'LEGAL', nationalCode: natural ? randomNationalCode() : '',
     firstName: natural ? 'علی' : '', lastName: natural ? 'نمونه' : '',
@@ -64,6 +64,7 @@ export function toDebtPaperPayload(form) {
       basisDocumentNumber: form.debtPaperUniqueCode, basisDocumentDateRaw: form.basisDocumentDateRaw,
       taxPeriodStartRaw: form.taxPeriodStartRaw, taxPeriodEndRaw: form.taxPeriodEndRaw,
       issuanceReason: form.issuanceReason, taxYear: form.taxYear, taxPeriod: form.taxPeriod,
+      paperType: form.paperType, activityTypeId: numberOrNull(form.activityTypeId), phone: form.phone, mobile: form.mobile, tradeName: form.tradeName,
       activityTitle: form.activityTitle, sourceTaxOfficeCode: form.sourceTaxOfficeCode || null,
       personType: form.taxpayerType, identityNumber: natural ? form.nationalCode : form.nationalId,
       taxpayerName: natural ? [form.firstName, form.lastName].filter(Boolean).join(' ') : form.companyName,

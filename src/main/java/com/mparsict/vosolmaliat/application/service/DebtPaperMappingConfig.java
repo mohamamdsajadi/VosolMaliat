@@ -154,7 +154,7 @@ public enum DebtPaperMappingConfig {
     String text(SanimXmlValues xml, DebtPaperXmlField field) {
         SanimXmlTag tag = tags.get(field);
         if (tag == null) return null;
-        return requiredMappedFields.contains(field)
+        return requiredMappedFields.contains(field) && field != TAX_PERIOD_START && field != TAX_PERIOD_END
                 ? xml.required(tag.code())
                 : xml.text(tag.code());
     }
@@ -167,12 +167,18 @@ public enum DebtPaperMappingConfig {
 
     String issuanceReason(SanimXmlValues xml) {
         return switch (issuanceReasonMode) {
-            case CANONICAL -> DebtPaperIssuanceReason
-                    .fromSourceValue(required(xml, ISSUANCE_REASON))
-                    .code();
+            case CANONICAL -> canonicalReason(required(xml, ISSUANCE_REASON));
             case RAW -> text(xml, ISSUANCE_REASON);
             case NONE -> null;
         };
+    }
+
+    private String canonicalReason(String value) {
+        try {
+            return com.mparsict.vosolmaliat.domain.enums.FinalizationReason.fromSourceValue(value).name();
+        } catch (IllegalArgumentException exception) {
+            throw SanimXmlValues.invalid(exception.getMessage());
+        }
     }
 
     DebtFinancialDetails financialDetails(Document document, SanimXmlValues xml) {

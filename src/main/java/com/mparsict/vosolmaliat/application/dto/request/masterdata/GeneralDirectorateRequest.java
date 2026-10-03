@@ -12,7 +12,7 @@ import jakarta.validation.constraints.NotBlank;
  */
 public record GeneralDirectorateRequest(
         @NotBlank String name,
-        String postalCode,
-        String address,
-        String phone
+        @NotBlank(message="کد پستی الزامی است") String postalCode,
+        @NotBlank(message="نشانی الزامی است") String address,
+        @NotBlank(message="شماره تلفن الزامی است") String phone
 ) {}

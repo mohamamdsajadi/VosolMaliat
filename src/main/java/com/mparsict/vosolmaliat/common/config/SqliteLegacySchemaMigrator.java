@@ -31,7 +31,11 @@ public class SqliteLegacySchemaMigrator
             return;
         }
 
-        migrate(jdbcUrl);
+        // The document model is a deliberate rebuild, not a lossy automatic migration.
+        try (Connection connection = DriverManager.getConnection(jdbcUrl)) {
+            if (tableExists(connection, "execution_paper") && !tableExists(connection, "dynamic_control_rule"))
+                throw new IllegalStateException("مدل پایگاه داده قدیمی است؛ ابزار بازسازی مستند مدل داده را اجرا کنید.");
+        } catch (SQLException exception) { throw new IllegalStateException("بررسی مدل پایگاه داده ناموفق بود", exception); }
     }
 
     public static void migrate(String jdbcUrl) {

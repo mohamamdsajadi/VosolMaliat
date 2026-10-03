@@ -60,8 +60,10 @@ class SqliteSchemaStartupTest {
                     "natural_person_extra_info_history",
                     "legal_person_extra_info_history",
                     "contact_info_history",
-                    "execution_paper_rejection_rule_history",
-                    "execution_paper_inform_rejection_rule_history",
+                    "dynamic_control_rule",
+                    "dynamic_control_rule_history",
+                    "activity_type",
+                    "execution_workflow_state",
                     "general_directorate_of_tax_affairs_history",
                     "tax_affairs_office_history"
             );

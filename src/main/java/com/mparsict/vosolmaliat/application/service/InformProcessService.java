@@ -50,23 +50,22 @@ public class InformProcessService {
     @Transactional
     public void markSentToElectronicNotification(Long executionPaperId) {
         ExecutionPaper executionPaper = findExecutionPaper(executionPaperId);
-        ExecutionPaperNotification notification = findOrCreateNotification(executionPaper);
-        notification.setInformStatus(ExecutionPaperState.INFORM_SENT.name());
-        notificationRepository.save(notification);
         changeState(executionPaper, ExecutionPaperState.INFORM_SENT.name());
-        fakeElectronicNotificationService.send(executionPaperId);
+        var sent = fakeElectronicNotificationService.send(executionPaperId);
+        executionPaper.getWorkflowState().setInformStatus(ExecutionPaperState.INFORM_SENT.name());
+        executionPaper.getWorkflowState().setNotificationTrackingId(sent.externalTrackingCode());
     }
 
     @Transactional
     public void updateInformStatus(Long executionPaperId, Boolean canInform, String informDate, String rejectionCode, String rejectionDesc) {
         ExecutionPaper executionPaper = findExecutionPaper(executionPaperId);
-        ExecutionPaperNotification notification = findOrCreateNotification(executionPaper);
+        var workflow = workflow(executionPaper);
         if (Boolean.FALSE.equals(canInform)) {
             String reason = joinReason(rejectionCode, rejectionDesc);
-            notification.setInformStatus(ExecutionPaperState.INFORM_REJECTED.name());
-            notification.setInformRejectionReason(reason);
-            notification.setInformRejectedAt(LocalDateTime.now().toString());
-            notificationRepository.save(notification);
+            workflow.setInformStatus(ExecutionPaperState.INFORM_REJECTED.name());
+            workflow.setInformRejectionReason(reason);
+            workflow.setInformRejectedAt(LocalDateTime.now().toString());
+            executionPaperRepository.save(executionPaper);
             changeState(executionPaper, ExecutionPaperState.INFORM_REJECTED.name());
             auditLogService.record(null, "EXECUTION_PAPER_INFORM_REJECTED", "EXECUTION_PAPER",
                     executionPaperId.toString(), null, reason);
@@ -74,7 +73,12 @@ public class InformProcessService {
         }
 
         String normalizedInformDate = normalizeInformDateTime(informDate);
-        notification.setInformStatus(ExecutionPaperState.INFORMED.name());
+        ExecutionPaperNotification notification = notificationRepository.findByExecutionPaperId(executionPaperId)
+                .orElseGet(() -> ExecutionPaperNotification.builder().executionPaper(executionPaper)
+                        .electronicNotificationId(workflow.getNotificationTrackingId()).build());
+        if (notification.getElectronicNotificationId() == null)
+            throw new BusinessException("NOTIFICATION_ID_REQUIRED", "شناسه ابلاغ الکترونیک دریافت نشده است");
+        workflow.setInformStatus(ExecutionPaperState.INFORMED.name());
         notification.setElectronicNotificationDate(normalizedInformDate);
         notificationRepository.save(notification);
         changeState(executionPaper, ExecutionPaperState.INFORMED.name());
@@ -88,9 +92,8 @@ public class InformProcessService {
         LocalDate baseDate = parseDateOrToday(restrictionRemovalDate);
         String reInformDate = OffsetDateTime.of(baseDate.plusDays(1).atStartOfDay(), TEHRAN.getRules().getOffset(LocalDateTime.now()))
                 .toString();
-        ExecutionPaperNotification notification = findOrCreateNotification(executionPaper);
-        notification.setReInformDate(reInformDate);
-        notificationRepository.save(notification);
+        workflow(executionPaper).setReInformDate(reInformDate);
+        executionPaperRepository.save(executionPaper);
         auditLogService.record(null, "EXECUTION_PAPER_RE_INFORM_SCHEDULED", "EXECUTION_PAPER",
                 executionPaperId.toString(), null, reInformDate);
         return reInformDate;
@@ -99,10 +102,13 @@ public class InformProcessService {
     @Transactional
     public String setNextDebtInquiryDate(Long executionPaperId, String informDate) {
         ExecutionPaper executionPaper = findExecutionPaper(executionPaperId);
-        String nextDate = parseDateOrToday(informDate).plusMonths(1).toString();
-        ExecutionPaperNotification notification = findOrCreateNotification(executionPaper);
-        notification.setNextDebtInquiryDate(nextDate);
-        notificationRepository.save(notification);
+        var notification = notificationRepository.findByExecutionPaperId(executionPaperId)
+                .orElseThrow(() -> new BusinessException("NOTIFICATION_NOT_FOUND", "ابلاغ برگ اجرا یافت نشد"));
+        if (notification.paymentDeadline() == null)
+            throw new BusinessException("NOTIFICATION_NOT_VIEWED", "مهلت سی‌روزه پس از ثبت تاریخ رویت محاسبه می‌شود");
+        String nextDate = notification.paymentDeadline().toString();
+        workflow(executionPaper).setNextDebtInquiryDate(nextDate);
+        executionPaperRepository.save(executionPaper);
         auditLogService.record(null, "NEXT_DEBT_INQUIRY_DATE_SET", "EXECUTION_PAPER",
                 executionPaperId.toString(), informDate, nextDate);
         return nextDate;
@@ -117,9 +123,28 @@ public class InformProcessService {
                 .orElseThrow(() -> new BusinessException("EXECUTION_PAPER_NOT_FOUND", "برگ اجرا یافت نشد"));
     }
 
-    private ExecutionPaperNotification findOrCreateNotification(ExecutionPaper executionPaper) {
-        return notificationRepository.findByExecutionPaperId(executionPaper.getId())
-                .orElseGet(() -> ExecutionPaperNotification.builder().executionPaper(executionPaper).build());
+    private com.mparsict.vosolmaliat.domain.model.execution.ExecutionWorkflowState workflow(ExecutionPaper paper) {
+        if (paper.getWorkflowState() == null) paper.setCurrentState("UNASSIGNED");
+        return paper.getWorkflowState();
+    }
+
+    @Transactional
+    public void recordOrCorrectView(Long executionPaperId, String persianDate, String reason) {
+        var notification = notificationRepository.findByExecutionPaperId(executionPaperId)
+                .orElseThrow(() -> new BusinessException("NOTIFICATION_NOT_FOUND", "ابلاغ برگ اجرا یافت نشد"));
+        LocalDateTime date;
+        try { date = com.mparsict.vosolmaliat.domain.value.PersianDates.parse(persianDate); }
+        catch (IllegalArgumentException ex) { throw new BusinessException("INVALID_VIEW_DATE", ex.getMessage()); }
+        var previous = notification.getTaxpayerNotificationViewDate();
+        if (previous != null && (reason == null || reason.isBlank()))
+            throw new BusinessException("CORRECTION_REASON_REQUIRED", "علت اصلاح تاریخ رویت الزامی است");
+        if (java.util.Objects.equals(previous, date)) return;
+        notification.recordView(date);
+        notificationRepository.save(notification);
+        workflow(notification.getExecutionPaper()).setNextDebtInquiryDate(notification.paymentDeadline().toString());
+        workflow(notification.getExecutionPaper()).setViewDateMessagePending(true);
+        auditLogService.record(null, "NOTIFICATION_VIEW_DATE_UPDATED", "EXECUTION_PAPER", executionPaperId.toString(),
+                previous == null ? null : previous.toString(), date + (reason == null ? "" : " / " + reason));
     }
 
     private void changeState(ExecutionPaper executionPaper, String state) {

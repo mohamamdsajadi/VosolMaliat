@@ -24,6 +24,7 @@ public class IssuanceRequestService {
 
     @Transactional
     public ExecutionPaperIssuanceRequest createAndSave(DebtPaperIssuanceRequest request) {
+        ModelRequestValidation.requireRequest(request);
         SanimModelValidation.requireDocument(request.sourceDocument());
         String json;
         try {
@@ -33,12 +34,6 @@ public class IssuanceRequestService {
         }
 
         String hash = HashUtil.sha256(json);
-
-        Optional<ExecutionPaperIssuanceRequest> existing = repository.findByHash(hash);
-        if (existing.isPresent()) {
-            log.warn("Duplicate issuance request detected for hash={}", hash);
-            throw new BusinessException("DUPLICATE_REQUEST", "این درخواست قبلاً ثبت شده است");
-        }
 
         ExecutionPaperIssuanceRequest entity = ExecutionPaperIssuanceRequest.builder()
                 .debtPaperUniqueCode(request.debtPaperUniqueCode())
@@ -73,9 +68,10 @@ public class IssuanceRequestService {
     @Transactional
     public void markAsRejected(Long requestId, String rejectionReason, Long ruleId) {
         repository.findById(requestId).ifPresent(req -> {
-            req.setRejectionReason(rejectionReason);
-            req.setRejectionReasonId(ruleId);
-            repository.save(req);
+            repository.save(ExecutionPaperIssuanceRequest.builder()
+                    .originalRequestId(requestId).debtPaperUniqueCode(req.getDebtPaperUniqueCode())
+                    .payload(req.getPayload()).xml(req.getXml()).hash(req.getHash())
+                    .rejectionReason(rejectionReason).rejectionReasonId(ruleId).build());
             log.debug("Marked issuance request id={} as rejected with reason={}", requestId, rejectionReason);
         });
     }

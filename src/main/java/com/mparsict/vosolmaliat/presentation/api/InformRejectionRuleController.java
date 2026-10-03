@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @Slf4j
+@org.springframework.transaction.annotation.Transactional
 @RestController
 @RequestMapping("/api/v1/admin/inform-rejection-rules")
 @RequiredArgsConstructor
@@ -37,7 +38,19 @@ public class InformRejectionRuleController {
                 .documentNo(request.documentNo())
                 .filePath(request.filePath())
                 .description(request.description())
+                .errorCode(request.errorCode()).errorMessage(request.errorMessage())
                 .build();
+        if (request.parentRuleId() != null) {
+            var parent = ruleRepository.findById(request.parentRuleId())
+                    .orElseThrow(() -> new BusinessException("RULE_NOT_FOUND", "قاعده والد یافت نشد"));
+            if (!Boolean.TRUE.equals(parent.getActive()))
+                throw new BusinessException("RULE_INACTIVE", "قاعده والد غیرفعال است");
+            parent.deactivate();
+            parent.recordVersion();
+            ruleRepository.save(parent);
+            rule.setParentRule(parent);
+        }
+        rule.recordVersion();
         return ResponseEntity.status(HttpStatus.CREATED).body(ruleRepository.save(rule));
     }
 
@@ -47,6 +60,9 @@ public class InformRejectionRuleController {
                 .orElseThrow(() -> new BusinessException("INFORM_RULE_NOT_FOUND", "قانون ابلاغ با شناسه " + id + " یافت نشد"));
         existing.update(request.ruleJson(), request.startDate(), request.endDate(),
                 request.documentNo(), request.filePath(), request.description());
+        existing.setErrorCode(request.errorCode());
+        existing.setErrorMessage(request.errorMessage());
+        existing.recordVersion();
         return ruleRepository.save(existing);
     }
 
@@ -58,6 +74,7 @@ public class InformRejectionRuleController {
         ExecutionPaperInformRejectionRule rule = ruleRepository.findById(id)
                 .orElseThrow(() -> new BusinessException("INFORM_RULE_NOT_FOUND", "قانون ابلاغ با شناسه " + id + " یافت نشد"));
         rule.deactivate();
+        rule.recordVersion();
         ruleRepository.save(rule);
         return ResponseEntity.noContent().build();
     }

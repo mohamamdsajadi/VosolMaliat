@@ -36,7 +36,7 @@ class DebtStatusUpdateServiceUnitTest {
                 .executionPaper(paper)
                 .currentAmounts(com.mparsict.vosolmaliat.domain.model.sanim.SanimAmounts.builder()
                     .totalTaxAmount(new java.math.BigDecimal("900000"))
-                    .totalDutyAmount(new java.math.BigDecimal("100000")).build())
+                    .totalRemissionAmount(java.math.BigDecimal.ZERO).totalDutyAmount(new java.math.BigDecimal("100000")).build())
                 .build();
         AtomicReference<DebtInquiryResult> savedResult = new AtomicReference<>();
         AtomicReference<DebtInformation> savedDebt = new AtomicReference<>();

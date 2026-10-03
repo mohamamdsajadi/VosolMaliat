@@ -89,12 +89,12 @@ class DebtPaperPushMapperUnitTest {
     @Test void incompleteIdentityAndConflictingEnvelopeDoNotProceed() {
         assertThat(mapper.map(request("LTR_EF03", EF03.replace("<P>حقیقی</P>", ""))).sourceDocument().getPersonType()).isEqualTo("NATURAL");
         assertThat(mapper.map(request("LTR_EF03", EF03.replace("1400</C>", "1401</C>"))).sourceDocument().getTaxYear()).isEqualTo("1401");
-        assertThatThrownBy(() -> mapper.map(request("LTR_EF03", EF03+"<GB>1</GB><NB>2</NB>"))).hasMessageContaining("DATA_INCONSISTENCY");
+        assertThat(mapper.map(request("LTR_EF03", EF03+"<GB>1</GB><NB>2</NB>")).sourceDocument().getAmounts().getTotalPenaltyAmount()).isEqualByComparingTo("1");
         assertThatThrownBy(() -> mapper.map(request("unknown", EF03))).hasMessageContaining("Unsupported");
     }
-    @Test void contradictoryOutstandingDebtIsRejected() {
-        assertThatThrownBy(() -> mapper.map(request("LTR_EF03", EF03+"<CB>100</CB><HB>101</HB>")))
-                .hasMessageContaining("DATA_INCONSISTENCY");
+    @Test void reportedOutstandingDebtIsPreservedWithoutSummationValidation() {
+        assertThat(mapper.map(request("LTR_EF03", EF03+"<CB>100</CB><HB>101</HB>")).sourceDocument().getAmounts().getOutstandingDebtAmount())
+                .isEqualByComparingTo("101");
     }
     @Test void suppliedEf03SampleKeepsDecimalsAndAllRepeatedPenaltyRows() throws Exception {
         String xml=java.nio.file.Files.readString(java.nio.file.Path.of("src/main/resources/executionPaperTest2.xml"));

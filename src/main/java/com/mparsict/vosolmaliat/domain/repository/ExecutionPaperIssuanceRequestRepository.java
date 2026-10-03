@@ -10,9 +10,11 @@ import java.util.Optional;
 @Repository
 public interface ExecutionPaperIssuanceRequestRepository extends JpaRepository<ExecutionPaperIssuanceRequest, Long> {
 
-    Optional<ExecutionPaperIssuanceRequest> findByHash(String hash);
+    Optional<ExecutionPaperIssuanceRequest> findFirstByHashOrderByIdDesc(String hash);
+    default Optional<ExecutionPaperIssuanceRequest> findByHash(String hash) { return findFirstByHashOrderByIdDesc(hash); }
 
-    Optional<ExecutionPaperIssuanceRequest> findByDebtPaperUniqueCode(String code);
+    Optional<ExecutionPaperIssuanceRequest> findFirstByDebtPaperUniqueCodeOrderByIdDesc(String code);
+    default Optional<ExecutionPaperIssuanceRequest> findByDebtPaperUniqueCode(String code) { return findFirstByDebtPaperUniqueCodeOrderByIdDesc(code); }
 
     long countByRejectionReasonIsNotNull();
 

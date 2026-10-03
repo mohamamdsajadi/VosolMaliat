@@ -73,14 +73,20 @@
       <bpmn:outgoing>Flow_1ecgufz</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:sequenceFlow id="Flow_0gp2thc" sourceRef="Gateway_1kqyfwh" targetRef="Activity_18aw0is" />
-    <bpmn:serviceTask id="Activity_131cbua" name="تنظیم برای استعلام وضعیت پرداخت بدهی در پایان مهلت یک ماهه">
+    <bpmn:serviceTask id="Activity_131cbua" name="تنظیم استعلام بدهی سی روز پس از رویت">
       <bpmn:extensionElements>
         <zeebe:taskDefinition type="set-inquire" />
       </bpmn:extensionElements>
-      <bpmn:incoming>Flow_1ecgufz</bpmn:incoming>
+      <bpmn:incoming>Flow_view_to_inquiry</bpmn:incoming>
       <bpmn:outgoing>Flow_0zbcpvz</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:sequenceFlow id="Flow_1ecgufz" sourceRef="Activity_18aw0is" targetRef="Activity_131cbua" />
+    <bpmn:sequenceFlow id="Flow_1ecgufz" sourceRef="Activity_18aw0is" targetRef="Event_notification_viewed" />
+    <bpmn:intermediateCatchEvent id="Event_notification_viewed" name="انتظار برای رویت ابلاغ توسط مودی">
+      <bpmn:incoming>Flow_1ecgufz</bpmn:incoming>
+      <bpmn:outgoing>Flow_view_to_inquiry</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="Definition_notification_viewed" messageRef="Message_notification_viewed" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:sequenceFlow id="Flow_view_to_inquiry" sourceRef="Event_notification_viewed" targetRef="Activity_131cbua" />
     <bpmn:sequenceFlow id="Flow_1awjdrz" sourceRef="Gateway_1kqyfwh" targetRef="Activity_077bco2" />
     <bpmn:parallelGateway id="Gateway_1kqyfwh">
       <bpmn:incoming>Flow_0a7ap8m</bpmn:incoming>
@@ -110,6 +116,9 @@
     <bpmn:extensionElements>
       <zeebe:subscription correlationKey="=executionPaperId" />
     </bpmn:extensionElements>
+  </bpmn:message>
+  <bpmn:message id="Message_notification_viewed" name="ExecutionPaperViewed">
+    <bpmn:extensionElements><zeebe:subscription correlationKey="=executionPaperId" /></bpmn:extensionElements>
   </bpmn:message>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_0lt64q4">
@@ -214,9 +223,15 @@
         <di:waypoint x="930" y="155" />
         <di:waypoint x="930" y="230" />
       </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Shape_notification_viewed" bpmnElement="Event_notification_viewed">
+        <dc:Bounds x="1035" y="252" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Edge_view_to_inquiry" bpmnElement="Flow_view_to_inquiry">
+        <di:waypoint x="1071" y="270" /><di:waypoint x="1130" y="270" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1ecgufz_di" bpmnElement="Flow_1ecgufz">
         <di:waypoint x="980" y="270" />
-        <di:waypoint x="1130" y="270" />
+        <di:waypoint x="1035" y="270" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1awjdrz_di" bpmnElement="Flow_1awjdrz">
         <di:waypoint x="955" y="130" />

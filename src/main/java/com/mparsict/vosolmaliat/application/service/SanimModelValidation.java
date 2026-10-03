@@ -6,7 +6,7 @@ public final class SanimModelValidation {
     private SanimModelValidation() {}
     public static void requireDocument(SanimDocumentDetails document) {
         if (document == null || "LEGACY_REVIEW_REQUIRED".equals(document.getValidationStatus()))
-            throw SanimXmlValues.invalid("Source document requires review before processing.");
+            throw SanimXmlValues.invalid("اطلاعات برگه بدهی قطعی نیاز به بررسی دارد.");
         requireAmounts(document.getAmounts());
         if (document.getPaperType() == com.mparsict.vosolmaliat.domain.enums.PaperType.EF03) {
             if (document.getRegistrationTraceCode() == null || document.getRegistrationTraceCode().isBlank())
@@ -27,7 +27,7 @@ public final class SanimModelValidation {
         if (a == null || a.getOutstandingDebtAmount() == null || a.getTotalTaxAmount() == null
                 || a.getTotalDutyAmount() == null || a.getTotalPenaltyAmount() == null
                 || a.getTotalPaidAmount() == null || a.getTotalCreditAmount() == null || a.getTotalRemissionAmount() == null)
-            throw SanimXmlValues.invalid("All seven aggregate amounts must be supplied; missing is not zero in manual entry.");
+            throw SanimXmlValues.invalid("تمام مبالغ مالیات، عوارض، جرائم، پرداختی، اعتبار، بخشودگی و مانده بدهی الزامی است. مقدار خالی به معنی صفر نیست.");
     }
     static Object amount(String field, SanimAmounts a) {
         if (a == null) throw SanimXmlValues.invalid("Current amounts require review.");

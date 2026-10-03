@@ -46,9 +46,10 @@ class InformProcessServiceUnitTest {
         RepositoryState repositories = new RepositoryState();
         InformProcessService service = service(new StubInformRuleEngineService(null), repositories);
 
+        repositories.executionPaper.getWorkflowState().setNotificationTrackingId("EB-99");
         service.updateInformStatus(99L, true, "2026-07-18T10:30:45Z", null, null);
 
-        assertThat(repositories.savedNotification.getInformStatus()).isEqualTo(ExecutionPaperState.INFORMED.name());
+        assertThat(repositories.executionPaper.getWorkflowState().getInformStatus()).isEqualTo(ExecutionPaperState.INFORMED.name());
         assertThat(repositories.savedNotification.getElectronicNotificationDate()).isEqualTo("2026-07-18T14:00");
         assertThat(repositories.savedExecutionPaper.getCurrentState()).isEqualTo(ExecutionPaperState.INFORMED.name());
         assertThat(repositories.savedHistory.getState()).isEqualTo(ExecutionPaperState.INFORMED.name());
@@ -63,8 +64,8 @@ class InformProcessServiceUnitTest {
 
         service.updateInformStatus(99L, false, null, "NO_ADDRESS", "Missing address");
 
-        assertThat(repositories.savedNotification.getInformStatus()).isEqualTo(ExecutionPaperState.INFORM_REJECTED.name());
-        assertThat(repositories.savedNotification.getInformRejectionReason()).isEqualTo("NO_ADDRESS: Missing address");
+        assertThat(repositories.executionPaper.getWorkflowState().getInformStatus()).isEqualTo(ExecutionPaperState.INFORM_REJECTED.name());
+        assertThat(repositories.executionPaper.getWorkflowState().getInformRejectionReason()).isEqualTo("NO_ADDRESS: Missing address");
         assertThat(repositories.savedExecutionPaper.getCurrentState()).isEqualTo(ExecutionPaperState.INFORM_REJECTED.name());
         assertThat(auditLogService.action).isEqualTo("EXECUTION_PAPER_INFORM_REJECTED");
         assertThat(auditLogService.newValue).isEqualTo("NO_ADDRESS: Missing address");
@@ -79,7 +80,7 @@ class InformProcessServiceUnitTest {
 
         service.markSentToElectronicNotification(99L);
 
-        assertThat(repositories.savedNotification.getInformStatus()).isEqualTo(ExecutionPaperState.INFORM_SENT.name());
+        assertThat(repositories.executionPaper.getWorkflowState().getInformStatus()).isEqualTo(ExecutionPaperState.INFORM_SENT.name());
         assertThat(repositories.savedExecutionPaper.getCurrentState()).isEqualTo(ExecutionPaperState.INFORM_SENT.name());
         assertThat(fakeElectronicNotificationService.sentExecutionPaperId).isEqualTo(99L);
     }
@@ -92,7 +93,7 @@ class InformProcessServiceUnitTest {
         String reInformDate = service.setReInformDate(99L, "2026-09-01");
 
         assertThat(reInformDate).isEqualTo("2026-09-02T00:00+03:30");
-        assertThat(repositories.savedNotification.getReInformDate()).isEqualTo("2026-09-02T00:00+03:30");
+        assertThat(repositories.executionPaper.getWorkflowState().getReInformDate()).isEqualTo("2026-09-02T00:00+03:30");
     }
 
     @Test
@@ -229,7 +230,7 @@ class InformProcessServiceUnitTest {
         @Override
         public FakeElectronicNotificationResponse send(Long executionPaperId) {
             this.sentExecutionPaperId = executionPaperId;
-            return null;
+            return new FakeElectronicNotificationResponse(1L, executionPaperId, "EP-99", "EB-99", "SENT", null, null, null, null, null);
         }
     }
 

@@ -2,6 +2,8 @@ package com.mparsict.vosolmaliat.domain.model.person;
 import com.mparsict.vosolmaliat.domain.model.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+@org.hibernate.annotations.Immutable
+@jakarta.persistence.EntityListeners(com.mparsict.vosolmaliat.domain.model.ImmutableEntityListener.class)
 @Entity @Table(name="natural_person")
 @org.hibernate.annotations.Check(constraints="(national_code IS NOT NULL AND fida IS NULL) OR (national_code IS NULL AND fida IS NOT NULL)")
 @Getter @Setter @NoArgsConstructor
@@ -18,7 +20,7 @@ public class NaturalPerson extends BaseEntity {
         this.id=id;this.nationalCode=nationalCode;this.fida=fida;
         if(firstName!=null || lastName!=null || fatherName!=null || birthDate!=null) {
             profile().setFirstName(firstName);profile().setLastName(lastName);
-            profile().setFatherName(fatherName);profile().setBirthDate(birthDate);
+            refreshFullName();profile().setFatherName(fatherName);profile().setBirthDate(com.mparsict.vosolmaliat.domain.value.PersianDates.parse(birthDate));
         }
     }
     public void updateProfile(String firstName,String lastName,String fatherName,String birthDate) {
@@ -28,14 +30,25 @@ public class NaturalPerson extends BaseEntity {
     }
     private NaturalPersonExtraInfo profile() {
         if(extraInfo==null) extraInfo=NaturalPersonExtraInfo.builder().naturalPerson(this).build();
+        if (extraInfo.getIsForeign() == null) extraInfo.setIsForeign(fida != null);
         return extraInfo;
+    }
+    private void refreshFullName() {
+        String name = java.util.stream.Stream.of(extraInfo.getFirstName(), extraInfo.getLastName())
+                .filter(v -> v != null && !v.isBlank()).collect(java.util.stream.Collectors.joining(" "));
+        if (!name.isBlank()) extraInfo.setFullName(name);
+    }
+    public void completeFullName(String name) {
+        if (java.util.Objects.equals(profile().getFullName(), name)) return;
+        if (id != null && extraInfo.getId() != null) profileHistory.add(NaturalPersonExtraInfoHistory.from(this, extraInfo));
+        extraInfo.setFullName(name);
     }
     public String getFirstName(){return extraInfo==null?null:extraInfo.getFirstName();}
     public String getLastName(){return extraInfo==null?null:extraInfo.getLastName();}
     public String getFatherName(){return extraInfo==null?null:extraInfo.getFatherName();}
-    public String getBirthDate(){return extraInfo==null?null:extraInfo.getBirthDate();}
-    public void setFirstName(String v){profile().setFirstName(v);}
-    public void setLastName(String v){profile().setLastName(v);}
+    public String getBirthDate(){return extraInfo==null?null:com.mparsict.vosolmaliat.domain.value.PersianDates.format(extraInfo.getBirthDate());}
+    public void setFirstName(String v){profile().setFirstName(v);refreshFullName();}
+    public void setLastName(String v){profile().setLastName(v);refreshFullName();}
     public void setFatherName(String v){profile().setFatherName(v);}
-    public void setBirthDate(String v){profile().setBirthDate(v);}
+    public void setBirthDate(String v){profile().setBirthDate(com.mparsict.vosolmaliat.domain.value.PersianDates.parse(v));}
 }

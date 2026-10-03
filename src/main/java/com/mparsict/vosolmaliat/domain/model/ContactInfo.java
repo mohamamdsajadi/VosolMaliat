@@ -17,28 +17,32 @@ public class ContactInfo extends BaseEntity {
     @OneToMany(mappedBy="contactInfo", cascade=CascadeType.ALL)
     @Builder.Default private java.util.List<ContactInfoHistory> history = new java.util.ArrayList<>();
     public void snapshot() {
-        if (id != null) history.add(ContactInfoHistory.builder()
-                .contactInfo(this).phoneNo(phoneNo).mobileNo(mobileNo).faxNo(faxNo)
-                .postalCode(postalCode).legalAddress(legalAddress).email(email).website(website).build());
+        if (id != null) {
+            var row = ContactInfoHistory.builder()
+                .contactInfo(this).naturalPerson(naturalPerson).legalPerson(legalPerson).phoneNo(phoneNo).mobileNo(mobileNo).faxNo(faxNo)
+                .postalCode(postalCode).legalAddress(legalAddress).email(email).website(website).build();
+            row.captureAudit(this);
+            history.add(row);
+        }
     }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "phone_no")
+    @Column(name = "phone_no", nullable=false)
     private String phoneNo;
 
-    @Column(name = "mobile_no")
+    @Column(name = "mobile_no", nullable=false)
     private String mobileNo;
 
     @Column(name = "fax_no")
     private String faxNo;
 
-    @Column(name = "postal_code")
+    @Column(name = "postal_code", nullable=false)
     private String postalCode;
 
-    @Column(name = "legal_address")
+    @Column(name = "legal_address", nullable=false)
     private String legalAddress;
 
     @Column(name = "email")

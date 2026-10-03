@@ -1,45 +1,30 @@
 package com.mparsict.vosolmaliat.domain.model;
 
+import com.mparsict.vosolmaliat.domain.model.masterdata.ActivityType;
 import jakarta.persistence.*;
 import lombok.*;
+import java.util.*;
 
-@Entity
-@Table(name = "taxpayer_activity_type")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@Entity @Table(name = "taxpayer_activity_type")
+@Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
 public class TaxpayerActivityType extends BaseEntity {
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
+    @OneToOne(fetch = FetchType.LAZY) @JoinColumn(name = "taxpayer_id", nullable = false, unique = true)
+    @com.fasterxml.jackson.annotation.JsonIgnore private Taxpayer taxpayer;
+    @ManyToOne(fetch = FetchType.EAGER) @JoinColumn(name = "activity_type_id", nullable = false)
+    private ActivityType activityType;
     @Version private Long version;
-    @OneToMany(mappedBy="activity", cascade=CascadeType.ALL)
-    @Builder.Default private java.util.List<TaxpayerActivityTypeHistory> history = new java.util.ArrayList<>();
-    public void updateTitle(String title) {
-        if (java.util.Objects.equals(activityTypeTitle,title)) return;
-        if (id != null) history.add(TaxpayerActivityTypeHistory.builder().activity(this)
-            .activityTypeCode(activityTypeCode).activityTypeTitle(activityTypeTitle).build());
-        activityTypeTitle=title;
+    @OneToMany(mappedBy = "activity", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @Builder.Default @com.fasterxml.jackson.annotation.JsonIgnore
+    private List<TaxpayerActivityTypeHistory> history = new ArrayList<>();
+
+    public void changeActivity(ActivityType next) {
+        Objects.requireNonNull(next, "نوع فعالیت الزامی است");
+        if (activityType != null && Objects.equals(activityType.getId(), next.getId())) return;
+        if (id != null) history.add(TaxpayerActivityTypeHistory.from(this));
+        activityType = next;
     }
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(name = "activity_type_code")
-    private String activityTypeCode;
-
-    @Column(name = "activity_type_title")
-    private String activityTypeTitle;
-
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "taxpayer_id", unique=true, nullable=false)
-    private Taxpayer taxpayer;
-
-    public Long getTaxpayerId() {
-        return taxpayer == null ? null : taxpayer.getId();
-    }
-
-    public void setTaxpayerId(Long taxpayerId) {
-        this.taxpayer = taxpayerId == null ? null : Taxpayer.builder().id(taxpayerId).build();
-    }
+    public String getActivityTypeCode() { return activityType == null ? null : activityType.getIntaCode(); }
+    public String getActivityTypeTitle() { return activityType == null ? null : activityType.getTitle(); }
+    public Long getTaxpayerId() { return taxpayer == null ? null : taxpayer.getId(); }
 }

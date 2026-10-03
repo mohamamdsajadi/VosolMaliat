@@ -20,20 +20,20 @@ public class TaxAffairsOffice extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "office_name")
+    @Column(name = "office_name", nullable=false)
     private String officeName;
 
-    @Column(name = "postal_code")
+    @Column(name = "postal_code", nullable=false)
     private String postalCode;
 
-    @Column(name = "address")
+    @Column(name = "address", nullable=false)
     private String address;
 
-    @Column(name = "phone")
+    @Column(name = "phone", nullable=false)
     private String phone;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "general_directorate_of_tax_affairs_id")
+    @JoinColumn(name = "general_directorate_of_tax_affairs_id", nullable=false)
     private GeneralDirectorateOfTaxAffairs generalDirectorateOfTaxAffairs;
 
     public Long getGeneralDirectorateOfTaxAffairsId() {

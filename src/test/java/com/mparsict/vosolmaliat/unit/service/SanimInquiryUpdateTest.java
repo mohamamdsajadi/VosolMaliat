@@ -25,7 +25,7 @@ class SanimInquiryUpdateTest {
         var sanim = mock(SanimAuditService.class);
         var audit = mock(AuditLogService.class);
         var initial = SanimAmounts.builder().outstandingDebtAmount(new BigDecimal("100.123"))
-                .totalTaxAmount(new BigDecimal("90.123")).totalRemissionAmount(new BigDecimal("1.23")).build();
+                .totalTaxAmount(new BigDecimal("90.123")).totalDutyAmount(BigDecimal.ZERO).totalPenaltyAmount(BigDecimal.ZERO).totalPaidAmount(BigDecimal.ZERO).totalCreditAmount(BigDecimal.ZERO).totalRemissionAmount(new BigDecimal("1.23")).build();
         var paper = ExecutionPaper.builder().id(1L).taxpayer(Taxpayer.builder().id(2L).build()).build();
         var debt = DebtInformation.builder().executionPaper(paper).currentAmounts(initial.copy()).build();
         when(papers.findById(1L)).thenReturn(Optional.of(paper));

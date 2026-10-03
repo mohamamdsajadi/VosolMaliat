@@ -16,7 +16,14 @@ public record RejectionRuleRequest(
         @NotBlank String ruleJson,
         @NotBlank String startDate,
         @NotBlank String endDate,
-        String documentNo,
-        String filePath,
-        String description
-) {}
+        @NotBlank(message = "شماره سند الزامی است") String documentNo,
+        @NotBlank(message = "آدرس فایل سند الزامی است") String filePath,
+        String description,
+        @NotBlank(message = "کد خطا الزامی است") String errorCode,
+        @NotBlank(message = "متن خطا الزامی است") String errorMessage,
+        Long parentRuleId
+) {
+    public RejectionRuleRequest(String json, String start, String end, String document, String path, String description) {
+        this(json, start, end, document, path, description, null, null, null);
+    }
+}

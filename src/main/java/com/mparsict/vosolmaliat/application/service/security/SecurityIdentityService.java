@@ -38,7 +38,7 @@ public class SecurityIdentityService {
         roles.addAll(principalMapper.extractClientRoles(jwt));
         Set<String> groups = principalMapper.extractGroups(jwt);
         AppUserProfile profile = userProfileRepository.findByKeycloakUserId(jwt.getSubject()).orElse(null);
-        BusinessRole businessRole = profile == null ? inferBusinessRole(roles, groups) : profile.getBusinessRole();
+        BusinessRole businessRole = profile == null || profile.getBusinessRole() == null ? inferBusinessRole(roles, groups) : profile.getBusinessRole();
         Set<String> identityGroups = new TreeSet<>(roles);
         identityGroups.addAll(groups);
         if (businessRole != null) {

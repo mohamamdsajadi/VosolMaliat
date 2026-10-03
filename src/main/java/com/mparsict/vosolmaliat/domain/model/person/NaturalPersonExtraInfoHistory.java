@@ -4,14 +4,14 @@ import lombok.*;
 import com.mparsict.vosolmaliat.domain.model.BaseEntity;
 @Entity @Table(name="natural_person_extra_info_history") @org.hibernate.annotations.Immutable
 @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
-public class NaturalPersonExtraInfoHistory extends BaseEntity {
+public class NaturalPersonExtraInfoHistory extends com.mparsict.vosolmaliat.domain.model.VersionHistory {
     @Id @GeneratedValue(strategy=GenerationType.IDENTITY) private Long id;
     @ManyToOne(fetch=FetchType.LAZY) @JoinColumn(nullable=false) private NaturalPerson naturalPerson;
     private String firstName;
     private String lastName;
     private String fullName;
     private String fatherName;
-    private String birthDate;
+    private java.time.LocalDateTime birthDate;
     private Integer arrestStatus;
     private Integer capitalStatus;
     private Integer certificateOfNoCriminalRecord;
@@ -22,7 +22,7 @@ public class NaturalPersonExtraInfoHistory extends BaseEntity {
     private String passportExpiryDate;
 
     public static NaturalPersonExtraInfoHistory from(NaturalPerson person, NaturalPersonExtraInfo info) {
-        return NaturalPersonExtraInfoHistory.builder()
+        var row = NaturalPersonExtraInfoHistory.builder()
                 .naturalPerson(person).firstName(info.getFirstName()).lastName(info.getLastName())
                 .fullName(info.getFullName()).fatherName(info.getFatherName()).birthDate(info.getBirthDate())
                 .arrestStatus(info.getArrestStatus()).capitalStatus(info.getCapitalStatus())
@@ -30,5 +30,7 @@ public class NaturalPersonExtraInfoHistory extends BaseEntity {
                 .isForeign(info.getIsForeign()).firstNameEn(info.getFirstNameEn()).lastNameEn(info.getLastNameEn())
                 .managementDeclaration(info.getManagementDeclaration())
                 .passportExpiryDate(info.getPassportExpiryDate()).build();
+        row.captureAudit(info);
+        return row;
     }
 }

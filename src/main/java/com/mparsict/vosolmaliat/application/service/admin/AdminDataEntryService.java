@@ -68,10 +68,9 @@ public class AdminDataEntryService {
             throw new BusinessException("EF03_RECEIPT_REQUIRED", "برای EF03 از مسیر دریافت و تأیید هویت استفاده کنید");
         var number = uniqueCodeGenerator.generateExecutionPaperNumber();
         ExecutionPaper saved = executionPaperRepository.save(ExecutionPaper.builder()
-                .id(number.id())
                 .executionPaperUniqueCode(number.code())
                 .issuanceDate(java.time.LocalDateTime.now(java.time.ZoneId.of("Asia/Tehran")))
-                .finalizationReason(finalizedDebtPaper.getFinalizationReason())
+                .finalizationReason(finalizedDebtPaper.getFinalizationReason().name())
                 .finalizedDebtPaper(finalizedDebtPaper)
                 .taxpayer(taxpayer)
                 .taxSource(request.taxSource())
@@ -93,7 +92,7 @@ public class AdminDataEntryService {
                         .map(item -> new AdminDataSummaryResponse.FinalizedDebtPaperSummary(
                                 item.getId(),
                                 item.getDebtPaperUniqueCode(),
-                                item.getTaxSource()
+                                item.getTaxSource().name()
                         ))
                         .toList(),
                 taxpayerRepository.findAll().stream()

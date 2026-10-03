@@ -74,6 +74,7 @@ public class DebtPaperPushMapper {
                 .taxAmountBasis(config.taxAmountBasis())
                 .remissionBasis(config.remissionBasis())
                 .validationStatus(config.validationStatus()).amounts(amounts).build();
+        ModelRequestValidation.normalizePeriod(details);
         var taxpayer = new DebtPaperIssuanceRequest.TaxpayerInfo(type.name(),
                 type == TaxpayerType.NATURAL && !foreign ? identifier : null,
                 foreign ? identifier : null,

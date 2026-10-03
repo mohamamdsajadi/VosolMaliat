@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Immutable;
 
+@jakarta.persistence.EntityListeners(com.mparsict.vosolmaliat.domain.model.ImmutableEntityListener.class)
 @Entity
 @Immutable
 @Table(name = "paper_type", uniqueConstraints =
@@ -12,7 +13,7 @@ import org.hibernate.annotations.Immutable;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PaperTypeDefinition {
+public class PaperTypeDefinition extends com.mparsict.vosolmaliat.domain.model.BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

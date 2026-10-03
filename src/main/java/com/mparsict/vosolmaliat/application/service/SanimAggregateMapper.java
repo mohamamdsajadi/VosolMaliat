@@ -7,13 +7,8 @@ import java.math.BigDecimal;
 final class SanimAggregateMapper {
     static final String VERSION = "sanim-ef03-2026-09-v2";
     private static SanimAmounts ef03(SanimXmlValues x) {
-        if (x.amount("GB").compareTo(x.amount("NB")) != 0)
-            throw SanimXmlValues.invalid("DATA_INCONSISTENCY: ناسازگاری داده؛ مجموع جرائم GB با NB برابر نیست.");
         for (String tag : new String[]{"CB", "DB", "EB", "GB", "NB", "HB"})
             if (x.amount(tag).signum() < 0) throw SanimXmlValues.invalid("Negative EF03 amount: " + tag);
-        BigDecimal calculatedDebt = x.amount("CB").add(x.amount("GB")).subtract(x.amount("DB")).subtract(x.amount("EB"));
-        if (calculatedDebt.compareTo(x.amount("HB")) != 0)
-            throw SanimXmlValues.invalid("DATA_INCONSISTENCY: مانده HB با مالیات + جرائم - بخشودگی/معافیت - پرداختی برابر نیست.");
         return new SanimAmounts(x.amount("HB"), x.amount("CB"), BigDecimal.ZERO,
                 x.amount("GB"), x.amount("EB"), BigDecimal.ZERO, x.amount("DB"));
     }

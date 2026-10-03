@@ -19,6 +19,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class DebtInquiryResult extends BaseEntity {
+    @Column(name="finalized_debt_paper_notification_id", nullable=false, updatable=false)
+    private String finalizedDebtPaperNotificationId;
 
     @Embedded
     private com.mparsict.vosolmaliat.domain.model.sanim.SanimAmounts amounts;

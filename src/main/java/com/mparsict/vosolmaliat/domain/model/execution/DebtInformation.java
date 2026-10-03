@@ -15,14 +15,31 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class DebtInformation extends BaseEntity {
+    @Convert(converter=com.mparsict.vosolmaliat.domain.model.sanim.ExactDecimalConverter.class)
+    @Column(name="total_liability", nullable=false, columnDefinition="TEXT")
+    private java.math.BigDecimal totalLiability;
+
+    @PrePersist @PreUpdate
+    private void updateLiability() {
+        var value = currentAmounts;
+        if (value != null && value.getTotalTaxAmount() != null && value.getTotalDutyAmount() != null)
+            totalLiability = value.getTotalTaxAmount().add(value.getTotalDutyAmount());
+    }
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="finalized_debt_paper_id") private FinalizedDebtPaper finalizedDebtPaper;
+    @JoinColumn(name="finalized_debt_paper_id", nullable=false, updatable=false) private FinalizedDebtPaper finalizedDebtPaper;
     @Embedded private com.mparsict.vosolmaliat.domain.model.sanim.DebtFinancialDetails financialDetails;
 
     @Version
     private Long version;
 
     @Embedded
+    @AttributeOverrides({@AttributeOverride(name="totalTaxAmount", column=@Column(name="tax_component", nullable=false, columnDefinition="TEXT")),
+        @AttributeOverride(name="totalDutyAmount", column=@Column(name="duty_component", nullable=false, columnDefinition="TEXT")),
+        @AttributeOverride(name="totalPenaltyAmount", column=@Column(name="total_penalties", nullable=false, columnDefinition="TEXT")),
+        @AttributeOverride(name="totalPaidAmount", column=@Column(name="total_payments", nullable=false, columnDefinition="TEXT")),
+        @AttributeOverride(name="totalCreditAmount", column=@Column(name="total_credits", nullable=false, columnDefinition="TEXT")),
+        @AttributeOverride(name="totalRemissionAmount", column=@Column(name="total_remissions", nullable=false, columnDefinition="TEXT")),
+        @AttributeOverride(name="outstandingDebtAmount", column=@Column(name="outstanding_tax_debt", nullable=false, columnDefinition="TEXT"))})
     private com.mparsict.vosolmaliat.domain.model.sanim.SanimAmounts currentAmounts;
 
     private LocalDateTime currentAmountsAsOf;
@@ -32,7 +49,7 @@ public class DebtInformation extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "execution_paper_id", unique=true)
+    @JoinColumn(name = "execution_paper_id", unique=true, nullable=false, updatable=false)
     private ExecutionPaper executionPaper;
 
     @Column(name = "last_debt_inquiry_at")

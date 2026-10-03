@@ -14,10 +14,10 @@ import lombok.*;
 @Builder
 public class LegalPersonExtraInfo extends BaseEntity {
     @Version private Long version;
-    private String name;
-    @Column(name = "trade_name") private String tradeName;
-    @Column(unique=true) private String registrationNumber;
-    private String registrationDate;
+    @Column(nullable=false) private String name;
+    @Column(name = "trade_name", nullable=false) private String tradeName;
+    @Column(unique=true, nullable=false) private String registrationNumber;
+    @Column(nullable=false) private java.time.LocalDateTime registrationDate;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

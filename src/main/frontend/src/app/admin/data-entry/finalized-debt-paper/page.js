@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link';
+import { apiJson } from '../../../lib/api';
 import { useCallback, useEffect, useState } from 'react';
 import AppShell from '../../../components/app-shell';
 import RefreshButton from '../../../components/refresh-button';
@@ -23,7 +24,7 @@ import {
 export default function FinalizedDebtPaperEntryPage() {
   const [form, setForm] = useState(initialDebtPaper);
   const [summary, setSummary] = useState({ finalizedDebtPapers: [] });
-  const [masterdata, setMasterdata] = useState({ generals: [], offices: [] });
+  const [masterdata, setMasterdata] = useState({ generals: [], offices: [], activities: [] });
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -31,13 +32,14 @@ export default function FinalizedDebtPaperEntryPage() {
     setLoading(true);
     setMessage('');
     try {
-      const [summaryResult, generalResult, officeResult] = await Promise.all([
+      const [summaryResult, generalResult, officeResult, activities] = await Promise.all([
         fetchAdminDataSummary(),
         fetchGeneralDirectorates(),
-        fetchTaxAffairsOffices()
+        fetchTaxAffairsOffices(),
+        apiJson('/api/v1/masterdata/activity-types')
       ]);
       setSummary(summaryResult);
-      setMasterdata({ generals: generalResult, offices: officeResult });
+      setMasterdata({ generals: generalResult, offices: officeResult, activities });
     } catch (error) {
       setMessage(error.message || 'دریافت اطلاعات اولیه ناموفق بود.');
     } finally {
@@ -124,23 +126,25 @@ export default function FinalizedDebtPaperEntryPage() {
           <FieldGrid>
             <Input label="شناسه یکتا" name="debtPaperUniqueCode" value={form.debtPaperUniqueCode} onChange={updateForm} required />
             <Input label="تاریخ صدور سند" name="issueDateRaw" value={form.issueDateRaw} onChange={updateForm} required />
-            <Input label="شماره سند" name="documentNumber" value={form.documentNumber} onChange={updateForm} />
+            <Input label="شماره سند" name="documentNumber" value={form.documentNumber} onChange={updateForm} required />
             <Input label="تاریخ مبنای صدور (برگ قطعی / اظهارنامه)" name="basisDocumentDateRaw" value={form.basisDocumentDateRaw} onChange={updateForm} required />
             <Input label="شروع دوره مالی" name="taxPeriodStartRaw" value={form.taxPeriodStartRaw} onChange={updateForm} />
             <Input label="پایان دوره مالی" name="taxPeriodEndRaw" value={form.taxPeriodEndRaw} onChange={updateForm} />
             <Input label="شناسه مؤدی (TIN)" name="taxpayerIdentifier" value={form.taxpayerIdentifier} onChange={updateForm} required />
             <Input label="کد رهگیری ثبت‌نام" name="registrationTraceCode" value={form.registrationTraceCode} onChange={updateForm} required />
-            <Input label="دلیل صدور" name="issuanceReason" value={form.issuanceReason} onChange={updateForm} required />
+            <Select label="علت قطعیت / صدور" name="issuanceReason" value={form.issuanceReason} onChange={updateForm} required options={[{value:'SELF_DECLARATION',label:'خوداظهاری'},{value:'FINAL_NOTICE',label:'برگه بدهی قطعی'}]} />
+            <Select label="نوع برگه" name="paperType" value={form.paperType} onChange={updateForm} required options={['EF03','EF23','EF23_1','EF23_2','EF104'].map(value=>({value,label:value}))} />
             <Input label="منبع مالیاتی" name="taxSource" value={form.taxSource} onChange={updateForm} required />
-            <Input label="سال عملکرد" name="taxYear" value={form.taxYear} onChange={updateForm} />
+            <Input label="سال عملکرد" name="taxYear" value={form.taxYear} onChange={updateForm} required />
             <Input label="دوره عملکرد" name="taxPeriod" value={form.taxPeriod} onChange={updateForm} />
-            <Input label="عنوان فعالیت" name="activityTitle" value={form.activityTitle} onChange={updateForm} />
+            <Select label="نوع فعالیت" name="activityTypeId" value={form.activityTypeId} onChange={updateForm} required options={masterdata.activities.map(item => ({ value: item.id, label: `${item.intaCode} — ${item.title}` }))} />
+            <Link href="/admin/activity-types">مدیریت انواع فعالیت</Link>
           </FieldGrid>
 
           <FormSectionTitle tone="green" icon={<OrganizationIcon />} title="ساختار سازمانی پرونده" />
           <FieldGrid>
             <Select label="اداره کل" name="mainTaxBureauId" value={form.mainTaxBureauId} onChange={updateForm} options={masterdata.generals.map((item) => ({ value: item.id, label: item.name }))} />
-            <Select label="اداره مالیات" name="taxBureauId" value={form.taxBureauId} onChange={updateForm} options={masterdata.offices.map((item) => ({ value: item.id, label: item.officeName }))} />
+            <Select label="اداره مالیات" name="taxBureauId" value={form.taxBureauId} onChange={updateForm} required options={masterdata.offices.map((item) => ({ value: item.id, label: item.officeName }))} />
           </FieldGrid>
 
           <FormSectionTitle tone="indigo" icon={<UserIcon />} title="اطلاعات مودی" />
@@ -152,24 +156,27 @@ export default function FinalizedDebtPaperEntryPage() {
                 <option value="LEGAL">حقوقی</option>
               </select>
             </label>
+            <Input label="شماره تلفن" name="phone" value={form.phone} onChange={updateForm} required />
+            <Input label="شماره همراه" name="mobile" value={form.mobile} onChange={updateForm} required />
             {form.taxpayerType === 'NATURAL' ? (
               <>
                 <Input label="کد ملی" name="nationalCode" value={form.nationalCode} onChange={updateForm} />
                 <Input label="نام" name="firstName" value={form.firstName} onChange={updateForm} />
                 <Input label="نام خانوادگی" name="lastName" value={form.lastName} onChange={updateForm} />
-                <Input label="نام پدر" name="fatherName" value={form.fatherName} onChange={updateForm} />
-                <Input label="تاریخ تولد" name="birthDate" value={form.birthDate} onChange={updateForm} />
-                <Input label="کد پستی مودی" name="postalCode" value={form.postalCode} onChange={updateForm} />
-                <Input label="اقامتگاه قانونی مودی" name="address" value={form.address} onChange={updateForm} />
+                <Input label="نام پدر" name="fatherName" value={form.fatherName} onChange={updateForm} required />
+                <Input label="تاریخ تولد" name="birthDate" value={form.birthDate} onChange={updateForm} required />
+                <Input label="کد پستی مودی" name="postalCode" value={form.postalCode} onChange={updateForm} required />
+                <Input label="اقامتگاه قانونی مودی" name="address" value={form.address} onChange={updateForm} required />
               </>
             ) : (
               <>
-                <Input label="شناسه ملی" name="nationalId" value={form.nationalId} onChange={updateForm} />
-                <Input label="نام شرکت" name="companyName" value={form.companyName} onChange={updateForm} />
-                <Input label="شماره ثبت" name="registrationNumber" value={form.registrationNumber} onChange={updateForm} />
-                <Input label="تاریخ ثبت" name="registrationDate" value={form.registrationDate} onChange={updateForm} />
-                <Input label="کد پستی مودی" name="postalCode" value={form.postalCode} onChange={updateForm} />
-                <Input label="اقامتگاه قانونی مودی" name="address" value={form.address} onChange={updateForm} />
+                <Input label="شناسه ملی" name="nationalId" value={form.nationalId} onChange={updateForm} required />
+                <Input label="نام تجاری" name="tradeName" value={form.tradeName} onChange={updateForm} required />
+                <Input label="نام شرکت" name="companyName" value={form.companyName} onChange={updateForm} required />
+                <Input label="شماره ثبت" name="registrationNumber" value={form.registrationNumber} onChange={updateForm} required />
+                <Input label="تاریخ ثبت" name="registrationDate" value={form.registrationDate} onChange={updateForm} required />
+                <Input label="کد پستی مودی" name="postalCode" value={form.postalCode} onChange={updateForm} required />
+                <Input label="اقامتگاه قانونی مودی" name="address" value={form.address} onChange={updateForm} required />
               </>
             )}
           </FieldGrid>

@@ -15,9 +15,9 @@ import jakarta.validation.constraints.NotNull;
 public record TaxAffairsOfficeRequest(
         @NotNull Long generalDirectorateOfTaxAffairsId,
         @NotBlank String officeName,
-        String postalCode,
-        String address,
-        String phone,
+        @NotBlank(message="کد پستی الزامی است") String postalCode,
+        @NotBlank(message="نشانی الزامی است") String address,
+        @NotBlank(message="شماره تلفن الزامی است") String phone,
         @jakarta.validation.constraints.Min(0) @jakarta.validation.constraints.Max(1) Integer officeType,
         String officeCode
 ) {}

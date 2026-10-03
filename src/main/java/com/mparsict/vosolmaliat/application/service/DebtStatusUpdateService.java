@@ -55,21 +55,19 @@ public class DebtStatusUpdateService {
                     .totalCreditAmount(java.math.BigDecimal.valueOf(status.totalCreditRials())).build();
         var effectiveAt = status.lastActivityAt();
         debtInquiryResultRepository.save(DebtInquiryResult.builder()
-                .requestId(requestId).executionPaper(executionPaper).responseJson(responseJson).hash(responseHash)
+                .requestId(requestId).finalizedDebtPaperNotificationId(executionPaper.getFinalizedDebtPaper() == null ? null : executionPaper.getFinalizedDebtPaper().getFinalTaxDebtNotificationNumber()).executionPaper(executionPaper).responseJson(responseJson).hash(responseHash)
                 .receivedAt(LocalDateTime.now()).effectiveAt(effectiveAt).amounts(patch.copy())
                 .mappingVersion("sanim-inquiry-v1").build());
 
         DebtInformation debt = debtInformationRepository.findByExecutionPaperId(executionPaperId)
-                .orElseGet(() -> DebtInformation.builder().executionPaper(executionPaper).build());
+                .orElseGet(() -> DebtInformation.builder().executionPaper(executionPaper).finalizedDebtPaper(executionPaper.getFinalizedDebtPaper()).build());
         if (debt.getCurrentAmountsAsOf() != null
                 && (effectiveAt == null || !effectiveAt.isAfter(debt.getCurrentAmountsAsOf()))) return;
         // Without an effective timestamp a Sanim document cannot safely be overwritten.
         if (effectiveAt == null && debt.getCurrentAmounts() != null) return;
         if (debt.getId() != null && debt.getCurrentAmounts() != null) {
-            historyRepository.save(com.mparsict.vosolmaliat.domain.model.execution.DebtInformationHistory.builder()
-                .debtInformation(debt).amounts(debt.getCurrentAmounts().copy())
-                .financialDetails(debt.getFinancialDetails() == null ? null : debt.getFinancialDetails().copy())
-                .effectiveAt(debt.getCurrentAmountsAsOf()).archivedAt(LocalDateTime.now()).inquiryRequestId(requestId).build());
+            historyRepository.findFirstByDebtInformationIdAndNextInquiryDateIsNullOrderByIdDesc(debt.getId())
+                    .ifPresent(previous -> { previous.close(LocalDateTime.now()); historyRepository.save(previous); });
             // Inquiry responses carry aggregates only; old breakdowns remain in the source snapshot/history.
             if (debt.getFinancialDetails() != null) {
                 var details=debt.getFinancialDetails(); var old=debt.getCurrentAmounts();
@@ -86,7 +84,11 @@ public class DebtStatusUpdateService {
         debt.getCurrentAmounts().merge(patch);
         debt.setCurrentAmountsAsOf(effectiveAt);
         debt.setLastDebtInquiryAt(LocalDateTime.now());
+        if (debt.getFinalizedDebtPaper() == null) debt.setFinalizedDebtPaper(executionPaper.getFinalizedDebtPaper());
+        SanimModelValidation.requireAmounts(debt.getCurrentAmounts());
         debtInformationRepository.save(debt);
+        historyRepository.save(com.mparsict.vosolmaliat.domain.model.execution.DebtInformationHistory.current(
+                debt, requestId, debt.getLastDebtInquiryAt()));
 
         auditLogService.record(
                 null,

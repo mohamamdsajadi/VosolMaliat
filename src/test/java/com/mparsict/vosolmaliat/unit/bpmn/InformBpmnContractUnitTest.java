@@ -81,7 +81,7 @@ class InformBpmnContractUnitTest {
                 .containsEntry("targetRef", "Activity_077bco2");
         assertThat(sequenceSourceAndTarget("Flow_1ecgufz"))
                 .containsEntry("sourceRef", "Activity_18aw0is")
-                .containsEntry("targetRef", "Activity_131cbua");
+                .containsEntry("targetRef", "Event_notification_viewed");
     }
 
     private String zeebeTaskType(String activityId) {

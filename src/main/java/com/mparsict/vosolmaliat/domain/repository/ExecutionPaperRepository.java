@@ -25,7 +25,7 @@ public interface ExecutionPaperRepository extends JpaRepository<ExecutionPaper, 
      * تاریخ صدور برگ بدهی متصل به برگ اجرا را برای بازیابی متغیر فرایند برمی‌گرداند.
      */
     @Query("""
-            SELECT finalizedDebtPaper.basisIssueDate
+            SELECT cast(finalizedDebtPaper.basisIssueDate as string)
             FROM ExecutionPaper executionPaper
             JOIN executionPaper.finalizedDebtPaper finalizedDebtPaper
             WHERE executionPaper.id = :executionPaperId
@@ -33,17 +33,20 @@ public interface ExecutionPaperRepository extends JpaRepository<ExecutionPaper, 
     Optional<String> findDebtPaperIssueDateByExecutionPaperId(
             @Param("executionPaperId") Long executionPaperId);
 
-    List<ExecutionPaper> findByCurrentState(String state);
+    @Query("SELECT ep FROM ExecutionPaper ep WHERE ep.workflowState.currentState = :state")
+    List<ExecutionPaper> findByCurrentState(@Param("state") String state);
 
-    long countByCurrentState(String state);
+    @Query("SELECT COUNT(ep) FROM ExecutionPaper ep WHERE ep.workflowState.currentState = :state")
+    long countByCurrentState(@Param("state") String state);
 
-    long countByCurrentStateNotIn(Collection<String> states);
+    @Query("SELECT COUNT(ep) FROM ExecutionPaper ep WHERE ep.workflowState.currentState NOT IN :states")
+    long countByCurrentStateNotIn(@Param("states") Collection<String> states);
 
     @Query("""
             SELECT COUNT(DISTINCT ep)
             FROM ExecutionPaper ep
             LEFT JOIN ExecutionPaperNotification notification ON notification.executionPaper = ep
-            WHERE notification.electronicNotificationDate IS NOT NULL
+            WHERE notification.notificationDate IS NOT NULL
             """)
     long countNotified();
 
@@ -51,13 +54,15 @@ public interface ExecutionPaperRepository extends JpaRepository<ExecutionPaper, 
             SELECT COUNT(DISTINCT ep)
             FROM ExecutionPaper ep
             LEFT JOIN ExecutionPaperNotification notification ON notification.executionPaper = ep
-            WHERE notification.electronicNotificationDate IS NULL
+            WHERE notification.notificationDate IS NULL
             """)
     long countNotNotified();
 
-    Page<ExecutionPaper> findByCurrentState(String state, Pageable pageable);
+    @Query("SELECT ep FROM ExecutionPaper ep WHERE ep.workflowState.currentState = :state")
+    Page<ExecutionPaper> findByCurrentState(@Param("state") String state, Pageable pageable);
 
-    Page<ExecutionPaper> findByCurrentStateNot(String state, Pageable pageable);
+    @Query("SELECT ep FROM ExecutionPaper ep WHERE ep.workflowState.currentState <> :state")
+    Page<ExecutionPaper> findByCurrentStateNot(@Param("state") String state, Pageable pageable);
 
     @Query(value = """
             SELECT DISTINCT ep
@@ -70,8 +75,8 @@ public interface ExecutionPaperRepository extends JpaRepository<ExecutionPaper, 
             LEFT JOIN DebtInformation debt ON debt.executionPaper = ep
             LEFT JOIN ExecutionPaperNotification notification ON notification.executionPaper = ep
             WHERE (:assignmentMode IS NULL
-                OR (:assignmentMode = 'ASSIGNED' AND ep.currentState <> :unassignedState)
-                OR (:assignmentMode = 'UNASSIGNED' AND ep.currentState = :unassignedState))
+                OR (:assignmentMode = 'ASSIGNED' AND ep.workflowState.currentState <> :unassignedState)
+                OR (:assignmentMode = 'UNASSIGNED' AND ep.workflowState.currentState = :unassignedState))
               AND (:uniqueCode IS NULL OR LOWER(ep.executionPaperUniqueCode) LIKE LOWER(CONCAT('%', :uniqueCode, '%')))
               AND (:taxpayerName IS NULL
                 OR LOWER(ninfo.firstName) LIKE LOWER(CONCAT('%', :taxpayerName, '%'))
@@ -81,10 +86,10 @@ public interface ExecutionPaperRepository extends JpaRepository<ExecutionPaper, 
               AND (:taxpayerNationalId IS NULL
                 OR np.nationalCode LIKE CONCAT('%', :taxpayerNationalId, '%')
                 OR lp.nationalId LIKE CONCAT('%', :taxpayerNationalId, '%'))
-              AND (:currentState IS NULL OR ep.currentState = :currentState)
+              AND (:currentState IS NULL OR ep.workflowState.currentState = :currentState)
               AND (:notificationStatus IS NULL
-                OR (:notificationStatus = 'NOTIFIED' AND notification.electronicNotificationDate IS NOT NULL)
-                OR (:notificationStatus = 'NOT_NOTIFIED' AND notification.electronicNotificationDate IS NULL))
+                OR (:notificationStatus = 'NOTIFIED' AND notification.notificationDate IS NOT NULL)
+                OR (:notificationStatus = 'NOT_NOTIFIED' AND notification.notificationDate IS NULL))
             """,
             countQuery = """
             SELECT COUNT(DISTINCT ep)
@@ -97,8 +102,8 @@ public interface ExecutionPaperRepository extends JpaRepository<ExecutionPaper, 
             LEFT JOIN DebtInformation debt ON debt.executionPaper = ep
             LEFT JOIN ExecutionPaperNotification notification ON notification.executionPaper = ep
             WHERE (:assignmentMode IS NULL
-                OR (:assignmentMode = 'ASSIGNED' AND ep.currentState <> :unassignedState)
-                OR (:assignmentMode = 'UNASSIGNED' AND ep.currentState = :unassignedState))
+                OR (:assignmentMode = 'ASSIGNED' AND ep.workflowState.currentState <> :unassignedState)
+                OR (:assignmentMode = 'UNASSIGNED' AND ep.workflowState.currentState = :unassignedState))
               AND (:uniqueCode IS NULL OR LOWER(ep.executionPaperUniqueCode) LIKE LOWER(CONCAT('%', :uniqueCode, '%')))
               AND (:taxpayerName IS NULL
                 OR LOWER(ninfo.firstName) LIKE LOWER(CONCAT('%', :taxpayerName, '%'))
@@ -108,10 +113,10 @@ public interface ExecutionPaperRepository extends JpaRepository<ExecutionPaper, 
               AND (:taxpayerNationalId IS NULL
                 OR np.nationalCode LIKE CONCAT('%', :taxpayerNationalId, '%')
                 OR lp.nationalId LIKE CONCAT('%', :taxpayerNationalId, '%'))
-              AND (:currentState IS NULL OR ep.currentState = :currentState)
+              AND (:currentState IS NULL OR ep.workflowState.currentState = :currentState)
               AND (:notificationStatus IS NULL
-                OR (:notificationStatus = 'NOTIFIED' AND notification.electronicNotificationDate IS NOT NULL)
-                OR (:notificationStatus = 'NOT_NOTIFIED' AND notification.electronicNotificationDate IS NULL))
+                OR (:notificationStatus = 'NOTIFIED' AND notification.notificationDate IS NOT NULL)
+                OR (:notificationStatus = 'NOT_NOTIFIED' AND notification.notificationDate IS NULL))
             """)
     Page<ExecutionPaper> search(
             @Param("assignmentMode") String assignmentMode,
@@ -123,6 +128,6 @@ public interface ExecutionPaperRepository extends JpaRepository<ExecutionPaper, 
             @Param("notificationStatus") String notificationStatus,
             Pageable pageable);
 
-    @Query("SELECT ep FROM ExecutionPaper ep WHERE ep.currentState = :state")
+    @Query("SELECT ep FROM ExecutionPaper ep WHERE ep.workflowState.currentState = :state")
     List<ExecutionPaper> findAllByState(@Param("state") String state);
 }
