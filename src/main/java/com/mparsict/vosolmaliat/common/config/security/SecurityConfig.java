@@ -24,6 +24,8 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(
+        name = "app.ef03.import-samples", havingValue = "false", matchIfMissing = true)
 @EnableMethodSecurity
 @EnableConfigurationProperties(DebtPaperSecurityProperties.class)
 @RequiredArgsConstructor

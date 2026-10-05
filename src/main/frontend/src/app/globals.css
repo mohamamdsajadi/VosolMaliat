@@ -5437,6 +5437,18 @@ textarea {
     font-weight: 950;
 }
 
+.epd-info-item--missing > strong {
+    color: #b42318;
+}
+
+.epd-source-group-title {
+    grid-column: 1 / -1;
+    margin: 8px 18px 0;
+    padding: 12px 0 4px;
+    color: #344b63;
+    border-bottom: 1px solid #e4eaf0;
+}
+
 .epd-amount-grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));

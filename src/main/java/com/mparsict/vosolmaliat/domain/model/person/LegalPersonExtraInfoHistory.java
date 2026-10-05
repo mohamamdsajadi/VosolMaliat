@@ -6,23 +6,15 @@ import com.mparsict.vosolmaliat.domain.model.BaseEntity;
 @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
 public class LegalPersonExtraInfoHistory extends com.mparsict.vosolmaliat.domain.model.VersionHistory {
     @Id @GeneratedValue(strategy=GenerationType.IDENTITY) private Long id;
-    @ManyToOne(fetch=FetchType.LAZY) @JoinColumn(nullable=false) private LegalPerson legalPerson;
+    @ManyToOne(fetch=FetchType.LAZY) @JoinColumn(name="legal_person_id", nullable=false) private LegalPerson legalPerson;
     private String name;
-    private String tradeName;
-    private String registrationNumber;
-    private java.time.LocalDateTime registrationDate;
-    private Integer arrestStatus;
-    private Integer capitalStatus;
-    private Integer managementDeclaration;
-    private String dateOfTermination;
-
+    @Column(name="trade_name") private String tradeName;
+    @Column(name="registration_number") private String registrationNumber;
+    @Column(name="registration_date") private java.time.LocalDateTime registrationDate;
     public static LegalPersonExtraInfoHistory from(LegalPerson person, LegalPersonExtraInfo info) {
         var row = LegalPersonExtraInfoHistory.builder()
                 .legalPerson(person).name(info.getName()).tradeName(info.getTradeName())
-                .registrationNumber(info.getRegistrationNumber()).registrationDate(info.getRegistrationDate())
-                .arrestStatus(info.getArrestStatus()).capitalStatus(info.getCapitalStatus())
-                .managementDeclaration(info.getManagementDeclaration())
-                .dateOfTermination(info.getDateOfTermination()).build();
+                .registrationNumber(info.getRegistrationNumber()).registrationDate(info.getRegistrationDate()).build();
         row.captureAudit(info);
         return row;
     }

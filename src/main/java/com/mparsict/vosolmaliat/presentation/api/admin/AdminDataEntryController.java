@@ -28,17 +28,17 @@ public class AdminDataEntryController {
 
     @PostMapping("/finalized-debt-papers")
     @PreAuthorize("hasAuthority('USER_PROFILE_CREATE')")
-    public org.springframework.http.ResponseEntity<?> createFinalizedDebtPaper(@RequestBody @Valid DebtPaperIssuanceRequest request) {
+    public org.springframework.http.ResponseEntity<?> createFinalTaxDebtPaper(@RequestBody @Valid DebtPaperIssuanceRequest request) {
         rejectEf03(request);
         return org.springframework.http.ResponseEntity.status(HttpStatus.CREATED)
-                .body(adminDataEntryService.createFinalizedDebtPaperAndExecutionPaper(request));
+                .body(adminDataEntryService.createFinalTaxDebtPaperAndExecutionPaper(request));
     }
 
     @PostMapping("/finalized-debt-papers/send")
     @PreAuthorize("hasAuthority('USER_PROFILE_CREATE')")
-    public org.springframework.http.ResponseEntity<?> sendFinalizedDebtPaper(@RequestBody @Valid DebtPaperIssuanceRequest request) {
+    public org.springframework.http.ResponseEntity<?> sendFinalTaxDebtPaper(@RequestBody @Valid DebtPaperIssuanceRequest request) {
         rejectEf03(request);
-        return org.springframework.http.ResponseEntity.ok(adminDataEntryService.sendFinalizedDebtPaperToWorkflow(request));
+        return org.springframework.http.ResponseEntity.ok(adminDataEntryService.sendFinalTaxDebtPaperToWorkflow(request));
     }
 
     private void rejectEf03(DebtPaperIssuanceRequest request) {

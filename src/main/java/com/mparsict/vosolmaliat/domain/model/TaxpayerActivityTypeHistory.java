@@ -3,6 +3,10 @@ import com.mparsict.vosolmaliat.domain.model.masterdata.ActivityType;
 import jakarta.persistence.*;
 import lombok.*;
 @Entity @Table(name = "taxpayer_activity_type_history") @org.hibernate.annotations.Immutable
+@AttributeOverrides({
+        @AttributeOverride(name = "createdAt", column = @Column(name = "creation_date", nullable = false, updatable = false)),
+        @AttributeOverride(name = "updatedAt", column = @Column(name = "update_date", nullable = false))
+})
 @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
 public class TaxpayerActivityTypeHistory extends VersionHistory {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;

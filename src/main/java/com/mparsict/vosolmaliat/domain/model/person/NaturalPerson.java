@@ -5,6 +5,7 @@ import lombok.*;
 @org.hibernate.annotations.Immutable
 @jakarta.persistence.EntityListeners(com.mparsict.vosolmaliat.domain.model.ImmutableEntityListener.class)
 @Entity @Table(name="natural_person")
+@AttributeOverride(name = "createdAt", column = @Column(name = "creation_date", nullable = false, updatable = false))
 @org.hibernate.annotations.Check(constraints="(national_code IS NOT NULL AND fida IS NULL) OR (national_code IS NULL AND fida IS NOT NULL)")
 @Getter @Setter @NoArgsConstructor
 public class NaturalPerson extends BaseEntity {
@@ -24,9 +25,16 @@ public class NaturalPerson extends BaseEntity {
         }
     }
     public void updateProfile(String firstName,String lastName,String fatherName,String birthDate) {
-        if (java.util.Objects.equals(getFirstName(),firstName) && java.util.Objects.equals(getLastName(),lastName) && java.util.Objects.equals(getFatherName(),fatherName) && java.util.Objects.equals(getBirthDate(),birthDate)) return;
+        updateProfile(firstName, lastName, fullName(firstName, lastName), fatherName, birthDate);
+    }
+    public void updateProfile(String firstName,String lastName,String fullName,String fatherName,String birthDate) {
+        if (java.util.Objects.equals(getFirstName(),firstName) && java.util.Objects.equals(getLastName(),lastName)
+                && java.util.Objects.equals(extraInfo == null ? null : extraInfo.getFullName(),fullName)
+                && java.util.Objects.equals(getFatherName(),fatherName) && java.util.Objects.equals(getBirthDate(),birthDate)) return;
         if (id != null && extraInfo != null) profileHistory.add(NaturalPersonExtraInfoHistory.from(this, extraInfo));
-        setFirstName(firstName); setLastName(lastName); setFatherName(fatherName); setBirthDate(birthDate);
+        var target = profile();
+        target.setFirstName(firstName); target.setLastName(lastName); target.setFullName(fullName);
+        target.setFatherName(fatherName); target.setBirthDate(com.mparsict.vosolmaliat.domain.value.PersianDates.parse(birthDate));
     }
     private NaturalPersonExtraInfo profile() {
         if(extraInfo==null) extraInfo=NaturalPersonExtraInfo.builder().naturalPerson(this).build();
@@ -34,9 +42,12 @@ public class NaturalPerson extends BaseEntity {
         return extraInfo;
     }
     private void refreshFullName() {
-        String name = java.util.stream.Stream.of(extraInfo.getFirstName(), extraInfo.getLastName())
-                .filter(v -> v != null && !v.isBlank()).collect(java.util.stream.Collectors.joining(" "));
+        String name = fullName(extraInfo.getFirstName(), extraInfo.getLastName());
         if (!name.isBlank()) extraInfo.setFullName(name);
+    }
+    private static String fullName(String firstName, String lastName) {
+        return java.util.stream.Stream.of(firstName, lastName)
+                .filter(v -> v != null && !v.isBlank()).collect(java.util.stream.Collectors.joining(" "));
     }
     public void completeFullName(String name) {
         if (java.util.Objects.equals(profile().getFullName(), name)) return;

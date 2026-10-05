@@ -55,12 +55,12 @@ public class DebtStatusUpdateService {
                     .totalCreditAmount(java.math.BigDecimal.valueOf(status.totalCreditRials())).build();
         var effectiveAt = status.lastActivityAt();
         debtInquiryResultRepository.save(DebtInquiryResult.builder()
-                .requestId(requestId).finalizedDebtPaperNotificationId(executionPaper.getFinalizedDebtPaper() == null ? null : executionPaper.getFinalizedDebtPaper().getFinalTaxDebtNotificationNumber()).executionPaper(executionPaper).responseJson(responseJson).hash(responseHash)
+                .requestId(requestId).finalTaxDebtPaperNotificationId(executionPaper.getFinalTaxDebtPaper() == null ? null : executionPaper.getFinalTaxDebtPaper().getFinalTaxDebtPaperNotificationNumber()).executionPaper(executionPaper).responseJson(responseJson).hash(responseHash)
                 .receivedAt(LocalDateTime.now()).effectiveAt(effectiveAt).amounts(patch.copy())
                 .mappingVersion("sanim-inquiry-v1").build());
 
         DebtInformation debt = debtInformationRepository.findByExecutionPaperId(executionPaperId)
-                .orElseGet(() -> DebtInformation.builder().executionPaper(executionPaper).finalizedDebtPaper(executionPaper.getFinalizedDebtPaper()).build());
+                .orElseGet(() -> DebtInformation.builder().executionPaper(executionPaper).finalTaxDebtPaper(executionPaper.getFinalTaxDebtPaper()).build());
         if (debt.getCurrentAmountsAsOf() != null
                 && (effectiveAt == null || !effectiveAt.isAfter(debt.getCurrentAmountsAsOf()))) return;
         // Without an effective timestamp a Sanim document cannot safely be overwritten.
@@ -84,7 +84,7 @@ public class DebtStatusUpdateService {
         debt.getCurrentAmounts().merge(patch);
         debt.setCurrentAmountsAsOf(effectiveAt);
         debt.setLastDebtInquiryAt(LocalDateTime.now());
-        if (debt.getFinalizedDebtPaper() == null) debt.setFinalizedDebtPaper(executionPaper.getFinalizedDebtPaper());
+        if (debt.getFinalTaxDebtPaper() == null) debt.setFinalTaxDebtPaper(executionPaper.getFinalTaxDebtPaper());
         SanimModelValidation.requireAmounts(debt.getCurrentAmounts());
         debtInformationRepository.save(debt);
         historyRepository.save(com.mparsict.vosolmaliat.domain.model.execution.DebtInformationHistory.current(
@@ -103,10 +103,13 @@ public class DebtStatusUpdateService {
     private boolean changed(java.math.BigDecimal old, java.math.BigDecimal next) { return next != null && (old == null || old.compareTo(next) != 0); }
 
     private void validateTaxpayer(ExecutionPaper executionPaper, SanimDebtStatusResponse status) {
-        if (executionPaper.getTaxpayerId() == null) {
+        Long taxpayerId = executionPaper.getFinalTaxDebtPaper() == null
+                || executionPaper.getFinalTaxDebtPaper().getTaxpayer() == null
+                ? null : executionPaper.getFinalTaxDebtPaper().getTaxpayer().getId();
+        if (taxpayerId == null) {
             throw new BusinessException("EXECUTION_PAPER_TAXPAYER_MISSING", "مؤدی برگ اجرا مشخص نشده است");
         }
-        SanimTaxpayerOptionResponse taxpayer = sanimAuditService.taxpayer(executionPaper.getTaxpayerId());
+        SanimTaxpayerOptionResponse taxpayer = sanimAuditService.taxpayer(taxpayerId);
         if (taxpayer.taxpayerType() != status.taxpayerType()
                 || !taxpayer.identifier().equals(status.taxpayerIdentifier())) {
             throw new BusinessException(

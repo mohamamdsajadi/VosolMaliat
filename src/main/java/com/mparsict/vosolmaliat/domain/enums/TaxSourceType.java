@@ -19,6 +19,13 @@ public enum TaxSourceType {
         return persianLabel;
     }
 
+    public static TaxSourceType fromSourceValue(String value) {
+        if (value == null || value.isBlank()) throw new IllegalArgumentException("Tax source is required");
+        String normalized = value.trim().toUpperCase(java.util.Locale.ROOT);
+        if ("TAXB".equals(normalized)) return INCOME_TAX;
+        return valueOf(normalized);
+    }
+
     public static String labelOf(String code) {
         if (code == null || code.isBlank()) {
             return null;

@@ -4,13 +4,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mparsict.vosolmaliat.common.exception.BusinessException;
 import com.mparsict.vosolmaliat.domain.model.execution.DebtInformation;
 import com.mparsict.vosolmaliat.domain.model.execution.ExecutionPaper;
-import com.mparsict.vosolmaliat.domain.model.execution.FinalizedDebtPaper;
+import com.mparsict.vosolmaliat.domain.model.execution.FinalTaxDebtPaper;
 import com.mparsict.vosolmaliat.domain.model.rule.ExecutionPaperInformRejectionRule;
 import com.mparsict.vosolmaliat.application.service.rule.AbstractRuleEngineService;
 import com.mparsict.vosolmaliat.domain.repository.DebtInformationRepository;
 import com.mparsict.vosolmaliat.domain.repository.ExecutionPaperInformRejectionRuleRepository;
 import com.mparsict.vosolmaliat.domain.repository.ExecutionPaperRepository;
-import com.mparsict.vosolmaliat.domain.repository.FinalizedDebtPaperRepository;
+import com.mparsict.vosolmaliat.domain.repository.FinalTaxDebtPaperRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -21,19 +21,19 @@ public class InformRuleEngineService extends AbstractRuleEngineService<Execution
 
     private final ExecutionPaperInformRejectionRuleRepository ruleRepository;
     private final ExecutionPaperRepository executionPaperRepository;
-    private final FinalizedDebtPaperRepository finalizedDebtPaperRepository;
+    private final FinalTaxDebtPaperRepository finalTaxDebtPaperRepository;
     private final DebtInformationRepository debtInformationRepository;
 
     public InformRuleEngineService(
             ExecutionPaperInformRejectionRuleRepository ruleRepository,
             ExecutionPaperRepository executionPaperRepository,
-            FinalizedDebtPaperRepository finalizedDebtPaperRepository,
+            FinalTaxDebtPaperRepository finalTaxDebtPaperRepository,
             DebtInformationRepository debtInformationRepository,
             ObjectMapper objectMapper) {
         super(objectMapper);
         this.ruleRepository = ruleRepository;
         this.executionPaperRepository = executionPaperRepository;
-        this.finalizedDebtPaperRepository = finalizedDebtPaperRepository;
+        this.finalTaxDebtPaperRepository = finalTaxDebtPaperRepository;
         this.debtInformationRepository = debtInformationRepository;
     }
 
@@ -46,25 +46,27 @@ public class InformRuleEngineService extends AbstractRuleEngineService<Execution
 
     protected record InformRuleContext(
             ExecutionPaper executionPaper,
-            FinalizedDebtPaper finalizedDebtPaper,
+            FinalTaxDebtPaper finalTaxDebtPaper,
             DebtInformation debtInformation
     ) {}
 
     public InformRuleEvaluationResult evaluate(Long executionPaperId) {
         ExecutionPaper executionPaper = executionPaperRepository.findById(executionPaperId)
                 .orElseThrow(() -> new BusinessException("EXECUTION_PAPER_NOT_FOUND", "برگ اجرا یافت نشد"));
-        FinalizedDebtPaper finalizedDebtPaper = executionPaper.getFinalizedDebtPaperId() == null
+        FinalTaxDebtPaper finalTaxDebtPaper = executionPaper.getFinalTaxDebtPaperId() == null
                 ? null
-                : finalizedDebtPaperRepository.findById(executionPaper.getFinalizedDebtPaperId()).orElse(null);
+                : finalTaxDebtPaperRepository.findById(executionPaper.getFinalTaxDebtPaperId()).orElse(null);
         DebtInformation debtInformation = debtInformationRepository.findByExecutionPaperId(executionPaperId).orElse(null);
 
-        SanimModelValidation.requireDocument(finalizedDebtPaper == null ? null : finalizedDebtPaper.getSourceDocument());
+        if (finalTaxDebtPaper == null) {
+            throw new BusinessException("FINAL_TAX_DEBT_PAPER_NOT_FOUND", "برگ بدهی قطعی یافت نشد");
+        }
         SanimModelValidation.requireAmounts(debtInformation == null ? null : debtInformation.getCurrentAmounts());
         String today = LocalDate.now().toString();
         List<ExecutionPaperInformRejectionRule> activeRules = ruleRepository.findActiveRules(today);
         GenericRuleEvaluationResult result = evaluateRules(
                 activeRules,
-                new InformRuleContext(executionPaper, finalizedDebtPaper, debtInformation),
+                new InformRuleContext(executionPaper, finalTaxDebtPaper, debtInformation),
                 ExecutionPaperInformRejectionRule::getId,
                 ExecutionPaperInformRejectionRule::getRuleJson,
                 ExecutionPaperInformRejectionRule::getEndDate,
@@ -83,7 +85,7 @@ public class InformRuleEngineService extends AbstractRuleEngineService<Execution
         return resolveField(
                 field,
                 context.executionPaper(),
-                context.finalizedDebtPaper(),
+                context.finalTaxDebtPaper(),
                 context.debtInformation()
         );
     }
@@ -91,20 +93,21 @@ public class InformRuleEngineService extends AbstractRuleEngineService<Execution
     private Object resolveField(
             String field,
             ExecutionPaper executionPaper,
-            FinalizedDebtPaper finalizedDebtPaper,
+            FinalTaxDebtPaper finalTaxDebtPaper,
             DebtInformation debtInformation) {
-        var d = finalizedDebtPaper.getSourceDocument();
+        var office = finalTaxDebtPaper.getTaxAffairsOffice();
         return switch (field == null ? "" : field) {
-            case "performanceYear", "performanceYearPeriod", "taxYear" -> d.getTaxYear();
-            case "performancePeriod", "taxPeriod" -> d.getTaxPeriod();
-            case "mainTaxBureauId" -> finalizedDebtPaper.getMainTaxBureauId();
-            case "taxBureauId" -> finalizedDebtPaper.getTaxBureauId();
-            case "taxAffairsOfficeId" -> executionPaper.getFinalizedDebtPaper() == null
-                    ? null : executionPaper.getFinalizedDebtPaper().getTaxBureauId();
-            case "taxSource" -> executionPaper.getTaxSource();
-            case "sourceTaxOfficeCode" -> d.getSourceTaxOfficeCode();
-            case "activityTitle" -> d.getActivityTitle();
-            case "issuanceReason" -> d.getIssuanceReason();
+            case "performanceYear", "performanceYearPeriod", "taxYear" -> finalTaxDebtPaper.getTaxYear();
+            case "performancePeriod", "taxPeriod" -> finalTaxDebtPaper.getTaxPeriod();
+            case "mainTaxBureauId" -> office == null ? null : office.getGeneralDirectorateOfTaxAffairsId();
+            case "taxBureauId" -> finalTaxDebtPaper.getTaxAffairsOfficeId();
+            case "taxAffairsOfficeId" -> executionPaper.getFinalTaxDebtPaper() == null
+                    ? null : executionPaper.getFinalTaxDebtPaper().getTaxAffairsOfficeId();
+            case "taxSource" -> finalTaxDebtPaper.getTaxSource();
+            case "sourceTaxOfficeCode" -> office == null ? null : office.getOfficeCode();
+            case "activityTitle" -> finalTaxDebtPaper.getTaxpayer().getActivityType() == null ? null
+                    : finalTaxDebtPaper.getTaxpayer().getActivityType().getActivityTypeTitle();
+            case "issuanceReason" -> finalTaxDebtPaper.getFinalizationReason();
             default -> SanimModelValidation.amount(field, debtInformation.getCurrentAmounts());
         };
     }

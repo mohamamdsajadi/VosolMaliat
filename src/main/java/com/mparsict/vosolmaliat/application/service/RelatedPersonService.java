@@ -11,13 +11,13 @@ import com.mparsict.vosolmaliat.common.exception.BusinessException;
 import com.mparsict.vosolmaliat.domain.enums.RelatedPersonType;
 import com.mparsict.vosolmaliat.domain.model.Taxpayer;
 import com.mparsict.vosolmaliat.domain.model.execution.ExecutionPaper;
-import com.mparsict.vosolmaliat.domain.model.execution.FinalizedDebtPaper;
+import com.mparsict.vosolmaliat.domain.model.execution.FinalTaxDebtPaper;
 import com.mparsict.vosolmaliat.domain.model.execution.RelatedPerson;
 import com.mparsict.vosolmaliat.domain.model.execution.RelatedPersonPost;
 import com.mparsict.vosolmaliat.domain.model.person.LegalPerson;
 import com.mparsict.vosolmaliat.domain.model.person.NaturalPerson;
 import com.mparsict.vosolmaliat.domain.repository.ExecutionPaperRepository;
-import com.mparsict.vosolmaliat.domain.repository.FinalizedDebtPaperRepository;
+import com.mparsict.vosolmaliat.domain.repository.FinalTaxDebtPaperRepository;
 import com.mparsict.vosolmaliat.domain.repository.LegalPersonRepository;
 import com.mparsict.vosolmaliat.domain.repository.NaturalPersonRepository;
 import com.mparsict.vosolmaliat.domain.repository.RelatedPersonRepository;
@@ -42,7 +42,7 @@ public class RelatedPersonService {
 
     private final ExecutionPaperRepository executionPaperRepository;
     private final TaxpayerRepository taxpayerRepository;
-    private final FinalizedDebtPaperRepository finalizedDebtPaperRepository;
+    private final FinalTaxDebtPaperRepository finalTaxDebtPaperRepository;
     private final NaturalPersonRepository naturalPersonRepository;
     private final LegalPersonRepository legalPersonRepository;
     private final RelatedPersonPostRepository relatedPersonPostRepository;
@@ -227,7 +227,10 @@ public class RelatedPersonService {
     private ExecutionContext executionContext(Long executionPaperId) {
         ExecutionPaper executionPaper = executionPaperRepository.findById(executionPaperId)
                 .orElseThrow(() -> new BusinessException("EXECUTION_PAPER_NOT_FOUND", "برگ اجرا یافت نشد"));
-        Taxpayer taxpayer = taxpayerRepository.findById(executionPaper.getTaxpayerId())
+        Long taxpayerId = executionPaper.getFinalTaxDebtPaper() == null
+                || executionPaper.getFinalTaxDebtPaper().getTaxpayer() == null
+                ? null : executionPaper.getFinalTaxDebtPaper().getTaxpayer().getId();
+        Taxpayer taxpayer = taxpayerRepository.findById(taxpayerId)
                 .orElseThrow(() -> new BusinessException("TAXPAYER_NOT_FOUND", "مودی برگ اجرا یافت نشد"));
         if (taxpayer.getLegalPersonId() == null) {
             throw new BusinessException(
@@ -237,15 +240,14 @@ public class RelatedPersonService {
         }
         LegalPerson owner = legalPersonRepository.findById(taxpayer.getLegalPersonId())
                 .orElseThrow(() -> new BusinessException("LEGAL_PERSON_NOT_FOUND", "شخص حقوقی مودی یافت نشد"));
-        FinalizedDebtPaper finalizedDebtPaper =
-                finalizedDebtPaperRepository.findById(executionPaper.getFinalizedDebtPaperId())
+        FinalTaxDebtPaper finalTaxDebtPaper =
+                finalTaxDebtPaperRepository.findById(executionPaper.getFinalTaxDebtPaperId())
                         .orElseThrow(() -> new BusinessException(
                                 "FINALIZED_DEBT_PAPER_NOT_FOUND",
                                 "برگ بدهی قطعی مرتبط یافت نشد"
                         ));
         return new ExecutionContext(executionPaper, taxpayer, owner,
-                normalizeYear(finalizedDebtPaper.getSourceDocument() == null
-                        ? null : finalizedDebtPaper.getSourceDocument().getTaxYear()));
+                normalizeYear(String.valueOf(finalTaxDebtPaper.getTaxYear())));
     }
 
     private NaturalPerson resolveNaturalPerson(CompanyRegistryRelatedPersonData item) {

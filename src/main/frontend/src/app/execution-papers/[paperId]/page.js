@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import AppShell from '../../components/app-shell'
 import { apiFetch } from '../../lib/api'
@@ -113,7 +113,7 @@ const EXTERNAL_REQUEST_FIELD_LABELS = {
   taxSourceLabel: 'عنوان منبع مالیاتی',
   taxSourceDisplay: 'منبع مالیاتی',
 
-  debtPaperUniqueCode: 'شناسه یکتای برگ بدهی',
+  uniqueFinalTaxDebtNoticeId: 'شناسه یکتای برگ بدهی قطعی',
   debtPaperIssueDate: 'تاریخ صدور برگ بدهی',
   notificationId: 'شناسه ابلاغ',
   performanceYear: 'سال عملکرد',
@@ -172,7 +172,7 @@ const EXTERNAL_REQUEST_FIELD_LABELS = {
 const EXTERNAL_REQUEST_SECTION_LABELS = {
   summary: 'خلاصه برگ اجرا',
   executionPaper: 'مشخصات برگ اجرا',
-  finalizedDebtPaper: 'مشخصات برگ بدهی قطعی',
+  finalTaxDebtPaper: 'مشخصات برگ بدهی قطعی',
   taxpayer: 'مشخصات مؤدی',
   debtInformation: 'مبالغ تجمیعی بدهی',
   notification: 'اطلاعات ابلاغ',
@@ -802,11 +802,121 @@ function InfoGroup({ title, subtitle, icon, tone = 'blue', children, wide = fals
   </section>
 }
 
-function InfoItem({ label, value, ltr = false, wide = false, emphasize = false }) {
-  return <div className={`epd-info-item ${wide ? 'epd-info-item--wide' : ''} ${emphasize ? 'epd-info-item--emphasize' : ''}`}>
-    <span>{label}</span>
+function InfoItem({ label, value, ltr = false, wide = false, emphasize = false, required = false, missing = false }) {
+  return <div className={`epd-info-item ${wide ? 'epd-info-item--wide' : ''} ${emphasize ? 'epd-info-item--emphasize' : ''} ${missing ? 'epd-info-item--missing' : ''}`}>
+    <span>{label}{required ? ' (اجباری)' : ''}</span>
     <strong dir={ltr ? 'ltr' : undefined}>{value == null || value === '' ? '—' : value}</strong>
   </div>
+}
+
+const SOURCE_FIELD_LABELS = {
+  referenceId: 'شناسه مرجع ورودی', nationalId: 'شناسه ملی / هویتی ورودی', followCode: 'کد رهگیری ثبت‌نام',
+  secondParameter: 'پارامتر دوم', year: 'سال مالیاتی ارسالی', period: 'دوره مالیاتی ارسالی',
+  taxOfficeId: 'کد اداره مالیاتی ارسالی', announcementType: 'نوع اعلامیه', taxAmount: 'مبلغ مالیات ارسالی',
+  taxSource: 'منبع مالیاتی', hash: 'هش ورودی', produceDate: 'تاریخ تولید منبع', receivedAt: 'زمان دریافت',
+  activityTypeId: 'شناسه نوع فعالیت', activityCode: 'کد نوع فعالیت', mobile: 'شماره همراه',
+  registrationTraceCode: 'کد رهگیری ثبت‌نام', financialDetails: 'جزئیات مالی', paperType: 'نوع برگه',
+  paperName: 'عنوان برگه', mappingVersion: 'نسخه نگاشت', documentNumber: 'شماره ابلاغ برگه بدهی قطعی',
+  issueDateRaw: 'تاریخ صدور برگه بدهی قطعی', basisDocumentNumber: 'شماره سند مبنا',
+  basisDocumentDateRaw: 'تاریخ سند مبنا', issuanceReason: 'علت قطعیت', taxYear: 'سال مالیاتی',
+  taxPeriod: 'دوره مالیاتی', taxPeriodStartRaw: 'شروع دوره مالیاتی', taxPeriodEndRaw: 'پایان دوره مالیاتی',
+  taxpayerIdentifier: 'شناسه مودی (TIN)', taxpayerIdentifierType: 'نوع شناسه مودی', identityNumber: 'شناسه هویتی',
+  identityType: 'نوع شناسه هویتی', personType: 'نوع مودی', taxpayerName: 'نام مودی', tradeName: 'نام تجاری',
+  activityTitle: 'عنوان فعالیت', phone: 'شماره تلفن', postalCode: 'کد پستی', address: 'اقامتگاه قانونی',
+  generalDirectorateName: 'نام اداره کل امور مالیاتی', taxOfficeName: 'نام اداره امور مالیاتی',
+  sourceTaxOfficeCode: 'کد اداره در منبع', currencyCode: 'واحد پول', taxAmountBasis: 'مبنای مبلغ مالیات',
+  remissionBasis: 'مبنای بخشودگی', validationStatus: 'وضعیت اعتبارسنجی', amounts: 'مبالغ تجمیعی',
+  totalTaxAmount: 'جمع مالیات', totalDutyAmount: 'جمع عوارض', outstandingDebtAmount: 'مانده بدهی',
+  totalPenaltyAmount: 'جمع جرائم', totalPaidAmount: 'جمع پرداختی', totalCreditAmount: 'جمع اعتبار',
+  totalRemissionAmount: 'جمع بخشودگی', type: 'نوع مودی', nationalCode: 'کد ملی', fida: 'کد فیدا',
+  firstName: 'نام', lastName: 'نام خانوادگی', fatherName: 'نام پدر', birthDate: 'تاریخ تولد',
+  companyName: 'نام شخص حقوقی', registrationNumber: 'شماره ثبت', registrationDate: 'تاریخ ثبت',
+  companyNationalId: 'شناسه ملی شخص حقوقی', name: 'نام کامل', email: 'پست الکترونیک',
+  isForeign: 'آیا مودی تبعه خارجی است؟', identity: 'کد ملی یا فیدا'
+}
+
+const REQUIRED_SOURCE_FIELDS = new Set([
+  'sourceEnvelope.referenceId', 'sourceEnvelope.nationalId', 'sourceEnvelope.followCode',
+  'sourceEnvelope.year', 'sourceEnvelope.period', 'sourceEnvelope.taxOfficeId',
+  'sourceEnvelope.announcementType', 'sourceEnvelope.taxSource',
+  'sourceDocument.paperType', 'sourceDocument.documentNumber', 'sourceDocument.issueDateRaw',
+  'sourceDocument.registrationTraceCode', 'sourceDocument.taxpayerIdentifier', 'sourceDocument.issuanceReason',
+  'sourceDocument.basisDocumentNumber', 'sourceDocument.basisDocumentDateRaw',
+  'sourceDocument.taxYear', 'sourceDocument.taxPeriodStartRaw', 'sourceDocument.taxPeriodEndRaw',
+  'sourceDocument.taxpayerName', 'sourceDocument.tradeName', 'sourceDocument.activityTitle',
+  'sourceDocument.phone', 'sourceDocument.mobile',
+  'sourceDocument.postalCode', 'sourceDocument.address', 'sourceDocument.amounts.totalTaxAmount',
+  'sourceDocument.amounts.totalDutyAmount', 'sourceDocument.amounts.totalPenaltyAmount',
+  'sourceDocument.amounts.totalPaidAmount', 'sourceDocument.amounts.totalCreditAmount',
+  'sourceDocument.amounts.totalRemissionAmount', 'sourceDocument.amounts.outstandingDebtAmount',
+  'sourceTaxpayer.type', 'sourceTaxpayer.postalCode', 'sourceTaxpayer.address',
+  'sourceTaxpayer.identity', 'sourceTaxpayer.fatherName', 'sourceTaxpayer.birthDate',
+  'sourceTaxpayer.registrationNumber', 'sourceTaxpayer.registrationDate',
+  'sourceTaxpayer.companyName', 'sourceTaxpayer.isForeign'
+])
+
+function flattenSourceFields(value, path = '') {
+  if (value == null || value === '') return [{ path, value: null }]
+  if (Array.isArray(value)) return [{ path, value: JSON.stringify(value) }]
+  if (typeof value === 'object') {
+    const entries = Object.entries(value).filter(([key]) => key !== 'xml')
+    if (!entries.length) return [{ path, value: null }]
+    return entries.flatMap(([key, child]) => flattenSourceFields(child, path ? `${path}.${key}` : key))
+  }
+  return [{ path, value }]
+}
+
+function isRequiredSourceField(path, taxpayerType) {
+  if (!REQUIRED_SOURCE_FIELDS.has(path)) return false
+  if (path === 'sourceDocument.tradeName') return taxpayerType === 'LEGAL'
+  if (path.startsWith('sourceTaxpayer.')) {
+    const field = path.split('.').at(-1)
+    if (['fatherName', 'birthDate', 'isForeign'].includes(field)) return taxpayerType !== 'LEGAL'
+    if (['registrationNumber', 'registrationDate', 'companyName'].includes(field)) return taxpayerType !== 'NATURAL'
+  }
+  return true
+}
+
+function SourceInputDetails({ envelope, document, taxpayer }) {
+  const groups = [
+    { key: 'sourceEnvelope', title: 'اطلاعات پاکت ورودی EF03', value: envelope },
+    { key: 'sourceDocument', title: 'اطلاعات استخراج‌شده از سند منبع', value: document },
+    { key: 'sourceTaxpayer', title: 'اطلاعات هویتی ارسالی مودی', value: taxpayer }
+  ]
+  return <InfoGroup title="تمام اطلاعات ورودی منبع" subtitle="فیلدهای موجود در درخواست EF03؛ فیلدهای الزامیِ خالی مشخص شده‌اند" icon="document" tone="indigo" wide>
+    {groups.map(group => {
+      const rows = flattenSourceFields(group.value, group.key)
+      if (group.key === 'sourceTaxpayer') {
+        const identity = group.value?.nationalCode || group.value?.fida || group.value?.nationalId
+        rows.push({ path: 'sourceTaxpayer.identity', value: identity || null })
+      }
+      for (const requiredPath of REQUIRED_SOURCE_FIELDS) {
+        if (requiredPath.startsWith(`${group.key}.`) && !rows.some(row => row.path === requiredPath)) {
+          const field = requiredPath.split('.').at(-1)
+          if (group.key === 'sourceTaxpayer' && group.value?.type === 'LEGAL'
+              && ['fatherName', 'birthDate', 'isForeign'].includes(field)) continue
+          if (group.key === 'sourceTaxpayer' && group.value?.type === 'NATURAL'
+              && ['registrationNumber', 'registrationDate', 'companyName'].includes(field)) continue
+          rows.push({ path: requiredPath, value: null })
+        }
+      }
+      return <Fragment key={group.key}>
+        <h4 className="epd-source-group-title epd-info-item--wide">{group.title}</h4>
+        {rows.map(row => {
+          const required = isRequiredSourceField(row.path, taxpayer?.type)
+          const missing = row.value == null || row.value === ''
+          const field = row.path.slice(group.key.length + 1).split('.').at(-1)
+          const label = SOURCE_FIELD_LABELS[field] || field
+          const value = missing && required ? 'این داده الزامی مفقود است' : formatValue(row.value)
+          return <InfoItem key={row.path} label={label} value={value} required={required} missing={missing && required}
+            ltr={typeof row.value === 'string' && /^[\w-]+$/.test(row.value)} wide={typeof row.value === 'string' && row.value.length > 72} />
+        })}
+      </Fragment>
+    })}
+    {(envelope?.xml || document?.xml) && <details className="epd-xml epd-info-item--wide">
+      <summary>مشاهده XML اصلی ورودی</summary><pre dir="ltr">{envelope?.xml || document?.xml}</pre>
+    </details>}
+  </InfoGroup>
 }
 
 function AmountComparison({ sourceAmounts = {}, currentAmounts = {} }) {
@@ -886,8 +996,10 @@ function StatusPill({ value, label }) {
 
 function SanimDocumentSection({ data }) {
   const execution = data.executionPaper || {}
-  const finalized = data.finalizedDebtPaper || {}
-  const source = finalized.sourceDocument
+  const finalized = data.finalTaxDebtPaper || {}
+  const source = finalized.sourceDocument || {}
+  const sourceEnvelope = finalized.sourceEnvelope || {}
+  const sourceTaxpayer = finalized.sourceTaxpayer || {}
   const taxpayer = data.taxpayer || {}
   const debt = data.debtInformation || {}
   const notification = data.notification || {}
@@ -898,11 +1010,6 @@ function SanimDocumentSection({ data }) {
   const identity = taxpayer.nationalCode || taxpayer.nationalId || source?.identityNumber
   const hasNotification = Object.keys(notification).length > 0
   const hasRejection = Object.keys(rejection).length > 0
-
-  if (!source) return <section className="epd-empty-card">
-    <DetailIcon type="document" />
-    <div><h3>اطلاعات سند کامل نیست</h3><p>این برگه برای نمایش مطابق مدل جدید به بررسی و تکمیل اطلاعات منبع نیاز دارد.</p></div>
-  </section>
 
   return <div className="epd-page" dir="rtl">
     <section className="epd-hero">
@@ -952,8 +1059,8 @@ function SanimDocumentSection({ data }) {
       <InfoGroup title="سند بدهی قطعی و مبنای صدور" subtitle="اطلاعات ثبت‌شده در سند سنیم" icon="document" tone="indigo">
         <InfoItem label="شماره نامه سنیم" value={formatValue(source.documentNumber)} ltr emphasize />
         <InfoItem label="تاریخ نامه سنیم" value={formatValue(source.issueDateRaw)} />
-        <InfoItem label="شماره سند مبنا" value={formatValue(source.basisDocumentNumber || finalized.debtPaperUniqueCode)} ltr />
-        <InfoItem label="تاریخ سند مبنا" value={formatValue(source.basisDocumentDateRaw || finalized.basisIssueDate)} />
+        <InfoItem label="شماره سند مبنا" value={formatValue(source.basisDocumentNumber || finalized.uniqueFinalTaxDebtNoticeId)} ltr />
+        <InfoItem label="تاریخ صدور برگ بدهی قطعی" value={formatValue(finalized.finalTaxDebtNoticeIssueDate || source.issueDateRaw)} />
         <InfoItem label="علت قطعیت" value={readableEnum(source.issuanceReason || finalized.finalizationReason, FINALIZATION_LABELS)} />
         <InfoItem label="منبع مالیاتی" value={finalized.taxSourceDisplay || finalized.taxSource} />
       </InfoGroup>
@@ -1037,6 +1144,8 @@ function SanimDocumentSection({ data }) {
           </div>
         </details>
       </section>
+
+      <SourceInputDetails envelope={sourceEnvelope} document={source} taxpayer={sourceTaxpayer} />
     </div>
   </div>
 }

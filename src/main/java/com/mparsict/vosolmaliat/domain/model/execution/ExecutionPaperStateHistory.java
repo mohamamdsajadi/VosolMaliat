@@ -9,6 +9,7 @@ import lombok.*;
 @org.hibernate.annotations.Immutable
 @EntityListeners(com.mparsict.vosolmaliat.domain.model.ImmutableEntityListener.class)
 @Table(name = "execution_paper_state_history")
+@AttributeOverride(name = "createdAt", column = @Column(name = "creation_date", nullable = false, updatable = false))
 @Getter
 @Setter
 @NoArgsConstructor

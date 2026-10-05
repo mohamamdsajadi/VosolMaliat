@@ -7,7 +7,7 @@ import java.util.Map;
  *
  * @param summary خلاصه قابل نمایش برگ اجرا
  * @param executionPaper مشخصات خام برگ اجرا
- * @param finalizedDebtPaper مشخصات برگ بدهی قطعی
+ * @param finalTaxDebtPaper مشخصات برگ بدهی قطعی
  * @param taxpayer مشخصات مؤدی
  * @param debtInformation اجزای مالی بدهی
  * @param notification اطلاعات ابلاغ
@@ -16,7 +16,7 @@ import java.util.Map;
 public record ExecutionPaperDetailResponse(
         ExecutionPaperDto summary,
         Map<String, Object> executionPaper,
-        Map<String, Object> finalizedDebtPaper,
+        Map<String, Object> finalTaxDebtPaper,
         Map<String, Object> taxpayer,
         Map<String, Object> debtInformation,
         Map<String, Object> notification,

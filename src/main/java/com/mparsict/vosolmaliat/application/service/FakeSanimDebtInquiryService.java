@@ -93,13 +93,16 @@ public class FakeSanimDebtInquiryService {
                         "EXECUTION_PAPER_NOT_FOUND",
                         "برگ اجرا یافت نشد"
                 ));
-        if (executionPaper.getTaxpayerId() == null) {
+        Long taxpayerId = executionPaper.getFinalTaxDebtPaper() == null
+                || executionPaper.getFinalTaxDebtPaper().getTaxpayer() == null
+                ? null : executionPaper.getFinalTaxDebtPaper().getTaxpayer().getId();
+        if (taxpayerId == null) {
             throw new BusinessException(
                     "EXECUTION_PAPER_TAXPAYER_MISSING",
                     "مؤدی برگ اجرا مشخص نشده است"
             );
         }
-        SanimTaxpayerOptionResponse taxpayer = sanimAuditService.taxpayer(executionPaper.getTaxpayerId());
+        SanimTaxpayerOptionResponse taxpayer = sanimAuditService.taxpayer(taxpayerId);
         FakeSanimDebtInquiryRequest saved = repository.save(FakeSanimDebtInquiryRequest.builder()
                 .requestId(requestId)
                 .executionPaperId(executionPaperId)

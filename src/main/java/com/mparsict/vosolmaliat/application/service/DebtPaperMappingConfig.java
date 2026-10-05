@@ -3,7 +3,7 @@ package com.mparsict.vosolmaliat.application.service;
 import com.mparsict.vosolmaliat.application.dto.request.DebtPaperPushRequest;
 import com.mparsict.vosolmaliat.domain.enums.PaperType;
 import com.mparsict.vosolmaliat.domain.model.sanim.DebtFinancialDetails;
-import com.mparsict.vosolmaliat.domain.model.sanim.SanimDocumentDetails;
+import com.mparsict.vosolmaliat.application.dto.request.SanimDocumentDetails;
 import org.w3c.dom.Document;
 
 import java.util.EnumMap;

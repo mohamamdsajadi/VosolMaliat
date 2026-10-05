@@ -4,7 +4,9 @@ import jakarta.persistence.*;
 import lombok.*;
 @org.hibernate.annotations.Immutable
 @jakarta.persistence.EntityListeners(com.mparsict.vosolmaliat.domain.model.ImmutableEntityListener.class)
-@Entity @Table(name="legal_person") @Getter @Setter @NoArgsConstructor
+@Entity @Table(name="legal_person")
+@AttributeOverride(name = "createdAt", column = @Column(name = "creation_date", nullable = false, updatable = false))
+@Getter @Setter @NoArgsConstructor
 public class LegalPerson extends BaseEntity {
     @Id @GeneratedValue(strategy=GenerationType.IDENTITY) private Long id;
     @Column(name="national_id",unique=true,nullable=false,updatable=false) private String nationalId;
@@ -20,9 +22,16 @@ public class LegalPerson extends BaseEntity {
         }
     }
     public void updateProfile(String name,String registrationNumber,String registrationDate) {
-        if (java.util.Objects.equals(getName(),name) && java.util.Objects.equals(getRegistrationNumber(),registrationNumber) && java.util.Objects.equals(getRegistrationDate(),registrationDate)) return;
+        updateProfile(name, getTradeName(), registrationNumber, registrationDate);
+    }
+    public void updateProfile(String name,String tradeName,String registrationNumber,String registrationDate) {
+        if (java.util.Objects.equals(getName(),name) && java.util.Objects.equals(getTradeName(),tradeName)
+                && java.util.Objects.equals(getRegistrationNumber(),registrationNumber)
+                && java.util.Objects.equals(getRegistrationDate(),registrationDate)) return;
         if (id != null && extraInfo != null) profileHistory.add(LegalPersonExtraInfoHistory.from(this, extraInfo));
-        setName(name); setRegistrationNumber(registrationNumber); setRegistrationDate(registrationDate);
+        var target = profile();
+        target.setName(name); target.setTradeName(tradeName); target.setRegistrationNumber(registrationNumber);
+        target.setRegistrationDate(com.mparsict.vosolmaliat.domain.value.PersianDates.parse(registrationDate));
     }
     private LegalPersonExtraInfo profile() {
         if(extraInfo==null) extraInfo=LegalPersonExtraInfo.builder().legalPerson(this).build();
@@ -36,6 +45,7 @@ public class LegalPerson extends BaseEntity {
     public String getRegistrationNumber(){return extraInfo==null?null:extraInfo.getRegistrationNumber();}
     public String getRegistrationDate(){return extraInfo==null?null:com.mparsict.vosolmaliat.domain.value.PersianDates.format(extraInfo.getRegistrationDate());}
     public String getName(){return extraInfo==null?null:extraInfo.getName();}
+    public String getTradeName(){return extraInfo==null?null:extraInfo.getTradeName();}
     public void setRegistrationNumber(String v){profile().setRegistrationNumber(v);}
     public void setRegistrationDate(String v){profile().setRegistrationDate(com.mparsict.vosolmaliat.domain.value.PersianDates.parse(v));}
     public void setName(String v){profile().setName(v);}

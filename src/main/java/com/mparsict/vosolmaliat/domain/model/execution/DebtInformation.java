@@ -26,7 +26,7 @@ public class DebtInformation extends BaseEntity {
             totalLiability = value.getTotalTaxAmount().add(value.getTotalDutyAmount());
     }
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="finalized_debt_paper_id", nullable=false, updatable=false) private FinalizedDebtPaper finalizedDebtPaper;
+    @JoinColumn(name="debt_paper_unique_id", nullable=false, updatable=false) private FinalTaxDebtPaper finalTaxDebtPaper;
     @Embedded private com.mparsict.vosolmaliat.domain.model.sanim.DebtFinancialDetails financialDetails;
 
     @Version
@@ -39,9 +39,10 @@ public class DebtInformation extends BaseEntity {
         @AttributeOverride(name="totalPaidAmount", column=@Column(name="total_payments", nullable=false, columnDefinition="TEXT")),
         @AttributeOverride(name="totalCreditAmount", column=@Column(name="total_credits", nullable=false, columnDefinition="TEXT")),
         @AttributeOverride(name="totalRemissionAmount", column=@Column(name="total_remissions", nullable=false, columnDefinition="TEXT")),
-        @AttributeOverride(name="outstandingDebtAmount", column=@Column(name="outstanding_tax_debt", nullable=false, columnDefinition="TEXT"))})
+        @AttributeOverride(name="outstandingDebtAmount", column=@Column(name="outstanding_tax_debt", columnDefinition="TEXT"))})
     private com.mparsict.vosolmaliat.domain.model.sanim.SanimAmounts currentAmounts;
 
+    @Column(name = "current_amounts_as_of")
     private LocalDateTime currentAmountsAsOf;
 
     @Id

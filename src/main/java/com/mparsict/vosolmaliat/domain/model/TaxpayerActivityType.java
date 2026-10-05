@@ -6,6 +6,10 @@ import lombok.*;
 import java.util.*;
 
 @Entity @Table(name = "taxpayer_activity_type")
+@AttributeOverrides({
+        @AttributeOverride(name = "createdAt", column = @Column(name = "creation_date", nullable = false, updatable = false)),
+        @AttributeOverride(name = "updatedAt", column = @Column(name = "update_date", nullable = false))
+})
 @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
 public class TaxpayerActivityType extends BaseEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;

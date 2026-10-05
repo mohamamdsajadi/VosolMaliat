@@ -10,6 +10,7 @@ import com.mparsict.vosolmaliat.domain.enums.TaxpayerType;
 import com.mparsict.vosolmaliat.domain.model.Taxpayer;
 import com.mparsict.vosolmaliat.domain.model.execution.DebtInformation;
 import com.mparsict.vosolmaliat.domain.model.execution.ExecutionPaper;
+import com.mparsict.vosolmaliat.domain.model.execution.FinalTaxDebtPaper;
 import com.mparsict.vosolmaliat.domain.model.inquiry.DebtInquiryResult;
 import com.mparsict.vosolmaliat.domain.repository.DebtInformationRepository;
 import com.mparsict.vosolmaliat.domain.repository.DebtInquiryResultRepository;
@@ -30,7 +31,8 @@ class DebtStatusUpdateServiceUnitTest {
     void storesImmutableResponseAndUpdatesDedicatedSanimSnapshot() {
         ExecutionPaper paper = ExecutionPaper.builder()
                 .id(99L)
-                .taxpayer(Taxpayer.builder().id(10L).build())
+                .finalTaxDebtPaper(FinalTaxDebtPaper.builder()
+                        .taxpayer(Taxpayer.builder().id(10L).build()).build())
                 .build();
         DebtInformation existingDebt = DebtInformation.builder()
                 .executionPaper(paper)

@@ -4,6 +4,7 @@ import com.mparsict.vosolmaliat.domain.model.execution.ExecutionPaper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -17,7 +18,7 @@ public interface ExecutionPaperRepository extends JpaRepository<ExecutionPaper, 
 
     Optional<ExecutionPaper> findByExecutionPaperUniqueCode(String code);
 
-    Optional<ExecutionPaper> findByFinalizedDebtPaperDebtPaperUniqueCode(String debtPaperUniqueCode);
+    Optional<ExecutionPaper> findByFinalTaxDebtPaperUniqueFinalTaxDebtNoticeId(String uniqueFinalTaxDebtNoticeId);
 
 
 
@@ -25,9 +26,9 @@ public interface ExecutionPaperRepository extends JpaRepository<ExecutionPaper, 
      * تاریخ صدور برگ بدهی متصل به برگ اجرا را برای بازیابی متغیر فرایند برمی‌گرداند.
      */
     @Query("""
-            SELECT cast(finalizedDebtPaper.basisIssueDate as string)
+            SELECT cast(finalTaxDebtPaper.finalTaxDebtNoticeIssueDate as string)
             FROM ExecutionPaper executionPaper
-            JOIN executionPaper.finalizedDebtPaper finalizedDebtPaper
+            JOIN executionPaper.finalTaxDebtPaper finalTaxDebtPaper
             WHERE executionPaper.id = :executionPaperId
             """)
     Optional<String> findDebtPaperIssueDateByExecutionPaperId(
@@ -64,10 +65,12 @@ public interface ExecutionPaperRepository extends JpaRepository<ExecutionPaper, 
     @Query("SELECT ep FROM ExecutionPaper ep WHERE ep.workflowState.currentState <> :state")
     Page<ExecutionPaper> findByCurrentStateNot(@Param("state") String state, Pageable pageable);
 
+    @EntityGraph(attributePaths = {"finalTaxDebtPaper", "finalTaxDebtPaper.taxpayer"})
     @Query(value = """
             SELECT DISTINCT ep
             FROM ExecutionPaper ep
-            LEFT JOIN ep.taxpayer taxpayer
+            LEFT JOIN ep.finalTaxDebtPaper finalTaxDebtPaper
+            LEFT JOIN finalTaxDebtPaper.taxpayer taxpayer
             LEFT JOIN taxpayer.naturalPerson np
             LEFT JOIN taxpayer.legalPerson lp
             LEFT JOIN np.extraInfo ninfo
@@ -94,7 +97,8 @@ public interface ExecutionPaperRepository extends JpaRepository<ExecutionPaper, 
             countQuery = """
             SELECT COUNT(DISTINCT ep)
             FROM ExecutionPaper ep
-            LEFT JOIN ep.taxpayer taxpayer
+            LEFT JOIN ep.finalTaxDebtPaper finalTaxDebtPaper
+            LEFT JOIN finalTaxDebtPaper.taxpayer taxpayer
             LEFT JOIN taxpayer.naturalPerson np
             LEFT JOIN taxpayer.legalPerson lp
             LEFT JOIN np.extraInfo ninfo

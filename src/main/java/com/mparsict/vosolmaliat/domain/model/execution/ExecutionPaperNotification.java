@@ -6,6 +6,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity @Table(name = "execution_paper_notification")
+@AttributeOverride(name = "updatedAt", column = @Column(name = "update_date", nullable = false))
 @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
 public class ExecutionPaperNotification extends BaseEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;

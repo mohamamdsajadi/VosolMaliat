@@ -23,7 +23,7 @@ import {
 
 export default function FinalizedDebtPaperEntryPage() {
   const [form, setForm] = useState(initialDebtPaper);
-  const [summary, setSummary] = useState({ finalizedDebtPapers: [] });
+  const [summary, setSummary] = useState({ finalTaxDebtPapers: [] });
   const [masterdata, setMasterdata] = useState({ generals: [], offices: [], activities: [] });
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(true);
@@ -92,7 +92,7 @@ export default function FinalizedDebtPaperEntryPage() {
         </div>
       )}
       contextItems={[
-        `برگ بدهی ثبت‌شده: ${(summary.finalizedDebtPapers?.length || 0).toLocaleString('fa-IR')}`
+        `برگ بدهی ثبت‌شده: ${(summary.finalTaxDebtPapers?.length || 0).toLocaleString('fa-IR')}`
       ]}
     >
       {message && <div className={message.includes('ناموفق') || message.includes('خطا') ? 'notice error' : 'notice success'}>{message}</div>}
@@ -108,7 +108,7 @@ export default function FinalizedDebtPaperEntryPage() {
         </div>
         <div className="debt-entry-hero__stats">
           <span>برگ‌های ثبت‌شده</span>
-          <strong>{(summary.finalizedDebtPapers?.length || 0).toLocaleString('fa-IR')}</strong>
+          <strong>{(summary.finalTaxDebtPapers?.length || 0).toLocaleString('fa-IR')}</strong>
         </div>
       </section>
 

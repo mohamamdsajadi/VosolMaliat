@@ -10,6 +10,7 @@ import lombok.*;
 @jakarta.persistence.EntityListeners(com.mparsict.vosolmaliat.domain.model.ImmutableEntityListener.class)
 @Entity
 @Table(name = "taxpayer")
+@AttributeOverride(name = "createdAt", column = @Column(name = "creation_date", nullable = false, updatable = false))
 @org.hibernate.annotations.Check(constraints="(natural_person_id IS NOT NULL AND legal_person_id IS NULL) OR (natural_person_id IS NULL AND legal_person_id IS NOT NULL)")
 @Getter
 @Setter
@@ -23,8 +24,8 @@ public class Taxpayer extends BaseEntity {
         if (activityType == null) activityType=TaxpayerActivityType.builder().taxpayer(this).build();
         activityType.changeActivity(value);
     }
-    @Column(name="tin", nullable=false, unique=true, updatable=false) private String tin;
-    @Column(name="registration_trace_code", nullable=false, unique=true, updatable=false) private String registrationTraceCode;
+    @Column(name="taxpayer_id", nullable=false, unique=true, updatable=false) private String tin;
+    @Column(name="registeration_trace_code", nullable=false, unique=true, updatable=false) private String registrationTraceCode;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "taxpayer_type", nullable = false, updatable = false)

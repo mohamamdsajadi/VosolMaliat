@@ -1,8 +1,6 @@
 package com.mparsict.vosolmaliat.domain.model.execution;
 
 import com.mparsict.vosolmaliat.domain.model.BaseEntity;
-import com.mparsict.vosolmaliat.domain.model.Taxpayer;
-
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,7 +15,6 @@ import lombok.*;
 @Builder
 public class ExecutionPaper extends BaseEntity {
     @Column(name="issuance_date", nullable=false, updatable=false) private java.time.LocalDateTime issuanceDate;
-    @Column(name="issuance_finalization_reason", updatable=false) private String finalizationReason;
     @Column(name="old_execution_letter_number", updatable=false) private String oldExecutionLetterNumber;
     @Column(name="old_execution_letter_date", updatable=false) private java.time.LocalDateTime oldExecutionLetterDate;
     @Id
@@ -26,9 +23,6 @@ public class ExecutionPaper extends BaseEntity {
 
     @Column(name = "execution_paper_unique_code", nullable = false, unique = true, updatable = false)
     private String executionPaperUniqueCode;
-
-    @Column(name = "tax_source")
-    private String taxSource;
 
     @OneToOne(mappedBy = "executionPaper", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
     @com.fasterxml.jackson.annotation.JsonIgnore
@@ -55,27 +49,15 @@ public class ExecutionPaper extends BaseEntity {
     }
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "finalized_debt_paper_id", nullable = false, updatable = false)
-    private FinalizedDebtPaper finalizedDebtPaper;
+    @JoinColumn(name = "final_tax_debt_paper_id", nullable = false, updatable = false)
+    private FinalTaxDebtPaper finalTaxDebtPaper;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "taxpayer_id", nullable = false, updatable = false)
-    private Taxpayer taxpayer;
-
-    public Long getFinalizedDebtPaperId() {
-        return finalizedDebtPaper == null ? null : finalizedDebtPaper.getId();
+    public Long getFinalTaxDebtPaperId() {
+        return finalTaxDebtPaper == null ? null : finalTaxDebtPaper.getId();
     }
 
-    public void setFinalizedDebtPaperId(Long finalizedDebtPaperId) {
-        this.finalizedDebtPaper = finalizedDebtPaperId == null ? null : FinalizedDebtPaper.builder().id(finalizedDebtPaperId).build();
-    }
-
-    public Long getTaxpayerId() {
-        return taxpayer == null ? null : taxpayer.getId();
-    }
-
-    public void setTaxpayerId(Long taxpayerId) {
-        this.taxpayer = taxpayerId == null ? null : Taxpayer.builder().id(taxpayerId).build();
+    public void setFinalTaxDebtPaperId(Long finalTaxDebtPaperId) {
+        this.finalTaxDebtPaper = finalTaxDebtPaperId == null ? null : FinalTaxDebtPaper.builder().id(finalTaxDebtPaperId).build();
     }
 
 }

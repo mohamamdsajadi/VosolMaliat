@@ -13,12 +13,12 @@ public class ExecutionWorkflowState extends BaseEntity {
     @JoinColumn(name = "execution_paper_id", nullable = false)
     @com.fasterxml.jackson.annotation.JsonIgnore private ExecutionPaper executionPaper;
     @Version private Long version;
-    @Column(nullable = false) private String currentState;
-    private String notificationTrackingId;
-    private String informStatus;
-    private String informRejectionReason;
-    private String informRejectedAt;
-    private String reInformDate;
-    private String nextDebtInquiryDate;
-    @Column(nullable=false) private boolean viewDateMessagePending;
+    @Column(name = "current_state", nullable = false) private String currentState;
+    @Column(name = "notification_tracking_id") private String notificationTrackingId;
+    @Column(name = "inform_status") private String informStatus;
+    @Column(name = "inform_rejection_reason") private String informRejectionReason;
+    @Column(name = "inform_rejected_at") private String informRejectedAt;
+    @Column(name = "re_inform_date") private String reInformDate;
+    @Column(name = "next_debt_inquiry_date") private String nextDebtInquiryDate;
+    @Column(name = "view_date_message_pending", nullable=false) private boolean viewDateMessagePending;
 }

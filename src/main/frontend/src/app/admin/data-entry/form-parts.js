@@ -20,7 +20,7 @@ export const initialDebtPaper = {
   ...emptyAmounts
 }
 export const initialExecutionPaper = {
-  executionPaperUniqueCode: '', finalizedDebtPaperId: '', taxpayerId: '', mainTaxBureauId: '',
+  executionPaperUniqueCode: '', finalTaxDebtPaperId: '', taxpayerId: '', mainTaxBureauId: '',
   taxBureauId: '', taxSource: '', currentState: 'UNASSIGNED', ...emptyAmounts
 }
 export function randomDebtPaperSample(masterdata = {}, forcedTaxpayerType = null) {
@@ -41,7 +41,7 @@ export function randomDebtPaperSample(masterdata = {}, forcedTaxpayerType = null
 export function randomLegalPersonDebtPaperSample(masterdata = {}) { return randomDebtPaperSample(masterdata, 'LEGAL') }
 export function randomExecutionPaperSample(summary = {}, masterdata = {}) {
   return { ...initialExecutionPaper, ...randomDebtPaperSample(masterdata), executionPaperUniqueCode: '',
-    finalizedDebtPaperId: String(pick(summary.finalizedDebtPapers || [])?.id || ''),
+    finalTaxDebtPaperId: String(pick(summary.finalTaxDebtPapers || [])?.id || ''),
     taxpayerId: String(pick(summary.taxpayers || [])?.id || '') }
 }
 export function aggregatePayload(form) {
@@ -75,7 +75,7 @@ export function toDebtPaperPayload(form) {
 }
 export function toExecutionPayload(form) {
   return { executionPaperUniqueCode: form.executionPaperUniqueCode || null,
-    finalizedDebtPaperId: numberOrNull(form.finalizedDebtPaperId), taxpayerId: numberOrNull(form.taxpayerId),
+    finalTaxDebtPaperId: numberOrNull(form.finalTaxDebtPaperId), taxpayerId: numberOrNull(form.taxpayerId),
     taxSource: form.taxSource, currentState: form.currentState,
     currentAmounts: aggregatePayload(form) }
 }

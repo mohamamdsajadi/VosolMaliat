@@ -4,7 +4,7 @@ import com.mparsict.vosolmaliat.domain.enums.ExecutionPaperState;
 import com.mparsict.vosolmaliat.domain.model.Taxpayer;
 import com.mparsict.vosolmaliat.domain.model.execution.DebtInformation;
 import com.mparsict.vosolmaliat.domain.model.execution.ExecutionPaper;
-import com.mparsict.vosolmaliat.domain.model.execution.FinalizedDebtPaper;
+import com.mparsict.vosolmaliat.domain.model.execution.FinalTaxDebtPaper;
 import com.mparsict.vosolmaliat.domain.model.person.LegalPerson;
 import com.mparsict.vosolmaliat.domain.model.person.NaturalPerson;
 import com.mparsict.vosolmaliat.domain.repository.DebtInformationRepository;
@@ -89,9 +89,11 @@ public class DemoDataInitializer {
         var number = uniqueCodeGenerator.generateExecutionPaperNumber();
         ExecutionPaper executionPaper = executionPaperRepository.save(ExecutionPaper.builder()
                 .executionPaperUniqueCode(code)
-                .finalizedDebtPaper(FinalizedDebtPaper.builder().id(1000L + Math.abs(code.hashCode() % 1000)).build())
-                .taxpayer(Taxpayer.builder().id(taxpayerId).build())
-                .taxSource("مالیات بر ارزش افزوده")
+                .finalTaxDebtPaper(FinalTaxDebtPaper.builder()
+                        .id(1000L + Math.abs(code.hashCode() % 1000))
+                        .taxpayer(Taxpayer.builder().id(taxpayerId).build())
+                        .taxSource(com.mparsict.vosolmaliat.domain.enums.TaxSourceType.VAT)
+                        .build())
                 .currentState(state.name())
                 .build());
 

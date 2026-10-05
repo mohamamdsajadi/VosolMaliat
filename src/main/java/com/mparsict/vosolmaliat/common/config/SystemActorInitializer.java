@@ -20,8 +20,8 @@ public class SystemActorInitializer implements ApplicationRunner {
             statement.executeUpdate("""
                 INSERT INTO app_user_profile
                     (id,keycloak_user_id,username,enabled_in_business_system,locked_in_business_system,
-                     created_at,updated_at,created_by,updated_by,creator_user_id,updater_user_id,is_deleted)
-                VALUES (0,'SYSTEM','SYSTEM',0,1,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP,'SYSTEM','SYSTEM',0,0,0)
+                     created_at,updated_at,created_by,updated_by,creator_user_id,updater_user_id)
+                VALUES (0,'SYSTEM','SYSTEM',0,1,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP,'SYSTEM','SYSTEM',0,0)
                 ON CONFLICT(id) DO NOTHING
                 """);
         }

@@ -23,7 +23,7 @@ public class TaxAffairsOffice extends BaseEntity {
     @Column(name = "office_name", nullable=false)
     private String officeName;
 
-    @Column(name = "postal_code", nullable=false)
+    @Column(name = "zipcode", nullable=false)
     private String postalCode;
 
     @Column(name = "address", nullable=false)

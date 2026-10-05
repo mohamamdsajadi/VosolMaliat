@@ -17,13 +17,13 @@ public interface DebtInformationRepository extends JpaRepository<DebtInformation
     @Query("SELECT d FROM DebtInformation d WHERE d.executionPaper.id = :executionPaperId")
     Optional<DebtInformation> findByExecutionPaperId(@Param("executionPaperId") Long executionPaperId);
 
-    @Query("SELECT d FROM DebtInformation d JOIN d.executionPaper ep WHERE ep.currentState = :state")
+    @Query("SELECT d FROM DebtInformation d JOIN d.executionPaper ep WHERE ep.workflowState.currentState = :state")
     java.util.List<DebtInformation> findAmountsByState(@Param("state") String state);
 
-    @Query("SELECT DISTINCT d FROM DebtInformation d LEFT JOIN ExecutionPaperNotification n ON n.executionPaper = d.executionPaper WHERE n.electronicNotificationDate IS NULL")
+    @Query("SELECT DISTINCT d FROM DebtInformation d LEFT JOIN ExecutionPaperNotification n ON n.executionPaper = d.executionPaper WHERE n.notificationDate IS NULL")
     java.util.List<DebtInformation> findNotInformedAmounts();
 
-    @Query("SELECT DISTINCT d FROM DebtInformation d LEFT JOIN ExecutionPaperNotification n ON n.executionPaper = d.executionPaper WHERE n.electronicNotificationDate IS NOT NULL")
+    @Query("SELECT DISTINCT d FROM DebtInformation d LEFT JOIN ExecutionPaperNotification n ON n.executionPaper = d.executionPaper WHERE n.notificationDate IS NOT NULL")
     java.util.List<DebtInformation> findInformedAmounts();
 
     default java.math.BigDecimal sumPaidByState(String state) {

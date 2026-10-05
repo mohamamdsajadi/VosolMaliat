@@ -20,6 +20,7 @@ class DomainLabelUnitTest {
     void taxSourceDisplayReturnsPersianLabelWithEnglishCode() {
         assertThat(TaxSourceType.displayOf("VAT")).isEqualTo("مالیات بر ارزش افزوده (VAT)");
         assertThat(TaxSourceType.displayOf("CUSTOM_CODE")).isEqualTo("CUSTOM_CODE");
+        assertThat(TaxSourceType.fromSourceValue("TAXB")).isEqualTo(TaxSourceType.INCOME_TAX);
     }
 
     @Test

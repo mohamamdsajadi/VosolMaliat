@@ -7,6 +7,10 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity @Table(name = "dynamic_control_rule_history")
+@AttributeOverrides({
+        @AttributeOverride(name = "createdAt", column = @Column(name = "creation_date", nullable = false, updatable = false)),
+        @AttributeOverride(name = "updatedAt", column = @Column(name = "update_date", nullable = false))
+})
 @Getter @NoArgsConstructor
 @jakarta.persistence.EntityListeners(com.mparsict.vosolmaliat.domain.model.ImmutableEntityListener.class)
 public class DynamicControlRuleHistory extends BaseEntity {
@@ -14,19 +18,19 @@ public class DynamicControlRuleHistory extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "rule_id", nullable = false, updatable = false)
     @com.fasterxml.jackson.annotation.JsonIgnore private DynamicControlRule rule;
-    @Column(nullable = false, updatable = false, columnDefinition = "TEXT") private String ruleJson;
-    @Column(nullable = false, updatable = false) private String startDate;
-    @Column(nullable = false, updatable = false) private String endDate;
-    @Column(nullable = false, updatable = false) private String documentNo;
-    @Column(nullable = false, updatable = false) private String filePath;
+    @Column(name = "json", nullable = false, updatable = false, columnDefinition = "TEXT") private String ruleJson;
+    @Column(name = "limitation_start_date", nullable = false, updatable = false) private String startDate;
+    @Column(name = "limitation_end_date", nullable = false, updatable = false) private String endDate;
+    @Column(name = "document_no", nullable = false, updatable = false) private String documentNo;
+    @Column(name = "document_file_path", nullable = false, updatable = false) private String filePath;
     @Column(updatable = false) private String description;
-    @Enumerated(EnumType.STRING) @Column(nullable = false, updatable = false) private RuleScope ruleScope;
-    @Column(updatable = false) private Long parentRuleId;
-    @Column(nullable = false, updatable = false) private String errorCode;
-    @Column(nullable = false, updatable = false) private String errorMessage;
-    @Column(nullable = false, updatable = false) private Boolean active;
-    @Column(nullable = false, updatable = false) private LocalDateTime effectiveAt;
-    private LocalDateTime nextVersionCreationDate;
+    @Enumerated(EnumType.STRING) @Column(name = "rule_scope", nullable = false, updatable = false) private RuleScope ruleScope;
+    @Column(name = "parent_rule_id", updatable = false) private Long parentRuleId;
+    @Column(name = "error_code", nullable = false, updatable = false) private String errorCode;
+    @Column(name = "error_message", nullable = false, updatable = false) private String errorMessage;
+    @Column(name = "is_active", nullable = false, updatable = false) private Boolean active;
+    @Column(name = "history_creation_date", nullable = false, updatable = false) private LocalDateTime effectiveAt;
+    @Column(name = "next_version_creation_date") private LocalDateTime nextVersionCreationDate;
     @Version private Long version;
 
     public void close(LocalDateTime next) {

@@ -4,7 +4,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
-import com.mparsict.vosolmaliat.domain.model.sanim.SanimDocumentDetails;
+import com.mparsict.vosolmaliat.application.dto.request.SanimDocumentDetails;
 
 /** One source document and its initial aggregates; organization/person relations remain separate. */
 public record DebtPaperIssuanceRequest(

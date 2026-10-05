@@ -20,12 +20,14 @@ import java.time.LocalDateTime;
 @Builder
 public class DebtInquiryResult extends BaseEntity {
     @Column(name="finalized_debt_paper_notification_id", nullable=false, updatable=false)
-    private String finalizedDebtPaperNotificationId;
+    private String finalTaxDebtPaperNotificationId;
 
     @Embedded
     private com.mparsict.vosolmaliat.domain.model.sanim.SanimAmounts amounts;
 
+    @Column(name = "effective_at", updatable = false)
     private LocalDateTime effectiveAt;
+    @Column(name = "mapping_version", updatable = false)
     private String mappingVersion;
 
     @Id
@@ -39,7 +41,7 @@ public class DebtInquiryResult extends BaseEntity {
     @JoinColumn(name = "execution_paper_id", nullable = false, updatable = false)
     private ExecutionPaper executionPaper;
 
-    @Column(name = "response_json", nullable = false, updatable = false, columnDefinition = "TEXT")
+    @Column(name = "xml", nullable = false, updatable = false, columnDefinition = "TEXT")
     private String responseJson;
 
     @Column(name = "hash", nullable = false, updatable = false)

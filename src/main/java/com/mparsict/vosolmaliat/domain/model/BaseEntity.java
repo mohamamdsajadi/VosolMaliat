@@ -41,15 +41,6 @@ public abstract class BaseEntity {
     @Column(name = "updated_by", nullable = false)
     private String updatedBy;
 
-    @Column(name = "deleted_at")
-    private LocalDateTime deletedAt;
-
-    @Column(name = "deleted_by")
-    private String deletedBy;
-
-    @Column(name = "is_deleted")
-    private Boolean deleted = false;
-
     @PrePersist
     protected void onCreate() {
         LocalDateTime now = LocalDateTime.now();
@@ -63,9 +54,6 @@ public abstract class BaseEntity {
         if (updaterUserId == null) updaterUserId = creatorUserId;
         if (createdBy == null) createdBy = currentActor();
         if (updatedBy == null) updatedBy = createdBy;
-        if (deleted == null) {
-            deleted = false;
-        }
     }
 
     @PreUpdate

@@ -33,6 +33,8 @@ public class SqliteLegacySchemaMigrator
 
         // The document model is a deliberate rebuild, not a lossy automatic migration.
         try (Connection connection = DriverManager.getConnection(jdbcUrl)) {
+            NullableEf03FieldsMigration.migrate(connection);
+            SqliteDocumentModelFieldCleanup.migrate(connection);
             if (tableExists(connection, "execution_paper") && !tableExists(connection, "dynamic_control_rule"))
                 throw new IllegalStateException("مدل پایگاه داده قدیمی است؛ ابزار بازسازی مستند مدل داده را اجرا کنید.");
         } catch (SQLException exception) { throw new IllegalStateException("بررسی مدل پایگاه داده ناموفق بود", exception); }
@@ -42,6 +44,8 @@ public class SqliteLegacySchemaMigrator
         try (Connection connection = DriverManager.getConnection(jdbcUrl)) {
             SanimDocumentSchemaMigration.migrate(connection);
             SanimLegacyFieldCleanup.migrate(connection);
+            NullableEf03FieldsMigration.migrate(connection);
+            SqliteDocumentModelFieldCleanup.migrate(connection);
             if (!tableExists(connection, DEBT_INQUIRY_RESULT)) {
                 return;
             }

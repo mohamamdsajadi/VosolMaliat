@@ -9,13 +9,13 @@ import com.mparsict.vosolmaliat.domain.enums.RelatedPersonPostCode;
 import com.mparsict.vosolmaliat.domain.enums.RelatedPersonType;
 import com.mparsict.vosolmaliat.domain.model.Taxpayer;
 import com.mparsict.vosolmaliat.domain.model.execution.ExecutionPaper;
-import com.mparsict.vosolmaliat.domain.model.execution.FinalizedDebtPaper;
+import com.mparsict.vosolmaliat.domain.model.execution.FinalTaxDebtPaper;
 import com.mparsict.vosolmaliat.domain.model.execution.RelatedPerson;
 import com.mparsict.vosolmaliat.domain.model.execution.RelatedPersonPost;
 import com.mparsict.vosolmaliat.domain.model.person.LegalPerson;
 import com.mparsict.vosolmaliat.domain.model.person.NaturalPerson;
 import com.mparsict.vosolmaliat.domain.repository.ExecutionPaperRepository;
-import com.mparsict.vosolmaliat.domain.repository.FinalizedDebtPaperRepository;
+import com.mparsict.vosolmaliat.domain.repository.FinalTaxDebtPaperRepository;
 import com.mparsict.vosolmaliat.domain.repository.LegalPersonRepository;
 import com.mparsict.vosolmaliat.domain.repository.NaturalPersonRepository;
 import com.mparsict.vosolmaliat.domain.repository.RelatedPersonRepository;
@@ -110,7 +110,7 @@ class RelatedPersonServiceUnitTest {
                 .registrationDate("1390-01-01")
                 .name("شرکت مودی")
                 .build();
-        private final FinalizedDebtPaper finalizedDebtPaper;
+        private final FinalTaxDebtPaper finalTaxDebtPaper;
         private final ExecutionPaper executionPaper;
         private final Taxpayer taxpayer;
         private final Map<String, NaturalPerson> naturalPeopleByNationalCode = new HashMap<>();
@@ -127,15 +127,15 @@ class RelatedPersonServiceUnitTest {
                 postsByCode.put(code, RelatedPersonPost.builder().id(postId++).code(code).build());
             }
             legalPeopleByNationalId.put(owner.getNationalId(), owner);
-            finalizedDebtPaper = FinalizedDebtPaper.builder()
-                    .id(2L)
-                    .sourceDocument(com.mparsict.vosolmaliat.domain.model.sanim.SanimDocumentDetails.builder().taxYear(debtYear).build())
-                    .build();
             taxpayer = Taxpayer.builder().id(3L).legalPerson(owner).build();
+            finalTaxDebtPaper = FinalTaxDebtPaper.builder()
+                    .id(2L)
+                    .taxYear(Integer.valueOf(debtYear))
+                    .taxpayer(taxpayer)
+                    .build();
             executionPaper = ExecutionPaper.builder()
                     .id(100L)
-                    .taxpayer(taxpayer)
-                    .finalizedDebtPaper(finalizedDebtPaper)
+                    .finalTaxDebtPaper(finalTaxDebtPaper)
                     .build();
         }
 
@@ -143,7 +143,7 @@ class RelatedPersonServiceUnitTest {
             return new RelatedPersonService(
                     executionPaperRepository(),
                     taxpayerRepository(),
-                    finalizedDebtPaperRepository(),
+                    finalTaxDebtPaperRepository(),
                     naturalPersonRepository(),
                     legalPersonRepository(),
                     relatedPersonPostRepository(),
@@ -169,9 +169,9 @@ class RelatedPersonServiceUnitTest {
                     "findById".equals(method) ? Optional.of(taxpayer) : null);
         }
 
-        private FinalizedDebtPaperRepository finalizedDebtPaperRepository() {
-            return proxy(FinalizedDebtPaperRepository.class, (method, args) ->
-                    "findById".equals(method) ? Optional.of(finalizedDebtPaper) : null);
+        private FinalTaxDebtPaperRepository finalTaxDebtPaperRepository() {
+            return proxy(FinalTaxDebtPaperRepository.class, (method, args) ->
+                    "findById".equals(method) ? Optional.of(finalTaxDebtPaper) : null);
         }
 
         private NaturalPersonRepository naturalPersonRepository() {

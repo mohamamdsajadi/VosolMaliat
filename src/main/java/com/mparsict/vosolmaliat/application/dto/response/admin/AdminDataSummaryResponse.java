@@ -5,12 +5,12 @@ import java.util.List;
 /**
  * خلاصه داده‌های مرجع موردنیاز ایجاد دستی برگ اجرا.
  *
- * @param finalizedDebtPapers برگ‌های بدهی قطعی قابل انتخاب
+ * @param finalTaxDebtPapers برگ‌های بدهی قطعی قابل انتخاب
  * @param taxpayers مؤدیان قابل انتخاب
  * @param executionPapers برگ‌های اجرای موجود
  */
 public record AdminDataSummaryResponse(
-        List<FinalizedDebtPaperSummary> finalizedDebtPapers,
+        List<FinalTaxDebtPaperSummary> finalTaxDebtPapers,
         List<TaxpayerSummary> taxpayers,
         List<ExecutionPaperSummary> executionPapers
 ) {
@@ -18,12 +18,12 @@ public record AdminDataSummaryResponse(
      * خلاصه برگ بدهی قطعی.
      *
      * @param id شناسه داخلی برگ بدهی
-     * @param debtPaperUniqueCode کد یکتای برگ بدهی
+     * @param uniqueFinalTaxDebtNoticeId شناسه یکتای برگ بدهی قطعی
      * @param taxSource منبع مالیاتی
      */
-    public record FinalizedDebtPaperSummary(
+    public record FinalTaxDebtPaperSummary(
             Long id,
-            String debtPaperUniqueCode,
+            String uniqueFinalTaxDebtNoticeId,
             String taxSource
     ) {}
 

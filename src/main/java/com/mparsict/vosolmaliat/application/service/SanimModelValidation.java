@@ -1,6 +1,7 @@
 package com.mparsict.vosolmaliat.application.service;
 
 import com.mparsict.vosolmaliat.domain.model.sanim.*;
+import com.mparsict.vosolmaliat.application.dto.request.SanimDocumentDetails;
 
 public final class SanimModelValidation {
     private SanimModelValidation() {}

@@ -13,11 +13,11 @@ import com.mparsict.vosolmaliat.domain.enums.ExecutionPaperState;
 import com.mparsict.vosolmaliat.domain.model.Taxpayer;
 import com.mparsict.vosolmaliat.domain.model.execution.DebtInformation;
 import com.mparsict.vosolmaliat.domain.model.execution.ExecutionPaper;
-import com.mparsict.vosolmaliat.domain.model.execution.FinalizedDebtPaper;
+import com.mparsict.vosolmaliat.domain.model.execution.FinalTaxDebtPaper;
 import com.mparsict.vosolmaliat.domain.model.rule.ExecutionPaperIssuanceRequest;
 import com.mparsict.vosolmaliat.domain.repository.DebtInformationRepository;
 import com.mparsict.vosolmaliat.domain.repository.ExecutionPaperRepository;
-import com.mparsict.vosolmaliat.domain.repository.FinalizedDebtPaperRepository;
+import com.mparsict.vosolmaliat.domain.repository.FinalTaxDebtPaperRepository;
 import com.mparsict.vosolmaliat.domain.repository.TaxpayerRepository;
 import com.mparsict.vosolmaliat.infrastructure.camunda.service.CamundaProcessService;
 import lombok.RequiredArgsConstructor;
@@ -31,20 +31,20 @@ public class AdminDataEntryService {
     private final ExecutionPaperService executionPaperService;
     private final IssuanceRequestService issuanceRequestService;
     private final CamundaProcessService camundaProcessService;
-    private final FinalizedDebtPaperRepository finalizedDebtPaperRepository;
+    private final FinalTaxDebtPaperRepository finalTaxDebtPaperRepository;
     private final TaxpayerRepository taxpayerRepository;
     private final ExecutionPaperRepository executionPaperRepository;
     private final DebtInformationRepository debtInformationRepository;
     private final UniqueCodeGenerator uniqueCodeGenerator;
 
     @Transactional
-    public ExecutionPaperDetailResponse createFinalizedDebtPaperAndExecutionPaper(DebtPaperIssuanceRequest request) {
+    public ExecutionPaperDetailResponse createFinalTaxDebtPaperAndExecutionPaper(DebtPaperIssuanceRequest request) {
         ExecutionPaper executionPaper = executionPaperService.createFromRequest(request);
         return executionPaperService.getDetails(executionPaper.getId());
     }
 
     @Transactional
-    public IssuanceResponse sendFinalizedDebtPaperToWorkflow(DebtPaperIssuanceRequest request) {
+    public IssuanceResponse sendFinalTaxDebtPaperToWorkflow(DebtPaperIssuanceRequest request) {
         try {
             ExecutionPaperIssuanceRequest savedRequest = issuanceRequestService.createAndSave(request);
             return camundaProcessService.startExecutionPaperIssuanceProcess(savedRequest.getId(), request);
@@ -58,29 +58,25 @@ public class AdminDataEntryService {
         uniqueCodeGenerator.lockIssuance();
         if (blankToNull(request.executionPaperUniqueCode()) != null)
             throw new BusinessException("GENERATED_NUMBER_REQUIRED", "شماره برگ اجرا فقط توسط سامانه تخصیص می‌یابد");
-        FinalizedDebtPaper finalizedDebtPaper = finalizedDebtPaperRepository.findById(request.finalizedDebtPaperId())
+        FinalTaxDebtPaper finalTaxDebtPaper = finalTaxDebtPaperRepository.findById(request.finalTaxDebtPaperId())
                 .orElseThrow(() -> new BusinessException("FINALIZED_DEBT_PAPER_NOT_FOUND", "برگ بدهی قطعی یافت نشد"));
         Taxpayer taxpayer = taxpayerRepository.findById(request.taxpayerId())
                 .orElseThrow(() -> new BusinessException("TAXPAYER_NOT_FOUND", "مودی یافت نشد"));
 
-        if (finalizedDebtPaper.getSourceDocument() != null && finalizedDebtPaper.getSourceDocument().getPaperType()
-                == com.mparsict.vosolmaliat.domain.enums.PaperType.EF03)
+        if (finalTaxDebtPaper.getPaperType() == com.mparsict.vosolmaliat.domain.enums.PaperType.EF03)
             throw new BusinessException("EF03_RECEIPT_REQUIRED", "برای EF03 از مسیر دریافت و تأیید هویت استفاده کنید");
         var number = uniqueCodeGenerator.generateExecutionPaperNumber();
         ExecutionPaper saved = executionPaperRepository.save(ExecutionPaper.builder()
                 .executionPaperUniqueCode(number.code())
                 .issuanceDate(java.time.LocalDateTime.now(java.time.ZoneId.of("Asia/Tehran")))
-                .finalizationReason(finalizedDebtPaper.getFinalizationReason().name())
-                .finalizedDebtPaper(finalizedDebtPaper)
-                .taxpayer(taxpayer)
-                .taxSource(request.taxSource())
+                .finalTaxDebtPaper(finalTaxDebtPaper)
                 .currentState(blankToNull(request.currentState()) == null
                         ? ExecutionPaperState.UNASSIGNED.name()
                         : request.currentState())
                 .build());
 
         com.mparsict.vosolmaliat.application.service.SanimModelValidation.requireAmounts(request.currentAmounts());
-        debtInformationRepository.save(DebtInformation.builder().executionPaper(saved).finalizedDebtPaper(finalizedDebtPaper)
+        debtInformationRepository.save(DebtInformation.builder().executionPaper(saved).finalTaxDebtPaper(finalTaxDebtPaper)
                 .currentAmounts(request.currentAmounts().copy()).build());
         return executionPaperService.getDetails(saved.getId());
     }
@@ -88,10 +84,10 @@ public class AdminDataEntryService {
     @Transactional(readOnly = true)
     public AdminDataSummaryResponse summary() {
         return new AdminDataSummaryResponse(
-                finalizedDebtPaperRepository.findAll().stream()
-                        .map(item -> new AdminDataSummaryResponse.FinalizedDebtPaperSummary(
+                finalTaxDebtPaperRepository.findAll().stream()
+                        .map(item -> new AdminDataSummaryResponse.FinalTaxDebtPaperSummary(
                                 item.getId(),
-                                item.getDebtPaperUniqueCode(),
+                                item.getUniqueFinalTaxDebtNoticeId(),
                                 item.getTaxSource().name()
                         ))
                         .toList(),

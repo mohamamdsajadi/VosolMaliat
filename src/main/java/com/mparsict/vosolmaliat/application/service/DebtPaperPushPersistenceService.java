@@ -79,12 +79,27 @@ public class DebtPaperPushPersistenceService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public Long resumeSampleImport(Long recordId) {
+        codes.lockIssuance();
+        DebtPaperPushRecord record = pushRecordRepository.findById(recordId).orElseThrow();
+        if (record.getExecutionPaperId() != null
+                || record.getTraceId() == null
+                || !record.getTraceId().startsWith("ef03-sample-import-")) {
+            throw duplicate(record.getExecutionPaperId());
+        }
+        record.setProcessingStatus(DebtPaperProcessingStatus.RECEIVED);
+        record.setFailureReason(null);
+        pushRecordRepository.saveAndFlush(record);
+        return record.getId();
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void markSuccessful(Long recordId, Long executionPaperId) {
         codes.lockIssuance();
         DebtPaperPushRecord record = pushRecordRepository.findById(recordId).orElseThrow();
         var paper = executionPaperRepository.findById(executionPaperId).orElseThrow();
         record.setExecutionPaper(paper);
-        record.setSourceDocument(paper.getFinalizedDebtPaper());
+        record.setFinalTaxDebtPaper(paper.getFinalTaxDebtPaper());
         record.setProcessingStatus(DebtPaperProcessingStatus.SUCCESS);
         record.setFailureReason(null);
         pushRecordRepository.save(record);

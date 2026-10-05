@@ -24,10 +24,11 @@ public class ExecutionPaperWorkflowVariablesFactory {
         variables.put(ProcessConstants.VAR_GENERAL_OFFICE_HEAD_CANDIDATE_GROUPS, List.of());
         variables.put(ProcessConstants.VAR_TAX_OFFICE_HEAD_CANDIDATE_GROUPS, List.of());
         variables.put(ProcessConstants.VAR_TAX_EXPERT_CANDIDATE_GROUPS, List.of());
-        if (paper.getFinalizedDebtPaper() != null) {
+        if (paper.getFinalTaxDebtPaper() != null) {
             addOrganizationVariables(variables,
-                    paper.getFinalizedDebtPaper().getMainTaxBureauId(),
-                    paper.getFinalizedDebtPaper().getTaxBureauId());
+                    paper.getFinalTaxDebtPaper().getTaxAffairsOffice() == null ? null
+                            : paper.getFinalTaxDebtPaper().getTaxAffairsOffice().getGeneralDirectorateOfTaxAffairsId(),
+                    paper.getFinalTaxDebtPaper().getTaxAffairsOfficeId());
         }
         addLegalTaxpayerVariables(variables, request);
         variables.put(ProcessConstants.VAR_EXECUTION_PAPER_ID, paper.getId());

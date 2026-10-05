@@ -1,6 +1,7 @@
 package com.mparsict.vosolmaliat.unit.domain;
 
 import com.mparsict.vosolmaliat.application.dto.request.DebtPaperIssuanceRequest;
+import com.mparsict.vosolmaliat.application.dto.request.SanimDocumentDetails;
 import com.mparsict.vosolmaliat.application.service.ModelRequestValidation;
 import com.mparsict.vosolmaliat.domain.enums.PaperType;
 import com.mparsict.vosolmaliat.domain.model.sanim.*;
@@ -26,9 +27,11 @@ class DocumentModelContractTest {
         assertThat(request.sourceDocument().getTaxPeriodEndRaw()).isEqualTo("1404/03/31");
     }
     @Test void rejectsMissingMandatoryDataWithNamedPersianFields() {
-        var request=valid(); request.sourceDocument().setMobile(null); request.sourceDocument().setPhone(" ");
+        var valid=valid(); var person=valid.taxpayer();
+        var request=new DebtPaperIssuanceRequest(valid.debtPaperUniqueCode(),valid.taxSource(),1L,1L,
+                new DebtPaperIssuanceRequest.TaxpayerInfo("NATURAL",person.nationalCode(),null,person.firstName(),person.lastName(),person.fatherName(),person.birthDate()," ",null,null,null,null,null),null,valid.sourceDocument());
         assertThatThrownBy(()->ModelRequestValidation.requireRequest(request))
-                .hasMessageContaining("درخواست رد شد").hasMessageContaining("شماره همراه").hasMessageContaining("شماره تلفن");
+                .hasMessageContaining("درخواست رد شد").hasMessageContaining("کد پستی").hasMessageContaining("اقامتگاه قانونی");
     }
     @Test void rejectsAmbiguousPersonIdentity() {
         var request=valid(); var person=request.taxpayer();
@@ -57,5 +60,32 @@ class DocumentModelContractTest {
         notification.recordView(LocalDateTime.of(2026,1,11,10,0));
         assertThat(notification.paymentDeadline()).isEqualTo(LocalDateTime.of(2026,2,10,10,0));
         assertThatThrownBy(()->notification.recordView(LocalDateTime.of(2025,12,31,10,0))).hasMessageContaining("تاریخ رویت");
+    }
+
+    @Test void naturalPersonProfileUpdateCreatesOneCompletePriorVersion() {
+        var person = com.mparsict.vosolmaliat.domain.model.person.NaturalPerson.builder()
+                .id(1L).nationalCode("0012345678").firstName("علی").lastName("قدیمی")
+                .fatherName("حسن").birthDate("1360/01/01").build();
+
+        person.updateProfile("علی", "جدید", "عنوان رسمی", "حسین", "1361/02/03");
+
+        assertThat(person.getProfileHistory()).hasSize(1);
+        assertThat(person.getProfileHistory().getFirst().getFullName()).isEqualTo("علی قدیمی");
+        assertThat(person.getExtraInfo().getFullName()).isEqualTo("عنوان رسمی");
+        assertThat(person.getFatherName()).isEqualTo("حسین");
+    }
+
+    @Test void legalPersonProfileUpdateCreatesOneCompletePriorVersion() {
+        var person = com.mparsict.vosolmaliat.domain.model.person.LegalPerson.builder()
+                .id(1L).nationalId("14001234567").name("شرکت قدیمی")
+                .registrationNumber("1").registrationDate("1400/01/01").build();
+        person.updateTradeName("نام قدیمی");
+
+        person.updateProfile("شرکت جدید", "نام جدید", "2", "1401/02/03");
+
+        assertThat(person.getProfileHistory()).hasSize(1);
+        assertThat(person.getProfileHistory().getFirst().getName()).isEqualTo("شرکت قدیمی");
+        assertThat(person.getProfileHistory().getFirst().getTradeName()).isEqualTo("نام قدیمی");
+        assertThat(person.getExtraInfo().getTradeName()).isEqualTo("نام جدید");
     }
 }

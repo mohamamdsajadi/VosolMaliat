@@ -10,7 +10,9 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -54,6 +56,33 @@ class SqliteLegacySchemaMigratorUnitTest {
         }
     }
 
+    @Test
+    void relaxesOnlyEf03OptionalFieldsAndIsIdempotent() throws Exception {
+        String jdbcUrl = "jdbc:sqlite:" + tempDirectory.resolve("ef03-legacy.sqlite");
+        try (Connection connection = DriverManager.getConnection(jdbcUrl);
+             Statement statement = connection.createStatement()) {
+            statement.execute("CREATE TABLE natural_person_extra_info (id INTEGER PRIMARY KEY, birth_date TIMESTAMP NOT NULL, father_name VARCHAR(255) NOT NULL, full_name VARCHAR(255) NOT NULL)");
+            statement.execute("CREATE TABLE legal_person_extra_info (id INTEGER PRIMARY KEY, registration_date TIMESTAMP NOT NULL, registration_number VARCHAR(255) NOT NULL UNIQUE, trade_name VARCHAR(255) NOT NULL, name VARCHAR(255) NOT NULL)");
+            statement.execute("CREATE TABLE contact_info (id INTEGER PRIMARY KEY, phone_no VARCHAR(255) NOT NULL, mobile_no VARCHAR(255) NOT NULL, address VARCHAR(255) NOT NULL)");
+        }
+
+        SqliteLegacySchemaMigrator.migrate(jdbcUrl);
+        SqliteLegacySchemaMigrator.migrate(jdbcUrl);
+
+        try (Connection connection = DriverManager.getConnection(jdbcUrl);
+             Statement statement = connection.createStatement()) {
+            assertThat(nullableState(statement, "natural_person_extra_info"))
+                    .containsEntry("birth_date", 0).containsEntry("father_name", 0)
+                    .containsEntry("full_name", 1);
+            assertThat(nullableState(statement, "legal_person_extra_info"))
+                    .containsEntry("registration_date", 0).containsEntry("registration_number", 0)
+                    .containsEntry("trade_name", 0).containsEntry("name", 1);
+            assertThat(nullableState(statement, "contact_info"))
+                    .containsEntry("phone_no", 0).containsEntry("mobile_no", 0)
+                    .containsEntry("address", 1);
+        }
+    }
+
     private Set<String> columns(Statement statement) throws Exception {
         Set<String> columns = new HashSet<>();
         try (ResultSet resultSet = statement.executeQuery("PRAGMA table_info(debt_inquiry_result)")) {
@@ -62,5 +91,15 @@ class SqliteLegacySchemaMigratorUnitTest {
             }
         }
         return columns;
+    }
+
+    private Map<String, Integer> nullableState(Statement statement, String table) throws Exception {
+        try (ResultSet resultSet = statement.executeQuery("PRAGMA table_info(" + table + ")")) {
+            var entries = new java.util.ArrayList<Map.Entry<String, Integer>>();
+            while (resultSet.next()) {
+                entries.add(Map.entry(resultSet.getString("name"), resultSet.getInt("notnull")));
+            }
+            return entries.stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        }
     }
 }

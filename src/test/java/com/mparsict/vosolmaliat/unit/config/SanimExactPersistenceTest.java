@@ -15,7 +15,17 @@ class SanimExactPersistenceTest {
     @Entity(name="ExactDocument") @Table(name="exact_document")
     public static class ExactDocument {
         @Id public Long id;
-        @Embedded public SanimDocumentDetails source;
+        @Embedded
+        @AttributeOverrides({
+                @AttributeOverride(name="outstandingDebtAmount", column=@Column(name="outstanding_debt", columnDefinition="TEXT")),
+                @AttributeOverride(name="totalTaxAmount", column=@Column(name="total_tax", columnDefinition="TEXT")),
+                @AttributeOverride(name="totalDutyAmount", column=@Column(name="total_duty", columnDefinition="TEXT")),
+                @AttributeOverride(name="totalPenaltyAmount", column=@Column(name="total_penalty", columnDefinition="TEXT")),
+                @AttributeOverride(name="totalPaidAmount", column=@Column(name="total_paid", columnDefinition="TEXT")),
+                @AttributeOverride(name="totalCreditAmount", column=@Column(name="total_credit", columnDefinition="TEXT")),
+                @AttributeOverride(name="totalRemissionAmount", column=@Column(name="total_remission", columnDefinition="TEXT"))
+        })
+        public SanimAmounts amounts;
         public ExactDocument() {}
     }
     @Test void hibernateStoresAndReloadsNegativeDecimalAsTextWithoutSqliteNumericCoercion() throws Exception {
@@ -29,17 +39,15 @@ class SanimExactPersistenceTest {
             try (var session = factory.openSession()) {
                 var tx = session.beginTransaction();
                 ExactDocument doc = new ExactDocument(); doc.id = 1L;
-                doc.source = SanimDocumentDetails.builder().sourceTaxOfficeCode("00123")
-                        .amounts(SanimAmounts.builder().outstandingDebtAmount(new BigDecimal(exact)).build()).build();
+                doc.amounts = SanimAmounts.builder().outstandingDebtAmount(new BigDecimal(exact)).build();
                 session.persist(doc); tx.commit();
             }
             try (var session = factory.openSession()) {
                 var doc = session.find(ExactDocument.class, 1L);
-                assertThat(doc.source.getAmounts().getOutstandingDebtAmount().toPlainString()).isEqualTo(exact);
-                assertThat(doc.source.getSourceTaxOfficeCode()).isEqualTo("00123");
+                assertThat(doc.amounts.getOutstandingDebtAmount().toPlainString()).isEqualTo(exact);
             }
             try (var c = DriverManager.getConnection(url); var s = c.createStatement();
-                 var rows = s.executeQuery("SELECT typeof(aggregate_outstanding_debt_amount), aggregate_outstanding_debt_amount FROM exact_document")) {
+                 var rows = s.executeQuery("SELECT typeof(outstanding_debt), outstanding_debt FROM exact_document")) {
                 assertThat(rows.next()).isTrue();
                 assertThat(rows.getString(1)).isEqualTo("text");
                 assertThat(rows.getString(2)).isEqualTo(exact);

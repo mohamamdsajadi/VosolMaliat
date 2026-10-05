@@ -1,5 +1,6 @@
 package com.mparsict.vosolmaliat;
 import com.mparsict.vosolmaliat.domain.model.sanim.*;
+import com.mparsict.vosolmaliat.application.dto.request.SanimDocumentDetails;
 import java.math.BigDecimal;
 public final class TestSanimDocuments {
     public static SanimAmounts amounts() {

@@ -19,7 +19,7 @@ import {
 
 export default function ExecutionPaperEntryPage() {
   const [form, setForm] = useState(initialExecutionPaper);
-  const [summary, setSummary] = useState({ finalizedDebtPapers: [], taxpayers: [], executionPapers: [] });
+  const [summary, setSummary] = useState({ finalTaxDebtPapers: [], taxpayers: [], executionPapers: [] });
   const [masterdata, setMasterdata] = useState({ generals: [], offices: [] });
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(true);
@@ -94,7 +94,7 @@ export default function ExecutionPaperEntryPage() {
       )}
       contextItems={[
         `برگ اجرا: ${(summary.executionPapers?.length || 0).toLocaleString('fa-IR')}`,
-        `برگ بدهی موجود: ${(summary.finalizedDebtPapers?.length || 0).toLocaleString('fa-IR')}`,
+        `برگ بدهی موجود: ${(summary.finalTaxDebtPapers?.length || 0).toLocaleString('fa-IR')}`,
         `مودی موجود: ${(summary.taxpayers?.length || 0).toLocaleString('fa-IR')}`
       ]}
     >
@@ -112,7 +112,7 @@ export default function ExecutionPaperEntryPage() {
         <form className="admin-form wide-form" onSubmit={submit}>
           <FieldGrid>
             <p>شماره برگ اجرا هنگام ثبت، با سال جاری و شمارنده هفت‌رقمی تخصیص می‌یابد.</p>
-            <Select label="برگ بدهی قطعی" name="finalizedDebtPaperId" value={form.finalizedDebtPaperId} onChange={updateForm} required options={(summary.finalizedDebtPapers || []).map((item) => ({ value: item.id, label: `${item.debtPaperUniqueCode} (${item.id})` }))} />
+            <Select label="برگ بدهی قطعی" name="finalTaxDebtPaperId" value={form.finalTaxDebtPaperId} onChange={updateForm} required options={(summary.finalTaxDebtPapers || []).map((item) => ({ value: item.id, label: `${item.uniqueFinalTaxDebtNoticeId} (${item.id})` }))} />
             <Select label="مودی" name="taxpayerId" value={form.taxpayerId} onChange={updateForm} required options={(summary.taxpayers || []).map((item) => ({ value: item.id, label: `${item.tin} (${item.id})` }))} />
             <Input label="وضعیت" name="currentState" value={form.currentState} onChange={updateForm} />
             <Input label="منبع مالیاتی" name="taxSource" value={form.taxSource} onChange={updateForm} required />
@@ -132,7 +132,7 @@ export default function ExecutionPaperEntryPage() {
 
       <section className="admin-grid">
         <DataList title="برگ‌های اجرا" items={summary.executionPapers || []} render={(item) => `${item.executionPaperUniqueCode} · ${item.currentState}`} />
-        <DataList title="برگ‌های بدهی قطعی" items={summary.finalizedDebtPapers || []} render={(item) => `${item.debtPaperUniqueCode} · ${item.taxSource || '-'}`} />
+        <DataList title="برگ‌های بدهی قطعی" items={summary.finalTaxDebtPapers || []} render={(item) => `${item.uniqueFinalTaxDebtNoticeId} · ${item.taxSource || '-'}`} />
         <DataList title="مودیان" items={summary.taxpayers || []} render={(item) => `${item.debtPaperUniqueCode} · ${item.id}`} />
       </section>
     </AppShell>

@@ -21,26 +21,30 @@ class DatabaseResetServiceUnitTest {
 
     @Test
     void resetClearsAllApplicationTablesAndRestartsIdentitySequences() throws Exception {
-        DataSource dataSource = dataSource();
-        execute(dataSource, "PRAGMA foreign_keys = ON");
-        execute(dataSource, "CREATE TABLE parent (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL)");
-        execute(dataSource, "CREATE TABLE child (id INTEGER PRIMARY KEY AUTOINCREMENT, parent_id INTEGER NOT NULL REFERENCES parent(id))");
-        execute(dataSource, "INSERT INTO parent(name) VALUES ('parent')");
-        execute(dataSource, "INSERT INTO child(parent_id) VALUES (1)");
+        SingleConnectionDataSource dataSource = dataSource();
+        try {
+            execute(dataSource, "PRAGMA foreign_keys = ON");
+            execute(dataSource, "CREATE TABLE parent (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL)");
+            execute(dataSource, "CREATE TABLE child (id INTEGER PRIMARY KEY AUTOINCREMENT, parent_id INTEGER NOT NULL REFERENCES parent(id))");
+            execute(dataSource, "INSERT INTO parent(name) VALUES ('parent')");
+            execute(dataSource, "INSERT INTO child(parent_id) VALUES (1)");
 
-        DatabaseResetResponse response = new DatabaseResetService(dataSource).reset();
+            DatabaseResetResponse response = new DatabaseResetService(dataSource).reset();
 
-        assertThat(response.tablesCleared()).isEqualTo(2);
-        assertThat(response.rowsDeleted()).isEqualTo(2);
-        assertThat(count(dataSource, "parent")).isZero();
-        assertThat(count(dataSource, "child")).isZero();
+            assertThat(response.tablesCleared()).isEqualTo(2);
+            assertThat(response.rowsDeleted()).isEqualTo(2);
+            assertThat(count(dataSource, "parent")).isZero();
+            assertThat(count(dataSource, "child")).isZero();
 
-        execute(dataSource, "INSERT INTO parent(name) VALUES ('new parent')");
-        assertThat(singleLong(dataSource, "SELECT id FROM parent")).isEqualTo(1L);
-        assertThat(singleLong(dataSource, "PRAGMA foreign_keys")).isEqualTo(1L);
+            execute(dataSource, "INSERT INTO parent(name) VALUES ('new parent')");
+            assertThat(singleLong(dataSource, "SELECT id FROM parent")).isEqualTo(1L);
+            assertThat(singleLong(dataSource, "PRAGMA foreign_keys")).isEqualTo(1L);
+        } finally {
+            dataSource.destroy();
+        }
     }
 
-    private DataSource dataSource() {
+    private SingleConnectionDataSource dataSource() {
         return new SingleConnectionDataSource(
                 "jdbc:sqlite:" + tempDirectory.resolve("reset-test.sqlite"),
                 true

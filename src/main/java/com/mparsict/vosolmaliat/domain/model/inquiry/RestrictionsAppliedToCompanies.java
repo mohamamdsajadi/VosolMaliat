@@ -8,20 +8,21 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "restriction_request")
+@Table(name = "restrictions_applied_to_companies")
+@AttributeOverride(name = "createdAt", column = @Column(name = "creation_date", nullable = false, updatable = false))
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RestrictionRequest extends BaseEntity {
+public class RestrictionsAppliedToCompanies extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "finalized_debt_paper_notification_id", nullable = false, updatable = false)
-    private String finalizedDebtPaperNotificationId;
+    private String finalTaxDebtPaperNotificationId;
 
     @Column(name = "result", nullable = false)
     private Boolean result;

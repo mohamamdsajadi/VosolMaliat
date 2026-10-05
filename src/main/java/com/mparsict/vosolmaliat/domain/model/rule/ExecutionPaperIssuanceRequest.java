@@ -32,11 +32,11 @@ public class ExecutionPaperIssuanceRequest extends BaseEntity {
     @Column(name = "rejection_reason", columnDefinition = "TEXT")
     private String rejectionReason;
 
-    @Column(name = "rejection_reason_id")
+    @Column(name = "execution_paper_issuance_request_rejection_reason_id")
     private Long rejectionReasonId;
 
     @ManyToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name="rejection_reason_id", insertable=false, updatable=false)
+    @JoinColumn(name="execution_paper_issuance_request_rejection_reason_id", insertable=false, updatable=false)
     @com.fasterxml.jackson.annotation.JsonIgnore
     private DynamicControlRule rejectionRule;
 

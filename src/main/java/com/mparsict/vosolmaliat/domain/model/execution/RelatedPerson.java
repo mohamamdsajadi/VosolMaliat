@@ -11,6 +11,7 @@ import lombok.*;
 
 @Entity
 @Table(name = "related_persons")
+@AttributeOverride(name = "createdAt", column = @Column(name = "creation_date", nullable = false, updatable = false))
 @Getter
 @Setter
 @NoArgsConstructor
@@ -70,15 +71,15 @@ public class RelatedPerson extends BaseEntity {
     private String lastSyncedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "natural_person_id")
+    @JoinColumn(name = "related_natural_person_id")
     private NaturalPerson naturalPerson;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "legal_person_id")
+    @JoinColumn(name = "related_legal_person_id")
     private LegalPerson legalPerson;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "legal_representative_natural_person_id")
+    @JoinColumn(name = "natural_person_related_to_legal_person_id")
     private NaturalPerson legalRepresentativeNaturalPerson;
 
     public Long getOwnerLegalPersonId() {

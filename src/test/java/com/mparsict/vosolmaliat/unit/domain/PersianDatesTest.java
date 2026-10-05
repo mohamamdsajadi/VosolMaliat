@@ -1,7 +1,7 @@
 package com.mparsict.vosolmaliat.unit.domain;
 import com.mparsict.vosolmaliat.domain.value.PersianDates;
 import com.mparsict.vosolmaliat.application.service.ModelRequestValidation;
-import com.mparsict.vosolmaliat.domain.model.sanim.SanimDocumentDetails;
+import com.mparsict.vosolmaliat.application.dto.request.SanimDocumentDetails;
 import org.junit.jupiter.api.Test;
 import java.time.LocalDateTime;
 import static org.assertj.core.api.Assertions.*;

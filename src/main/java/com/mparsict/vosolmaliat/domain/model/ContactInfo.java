@@ -19,8 +19,8 @@ public class ContactInfo extends BaseEntity {
     public void snapshot() {
         if (id != null) {
             var row = ContactInfoHistory.builder()
-                .contactInfo(this).naturalPerson(naturalPerson).legalPerson(legalPerson).phoneNo(phoneNo).mobileNo(mobileNo).faxNo(faxNo)
-                .postalCode(postalCode).legalAddress(legalAddress).email(email).website(website).build();
+                .contactInfo(this).naturalPerson(naturalPerson).legalPerson(legalPerson).phoneNo(phoneNo).mobileNo(mobileNo)
+                .postalCode(postalCode).legalAddress(legalAddress).email(email).build();
             row.captureAudit(this);
             history.add(row);
         }
@@ -30,26 +30,20 @@ public class ContactInfo extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "phone_no", nullable=false)
+    @Column(name = "phone_no")
     private String phoneNo;
 
-    @Column(name = "mobile_no", nullable=false)
+    @Column(name = "mobile_no")
     private String mobileNo;
 
-    @Column(name = "fax_no")
-    private String faxNo;
-
-    @Column(name = "postal_code", nullable=false)
+    @Column(name = "zipcode", nullable=false)
     private String postalCode;
 
-    @Column(name = "legal_address", nullable=false)
+    @Column(name = "address", nullable=false)
     private String legalAddress;
 
     @Column(name = "email")
     private String email;
-
-    @Column(name = "website")
-    private String website;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "natural_person_id")

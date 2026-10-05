@@ -46,8 +46,8 @@ public class DebtPaperPushRecord extends BaseEntity {
     private String mappingVersion;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "source_document_id")
-    private com.mparsict.vosolmaliat.domain.model.execution.FinalizedDebtPaper sourceDocument;
+    @JoinColumn(name = "final_tax_debt_paper_id")
+    private com.mparsict.vosolmaliat.domain.model.execution.FinalTaxDebtPaper finalTaxDebtPaper;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

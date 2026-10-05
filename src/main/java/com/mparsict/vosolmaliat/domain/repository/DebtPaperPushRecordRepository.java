@@ -9,4 +9,6 @@ import java.util.Optional;
 @Repository
 public interface DebtPaperPushRecordRepository extends JpaRepository<DebtPaperPushRecord, Long> {
     Optional<DebtPaperPushRecord> findByReferenceId(String referenceId);
+
+    Optional<DebtPaperPushRecord> findFirstByExecutionPaper_IdOrderByIdDesc(Long executionPaperId);
 }

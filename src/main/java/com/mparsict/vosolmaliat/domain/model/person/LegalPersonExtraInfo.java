@@ -15,25 +15,13 @@ import lombok.*;
 public class LegalPersonExtraInfo extends BaseEntity {
     @Version private Long version;
     @Column(nullable=false) private String name;
-    @Column(name = "trade_name", nullable=false) private String tradeName;
-    @Column(unique=true, nullable=false) private String registrationNumber;
-    @Column(nullable=false) private java.time.LocalDateTime registrationDate;
+    @Column(name = "trade_name") private String tradeName;
+    @Column(name="registration_number", unique=true) private String registrationNumber;
+    @Column(name="registration_date") private java.time.LocalDateTime registrationDate;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(name = "arrest_status")
-    private Integer arrestStatus;
-
-    @Column(name = "capital_status")
-    private Integer capitalStatus;
-
-    @Column(name = "management_declaration")
-    private Integer managementDeclaration;
-
-    @Column(name = "date_of_termination")
-    private String dateOfTermination;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "legal_person_id",unique=true,nullable=false)

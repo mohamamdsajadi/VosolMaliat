@@ -184,9 +184,10 @@ class CamundaJobWorkersUnitTest {
         StubExecutionPaperService executionPaperService = new StubExecutionPaperService(ExecutionPaper.builder()
                 .id(99L)
                 .executionPaperUniqueCode("EP-99")
-                .finalizedDebtPaper(com.mparsict.vosolmaliat.domain.model.execution.FinalizedDebtPaper.builder()
-                        .mainTaxBureau(com.mparsict.vosolmaliat.domain.model.masterdata.GeneralDirectorateOfTaxAffairs.builder().id(700L).build())
-                        .taxBureau(com.mparsict.vosolmaliat.domain.model.masterdata.TaxAffairsOffice.builder().id(70L).build())
+                .finalTaxDebtPaper(com.mparsict.vosolmaliat.domain.model.execution.FinalTaxDebtPaper.builder()
+                        .taxAffairsOffice(com.mparsict.vosolmaliat.domain.model.masterdata.TaxAffairsOffice.builder().id(70L)
+                                .generalDirectorateOfTaxAffairs(com.mparsict.vosolmaliat.domain.model.masterdata.GeneralDirectorateOfTaxAffairs.builder().id(700L).build())
+                                .build())
                         .build())
                 .build());
         IssueExecutionPaperWorker worker = new IssueExecutionPaperWorker(
@@ -224,9 +225,10 @@ class CamundaJobWorkersUnitTest {
         StubExecutionPaperService executionPaperService = new StubExecutionPaperService(ExecutionPaper.builder()
                 .id(100L)
                 .executionPaperUniqueCode("EP-100")
-                .finalizedDebtPaper(com.mparsict.vosolmaliat.domain.model.execution.FinalizedDebtPaper.builder()
-                        .mainTaxBureau(com.mparsict.vosolmaliat.domain.model.masterdata.GeneralDirectorateOfTaxAffairs.builder().id(700L).build())
-                        .taxBureau(com.mparsict.vosolmaliat.domain.model.masterdata.TaxAffairsOffice.builder().id(70L).build())
+                .finalTaxDebtPaper(com.mparsict.vosolmaliat.domain.model.execution.FinalTaxDebtPaper.builder()
+                        .taxAffairsOffice(com.mparsict.vosolmaliat.domain.model.masterdata.TaxAffairsOffice.builder().id(70L)
+                                .generalDirectorateOfTaxAffairs(com.mparsict.vosolmaliat.domain.model.masterdata.GeneralDirectorateOfTaxAffairs.builder().id(700L).build())
+                                .build())
                         .build())
                 .build());
         StubIssuanceRequestService issuanceRequests = new StubIssuanceRequestService();
@@ -627,7 +629,7 @@ class CamundaJobWorkersUnitTest {
                 ExecutionPaperRepository.class.getClassLoader(),
                 new Class<?>[]{ExecutionPaperRepository.class},
                 (proxy, method, args) -> {
-                    if ("findByFinalizedDebtPaperDebtPaperUniqueCode".equals(method.getName())
+                    if ("findByFinalTaxDebtPaperUniqueFinalTaxDebtNoticeId".equals(method.getName())
                             && debtPaperUniqueCode.equals(args[0])) {
                         return Optional.of(ExecutionPaper.builder().id(executionPaperId).build());
                     }
@@ -643,7 +645,7 @@ class CamundaJobWorkersUnitTest {
                 ExecutionPaperRepository.class.getClassLoader(),
                 new Class<?>[]{ExecutionPaperRepository.class},
                 (proxy, method, args) -> {
-                    if ("findByFinalizedDebtPaperDebtPaperUniqueCode".equals(method.getName())) {
+                    if ("findByFinalTaxDebtPaperUniqueFinalTaxDebtNoticeId".equals(method.getName())) {
                         return Optional.empty();
                     }
                     if ("findByTaxpayerDebtPaperUniqueCode".equals(method.getName())
@@ -845,7 +847,8 @@ class CamundaJobWorkersUnitTest {
         private DebtPaperIssuanceRequest createdRequest;
 
         private StubExecutionPaperService(ExecutionPaper executionPaper) {
-            super(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+            super(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+                    null, null);
             this.executionPaper = executionPaper;
         }
 

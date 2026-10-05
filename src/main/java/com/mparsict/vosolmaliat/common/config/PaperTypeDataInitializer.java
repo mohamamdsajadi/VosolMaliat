@@ -12,7 +12,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
-@Order(Ordered.HIGHEST_PRECEDENCE)
+// The audit columns on this table reference the reserved system actor.  Seed
+// that actor first so SQLite foreign-key enforcement cannot make startup
+// ordering nondeterministic.
+@Order(Ordered.HIGHEST_PRECEDENCE + 1)
 @RequiredArgsConstructor
 public class PaperTypeDataInitializer implements ApplicationRunner {
     private final PaperTypeDefinitionRepository repository;

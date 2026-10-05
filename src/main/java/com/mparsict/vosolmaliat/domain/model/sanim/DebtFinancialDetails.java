@@ -7,13 +7,13 @@ public class DebtFinancialDetails {
     @Convert(converter=FinancialDetailXmlConverter.class)
     @Column(name="tax_liability_details", columnDefinition="TEXT") private String taxLiabilityDetails;
     @Convert(converter=FinancialDetailXmlConverter.class)
-    @Column(name="tax_credit_details", columnDefinition="TEXT") private String taxCreditDetails;
+    @Column(name="credits_detail", columnDefinition="TEXT") private String taxCreditDetails;
     @Convert(converter=FinancialDetailXmlConverter.class)
-    @Column(name="total_penalties_details", columnDefinition="TEXT") private String totalPenaltiesDetails;
+    @Column(name="penalties_detail", columnDefinition="TEXT") private String totalPenaltiesDetails;
     @Convert(converter=FinancialDetailXmlConverter.class)
-    @Column(name="total_payments_details", columnDefinition="TEXT") private String totalPaymentsDetails;
+    @Column(name="payments_detail", columnDefinition="TEXT") private String totalPaymentsDetails;
     @Convert(converter=FinancialDetailXmlConverter.class)
-    @Column(name="total_remissions_details", columnDefinition="TEXT") private String totalRemissionsDetails;
+    @Column(name="remissions_detail", columnDefinition="TEXT") private String totalRemissionsDetails;
     @Convert(converter=FinancialDetailXmlConverter.class)
     @Column(name="outstanding_debt_details", columnDefinition="TEXT") private String outstandingDebtDetails;
     public DebtFinancialDetails copy() {

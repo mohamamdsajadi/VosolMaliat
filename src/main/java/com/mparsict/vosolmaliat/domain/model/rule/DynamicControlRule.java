@@ -10,6 +10,10 @@ import java.util.*;
 
 @Entity
 @Table(name = "dynamic_control_rule")
+@AttributeOverrides({
+        @AttributeOverride(name = "createdAt", column = @Column(name = "creation_date", nullable = false, updatable = false)),
+        @AttributeOverride(name = "updatedAt", column = @Column(name = "update_date", nullable = false))
+})
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "rule_scope")
 @Getter @Setter @SuperBuilder @NoArgsConstructor
@@ -21,15 +25,15 @@ public abstract class DynamicControlRule extends BaseEntity {
     @Setter(AccessLevel.NONE) private RuleScope ruleScope;
     @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "parent_rule_id")
     @com.fasterxml.jackson.annotation.JsonIgnore private DynamicControlRule parentRule;
-    @Column(nullable = false) private String errorCode;
-    @Column(nullable = false) private String errorMessage;
+    @Column(name = "error_code", nullable = false) private String errorCode;
+    @Column(name = "error_message", nullable = false) private String errorMessage;
     @Builder.Default @Column(name = "is_active", nullable = false)
     @Setter(AccessLevel.NONE) private Boolean active = true;
-    @Column(name = "rule_json", nullable = false, columnDefinition = "TEXT") private String ruleJson;
-    @Column(name = "start_date", nullable = false) private String startDate;
-    @Column(name = "end_date", nullable = false) private String endDate;
+    @Column(name = "json", nullable = false, columnDefinition = "TEXT") private String ruleJson;
+    @Column(name = "limitation_start_date", nullable = false) private String startDate;
+    @Column(name = "limitation_end_date", nullable = false) private String endDate;
     @Column(name = "document_no", nullable = false) private String documentNo;
-    @Column(name = "file_path", nullable = false) private String filePath;
+    @Column(name = "document_file_path", nullable = false) private String filePath;
     @Column(columnDefinition = "TEXT") private String description;
     @OneToMany(mappedBy = "rule", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @Builder.Default @com.fasterxml.jackson.annotation.JsonIgnore
