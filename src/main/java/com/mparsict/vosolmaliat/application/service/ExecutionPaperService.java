@@ -65,10 +65,45 @@ public class ExecutionPaperService {
     private final com.mparsict.vosolmaliat.domain.repository.DebtPaperPushRecordRepository debtPaperPushRecordRepository;
     private final ObjectMapper objectMapper;
     @Transactional
+    public void recordIssuanceProcess(Long requestId, long processInstanceKey) {
+        uniqueCodeGenerator.lockIssuance();
+        debtPaperPushRecordRepository.findByIssuanceRequestId(requestId).ifPresent(receipt -> {
+            receipt.setProcessInstanceKey(processInstanceKey);
+            debtPaperPushRecordRepository.save(receipt);
+        });
+    }
+
+    /** The receipt link commits with issuance so Camunda redelivery cannot issue twice. */
+    @Transactional
+    public ExecutionPaper createForIssuanceRequest(Long requestId, DebtPaperIssuanceRequest request) {
+        uniqueCodeGenerator.lockIssuance();
+        var receipt = debtPaperPushRecordRepository.findByIssuanceRequestId(requestId);
+        ExecutionPaper paper;
+        if (receipt.isPresent() && receipt.get().getExecutionPaperId() != null) {
+            paper = executionPaperRepository.findById(receipt.get().getExecutionPaperId()).orElseThrow();
+        } else {
+            paper = createFromRequest(request);
+            if (receipt.isPresent()) {
+                var record = receipt.get();
+                record.setExecutionPaper(paper);
+                record.setFinalTaxDebtPaper(paper.getFinalTaxDebtPaper());
+                record.setProcessingStatus(com.mparsict.vosolmaliat.domain.enums.DebtPaperProcessingStatus.SUCCESS);
+                record.setFailureReason(null);
+                debtPaperPushRecordRepository.save(record);
+            }
+        }
+        var debtPaper = paper.getFinalTaxDebtPaper();
+        if (debtPaper != null && debtPaper.getTaxAffairsOffice() != null) {
+            debtPaper.getTaxAffairsOffice().getGeneralDirectorateOfTaxAffairsId();
+        }
+        return paper;
+    }
+    @Transactional
     public ExecutionPaper createFromRequest(DebtPaperIssuanceRequest request) {
         uniqueCodeGenerator.lockIssuance();
         ModelRequestValidation.requireRequest(request);
         SanimModelValidation.requireDocument(request.sourceDocument());
+        TaxpayerIdentityValidation.requireConsistentRegistration(taxpayerRepository, request);
         var organization = resolveOrganization(request);
         // 1. Find or create FinalTaxDebtPaper
         FinalTaxDebtPaper fdp = finalTaxDebtPaperRepository
@@ -91,7 +126,7 @@ public class ExecutionPaperService {
                                 .nationalCode(request.taxpayer().nationalCode())
                                 .nationalId(request.taxpayer().nationalId())
 
-                                .taxAffairsOffice(organization.officeId() == null ? null : com.mparsict.vosolmaliat.domain.model.masterdata.TaxAffairsOffice.builder().id(organization.officeId()).build())
+                                .taxAffairsOffice(organization.officeId() == null ? null : taxAffairsOfficeRepository.getReferenceById(organization.officeId()))
 
                                 .build());
 

@@ -40,12 +40,13 @@ public class IssueExecutionPaperWorker {
                 throw new IllegalArgumentException("issuanceRequestId is missing from the issuance job");
             }
             Long requestId = number.longValue();
+            executionPaperService.recordIssuanceProcess(requestId, job.getProcessInstanceKey());
 
             DebtPaperIssuanceRequest request = payload == null
                     ? issuanceRequestService.loadRequest(requestId)
                     : toRequest(payload);
             if (request == null) throw new IllegalArgumentException("Debt Paper issuance payload is empty");
-            ExecutionPaper ep = executionPaperService.createFromRequest(request);
+            ExecutionPaper ep = executionPaperService.createForIssuanceRequest(requestId, request);
             Map<String, Object> outputVars = workflowVariablesFactory.create(ep, request);
 
             log.info("ExecutionPaper issued: code={}, requestId={}", ep.getExecutionPaperUniqueCode(), requestId);

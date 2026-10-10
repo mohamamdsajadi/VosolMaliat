@@ -56,6 +56,11 @@ public class DebtPaperPushExceptionHandler {
 
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ApiGatewayResponse<DebtPaperPushData>> handleBusiness(BusinessException exception, HttpServletRequest request) {
+        if ("PROCESS_START_FAILED".equals(exception.getErrorCode())) {
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(ApiGatewayResponse.failure(
+                    DebtPaperPushData.empty(), DebtPaperTraceFilter.traceId(request), true, -99,
+                    "Camunda result unavailable; the stored request may still be processing."));
+        }
         return ResponseEntity.unprocessableEntity().body(ApiGatewayResponse.failure(DebtPaperPushData.empty(),
                 DebtPaperTraceFilter.traceId(request),true,-7,exception.getErrorCode()+": "+exception.getMessage()));
     }

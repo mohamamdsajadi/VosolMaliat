@@ -36,6 +36,7 @@ import java.time.OffsetDateTime;
 @AllArgsConstructor
 public class DebtPaperPushRecord extends BaseEntity {
     private Long issuanceRequestId;
+    private Long processInstanceKey;
 
     @Column(name = "announcement_type")
     private String announcementType;

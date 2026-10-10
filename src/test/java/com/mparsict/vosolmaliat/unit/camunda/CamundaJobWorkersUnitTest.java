@@ -853,10 +853,13 @@ class CamundaJobWorkersUnitTest {
         }
 
         @Override
-        public ExecutionPaper createFromRequest(DebtPaperIssuanceRequest request) {
+        public ExecutionPaper createForIssuanceRequest(Long requestId, DebtPaperIssuanceRequest request) {
             createdRequest = request;
             return executionPaper;
         }
+
+        @Override
+        public void recordIssuanceProcess(Long requestId, long processInstanceKey) {}
     }
 
     private static class StubIssuanceRequestService extends IssuanceRequestService {

@@ -9,6 +9,10 @@ import java.util.Optional;
 @Repository
 public interface TaxpayerRepository extends JpaRepository<Taxpayer, Long> {
     Optional<Taxpayer> findByTin(String tin);
+    Optional<Taxpayer> findByRegistrationTraceCode(String registrationTraceCode);
+    Optional<Taxpayer> findByNaturalPerson_NationalCode(String nationalCode);
+    Optional<Taxpayer> findByNaturalPerson_Fida(String fida);
+    Optional<Taxpayer> findByLegalPerson_NationalId(String nationalId);
     @org.springframework.data.jpa.repository.Query("select t from Taxpayer t where t.legalPerson.id = :id")
     Optional<Taxpayer> findByLegalPersonId(@org.springframework.data.repository.query.Param("id") Long id);
 

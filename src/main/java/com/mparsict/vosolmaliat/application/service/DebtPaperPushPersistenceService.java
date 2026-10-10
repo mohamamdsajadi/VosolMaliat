@@ -22,6 +22,8 @@ public class DebtPaperPushPersistenceService {
     private final DebtPaperPushRecordRepository pushRecordRepository;
     private final ExecutionPaperRepository executionPaperRepository;
     private final IssuanceRequestService issuanceRequestService;
+    private final com.mparsict.vosolmaliat.domain.repository.TaxpayerRepository taxpayers;
+    private final com.mparsict.vosolmaliat.domain.repository.FinalTaxDebtPaperRepository sourcePapers;
     private final com.mparsict.vosolmaliat.common.util.UniqueCodeGenerator codes;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -30,14 +32,7 @@ public class DebtPaperPushPersistenceService {
         var existing = pushRecordRepository.findByReferenceId(source.referenceId());
         if (existing.isPresent()) {
             DebtPaperPushRecord record = existing.get();
-            if (record.getProcessingStatus() == DebtPaperProcessingStatus.WORKFLOW_START_FAILED
-                    && record.getExecutionPaperId() == null
-                    && sameRequest(record, source)) {
-                record.setProcessingStatus(DebtPaperProcessingStatus.RECEIVED);
-                record.setFailureReason(null);
-                pushRecordRepository.saveAndFlush(record);
-                return record.getId();
-            }
+            // A result timeout does not prove Camunda failed to start. Reserve this reference.
             throw duplicate(record.getExecutionPaperId());
         }
         DebtPaperPushRecord record = pushRecordRepository.saveAndFlush(DebtPaperPushRecord.builder()
@@ -65,6 +60,13 @@ public class DebtPaperPushPersistenceService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Long prepareWorkflow(Long recordId, DebtPaperIssuanceRequest request) {
         codes.lockIssuance();
+        TaxpayerIdentityValidation.requireConsistentRegistration(taxpayers, request);
+        sourcePapers.findByUniqueFinalTaxDebtNoticeId(request.debtPaperUniqueCode()).ifPresent(source -> {
+            if (!java.util.Objects.equals(source.getTaxpayer().getTin(), request.sourceDocument().getTaxpayerIdentifier())) {
+                throw new com.mparsict.vosolmaliat.common.exception.BusinessException(
+                        "DEBT_PAPER_TAXPAYER_CONFLICT", "برگ بدهی قطعی به مؤدی دیگری تعلق دارد");
+            }
+        });
         DebtPaperPushRecord record = pushRecordRepository.findById(recordId).orElseThrow();
         if (record.getProcessingStatus() != DebtPaperProcessingStatus.RECEIVED) {
             throw duplicate(record.getExecutionPaperId());
@@ -129,24 +131,12 @@ public class DebtPaperPushPersistenceService {
     public void markWorkflowFailed(Long recordId, String failureReason) {
         codes.lockIssuance();
         pushRecordRepository.findById(recordId).ifPresent(record -> {
+            if (record.getExecutionPaperId() != null
+                    || record.getProcessingStatus() == DebtPaperProcessingStatus.REJECTED_BY_RULE) return;
             record.setProcessingStatus(DebtPaperProcessingStatus.WORKFLOW_START_FAILED);
             record.setFailureReason(failureReason);
             pushRecordRepository.save(record);
         });
-    }
-
-    private boolean sameRequest(DebtPaperPushRecord record, DebtPaperPushRequest source) {
-        return java.util.Objects.equals(record.getSourceHash(), source.hash())
-                && java.util.Objects.equals(record.getXmlPayload(), source.xml())
-                && java.util.Objects.equals(record.getNationalId(), source.nationalID())
-                && java.util.Objects.equals(record.getFollowCode(), source.followCode())
-                && java.util.Objects.equals(record.getSecondParameter(), source.secondParameter())
-                && java.util.Objects.equals(record.getYear(), source.year())
-                && java.util.Objects.equals(record.getPeriod(), source.period())
-                && java.util.Objects.equals(record.getSourceTaxOfficeCode(), source.taxOfficeId())
-                && java.util.Objects.equals(record.getTaxAmount(), source.taxAmount())
-                && java.util.Objects.equals(record.getTaxSource(), source.taxSource())
-                && java.util.Objects.equals(record.getAnnouncementType(), source.announcementType());
     }
 
     public void rejectExistingReference(String referenceId) {

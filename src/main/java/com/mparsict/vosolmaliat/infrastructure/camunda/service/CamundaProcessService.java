@@ -23,6 +23,10 @@ public class CamundaProcessService {
     private static final Logger LOG = LoggerFactory.getLogger(CamundaProcessService.class);
 
     private final CamundaClient camundaClient;
+    private final com.mparsict.vosolmaliat.domain.repository.DebtPaperPushRecordRepository pushRecords;
+
+    @org.springframework.beans.factory.annotation.Value("${app.issuance.process-id:Process_0rtbdc5}")
+    private String issuanceProcessId;
     public IssuanceResponse startExecutionPaperIssuanceProcess(
             Long issuanceRequestId,
             DebtPaperIssuanceRequest debtPaperPayload) {
@@ -30,17 +34,26 @@ public class CamundaProcessService {
             Map<String, Object> processVariables = new HashMap<>();
             processVariables.put(ProcessConstants.VAR_ISSUANCE_REQUEST_ID, issuanceRequestId);
             processVariables.put(ProcessConstants.VAR_DEBT_PAPER_PAYLOAD, debtPaperPayload);
+            pushRecords.findByIssuanceRequestId(issuanceRequestId).ifPresent(receipt -> {
+                processVariables.put("referenceID", receipt.getReferenceId());
+                processVariables.put("apiGatewayTraceID", receipt.getTraceId());
+            });
 
             var processResult = camundaClient
                     .newCreateInstanceCommand()
-                    .bpmnProcessId(ProcessConstants.PROCESS_ID)
+                    .bpmnProcessId(issuanceProcessId)
                     .latestVersion()
                     .variables(processVariables)
                     .withResult()
+                    .requestTimeout(java.time.Duration.ofSeconds(120))
                     .send()
                     .join();
 
             Map<String, Object> result = processResult.getVariablesAsMap();
+            pushRecords.findByIssuanceRequestId(issuanceRequestId).ifPresent(receipt -> {
+                receipt.setProcessInstanceKey(processResult.getProcessInstanceKey());
+                pushRecords.save(receipt);
+            });
             boolean success = Boolean.TRUE.equals(result.get(ProcessConstants.VAR_SUCCESS));
             Long executionPaperId = number(result.get(ProcessConstants.VAR_EXECUTION_PAPER_ID));
             String executionPaperCode = text(result.get(ProcessConstants.VAR_EXECUTION_PAPER_CODE));
