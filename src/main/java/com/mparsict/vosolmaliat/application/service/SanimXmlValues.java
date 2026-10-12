@@ -52,8 +52,11 @@ final class SanimXmlValues {
     }
     BigDecimal wasteAmount(String tag) {
         List<String> v = values(main, tag);
-        if (v.isEmpty() || v.stream().allMatch(x -> decimal(x, tag).signum() == 0)) return BigDecimal.ZERO;
-        throw invalid("Cannot distinguish waste from goods/services aggregate tag " + tag);
+        // EF23 reuses QD/RD/SD: occurrence 1 belongs to goods/services and
+        // occurrence 2 belongs to the waste section. Source order is contractual.
+        if (v.size() < 2) return BigDecimal.ZERO;
+        if (v.size() > 2) throw invalid("Unexpected extra occurrence of aggregate tag " + tag);
+        return decimal(v.get(1), tag);
     }
     BigDecimal sum(String... tags) {
         BigDecimal result = BigDecimal.ZERO;

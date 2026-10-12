@@ -21,9 +21,31 @@ public interface RelatedPersonRepository extends JpaRepository<RelatedPerson, Lo
     List<RelatedPerson> findByOwnerLegalPersonIdOrderByStartDateAscIdAsc(
             @Param("ownerLegalPersonId") Long ownerLegalPersonId);
 
+    @Query("""
+            SELECT relationship
+            FROM RelatedPerson relationship
+            WHERE relationship.ownerLegalPerson.id = :ownerLegalPersonId
+              AND relationship.post.id = :postId
+              AND relationship.naturalPerson.id = :naturalPersonId
+              AND relationship.startDate = :startDate
+            """)
     Optional<RelatedPerson> findByOwnerLegalPersonIdAndPostIdAndNaturalPersonIdAndStartDate(
-            Long ownerLegalPersonId, Long postId, Long naturalPersonId, java.time.LocalDateTime startDate);
+            @Param("ownerLegalPersonId") Long ownerLegalPersonId,
+            @Param("postId") Long postId,
+            @Param("naturalPersonId") Long naturalPersonId,
+            @Param("startDate") java.time.LocalDateTime startDate);
 
+    @Query("""
+            SELECT relationship
+            FROM RelatedPerson relationship
+            WHERE relationship.ownerLegalPerson.id = :ownerLegalPersonId
+              AND relationship.post.id = :postId
+              AND relationship.legalPerson.id = :legalPersonId
+              AND relationship.startDate = :startDate
+            """)
     Optional<RelatedPerson> findByOwnerLegalPersonIdAndPostIdAndLegalPersonIdAndStartDate(
-            Long ownerLegalPersonId, Long postId, Long legalPersonId, java.time.LocalDateTime startDate);
+            @Param("ownerLegalPersonId") Long ownerLegalPersonId,
+            @Param("postId") Long postId,
+            @Param("legalPersonId") Long legalPersonId,
+            @Param("startDate") java.time.LocalDateTime startDate);
 }

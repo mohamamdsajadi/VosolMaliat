@@ -143,9 +143,10 @@ class SqliteSchemaStartupTest {
                     "debt_paper_unique_id", "total_liability",
                     "total_penalties", "total_credits", "total_payments", "total_remissions",
                     "outstanding_tax_debt", "penalties_detail", "credits_detail",
-                    "payments_detail", "remissions_detail")
+                    "payments_detail", "remissions_detail", "tax_liability_details",
+                    "outstanding_debt_details")
                     .doesNotContain("execution_paper_id", "current_amounts_as_of", "last_debt_inquiry_at",
-                            "tax_component", "duty_component", "tax_liability_details", "outstanding_debt_details");
+                            "tax_component", "duty_component");
             assertThat(columnNames(connection, "dynamic_control_rule")).contains(
                     "parent_rule_id", "rule_scope", "json", "limitation_start_date",
                     "limitation_end_date", "document_no", "document_file_path", "error_code",
@@ -198,6 +199,7 @@ class SqliteSchemaStartupTest {
                     "debt_paper_unique_id", "total_liability", "total_penalties",
                     "total_credits", "total_payments", "total_remissions", "outstanding_tax_debt",
                     "penalties_detail", "credits_detail", "payments_detail", "remissions_detail",
+                    "tax_liability_details", "outstanding_debt_details",
                     "next_inquiry_date", "creation_date")
                     .doesNotContain("debt_information_id", "execution_paper_id", "effective_at", "inquiry_request_id");
             assertThat(columnNames(connection, "dynamic_control_rule_history")).contains(

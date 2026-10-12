@@ -76,7 +76,6 @@ public interface ExecutionPaperRepository extends JpaRepository<ExecutionPaper, 
             LEFT JOIN taxpayer.legalPerson lp
             LEFT JOIN np.extraInfo ninfo
             LEFT JOIN lp.extraInfo linfo
-            LEFT JOIN DebtInformation debt ON debt.executionPaper = ep
             LEFT JOIN ExecutionPaperNotification notification ON notification.executionPaper = ep
             WHERE (:assignmentMode IS NULL
                 OR (:assignmentMode = 'ASSIGNED' AND ep.workflowState.currentState <> :unassignedState)
@@ -104,7 +103,6 @@ public interface ExecutionPaperRepository extends JpaRepository<ExecutionPaper, 
             LEFT JOIN taxpayer.legalPerson lp
             LEFT JOIN np.extraInfo ninfo
             LEFT JOIN lp.extraInfo linfo
-            LEFT JOIN DebtInformation debt ON debt.executionPaper = ep
             LEFT JOIN ExecutionPaperNotification notification ON notification.executionPaper = ep
             WHERE (:assignmentMode IS NULL
                 OR (:assignmentMode = 'ASSIGNED' AND ep.workflowState.currentState <> :unassignedState)

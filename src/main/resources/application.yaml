@@ -68,6 +68,14 @@ server:
       force: true
 
 app:
+  execution-paper:
+    samples-path: ${EXECUTION_PAPER_SAMPLES_PATH:docs/paper-types-examples/نمونه اوراق اجرایی.xlsx}
+    inbox:
+      enabled: true
+      path: ./import/execution-papers
+      initial-delay-ms: ${EXECUTION_PAPER_INBOX_INITIAL_DELAY_MS:5000}
+      poll-delay-ms: ${EXECUTION_PAPER_INBOX_POLL_DELAY_MS:10000}
+      minimum-age-ms: ${EXECUTION_PAPER_INBOX_MINIMUM_AGE_MS:3000}
   ef03:
     samples-path: ${EF03_SAMPLES_PATH:docs/sample-execution-papers/EF03-samples.ods}
 

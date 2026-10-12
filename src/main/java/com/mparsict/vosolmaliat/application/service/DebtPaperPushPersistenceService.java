@@ -80,13 +80,31 @@ public class DebtPaperPushPersistenceService {
         return record.getIssuanceRequestId();
     }
 
+    /** Offline imports retain their source payload but intentionally bypass online contract checks. */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public Long prepareImportWorkflow(Long recordId, DebtPaperIssuanceRequest request) {
+        codes.lockIssuance();
+        DebtPaperPushRecord record = pushRecordRepository.findById(recordId).orElseThrow();
+        if (record.getProcessingStatus() != DebtPaperProcessingStatus.RECEIVED) {
+            throw duplicate(record.getExecutionPaperId());
+        }
+        if (record.getIssuanceRequestId() == null) {
+            var saved = issuanceRequestService.createAndSaveForImport(request);
+            record.setIssuanceRequestId(saved.getId());
+        }
+        record.setProcessingStatus(DebtPaperProcessingStatus.PROCESSING);
+        pushRecordRepository.save(record);
+        return record.getIssuanceRequestId();
+    }
+
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Long resumeSampleImport(Long recordId) {
         codes.lockIssuance();
         DebtPaperPushRecord record = pushRecordRepository.findById(recordId).orElseThrow();
         if (record.getExecutionPaperId() != null
                 || record.getTraceId() == null
-                || !record.getTraceId().startsWith("ef03-sample-import-")) {
+                || !(record.getTraceId().startsWith("ef03-sample-import-")
+                || record.getTraceId().startsWith("execution-paper-sample-import-"))) {
             throw duplicate(record.getExecutionPaperId());
         }
         record.setProcessingStatus(DebtPaperProcessingStatus.RECEIVED);

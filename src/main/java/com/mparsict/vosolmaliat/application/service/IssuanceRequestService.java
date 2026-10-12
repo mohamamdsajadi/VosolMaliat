@@ -26,6 +26,16 @@ public class IssuanceRequestService {
     public ExecutionPaperIssuanceRequest createAndSave(DebtPaperIssuanceRequest request) {
         ModelRequestValidation.requireRequest(request);
         SanimModelValidation.requireDocument(request.sourceDocument());
+        return save(request);
+    }
+
+    /** Persists an offline import after the importer has supplied database-safe fallbacks. */
+    @Transactional
+    public ExecutionPaperIssuanceRequest createAndSaveForImport(DebtPaperIssuanceRequest request) {
+        return save(request);
+    }
+
+    private ExecutionPaperIssuanceRequest save(DebtPaperIssuanceRequest request) {
         String json;
         try {
             json = objectMapper.writeValueAsString(request);

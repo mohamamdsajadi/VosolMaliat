@@ -80,11 +80,16 @@ class DebtPaperPushMapperUnitTest {
         assertThat(d.getAmounts().getTotalRemissionAmount()).isEqualByComparingTo("30");
         assertThat(d.getAmounts().getTotalPaidAmount()).isEqualByComparingTo("70");
     }
-    @Test void missingAmountsAreZeroButInvalidAndAmbiguousAreRejected() {
+    @Test void missingAmountsAreZeroAndRepeatedWasteTagsUseDictionaryOrder() {
         assertThat(mapper.map(request("LTR_EF03", EF03)).sourceDocument().getAmounts().getOutstandingDebtAmount()).isZero();
         for (String fragment : new String[]{"<HB>x</HB>", "<HB/>", "<HB>1</HB><HB>2</HB>"})
             assertThatThrownBy(() -> mapper.map(request("LTR_EF03", EF03 + fragment))).isInstanceOf(DebtPaperPushException.class);
-        assertThatThrownBy(() -> mapper.map(request("LTR_EF23", VAT + "<SD>1</SD>"))).hasMessageContaining("Cannot distinguish");
+        assertThat(mapper.map(request("LTR_EF23", VAT + "<SD>1</SD>"))
+                .sourceDocument().getAmounts().getOutstandingDebtAmount()).isZero();
+        assertThat(mapper.map(request("LTR_EF23", VAT + "<SD>1</SD><SD>9</SD>"))
+                .sourceDocument().getAmounts().getOutstandingDebtAmount()).isEqualByComparingTo("9");
+        assertThatThrownBy(() -> mapper.map(request("LTR_EF23", VAT + "<SD>1</SD><SD>2</SD><SD>3</SD>")))
+                .hasMessageContaining("Unexpected extra occurrence");
     }
     @Test void incompleteIdentityAndConflictingEnvelopeDoNotProceed() {
         assertThat(mapper.map(request("LTR_EF03", EF03.replace("<P>حقیقی</P>", ""))).sourceDocument().getPersonType()).isEqualTo("NATURAL");
@@ -104,7 +109,10 @@ class DebtPaperPushMapperUnitTest {
         assertThat(doc.getAmounts().getTotalPenaltyAmount()).isEqualByComparingTo("230731485.6");
         assertThat(doc.getAmounts().getOutstandingDebtAmount()).isEqualByComparingTo("1966798821.6");
         assertThat(doc.getAmounts().getTotalRemissionAmount()).isZero();
-        assertThat(new com.fasterxml.jackson.databind.ObjectMapper().readTree(doc.getFinancialDetails().getTotalPenaltiesDetails())).hasSize(4);
+        var penaltyXml = new com.mparsict.vosolmaliat.application.service.DebtPaperXmlReader()
+                .parse(doc.getFinancialDetails().getTotalPenaltiesDetails());
+        assertThat(penaltyXml.getElementsByTagName("KB").getLength()).isEqualTo(4);
+        assertThat(penaltyXml.getElementsByTagName("MB").getLength()).isEqualTo(4);
         assertThat(doc.getXml()).isEqualTo(xml);
     }
     @Test void rejectsExternalEntities() {

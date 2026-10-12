@@ -100,10 +100,22 @@ public class ExecutionPaperService {
     }
     @Transactional
     public ExecutionPaper createFromRequest(DebtPaperIssuanceRequest request) {
+        return createFromRequest(request, false);
+    }
+
+    /** Creates a row from an offline spreadsheet while preserving the strict online API path. */
+    @Transactional
+    public ExecutionPaper createFromImportRequest(DebtPaperIssuanceRequest request) {
+        return createFromRequest(request, true);
+    }
+
+    private ExecutionPaper createFromRequest(DebtPaperIssuanceRequest request, boolean lenientImport) {
         uniqueCodeGenerator.lockIssuance();
-        ModelRequestValidation.requireRequest(request);
-        SanimModelValidation.requireDocument(request.sourceDocument());
-        TaxpayerIdentityValidation.requireConsistentRegistration(taxpayerRepository, request);
+        if (!lenientImport) {
+            ModelRequestValidation.requireRequest(request);
+            SanimModelValidation.requireDocument(request.sourceDocument());
+            TaxpayerIdentityValidation.requireConsistentRegistration(taxpayerRepository, request);
+        }
         var organization = resolveOrganization(request);
         var finalizationReason = com.mparsict.vosolmaliat.domain.enums.FinalizationReason
                 .fromSourceValue(request.sourceDocument().getIssuanceReason());
@@ -152,14 +164,14 @@ public class ExecutionPaperService {
         final Long finalLegalPersonId = legalPersonId;
 
         String tin = request.sourceDocument().getTaxpayerIdentifier();
-        if (tin == null || tin.isBlank()) throw new com.mparsict.vosolmaliat.common.exception.BusinessException("TIN_REQUIRED", "شناسه مؤدی لازم است");
-        if (request.sourceDocument().getRegistrationTraceCode() == null || request.sourceDocument().getRegistrationTraceCode().isBlank())
+        if (!lenientImport && (tin == null || tin.isBlank())) throw new com.mparsict.vosolmaliat.common.exception.BusinessException("TIN_REQUIRED", "شناسه مؤدی لازم است");
+        if (!lenientImport && (request.sourceDocument().getRegistrationTraceCode() == null || request.sourceDocument().getRegistrationTraceCode().isBlank()))
             throw new com.mparsict.vosolmaliat.common.exception.BusinessException("FOLLOW_CODE_REQUIRED", "کد رهگیری ثبت‌نام لازم است");
-        if (finalLegalPersonId != null) taxpayerRepository.findByLegalPersonId(finalLegalPersonId).ifPresent(existing -> {
+        if (!lenientImport && finalLegalPersonId != null) taxpayerRepository.findByLegalPersonId(finalLegalPersonId).ifPresent(existing -> {
             if (!tin.equals(existing.getTin())) throw new com.mparsict.vosolmaliat.common.exception.BusinessException("LEGAL_TIN_CONFLICT", "شخص حقوقی فقط یک TIN دارد");
         });
-        Taxpayer taxpayer = taxpayerRepository
-                .findByTin(tin)
+        Optional<Taxpayer> importIdentity = lenientImport ? findImportTaxpayer(tpInfo, tin) : Optional.empty();
+        Taxpayer taxpayer = importIdentity.or(() -> taxpayerRepository.findByTin(tin))
                 .orElseGet(() -> taxpayerRepository.save(
                         Taxpayer.builder()
                                 .tin(tin)
@@ -169,9 +181,9 @@ public class ExecutionPaperService {
                                 .legalPerson(finalLegalPersonId == null ? null : LegalPerson.builder().id(finalLegalPersonId).build())
                                 .build()
                 ));
-        if (!java.util.Objects.equals(taxpayer.getNaturalPersonId(), finalNaturalPersonId)
+        if (!lenientImport && (!java.util.Objects.equals(taxpayer.getNaturalPersonId(), finalNaturalPersonId)
                 || !java.util.Objects.equals(taxpayer.getLegalPersonId(), finalLegalPersonId)
-                || !java.util.Objects.equals(taxpayer.getRegistrationTraceCode(), request.sourceDocument().getRegistrationTraceCode()))
+                || !java.util.Objects.equals(taxpayer.getRegistrationTraceCode(), request.sourceDocument().getRegistrationTraceCode())))
             throw new com.mparsict.vosolmaliat.common.exception.BusinessException("TIN_IDENTITY_CONFLICT", "شناسه مؤدی با شخص یا کد رهگیری ثبت‌نام سازگار نیست");
         var activity = resolveActivity(request.sourceDocument());
         if (activity != null) taxpayer.updateActivity(activity);
@@ -179,7 +191,7 @@ public class ExecutionPaperService {
         if (fdp.getTaxpayer() == null) {
             fdp.setTaxpayer(taxpayer);
             fdp = finalTaxDebtPaperRepository.save(fdp);
-        } else if (!java.util.Objects.equals(fdp.getTaxpayer().getId(), taxpayer.getId())) {
+        } else if (!lenientImport && !java.util.Objects.equals(fdp.getTaxpayer().getId(), taxpayer.getId())) {
             throw new com.mparsict.vosolmaliat.common.exception.BusinessException(
                     "DEBT_PAPER_TAXPAYER_CONFLICT", "برگ بدهی قطعی به مؤدی دیگری تعلق دارد");
         }
@@ -770,6 +782,24 @@ public class ExecutionPaperService {
                 notificationStatus,
                 ep.getCurrentState()
         );
+    }
+
+    private Optional<Taxpayer> findImportTaxpayer(DebtPaperIssuanceRequest.TaxpayerInfo info, String tin) {
+        Optional<Taxpayer> byTin = taxpayerRepository.findByTin(tin);
+        if (byTin.isPresent()) return byTin;
+        if (info.nationalId() != null && !info.nationalId().isBlank()) {
+            Optional<Taxpayer> legal = taxpayerRepository.findByLegalPerson_NationalId(info.nationalId());
+            if (legal.isPresent()) return legal;
+        }
+        if (info.nationalCode() != null && !info.nationalCode().isBlank()) {
+            List<Taxpayer> natural = taxpayerRepository.findByNaturalPerson_NationalCode(info.nationalCode());
+            if (!natural.isEmpty()) return Optional.of(natural.getFirst());
+        }
+        if (info.fida() != null && !info.fida().isBlank()) {
+            List<Taxpayer> foreign = taxpayerRepository.findByNaturalPerson_Fida(info.fida());
+            if (!foreign.isEmpty()) return Optional.of(foreign.getFirst());
+        }
+        return Optional.empty();
     }
 
     private NaturalPerson resolveNaturalPerson(DebtPaperIssuanceRequest.TaxpayerInfo info, String fullName) {

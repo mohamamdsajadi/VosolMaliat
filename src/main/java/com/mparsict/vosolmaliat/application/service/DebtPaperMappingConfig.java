@@ -33,7 +33,7 @@ public enum DebtPaperMappingConfig {
             DebtPaperMappedValue.COMBINED_EXEMPTION_REMISSION,
             DebtPaperMappedValue.VALIDATED,
             IssuanceReasonMode.CANONICAL,
-            FinancialDetailsMode.EF03,
+            FinancialDetailsMode.XML_BY_DICTIONARY,
             ReferenceSource.BASIS_DOCUMENT),
     EF23(
             PaperType.EF23,
@@ -45,7 +45,7 @@ public enum DebtPaperMappingConfig {
             DebtPaperMappedValue.NOT_REPORTED,
             DebtPaperMappedValue.VALIDATED_WITH_PROVISIONAL_MAPPING,
             IssuanceReasonMode.RAW,
-            FinancialDetailsMode.NONE,
+            FinancialDetailsMode.XML_BY_DICTIONARY,
             ReferenceSource.ENVELOPE),
     EF23_1(
             PaperType.EF23_1,
@@ -57,7 +57,7 @@ public enum DebtPaperMappingConfig {
             DebtPaperMappedValue.NOT_REPORTED,
             DebtPaperMappedValue.VALIDATED_WITH_PROVISIONAL_MAPPING,
             IssuanceReasonMode.RAW,
-            FinancialDetailsMode.NONE,
+            FinancialDetailsMode.XML_BY_DICTIONARY,
             ReferenceSource.ENVELOPE),
     EF23_2(
             PaperType.EF23_2,
@@ -69,7 +69,7 @@ public enum DebtPaperMappingConfig {
             DebtPaperMappedValue.NOT_REPORTED,
             DebtPaperMappedValue.VALIDATED_WITH_PROVISIONAL_MAPPING,
             IssuanceReasonMode.RAW,
-            FinancialDetailsMode.NONE,
+            FinancialDetailsMode.XML_BY_DICTIONARY,
             ReferenceSource.ENVELOPE),
     EF104(
             PaperType.EF104,
@@ -183,7 +183,7 @@ public enum DebtPaperMappingConfig {
 
     DebtFinancialDetails financialDetails(Document document, SanimXmlValues xml) {
         return switch (financialDetailsMode) {
-            case EF03 -> Ef03FinancialDetailsMapper.map(document, xml);
+            case XML_BY_DICTIONARY -> DebtFinancialDetailsXmlMapper.map(paperType, document);
             case NONE -> null;
         };
     }
@@ -298,7 +298,7 @@ public enum DebtPaperMappingConfig {
     }
 
     private enum FinancialDetailsMode {
-        EF03, NONE
+        XML_BY_DICTIONARY, NONE
     }
 
     private enum ReferenceSource {

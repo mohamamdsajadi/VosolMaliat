@@ -25,6 +25,8 @@ public class DebtInformationHistory extends BaseEntity {
     @Column(name="credits_detail", columnDefinition="TEXT") private String creditsDetail;
     @Column(name="payments_detail", columnDefinition="TEXT") private String paymentsDetail;
     @Column(name="remissions_detail", columnDefinition="TEXT") private String remissionsDetail;
+    @Column(name="tax_liability_details", columnDefinition="TEXT") private String taxLiabilityDetails;
+    @Column(name="outstanding_debt_details", columnDefinition="TEXT") private String outstandingDebtDetails;
     @Column(name = "next_inquiry_date") private LocalDateTime nextInquiryDate;
 
     public static DebtInformationHistory current(DebtInformation debt, LocalDateTime receivedAt) {
@@ -37,10 +39,12 @@ public class DebtInformationHistory extends BaseEntity {
                 .totalPayments(amounts == null ? debt.getTotalPayments() : amounts.getTotalPaidAmount())
                 .totalRemissions(amounts == null ? debt.getTotalRemissions() : amounts.getTotalRemissionAmount())
                 .outstandingTaxDebt(amounts == null ? debt.getOutstandingTaxDebt() : amounts.getOutstandingDebtAmount())
+                .taxLiabilityDetails(details == null ? debt.getTaxLiabilityDetails() : details.getTaxLiabilityDetails())
                 .penaltiesDetail(details == null ? debt.getPenaltiesDetail() : details.getTotalPenaltiesDetails())
                 .creditsDetail(details == null ? debt.getCreditsDetail() : details.getTaxCreditDetails())
                 .paymentsDetail(details == null ? debt.getPaymentsDetail() : details.getTotalPaymentsDetails())
-                .remissionsDetail(details == null ? debt.getRemissionsDetail() : details.getTotalRemissionsDetails()).build();
+                .remissionsDetail(details == null ? debt.getRemissionsDetail() : details.getTotalRemissionsDetails())
+                .outstandingDebtDetails(details == null ? debt.getOutstandingDebtDetails() : details.getOutstandingDebtDetails()).build();
         row.setCreatedAt(receivedAt);
         return row;
     }

@@ -86,6 +86,10 @@ final class SqliteDocumentModelFieldCleanup {
                 || (!columnExists(connection,table,"execution_paper_id")
                 && !columnExists(connection,table,"current_amounts_as_of")
                 && !columnExists(connection,table,"tax_component"))) return;
+        String liabilityDetails = columnExists(connection, table, "tax_liability_details")
+                ? "tax_liability_details" : "NULL";
+        String outstandingDetails = columnExists(connection, table, "outstanding_debt_details")
+                ? "outstanding_debt_details" : "NULL";
         rebuild(connection,table,"""
                 CREATE TABLE debt_information__document_model (
                   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -96,19 +100,20 @@ final class SqliteDocumentModelFieldCleanup {
                   total_penalties TEXT NOT NULL, total_credits TEXT NOT NULL,
                   total_payments TEXT NOT NULL, total_remissions TEXT NOT NULL,
                   outstanding_tax_debt TEXT NOT NULL, penalties_detail TEXT, credits_detail TEXT,
-                  payments_detail TEXT, remissions_detail TEXT, version BIGINT,
+                  payments_detail TEXT, remissions_detail TEXT, tax_liability_details TEXT,
+                  outstanding_debt_details TEXT, version BIGINT,
                   FOREIGN KEY(debt_paper_unique_id) REFERENCES final_tax_debt_paper(id))
                 ""","""
                 INSERT INTO debt_information__document_model
                 (id,created_at,created_by,creator_user_id,updated_at,updated_by,updater_user_id,
                  debt_paper_unique_id,total_liability,total_penalties,total_credits,total_payments,
                  total_remissions,outstanding_tax_debt,penalties_detail,credits_detail,payments_detail,
-                 remissions_detail,version)
+                 remissions_detail,tax_liability_details,outstanding_debt_details,version)
                 SELECT id,created_at,created_by,creator_user_id,updated_at,updated_by,updater_user_id,
                  debt_paper_unique_id,total_liability,total_penalties,total_credits,total_payments,
                  total_remissions,outstanding_tax_debt,penalties_detail,credits_detail,payments_detail,
-                 remissions_detail,version FROM debt_information
-                """);
+                 remissions_detail,""" + liabilityDetails + "," + outstandingDetails
+                + ",version FROM debt_information");
     }
 
     private static void rebuildDebtInformationHistory(Connection connection) throws SQLException {
@@ -117,6 +122,10 @@ final class SqliteDocumentModelFieldCleanup {
                 || (!columnExists(connection,table,"debt_information_id")
                 && !columnExists(connection,table,"execution_paper_id")
                 && !columnExists(connection,table,"effective_at"))) return;
+        String liabilityDetails = columnExists(connection, table, "tax_liability_details")
+                ? "tax_liability_details" : "NULL";
+        String outstandingDetails = columnExists(connection, table, "outstanding_debt_details")
+                ? "outstanding_debt_details" : "NULL";
         rebuild(connection,table,"""
                 CREATE TABLE debt_information_history__document_model (
                   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -127,19 +136,20 @@ final class SqliteDocumentModelFieldCleanup {
                   total_penalties TEXT NOT NULL, total_credits TEXT NOT NULL,
                   total_payments TEXT NOT NULL, total_remissions TEXT NOT NULL,
                   outstanding_tax_debt TEXT NOT NULL, penalties_detail TEXT, credits_detail TEXT,
-                  payments_detail TEXT, remissions_detail TEXT, next_inquiry_date TIMESTAMP,
+                  payments_detail TEXT, remissions_detail TEXT, tax_liability_details TEXT,
+                  outstanding_debt_details TEXT, next_inquiry_date TIMESTAMP,
                   FOREIGN KEY(debt_paper_unique_id) REFERENCES final_tax_debt_paper(id))
                 ""","""
                 INSERT INTO debt_information_history__document_model
                 (id,creation_date,created_by,creator_user_id,updated_at,updated_by,updater_user_id,
                  debt_paper_unique_id,total_liability,total_penalties,total_credits,total_payments,
                  total_remissions,outstanding_tax_debt,penalties_detail,credits_detail,payments_detail,
-                 remissions_detail,next_inquiry_date)
+                 remissions_detail,tax_liability_details,outstanding_debt_details,next_inquiry_date)
                 SELECT id,creation_date,created_by,creator_user_id,updated_at,updated_by,updater_user_id,
                  debt_paper_unique_id,total_liability,total_penalties,total_credits,total_payments,
                  total_remissions,outstanding_tax_debt,penalties_detail,credits_detail,payments_detail,
-                 remissions_detail,next_inquiry_date FROM debt_information_history
-                """);
+                 remissions_detail,""" + liabilityDetails + "," + outstandingDetails
+                + ",next_inquiry_date FROM debt_information_history");
     }
 
     private static void rebuildDebtInquiryResult(Connection connection) throws SQLException {

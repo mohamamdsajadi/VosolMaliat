@@ -45,3 +45,11 @@ build/
 
 /ef03.sqlite
 /ef03.sqlite-*
+
+# Runtime execution-paper imports and generated reports
+/import/execution-papers/inbox/*
+/import/execution-papers/archive/*
+/import/execution-papers/failed/*
+!/import/execution-papers/inbox/.gitkeep
+!/import/execution-papers/archive/.gitkeep
+!/import/execution-papers/failed/.gitkeep

@@ -5,7 +5,7 @@ import com.mparsict.vosolmaliat.domain.model.sanim.SanimAmounts;
 import java.math.BigDecimal;
 
 final class SanimAggregateMapper {
-    static final String VERSION = "sanim-ef03-2026-09-v2";
+    static final String VERSION = "sanim-ltr-financial-2026-10-v1";
     private static SanimAmounts ef03(SanimXmlValues x) {
         for (String tag : new String[]{"CB", "DB", "EB", "GB", "NB", "HB"})
             if (x.amount(tag).signum() < 0) throw SanimXmlValues.invalid("Negative EF03 amount: " + tag);

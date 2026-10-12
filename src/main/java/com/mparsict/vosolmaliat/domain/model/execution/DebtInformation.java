@@ -27,6 +27,8 @@ public class DebtInformation extends BaseEntity {
     @Column(name="credits_detail", columnDefinition="TEXT") private String creditsDetail;
     @Column(name="payments_detail", columnDefinition="TEXT") private String paymentsDetail;
     @Column(name="remissions_detail", columnDefinition="TEXT") private String remissionsDetail;
+    @Column(name="tax_liability_details", columnDefinition="TEXT") private String taxLiabilityDetails;
+    @Column(name="outstanding_debt_details", columnDefinition="TEXT") private String outstandingDebtDetails;
 
     @Version private Long version;
     @Transient private SanimAmounts currentAmounts;
@@ -40,8 +42,10 @@ public class DebtInformation extends BaseEntity {
                 .totalPaidAmount(totalPayments).totalRemissionAmount(totalRemissions)
                 .outstandingDebtAmount(outstandingTaxDebt).build();
         financialDetails = DebtFinancialDetails.builder()
+                .taxLiabilityDetails(taxLiabilityDetails)
                 .totalPenaltiesDetails(penaltiesDetail).taxCreditDetails(creditsDetail)
-                .totalPaymentsDetails(paymentsDetail).totalRemissionsDetails(remissionsDetail).build();
+                .totalPaymentsDetails(paymentsDetail).totalRemissionsDetails(remissionsDetail)
+                .outstandingDebtDetails(outstandingDebtDetails).build();
     }
 
     @PrePersist @PreUpdate
@@ -57,10 +61,12 @@ public class DebtInformation extends BaseEntity {
             outstandingTaxDebt = currentAmounts.getOutstandingDebtAmount();
         }
         if (financialDetails != null) {
+            taxLiabilityDetails = financialDetails.getTaxLiabilityDetails();
             penaltiesDetail = financialDetails.getTotalPenaltiesDetails();
             creditsDetail = financialDetails.getTaxCreditDetails();
             paymentsDetail = financialDetails.getTotalPaymentsDetails();
             remissionsDetail = financialDetails.getTotalRemissionsDetails();
+            outstandingDebtDetails = financialDetails.getOutstandingDebtDetails();
         }
     }
 
