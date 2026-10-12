@@ -195,6 +195,7 @@ public class FakeCompanyRegistryService {
             RelatedPersonType personType,
             ThreadLocalRandom random) {
         RelatedPersonPostCode[] supportedPosts = Arrays.stream(RelatedPersonPostCode.values())
+                .filter(RelatedPersonPostCode::hasCompanyRegistrationCode)
                 .filter(post -> post.supports(personType))
                 .toArray(RelatedPersonPostCode[]::new);
         return supportedPosts[random.nextInt(supportedPosts.length)];

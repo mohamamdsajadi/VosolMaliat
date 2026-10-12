@@ -1,56 +1,52 @@
 package com.mparsict.vosolmaliat.domain.model.execution;
 
+import com.mparsict.vosolmaliat.domain.model.BaseEntity;
+import com.mparsict.vosolmaliat.domain.model.sanim.ExactDecimalConverter;
 import jakarta.persistence.*;
 import lombok.*;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import com.mparsict.vosolmaliat.domain.model.BaseEntity;
-import com.mparsict.vosolmaliat.domain.model.sanim.*;
 
 @Entity @Table(name = "debt_information_history")
 @AttributeOverride(name = "createdAt", column = @Column(name = "creation_date", nullable = false, updatable = false))
 @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
 @EntityListeners(com.mparsict.vosolmaliat.domain.model.ImmutableEntityListener.class)
 public class DebtInformationHistory extends BaseEntity {
-    @Convert(converter=com.mparsict.vosolmaliat.domain.model.sanim.ExactDecimalConverter.class)
-    @Column(name="total_liability", nullable=false, columnDefinition="TEXT")
-    private java.math.BigDecimal totalLiability;
-
-    @PrePersist @PreUpdate
-    private void updateLiability() {
-        var value = amounts;
-        if (value != null && value.getTotalTaxAmount() != null && value.getTotalDutyAmount() != null)
-            totalLiability = value.getTotalTaxAmount().add(value.getTotalDutyAmount());
-    }
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
-    @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "debt_information_id", nullable = false, updatable = false)
-    private DebtInformation debtInformation;
     @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "debt_paper_unique_id", nullable = false, updatable = false)
     private FinalTaxDebtPaper finalTaxDebtPaper;
-    @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "execution_paper_id", nullable = false, updatable = false)
-    private ExecutionPaper executionPaper;
-    @Embedded
-    @AttributeOverrides({@AttributeOverride(name="totalTaxAmount", column=@Column(name="tax_component", nullable=false, columnDefinition="TEXT", updatable=false)),
-        @AttributeOverride(name="totalDutyAmount", column=@Column(name="duty_component", nullable=false, columnDefinition="TEXT", updatable=false)),
-        @AttributeOverride(name="totalPenaltyAmount", column=@Column(name="total_penalties", nullable=false, columnDefinition="TEXT", updatable=false)),
-        @AttributeOverride(name="totalPaidAmount", column=@Column(name="total_payments", nullable=false, columnDefinition="TEXT", updatable=false)),
-        @AttributeOverride(name="totalCreditAmount", column=@Column(name="total_credits", nullable=false, columnDefinition="TEXT", updatable=false)),
-        @AttributeOverride(name="totalRemissionAmount", column=@Column(name="total_remissions", nullable=false, columnDefinition="TEXT", updatable=false)),
-        @AttributeOverride(name="outstandingDebtAmount", column=@Column(name="outstanding_tax_debt", columnDefinition="TEXT", updatable=false))})
-    private com.mparsict.vosolmaliat.domain.model.sanim.SanimAmounts amounts;
-    @Embedded private DebtFinancialDetails financialDetails;
-    @Column(name = "effective_at", updatable = false) private LocalDateTime effectiveAt;
+    @Convert(converter = ExactDecimalConverter.class) @Column(name="total_liability", nullable=false, columnDefinition="TEXT") private BigDecimal totalLiability;
+    @Convert(converter = ExactDecimalConverter.class) @Column(name="total_penalties", nullable=false, columnDefinition="TEXT") private BigDecimal totalPenalties;
+    @Convert(converter = ExactDecimalConverter.class) @Column(name="total_credits", nullable=false, columnDefinition="TEXT") private BigDecimal totalCredits;
+    @Convert(converter = ExactDecimalConverter.class) @Column(name="total_payments", nullable=false, columnDefinition="TEXT") private BigDecimal totalPayments;
+    @Convert(converter = ExactDecimalConverter.class) @Column(name="total_remissions", nullable=false, columnDefinition="TEXT") private BigDecimal totalRemissions;
+    @Convert(converter = ExactDecimalConverter.class) @Column(name="outstanding_tax_debt", nullable=false, columnDefinition="TEXT") private BigDecimal outstandingTaxDebt;
+    @Column(name="penalties_detail", columnDefinition="TEXT") private String penaltiesDetail;
+    @Column(name="credits_detail", columnDefinition="TEXT") private String creditsDetail;
+    @Column(name="payments_detail", columnDefinition="TEXT") private String paymentsDetail;
+    @Column(name="remissions_detail", columnDefinition="TEXT") private String remissionsDetail;
     @Column(name = "next_inquiry_date") private LocalDateTime nextInquiryDate;
-    @Column(name = "inquiry_request_id", updatable = false) private String inquiryRequestId;
-    @Version private Long version;
 
-    public static DebtInformationHistory current(DebtInformation debt, String requestId, LocalDateTime receivedAt) {
-        var row = DebtInformationHistory.builder().debtInformation(debt)
-                .finalTaxDebtPaper(debt.getFinalTaxDebtPaper()).executionPaper(debt.getExecutionPaper())
-                .amounts(debt.getCurrentAmounts().copy())
-                .financialDetails(debt.getFinancialDetails() == null ? null : debt.getFinancialDetails().copy())
-                .effectiveAt(debt.getCurrentAmountsAsOf()).inquiryRequestId(requestId).build();
+    public static DebtInformationHistory current(DebtInformation debt, LocalDateTime receivedAt) {
+        var amounts = debt.getCurrentAmounts();
+        var details = debt.getFinancialDetails();
+        var row = DebtInformationHistory.builder().finalTaxDebtPaper(debt.getFinalTaxDebtPaper())
+                .totalLiability(amounts == null ? debt.getTotalLiability() : sum(amounts.getTotalTaxAmount(), amounts.getTotalDutyAmount()))
+                .totalPenalties(amounts == null ? debt.getTotalPenalties() : amounts.getTotalPenaltyAmount())
+                .totalCredits(amounts == null ? debt.getTotalCredits() : amounts.getTotalCreditAmount())
+                .totalPayments(amounts == null ? debt.getTotalPayments() : amounts.getTotalPaidAmount())
+                .totalRemissions(amounts == null ? debt.getTotalRemissions() : amounts.getTotalRemissionAmount())
+                .outstandingTaxDebt(amounts == null ? debt.getOutstandingTaxDebt() : amounts.getOutstandingDebtAmount())
+                .penaltiesDetail(details == null ? debt.getPenaltiesDetail() : details.getTotalPenaltiesDetails())
+                .creditsDetail(details == null ? debt.getCreditsDetail() : details.getTaxCreditDetails())
+                .paymentsDetail(details == null ? debt.getPaymentsDetail() : details.getTotalPaymentsDetails())
+                .remissionsDetail(details == null ? debt.getRemissionsDetail() : details.getTotalRemissionsDetails()).build();
         row.setCreatedAt(receivedAt);
         return row;
+    }
+
+    private static BigDecimal sum(BigDecimal first, BigDecimal second) {
+        return first == null ? second : second == null ? first : first.add(second);
     }
     public void close(LocalDateTime next) {
         if (nextInquiryDate != null) throw new IllegalStateException("نسخه بدهی قبلاً بسته شده است.");

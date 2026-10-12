@@ -10,7 +10,8 @@ import java.util.stream.Collectors;
 /** Accepted XML values for each canonical taxpayer type. */
 public enum DebtPaperSourceTaxpayerType {
     NATURAL(TaxpayerType.NATURAL, "1", "NATURAL", "حقیقی", "شخص حقیقی"),
-    LEGAL(TaxpayerType.LEGAL, "2", "LEGAL", "حقوقی", "شخص حقوقی");
+    LEGAL(TaxpayerType.LEGAL, "2", "LEGAL", "حقوقی", "شخص حقوقی"),
+    PARTNERSHIP(TaxpayerType.PARTNERSHIP, "3", "PARTNERSHIP", "حقیقی مشارکتی", "شخص حقیقی مشارکتی");
 
     private final TaxpayerType taxpayerType;
     private final Set<String> acceptedValues;

@@ -1,19 +1,24 @@
 package com.mparsict.vosolmaliat.domain.enums;
 
-public enum TaxSourceType {
-    VAT("مالیات بر ارزش افزوده"),
-    INCOME_TAX("مالیات بر درآمد"),
-    CORPORATE_TAX("مالیات اشخاص حقوقی"),
-    SALARY_TAX("مالیات حقوق"),
-    DIRECT_TAX("مالیات مستقیم"),
-    PROPERTY_TAX("مالیات املاک"),
-    OTHER("سایر منابع مالیاتی");
+public enum TaxSourceType implements LookupValue {
+    VAT(1, "مالیات بر ارزش افزوده"),
+    INCOME_TAX(2, "مالیات بر درآمد"),
+    CORPORATE_TAX(3, "مالیات اشخاص حقوقی"),
+    SALARY_TAX(4, "مالیات حقوق"),
+    DIRECT_TAX(5, "مالیات مستقیم"),
+    PROPERTY_TAX(6, "مالیات املاک"),
+    OTHER(7, "سایر منابع مالیاتی");
 
+    private final int id;
     private final String persianLabel;
 
-    TaxSourceType(String persianLabel) {
+    TaxSourceType(int id, String persianLabel) {
+        this.id = id;
         this.persianLabel = persianLabel;
     }
+
+    @Override public int id() { return id; }
+    @Override public String label() { return persianLabel; }
 
     public String getPersianLabel() {
         return persianLabel;

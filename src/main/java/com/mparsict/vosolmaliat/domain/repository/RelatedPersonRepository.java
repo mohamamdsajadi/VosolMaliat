@@ -21,15 +21,9 @@ public interface RelatedPersonRepository extends JpaRepository<RelatedPerson, Lo
     List<RelatedPerson> findByOwnerLegalPersonIdOrderByStartDateAscIdAsc(
             @Param("ownerLegalPersonId") Long ownerLegalPersonId);
 
-    @Query("""
-            SELECT relationship
-            FROM RelatedPerson relationship
-            WHERE relationship.ownerLegalPerson.id = :ownerLegalPersonId
-              AND relationship.sourceSystem = :sourceSystem
-              AND relationship.sourceRecordId = :sourceRecordId
-            """)
-    Optional<RelatedPerson> findByOwnerLegalPersonIdAndSourceSystemAndSourceRecordId(
-            @Param("ownerLegalPersonId") Long ownerLegalPersonId,
-            @Param("sourceSystem") String sourceSystem,
-            @Param("sourceRecordId") String sourceRecordId);
+    Optional<RelatedPerson> findByOwnerLegalPersonIdAndPostIdAndNaturalPersonIdAndStartDate(
+            Long ownerLegalPersonId, Long postId, Long naturalPersonId, java.time.LocalDateTime startDate);
+
+    Optional<RelatedPerson> findByOwnerLegalPersonIdAndPostIdAndLegalPersonIdAndStartDate(
+            Long ownerLegalPersonId, Long postId, Long legalPersonId, java.time.LocalDateTime startDate);
 }

@@ -1,1 +1,1237 @@
-<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>مدل داده پیاده‌سازی‌شده برگ اجرایی سنیم</title><style>*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#eff3f7;color:#203247;font:14px/1.9 Tahoma,Arial,sans-serif}main{max-width:1240px;margin:28px auto;background:white;padding:36px;border-radius:16px}header{border-bottom:4px solid #176b86;padding-bottom:22px}h1{font-size:28px;margin:0 0 8px}h2{font-size:21px;color:#12536a;border-bottom:1px solid #d7e3eb;padding-bottom:9px;margin-top:38px}h3{font-size:16px;margin-top:24px}h3 span{display:block;color:#617487;font-weight:normal}p{margin:10px 0}.meta,.small{color:#607287;font-size:12px}nav{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0}nav a{background:#edf5f8;padding:5px 12px;border-radius:7px;text-decoration:none;color:#12536a}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;margin:12px 0;font-size:12px}th{background:#16475e;color:#fff;text-align:right}td,th{border:1px solid #d8e2e9;padding:9px;vertical-align:top}tr:nth-child(even){background:#f7fafc}code{font:12px/1.65 Consolas,monospace;direction:ltr;unicode-bidi:isolate;display:inline-block;overflow-wrap:anywhere;max-width:100%;color:#244b62}th code{color:white}.note{border-right:4px solid #ca9a38;background:#fff8e9;padding:12px 16px;margin:16px 0}.steps{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.steps span{background:#eef6f7;padding:10px;border-radius:8px}figure{margin:16px 0}svg{width:100%;height:auto;font-family:Arial,sans-serif;fill:#203247}button{background:#16475e;border:0;border-radius:7px;color:#fff;padding:9px 20px;cursor:pointer;float:left}a{color:#136780}li{margin-bottom:8px}footer{border-top:1px solid #dde4e9;margin-top:30px;padding-top:14px;color:#607287;font-size:12px}@media(max-width:700px){main{margin:0;padding:18px;border-radius:0}h1{font-size:23px}td,th{padding:7px}figure{min-width:660px}#relations{overflow-x:auto}}@media print{body{background:white;font-size:10px}main{max-width:none;margin:0;padding:0}nav,button{display:none}h1{font-size:20px}h2{font-size:15px;break-after:avoid}h3{break-after:avoid}table,code{font-size:9px}td,th{padding:5px}thead{display:table-header-group}tr,figure,.note{break-inside:avoid}.table-wrap{overflow:visible}a{color:inherit}h2{margin-top:20px}}@page{size:A4 landscape;margin:12mm}</style></head><body><main><header><button type="button" onclick="window.print()">چاپ / ذخیره PDF</button><h1>مدل داده پیاده‌سازی‌شده برگ اجرایی سنیم</h1><p>موجودیت‌ها، ستون‌ها، روابط و قواعد نگهداری داده</p><div class="meta">مبنای گزارش: کد فعلی پروژه · تاریخ: ۲۰۲۶/۰۹/۲۱ · شاخه: <code>feat/sanim-execution-document-model</code></div></header><nav aria-label="فهرست گزارش"><a href="#overview">نمای کلی</a><a href="#relations">روابط</a><a href="#amounts">مبالغ</a><a href="#source">فیلدهای سند</a><a href="#entities">جدول‌ها</a><a href="#flow">وضعیت‌ها</a><a href="#mapping">نگاشت</a><a href="#limits">موارد باز</a></nav><section id="overview"><h2>۱. ساختار در یک نگاه</h2><p>مدل دریافت برگ اجرایی در <strong>پنج جدول موجود</strong> یکپارچه شده است. ۳۰ ستون قدیمی و تکراری حذف شده‌اند و روابط موجود حفظ شده‌اند. جزئیات ردیف‌های مالی فقط در XML باقی می‌مانند؛ هفت مبلغ تجمیعی به صورت ستون‌های مستقل در سند اولیه، اطلاعات جاری و تاریخچه استعلام ذخیره می‌شوند.</p><div class="table-wrap"><table><thead><tr><th>جدول فیزیکی</th><th>نقش</th><th>داده شاخص</th></tr></thead><tbody><tr><td><code>debt_paper_push_record</code></td><td>رسید دریافت و XML اصلی</td><td>XML کامل، پوشش پیام، وضعیت و دلیل خطا</td></tr><tr><td><code>finalized_debt_paper</code></td><td>سند اولیه و اطلاعات زمان دریافت</td><td>مشخصات واقعی سند و مؤدی + هفت مبلغ اولیه</td></tr><tr><td><code>debt_information</code></td><td>مبالغ جاری پرونده</td><td>هفت مبلغ جاری + زمان مؤثر + نسخه هم‌زمانی</td></tr><tr><td><code>debt_inquiry_result</code></td><td>تاریخچه پاسخ استعلام</td><td>پاسخ JSON، زمان‌ها و مبالغ همان استعلام</td></tr><tr><td><code>execution_paper</code></td><td>پرونده اجرایی داخلی</td><td>شناسه داخلی، وضعیت و ارتباط با سند و مؤدی</td></tr></tbody></table></div><div class="note"><strong>تفاوت کلاس و جدول:</strong> <code>SanimDocumentDetails</code> و <code>SanimAmounts</code> هر دو <code>@Embeddable</code> هستند؛ جدول جدید و ستون JSON ندارند. ویژگی‌هایشان به ستون‌های جدول میزبان تبدیل شده‌اند. منظور از snapshot، کپی اطلاعات در زمان دریافت است؛ نام یک جدول جدا نیست.</div></section><section id="relations"><h2>۲. نمودار روابط موجود</h2><figure dir="ltr"><svg viewBox="0 0 1120 610" role="img" aria-labelledby="erdtitle" xmlns="http://www.w3.org/2000/svg"><title id="erdtitle">روابط مدل پیاده‌سازی‌شده؛ فلش از جدول دارای کلید خارجی به جدول مرجع است</title><defs><marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#487186"/></marker></defs><path d="M320 70 H425" stroke="#487186" stroke-width="2" fill="none" marker-end="url(#arrow)"/><text x="370" y="57" text-anchor="middle" font-size="11" fill="#3b596a">source_document_id · N:1</text><path d="M170 155 V215 H500 V250" stroke="#487186" stroke-width="2" fill="none" marker-end="url(#arrow)"/><text x="263" y="203" text-anchor="middle" font-size="11" fill="#3b596a">execution_paper_id · N:1</text><path d="M320 310 H425" stroke="#487186" stroke-width="2" fill="none" marker-end="url(#arrow)"/><text x="370" y="297" text-anchor="middle" font-size="11" fill="#3b596a">N:1</text><path d="M575 250 V155" stroke="#487186" stroke-width="2" fill="none" marker-end="url(#arrow)"/><text x="598" y="208" text-anchor="middle" font-size="11" fill="#3b596a">N:1</text><path d="M575 475 V375" stroke="#487186" stroke-width="2" fill="none" marker-end="url(#arrow)"/><text x="599" y="431" text-anchor="middle" font-size="11" fill="#3b596a">N:1</text><path d="M725 310 H830" stroke="#487186" stroke-width="2" fill="none" marker-end="url(#arrow)"/><text x="775" y="298" text-anchor="middle" font-size="11" fill="#3b596a">N:1</text><path d="M695 250 V205 H960 V155" stroke="#487186" stroke-width="2" fill="none" marker-end="url(#arrow)"/><text x="878" y="195" text-anchor="middle" font-size="11" fill="#3b596a">tax_unit_id · N:1</text><rect x="20" y="30" width="300" height="125" rx="12" fill="#f0f6fa" stroke="#83a8bd"/><text x="170.0" y="73" text-anchor="middle" font-size="16" font-weight="bold">debt_paper_push_record</text><text x="170.0" y="105" text-anchor="middle" font-size="13" fill="#456175">XML + receipt status</text><rect x="425" y="30" width="300" height="125" rx="12" fill="#f0f6fa" stroke="#83a8bd"/><text x="575.0" y="73" text-anchor="middle" font-size="16" font-weight="bold">finalized_debt_paper</text><text x="575.0" y="105" text-anchor="middle" font-size="13" fill="#456175">Source facts + initial amounts</text><rect x="425" y="250" width="300" height="125" rx="12" fill="#f0f6fa" stroke="#83a8bd"/><text x="575.0" y="293" text-anchor="middle" font-size="16" font-weight="bold">execution_paper</text><text x="575.0" y="325" text-anchor="middle" font-size="13" fill="#456175">Internal case</text><rect x="20" y="250" width="300" height="125" rx="12" fill="#f0f6fa" stroke="#83a8bd"/><text x="170.0" y="293" text-anchor="middle" font-size="16" font-weight="bold">debt_information</text><text x="170.0" y="325" text-anchor="middle" font-size="13" fill="#456175">Current amounts + version</text><rect x="425" y="475" width="300" height="110" rx="12" fill="#f0f6fa" stroke="#83a8bd"/><text x="575.0" y="518" text-anchor="middle" font-size="16" font-weight="bold">debt_inquiry_result</text><text x="575.0" y="550" text-anchor="middle" font-size="13" fill="#456175">Inquiry history</text><rect x="830" y="250" width="260" height="125" rx="12" fill="#f0f6fa" stroke="#83a8bd"/><text x="960.0" y="293" text-anchor="middle" font-size="16" font-weight="bold">taxpayer</text><text x="960.0" y="325" text-anchor="middle" font-size="13" fill="#456175">Natural / legal person</text><rect x="830" y="30" width="260" height="125" rx="12" fill="#f0f6fa" stroke="#83a8bd"/><text x="960.0" y="73" text-anchor="middle" font-size="16" font-weight="bold">tax_unit</text><text x="960.0" y="105" text-anchor="middle" font-size="13" fill="#456175">Optional internal organization</text></svg></figure><p class="small">فلش از جدول دارای FK به مرجع است. نمودار روابط اصلی را نشان می‌دهد؛ روابط قدیمی اداره و اداره کل سند در جدول مشخصات زیر آمده‌اند.</p><div class="note">رابطهٔ اطلاعات جاری با پرونده در کد <code>ManyToOne</code> است؛ هرچند سرویس برای هر پرونده یک رکورد جاری می‌سازد، قید یکتای <code>execution_paper_id</code> در این نگاشت تعریف نشده است. نمودار عمداً رابطهٔ تضمین‌شدهٔ ۱:۱ نشان نمی‌دهد.</div></section><section id="amounts"><h2>۳. هفت مبلغ مشترک</h2><div class="table-wrap"><table><thead><tr><th>معنی</th><th>ویژگی Java / API</th><th>ستون فیزیکی</th></tr></thead><tbody><tr><td>مانده بدهی</td><td><code>outstandingDebtAmount</code></td><td><code>aggregate_outstanding_debt_amount</code></td></tr><tr><td>مالیات</td><td><code>totalTaxAmount</code></td><td><code>aggregate_total_tax_amount</code></td></tr><tr><td>عوارض</td><td><code>totalDutyAmount</code></td><td><code>aggregate_total_duty_amount</code></td></tr><tr><td>جرایم</td><td><code>totalPenaltyAmount</code></td><td><code>aggregate_total_penalty_amount</code></td></tr><tr><td>پرداختی</td><td><code>totalPaidAmount</code></td><td><code>aggregate_total_paid_amount</code></td></tr><tr><td>اعتبار</td><td><code>totalCreditAmount</code></td><td><code>aggregate_total_credit_amount</code></td></tr><tr><td>بخشودگی</td><td><code>totalRemissionAmount</code></td><td><code>aggregate_total_remission_amount</code></td></tr></tbody></table></div><p>نوع Java: <code>BigDecimal</code>؛ نوع ستون جدید SQLite: <code>TEXT</code> با <code>ExactDecimalConverter</code>؛ خروجی API: رشته اعشاری دقیق. واحد سند <code>IRR</code> است. منفی بودن، اعشار و صفرهای اعشاری بدون گردکردن ذخیره می‌شوند.</p><div class="table-wrap"><table><thead><tr><th>میزبان</th><th>مسیر ویژگی</th><th>قاعده نگهداری</th></tr></thead><tbody><tr><td><code>finalized_debt_paper</code></td><td><code>sourceDocument.amounts</code></td><td>مبالغ اولیه؛ مسیر استعلام آن‌ها را تغییر نمی‌دهد</td></tr><tr><td><code>debt_information</code></td><td><code>currentAmounts</code></td><td>ابتدا کپی مستقل مبالغ اولیه؛ سپس به‌روزرسانی از پاسخ معتبر</td></tr><tr><td><code>debt_inquiry_result</code></td><td><code>amounts</code></td><td>مبالغ استخراج‌شده همان پاسخ؛ ویژگی‌های ارسال‌نشده می‌توانند null باشند</td></tr></tbody></table></div><p class="small">در سند اولیه، ثابت ماندن اطلاعات رفتار سرویس است؛ موجودیت <code>FinalizedDebtPaper</code> در سطح ORM با <code>@Immutable</code> قفل نشده است. تاریخچهٔ <code>DebtInquiryResult</code> این annotation را دارد.</p></section><section id="source"><h2>۴. فیلدهای جدید سند اولیه</h2><p>این ۲۹ ویژگی متنی و هفت مبلغ بخش قبل، داخل جدول <code>finalized_debt_paper</code> ذخیره می‌شوند؛ نه در جدول یا ستون جداگانه‌ای به نام <code>sourceDocument</code>. تاریخ‌های خام، متن اصلی XML هستند.</p><div class="table-wrap"><table><thead><tr><th>شرح</th><th>ویژگی</th><th>ستون؛ نوع TEXT</th></tr></thead><tbody><tr><td>نوع قالب</td><td><code>templateCode</code></td><td><code>source_template_code</code></td></tr><tr><td>نسخه نگاشت</td><td><code>mappingVersion</code></td><td><code>source_mapping_version</code></td></tr><tr><td>شماره سند</td><td><code>documentNumber</code></td><td><code>source_document_number</code></td></tr><tr><td>تاریخ سند، با قالب اصلی</td><td><code>issueDateRaw</code></td><td><code>source_issue_date_raw</code></td></tr><tr><td>شماره مستند مبنای صدور</td><td><code>basisDocumentNumber</code></td><td><code>source_basis_document_number</code></td></tr><tr><td>تاریخ مستند مبنا، با قالب اصلی</td><td><code>basisDocumentDateRaw</code></td><td><code>source_basis_document_date_raw</code></td></tr><tr><td>شرح دلیل صدور</td><td><code>issuanceReason</code></td><td><code>source_issuance_reason</code></td></tr><tr><td>سال مالیاتی</td><td><code>taxYear</code></td><td><code>source_tax_year</code></td></tr><tr><td>دوره مالیاتی</td><td><code>taxPeriod</code></td><td><code>source_tax_period</code></td></tr><tr><td>ابتدای دوره، متن اصلی</td><td><code>taxPeriodStartRaw</code></td><td><code>source_tax_period_start_raw</code></td></tr><tr><td>انتهای دوره، متن اصلی</td><td><code>taxPeriodEndRaw</code></td><td><code>source_tax_period_end_raw</code></td></tr><tr><td>شناسه مؤدی در سنیم / شماره اقتصادی</td><td><code>taxpayerIdentifier</code></td><td><code>source_taxpayer_identifier</code></td></tr><tr><td>نوع شناسه مؤدی</td><td><code>taxpayerIdentifierType</code></td><td><code>source_taxpayer_identifier_type</code></td></tr><tr><td>شماره هویتی</td><td><code>identityNumber</code></td><td><code>source_identity_number</code></td></tr><tr><td>نوع شناسه هویتی</td><td><code>identityType</code></td><td><code>source_identity_type</code></td></tr><tr><td>حقیقی یا حقوقی</td><td><code>personType</code></td><td><code>source_person_type</code></td></tr><tr><td>نام مؤدی در سند</td><td><code>taxpayerName</code></td><td><code>source_taxpayer_name</code></td></tr><tr><td>نام تجاری / شهرت کسبی</td><td><code>tradeName</code></td><td><code>source_trade_name</code></td></tr><tr><td>عنوان فعالیت</td><td><code>activityTitle</code></td><td><code>source_activity_title</code></td></tr><tr><td>تلفن مؤدی</td><td><code>phone</code></td><td><code>source_phone</code></td></tr><tr><td>کد پستی مؤدی</td><td><code>postalCode</code></td><td><code>source_postal_code</code></td></tr><tr><td>نشانی مؤدی</td><td><code>address</code></td><td><code>source_address</code></td></tr><tr><td>نام اداره کل در سند</td><td><code>generalDirectorateName</code></td><td><code>source_general_directorate_name</code></td></tr><tr><td>نام اداره در سند</td><td><code>taxOfficeName</code></td><td><code>source_tax_office_name</code></td></tr><tr><td>کد خارجی اداره سنیم</td><td><code>sourceTaxOfficeCode</code></td><td><code>source_tax_office_code</code></td></tr><tr><td>واحد پول؛ IRR</td><td><code>currencyCode</code></td><td><code>source_currency_code</code></td></tr><tr><td>مبنای مبلغ مالیات</td><td><code>taxAmountBasis</code></td><td><code>source_tax_amount_basis</code></td></tr><tr><td>مبنای مبلغ بخشودگی</td><td><code>remissionBasis</code></td><td><code>source_remission_basis</code></td></tr><tr><td>وضعیت اعتبارسنجی نگاشت</td><td><code>validationStatus</code></td><td><code>source_validation_status</code></td></tr></tbody></table></div></section><section id="entities"><h2>۵. مشخصات جدول‌های اصلی</h2><p class="small">نوع‌ها در جدول‌های زیر نوع Java هستند؛ NOT NULL و یکتایی از annotationهای JPA گزارش شده‌اند. الزامی بودن ورودی سرویس می‌تواند از الزام پایگاه داده سخت‌گیرانه‌تر باشد. نام ستون‌های بدون annotation صریح، مطابق نام‌گذاری snake_case و مهاجرت پروژه آمده است.</p><article><h3>رسید دریافت و XML اصلی <span><code>debt_paper_push_record</code></span></h3><div class="table-wrap"><table><thead><tr><th>ویژگی</th><th>کاربرد</th><th>نوع Java</th><th>ستون</th><th>قید / رابطه</th></tr></thead><tbody><tr><td><code>announcementType</code></td><td>نوع قالب اعلام‌شده در پیام</td><td><code>String</code></td><td><code>announcement_type</code></td><td>nullable در نگاشت JPA</td></tr><tr><td><code>sourceTaxOfficeCode</code></td><td>کد خارجی اداره سنیم</td><td><code>String</code></td><td><code>source_tax_office_code</code></td><td>عدم به‌روزرسانی توسط JPA</td></tr><tr><td><code>mappingVersion</code></td><td>نسخه نگاشت</td><td><code>String</code></td><td><code>mapping_version</code></td><td>nullable در نگاشت JPA</td></tr><tr><td><code>sourceDocument</code></td><td>اطلاعات و مبالغ اولیه سند</td><td><code>FinalizedDebtPaper</code></td><td><code>source_document_id</code></td><td>FK؛ N:1</td></tr><tr><td><code>id</code></td><td>کلید اصلی</td><td><code>Long</code></td><td><code>id</code></td><td>PK؛ تولید خودکار</td></tr><tr><td><code>referenceId</code></td><td>مرجع یکتای پیام؛ تکرار پذیرفته نمی‌شود</td><td><code>String</code></td><td><code>reference_id</code></td><td>یکتا؛ NOT NULL؛ عدم به‌روزرسانی توسط JPA</td></tr><tr><td><code>traceId</code></td><td>شناسه پیگیری دریافت</td><td><code>String</code></td><td><code>trace_id</code></td><td>NOT NULL؛ عدم به‌روزرسانی توسط JPA</td></tr><tr><td><code>processingStatus</code></td><td>وضعیت پردازش رسید</td><td><code>DebtPaperProcessingStatus</code></td><td><code>processing_status</code></td><td>NOT NULL</td></tr><tr><td><code>receivedAt</code></td><td>زمان دریافت</td><td><code>LocalDateTime</code></td><td><code>received_at</code></td><td>NOT NULL؛ عدم به‌روزرسانی توسط JPA</td></tr><tr><td><code>sourceProduceDate</code></td><td>زمان تولید پیام مبدأ</td><td><code>OffsetDateTime</code></td><td><code>source_produce_date</code></td><td>NOT NULL؛ عدم به‌روزرسانی توسط JPA</td></tr><tr><td><code>sourceHash</code></td><td>هش ارسالی مبدأ</td><td><code>String</code></td><td><code>source_hash</code></td><td>عدم به‌روزرسانی توسط JPA</td></tr><tr><td><code>nationalId</code></td><td>شناسه هویتی پوشش پیام</td><td><code>String</code></td><td><code>national_id</code></td><td>NOT NULL؛ عدم به‌روزرسانی توسط JPA</td></tr><tr><td><code>followCode</code></td><td>کد پیگیری مبدأ</td><td><code>String</code></td><td><code>follow_code</code></td><td>عدم به‌روزرسانی توسط JPA</td></tr><tr><td><code>secondParameter</code></td><td>پارامتر تکمیلی پیام</td><td><code>String</code></td><td><code>second_parameter</code></td><td>عدم به‌روزرسانی توسط JPA</td></tr><tr><td><code>year</code></td><td>سال اعلام‌شده در پیام</td><td><code>Integer</code></td><td><code>source_year</code></td><td>NOT NULL؛ عدم به‌روزرسانی توسط JPA</td></tr><tr><td><code>period</code></td><td>دوره اعلام‌شده در پیام</td><td><code>Integer</code></td><td><code>source_period</code></td><td>NOT NULL؛ عدم به‌روزرسانی توسط JPA</td></tr><tr><td><code>taxAmount</code></td><td>مبلغ پوشش پیام، به صورت متن</td><td><code>String</code></td><td><code>tax_amount</code></td><td>عدم به‌روزرسانی توسط JPA</td></tr><tr><td><code>taxSource</code></td><td>منبع مالیات</td><td><code>String</code></td><td><code>tax_source</code></td><td>NOT NULL؛ عدم به‌روزرسانی توسط JPA</td></tr><tr><td><code>xmlPayload</code></td><td>XML کامل و بدون بازنویسی</td><td><code>String</code></td><td><code>xml_payload</code></td><td>NOT NULL؛ عدم به‌روزرسانی توسط JPA</td></tr><tr><td><code>failureReason</code></td><td>شرح خطا / علت انتظار</td><td><code>String</code></td><td><code>failure_reason</code></td><td>nullable در نگاشت JPA</td></tr><tr><td><code>executionPaper</code></td><td>رابط پرونده اجرایی</td><td><code>ExecutionPaper</code></td><td><code>execution_paper_id</code></td><td>FK؛ N:1</td></tr></tbody></table></div></article><article><h3>سند اولیه و اطلاعات زمان دریافت <span><code>finalized_debt_paper</code></span></h3><div class="table-wrap"><table><thead><tr><th>ویژگی</th><th>کاربرد</th><th>نوع Java</th><th>ستون</th><th>قید / رابطه</th></tr></thead><tbody><tr><td><code>sourceDocument</code></td><td>اطلاعات و مبالغ اولیه سند</td><td><code>SanimDocumentDetails</code></td><td><code>—</code></td><td>Embedded؛ ستون مستقل با این نام ندارد</td></tr><tr><td><code>id</code></td><td>کلید اصلی</td><td><code>Long</code></td><td><code>id</code></td><td>PK؛ تولید خودکار</td></tr><tr><td><code>debtPaperUniqueCode</code></td><td>مرجع یکتای سند در سامانه؛ از reference پیام</td><td><code>String</code></td><td><code>debt_paper_unique_code</code></td><td>یکتا</td></tr><tr><td><code>taxSource</code></td><td>منبع مالیات</td><td><code>String</code></td><td><code>tax_source</code></td><td>nullable در نگاشت JPA</td></tr><tr><td><code>mainTaxBureau</code></td><td>رابط اداره کل داخلی</td><td><code>GeneralDirectorateOfTaxAffairs</code></td><td><code>main_tax_bureau_id</code></td><td>FK؛ N:1</td></tr><tr><td><code>taxBureau</code></td><td>رابط اداره داخلی</td><td><code>TaxAffairsOffice</code></td><td><code>tax_bureau_id</code></td><td>FK؛ N:1</td></tr><tr><td><code>taxUnit</code></td><td>رابط واحد مالیاتی داخلی؛ پیش‌شرط دریافت نیست</td><td><code>TaxUnit</code></td><td><code>tax_unit_id</code></td><td>FK؛ N:1</td></tr></tbody></table></div></article><article><h3>مبالغ جاری پرونده <span><code>debt_information</code></span></h3><div class="table-wrap"><table><thead><tr><th>ویژگی</th><th>کاربرد</th><th>نوع Java</th><th>ستون</th><th>قید / رابطه</th></tr></thead><tbody><tr><td><code>version</code></td><td>نسخه قفل خوش‌بینانه؛ @Version</td><td><code>Long</code></td><td><code>version</code></td><td>کنترل هم‌زمانی</td></tr><tr><td><code>currentAmounts</code></td><td>هفت مبلغ جاری؛ ستون‌های همین جدول</td><td><code>SanimAmounts</code></td><td><code>—</code></td><td>Embedded؛ ستون مستقل با این نام ندارد</td></tr><tr><td><code>currentAmountsAsOf</code></td><td>زمان مؤثر آخرین به‌روزرسانی مبالغ</td><td><code>LocalDateTime</code></td><td><code>current_amounts_as_of</code></td><td>nullable در نگاشت JPA</td></tr><tr><td><code>id</code></td><td>کلید اصلی</td><td><code>Long</code></td><td><code>id</code></td><td>PK؛ تولید خودکار</td></tr><tr><td><code>executionPaper</code></td><td>رابط پرونده اجرایی</td><td><code>ExecutionPaper</code></td><td><code>execution_paper_id</code></td><td>FK؛ N:1</td></tr><tr><td><code>lastDebtInquiryAt</code></td><td>زمان اعمال آخرین استعلام</td><td><code>LocalDateTime</code></td><td><code>last_debt_inquiry_at</code></td><td>nullable در نگاشت JPA</td></tr></tbody></table></div></article><article><h3>تاریخچه پاسخ استعلام <span><code>debt_inquiry_result</code></span></h3><div class="table-wrap"><table><thead><tr><th>ویژگی</th><th>کاربرد</th><th>نوع Java</th><th>ستون</th><th>قید / رابطه</th></tr></thead><tbody><tr><td><code>amounts</code></td><td>هفت مبلغ استخراج‌شده پاسخ استعلام؛ همین جدول</td><td><code>SanimAmounts</code></td><td><code>—</code></td><td>Embedded؛ ستون مستقل با این نام ندارد</td></tr><tr><td><code>effectiveAt</code></td><td>زمان مؤثر پاسخ؛ فعلاً lastActivityAt</td><td><code>LocalDateTime</code></td><td><code>effective_at</code></td><td>nullable در نگاشت JPA</td></tr><tr><td><code>mappingVersion</code></td><td>نسخه نگاشت</td><td><code>String</code></td><td><code>mapping_version</code></td><td>nullable در نگاشت JPA</td></tr><tr><td><code>id</code></td><td>کلید اصلی</td><td><code>Long</code></td><td><code>id</code></td><td>PK؛ تولید خودکار</td></tr><tr><td><code>requestId</code></td><td>شناسه یکتای استعلام</td><td><code>String</code></td><td><code>request_id</code></td><td>یکتا؛ NOT NULL؛ عدم به‌روزرسانی توسط JPA</td></tr><tr><td><code>executionPaper</code></td><td>رابط پرونده اجرایی</td><td><code>ExecutionPaper</code></td><td><code>execution_paper_id</code></td><td>FK؛ N:1؛ NOT NULL؛ عدم به‌روزرسانی توسط JPA</td></tr><tr><td><code>responseJson</code></td><td>متن JSON پاسخ استعلام؛ جدا از XML اولیه</td><td><code>String</code></td><td><code>response_json</code></td><td>NOT NULL؛ عدم به‌روزرسانی توسط JPA</td></tr><tr><td><code>hash</code></td><td>هش پاسخ ذخیره‌شده</td><td><code>String</code></td><td><code>hash</code></td><td>NOT NULL؛ عدم به‌روزرسانی توسط JPA</td></tr><tr><td><code>receivedAt</code></td><td>زمان دریافت</td><td><code>LocalDateTime</code></td><td><code>received_at</code></td><td>NOT NULL؛ عدم به‌روزرسانی توسط JPA</td></tr></tbody></table></div></article><article><h3>پرونده اجرایی داخلی <span><code>execution_paper</code></span></h3><div class="table-wrap"><table><thead><tr><th>ویژگی</th><th>کاربرد</th><th>نوع Java</th><th>ستون</th><th>قید / رابطه</th></tr></thead><tbody><tr><td><code>id</code></td><td>کلید اصلی</td><td><code>Long</code></td><td><code>id</code></td><td>PK؛ تولید خودکار</td></tr><tr><td><code>executionPaperUniqueCode</code></td><td>کد یکتای داخلی پرونده</td><td><code>String</code></td><td><code>execution_paper_unique_code</code></td><td>یکتا</td></tr><tr><td><code>taxSource</code></td><td>منبع مالیات</td><td><code>String</code></td><td><code>tax_source</code></td><td>nullable در نگاشت JPA</td></tr><tr><td><code>currentState</code></td><td>وضعیت عملیاتی پرونده؛ مستقل از وضعیت رسید</td><td><code>String</code></td><td><code>current_state</code></td><td>nullable در نگاشت JPA</td></tr><tr><td><code>finalizedDebtPaper</code></td><td>رابط سند اولیه</td><td><code>FinalizedDebtPaper</code></td><td><code>finalized_debt_paper_id</code></td><td>FK؛ N:1</td></tr><tr><td><code>taxpayer</code></td><td>رابط مؤدی داخلی</td><td><code>Taxpayer</code></td><td><code>taxpayer_id</code></td><td>FK؛ N:1</td></tr><tr><td><code>taxUnit</code></td><td>رابط واحد مالیاتی داخلی؛ پیش‌شرط دریافت نیست</td><td><code>TaxUnit</code></td><td><code>tax_unit_id</code></td><td>FK؛ N:1</td></tr></tbody></table></div></article><p>فیلدهای حسابرسی ارث‌رسیده از <code>BaseEntity</code> در هر پنج جدول: <code>created_at</code>، <code>updated_at</code>، <code>created_by</code>، <code>updated_by</code>، <code>deleted_at</code>، <code>deleted_by</code> و <code>is_deleted</code>. این کلاس جدول جدا ندارد.</p><p>ستون‌های مالی جزئی، کش موازی استعلام و مشخصات تکراری سند حذف شده‌اند. اطلاعات جاری فقط هفت مبلغ، زمان مؤثر، زمان استعلام، نسخه هم‌زمانی و رابط پرونده دارد. تاریخ، سال، دوره و عنوان فعالیت فقط در sourceDocument هستند. <a href="sanim-legacy-field-cleanup.fa.md">فهرست ۳۰ ستون حذف‌شده و راهنمای مهاجرت</a>.</p></section><section id="flow"><h2>۶. چرخه داده و وضعیت‌ها</h2><div class="steps"><span>ثبت پایدار XML</span><b>←</b><span>نگاشت و اعتبارسنجی</span><b>←</b><span>سند + مبالغ اولیه و جاری</span><b>←</b><span>استعلام و ثبت تاریخچه</span></div><div class="table-wrap"><table><thead><tr><th>وضعیت رسید</th><th>معنی</th></tr></thead><tbody><tr><td><code>RECEIVED</code></td><td>رسید ذخیره شده؛ نگاشت/پردازش هنوز کامل نشده است</td></tr><tr><td><code>NEEDS_REVIEW</code></td><td>نگاشت یا ایجاد پرونده شکست خورده؛ دلیل خطا و XML باقی می‌مانند</td></tr><tr><td><code>PAPER_CREATED</code></td><td>پرونده ساخته شده؛ نتیجه آغاز گردش‌کار هنوز ثبت نشده است</td></tr><tr><td><code>WAITING_ORGANIZATION</code></td><td>سند معتبر پذیرفته شده؛ واحد و ارجاع داخلی برای گردش‌کار تعیین نشده است</td></tr><tr><td><code>SUCCESS</code></td><td>ایجاد پرونده و آغاز گردش‌کار موفق بوده است</td></tr><tr><td><code>WORKFLOW_START_FAILED</code></td><td>پرونده ساخته شده ولی شروع گردش‌کار شکست خورده است</td></tr></tbody></table></div><ul><li>وضعیت رسید با <code>ExecutionPaper.currentState</code> متفاوت است؛ پرونده جدید ابتدا <code>UNASSIGNED</code> است.</li><li>مرجع تکراری به فراخواننده HTTP 409 می‌دهد. XML ردشده پس از ثبت رسید، با rollback صدور حذف نمی‌شود.</li><li>در استعلام جزئی، فقط مقادیر غیرnull اعمال می‌شوند. پاسخ یکسان تکراری، قدیمی‌تر یا هم‌زمان با آخرین پاسخ مؤثر، داده جدیدتر را بازنویسی نمی‌کند.</li><li>زمان مؤثر فعلاً <code>lastActivityAt</code> است؛ پاسخ بدون زمان برای سند دارای مبالغ جاری تنها در تاریخچه ذخیره می‌شود.</li></ul></section><section id="mapping"><h2>۷. نگاشت مالی پیاده‌سازی‌شده</h2><p>قالب‌های ورودی پیشوند <code>LTR_</code> دارند. نسخه نگاشت <code>sanim-2026-09-v1</code> است؛ فرمول‌ها همچنان نیازمند تأیید کارفرما هستند.</p><div class="table-wrap"><table><thead><tr><th>قالب</th><th>مانده</th><th>مالیات</th><th>عوارض</th><th>جرایم</th><th>پرداختی</th><th>اعتبار</th><th>بخشودگی</th></tr></thead><tbody><tr><td><code>EF03</code></td><td><code>HB</code></td><td><code>CB</code></td><td><code>0</code></td><td><code>GB</code></td><td><code>EB</code></td><td><code>0</code></td><td><code>DB</code></td></tr><tr><td><code>EF104</code></td><td><code>RB</code></td><td><code>0</code></td><td><code>0</code></td><td><code>PB</code></td><td><code>XB</code></td><td><code>0</code></td><td><code>QB</code></td></tr><tr><td><code>EF23 / EF23_1</code></td><td><code>LC + MC + BD + CD + JD + W.SD</code></td><td><code>NB + RC</code></td><td><code>OB + SC + ED + W.QD</code></td><td><code>DC + EC + FC + GC + TC + UC + VC + WC + FD + GD + HD</code></td><td><code>JC + KC + ZC + AD + ID + W.RD</code></td><td><code>XB + YB + BC + CC</code></td><td><code>0</code></td></tr><tr><td><code>EF23_2</code></td><td><code>PE + BD + CD + JD</code></td><td><code>GE + RC</code></td><td><code>SC + ED</code></td><td><code>IE + JE + KE + LE + ME + NE + TC + UC + VC + WC + FD + GD + HD</code></td><td><code>OE + ZC + AD + ID</code></td><td><code>0</code></td><td><code>0</code></td></tr></tbody></table></div><div class="note">نماد W فقط اشاره به پسماند است و تگ واقعی XML نیست. پیاده‌سازی فعلی برای QD/RD/SD تخت و مبهم، تنها حالت غایب یا تماماً صفر را بدون خطا می‌پذیرد؛ مبلغ غیرصفر نیازمند بررسی است. نبود تگ مالی فعلاً صفر است، اما تگ خالی یا غیرعددی صفر تلقی نمی‌شود.</div><p>در EF03، DB ترکیب معافیت و بخشودگی است. در EF23_2، GE مقدار خالص گزارش‌شده است؛ از GE منفی، اعتبار مثبت جداگانه ساخته نمی‌شود. صفرهای ثابت جدول به معنی نبود نگاشت مستقل هستند، نه اثبات صفر اقتصادی.</p></section><section id="limits"><h2>۸. حدود پیاده‌سازی و موارد باز</h2><ul><li><strong>ارجاع سازمانی:</strong> دریافت بدون واحد داخلی انجام می‌شود، اما گردش‌کار فعلی به آن نیاز دارد؛ مسیر تعیین ارجاع و ازسرگیری وضعیت انتظار هنوز اضافه نشده است.</li><li><strong>تأیید مالی:</strong> قاعده صفر برای تگ ناموجود، معنای اعتبار، ترکیب بخشودگی و معافیت، GE و مسیر پسماند باید با کارفرما نهایی شوند.</li><li><strong>پوشش پیام:</strong> مبلغ <code>taxAmount</code> فعلاً با مالیات تجمیعی XML مقایسه می‌شود؛ معنای قراردادی این مبلغ هنوز نیازمند تأیید است.</li><li><strong>EF104:</strong> نگاشت فعلی شماره/تاریخ سند F/G و مستند مبنا O/P است؛ نقش این دو زوج باید تأیید شود.</li><li><strong>زمان استعلام:</strong> منطقه زمانی و نسبت زمان مؤثر پاسخ با زمان سند اولیه هنوز باید در قرارداد مشخص شوند.</li><li><strong>اطلاعات تاریخی:</strong> اسناد قدیمی فاقد داده کافی نیازمند بررسی هستند؛ مبالغ نامشخص صفر فرض نمی‌شوند. داشبورد اکنون از BigDecimal استفاده می‌کند و مجموع نامشخص را null برمی‌گرداند.</li><li><strong>فیلتر مبلغ:</strong> برای دقت SQLite، نامزدهای سایر فیلترها در حافظه مقایسه و سپس صفحه‌بندی می‌شوند؛ حجم بالا نیازمند بهینه‌سازی است.</li></ul><p>مهاجرت ابتدا پشتیبان کامل SQLite می‌سازد، سپس ۳۰ ستون قدیمی را در یک تراکنش حذف می‌کند؛ روابط و XML دست‌نخورده می‌مانند. داده مالی تاریخیِ مبهم در پشتیبان محفوظ است و به مدل جدید حدس‌زنی نمی‌شود؛ سند ناقص LEGACY_REVIEW_REQUIRED می‌گیرد. این گزارش تأیید اجرای مهاجرت روی پایگاه داده عملیاتی نیست.</p></section><section id="sources"><h2>۹. مبنای گزارش</h2><p>بررسی مستقیم کلاس‌های پنج موجودیت، <code>SanimDocumentDetails</code>، <code>SanimAmounts</code>، <code>BaseEntity</code> و <code>SanimAggregateMapper</code> در شاخه فعلی. وضعیت آزمون‌ها و تغییر قراردادها در گزارش پاک‌سازی ثبت می‌شود. روابط و فهرست فیلدها از کد فعلی استخراج شده‌اند.</p><p><a href="sanim-model-implementation.fa.md">راهنمای پیاده‌سازی و پیگیری</a> · <a href="sanim-aggregate-formulas-report.fa.html">گزارش مبنای فرمول‌ها</a></p></section><footer>گزارش ساختار پیاده‌سازی؛ فاقد اطلاعات واقعی مؤدیان. قابل مشاهده آفلاین و چاپ؛ بدون وابستگی اینترنتی.</footer></main></body></html>
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>مدل داده پیاده‌سازی‌شده برگ اجرایی سنیم</title>
+    <style>* {
+        box-sizing: border-box
+    }
+
+    html {
+        scroll-behavior: smooth
+    }
+
+    body {
+        margin: 0;
+        background: #eff3f7;
+        color: #203247;
+        font: 14px/1.9 Tahoma, Arial, sans-serif
+    }
+
+    main {
+        max-width: 1240px;
+        margin: 28px auto;
+        background: white;
+        padding: 36px;
+        border-radius: 16px
+    }
+
+    header {
+        border-bottom: 4px solid #176b86;
+        padding-bottom: 22px
+    }
+
+    h1 {
+        font-size: 28px;
+        margin: 0 0 8px
+    }
+
+    h2 {
+        font-size: 21px;
+        color: #12536a;
+        border-bottom: 1px solid #d7e3eb;
+        padding-bottom: 9px;
+        margin-top: 38px
+    }
+
+    h3 {
+        font-size: 16px;
+        margin-top: 24px
+    }
+
+    h3 span {
+        display: block;
+        color: #617487;
+        font-weight: normal
+    }
+
+    p {
+        margin: 10px 0
+    }
+
+    .meta, .small {
+        color: #607287;
+        font-size: 12px
+    }
+
+    nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 20px 0
+    }
+
+    nav a {
+        background: #edf5f8;
+        padding: 5px 12px;
+        border-radius: 7px;
+        text-decoration: none;
+        color: #12536a
+    }
+
+    .table-wrap {
+        overflow-x: auto
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 12px 0;
+        font-size: 12px
+    }
+
+    th {
+        background: #16475e;
+        color: #fff;
+        text-align: right
+    }
+
+    td, th {
+        border: 1px solid #d8e2e9;
+        padding: 9px;
+        vertical-align: top
+    }
+
+    tr:nth-child(even) {
+        background: #f7fafc
+    }
+
+    code {
+        font: 12px/1.65 Consolas, monospace;
+        direction: ltr;
+        unicode-bidi: isolate;
+        display: inline-block;
+        overflow-wrap: anywhere;
+        max-width: 100%;
+        color: #244b62
+    }
+
+    th code {
+        color: white
+    }
+
+    .note {
+        border-right: 4px solid #ca9a38;
+        background: #fff8e9;
+        padding: 12px 16px;
+        margin: 16px 0
+    }
+
+    .steps {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap
+    }
+
+    .steps span {
+        background: #eef6f7;
+        padding: 10px;
+        border-radius: 8px
+    }
+
+    figure {
+        margin: 16px 0
+    }
+
+    svg {
+        width: 100%;
+        height: auto;
+        font-family: Arial, sans-serif;
+        fill: #203247
+    }
+
+    button {
+        background: #16475e;
+        border: 0;
+        border-radius: 7px;
+        color: #fff;
+        padding: 9px 20px;
+        cursor: pointer;
+        float: left
+    }
+
+    a {
+        color: #136780
+    }
+
+    li {
+        margin-bottom: 8px
+    }
+
+    footer {
+        border-top: 1px solid #dde4e9;
+        margin-top: 30px;
+        padding-top: 14px;
+        color: #607287;
+        font-size: 12px
+    }
+
+    @media (max-width: 700px) {
+        main {
+            margin: 0;
+            padding: 18px;
+            border-radius: 0
+        }
+
+        h1 {
+            font-size: 23px
+        }
+
+        td, th {
+            padding: 7px
+        }
+
+        figure {
+            min-width: 660px
+        }
+
+        #relations {
+            overflow-x: auto
+        }
+    }
+
+    @media print {
+        body {
+            background: white;
+            font-size: 10px
+        }
+
+        main {
+            max-width: none;
+            margin: 0;
+            padding: 0
+        }
+
+        nav, button {
+            display: none
+        }
+
+        h1 {
+            font-size: 20px
+        }
+
+        h2 {
+            font-size: 15px;
+            break-after: avoid
+        }
+
+        h3 {
+            break-after: avoid
+        }
+
+        table, code {
+            font-size: 9px
+        }
+
+        td, th {
+            padding: 5px
+        }
+
+        thead {
+            display: table-header-group
+        }
+
+        tr, figure, .note {
+            break-inside: avoid
+        }
+
+        .table-wrap {
+            overflow: visible
+        }
+
+        a {
+            color: inherit
+        }
+
+        h2 {
+            margin-top: 20px
+        }
+    }
+
+    @page {
+        size: A4 landscape;
+        margin: 12mm
+    }</style>
+</head>
+<body>
+<main>
+    <header>
+        <button type="button" onclick="window.print()">چاپ / ذخیره PDF</button>
+        <h1>مدل داده پیاده‌سازی‌شده برگ اجرایی سنیم</h1>
+        <p>موجودیت‌ها، ستون‌ها، روابط و قواعد نگهداری داده</p>
+        <div class="meta">مبنای گزارش: کد فعلی پروژه · تاریخ: ۲۰۲۶/۰۹/۲۱ · شاخه: <code>feat/sanim-execution-document-model</code>
+        </div>
+    </header>
+    <nav aria-label="فهرست گزارش"><a href="#overview">نمای کلی</a><a href="#relations">روابط</a><a
+            href="#amounts">مبالغ</a><a href="#source">فیلدهای سند</a><a href="#entities">جدول‌ها</a><a href="#flow">وضعیت‌ها</a><a
+            href="#mapping">نگاشت</a><a href="#limits">موارد باز</a></nav>
+    <section id="overview"><h2>۱. ساختار در یک نگاه</h2>
+        <p>مدل دریافت برگ اجرایی در <strong>پنج جدول موجود</strong> یکپارچه شده است. ۳۰ ستون قدیمی و تکراری حذف شده‌اند
+            و روابط موجود حفظ شده‌اند. جزئیات ردیف‌های مالی فقط در XML باقی می‌مانند؛ هفت مبلغ تجمیعی به صورت ستون‌های
+            مستقل در سند اولیه، اطلاعات جاری و تاریخچه استعلام ذخیره می‌شوند.</p>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr>
+                    <th>جدول فیزیکی</th>
+                    <th>نقش</th>
+                    <th>داده شاخص</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td><code>debt_paper_push_record</code></td>
+                    <td>رسید دریافت و XML اصلی</td>
+                    <td>XML کامل، پوشش پیام، وضعیت و دلیل خطا</td>
+                </tr>
+                <tr>
+                    <td><code>finalized_debt_paper</code></td>
+                    <td>سند اولیه و اطلاعات زمان دریافت</td>
+                    <td>مشخصات واقعی سند و مؤدی + هفت مبلغ اولیه</td>
+                </tr>
+                <tr>
+                    <td><code>debt_information</code></td>
+                    <td>مبالغ جاری پرونده</td>
+                    <td>هفت مبلغ جاری + زمان مؤثر + نسخه هم‌زمانی</td>
+                </tr>
+                <tr>
+                    <td><code>debt_inquiry_result</code></td>
+                    <td>تاریخچه پاسخ استعلام</td>
+                    <td>پاسخ JSON، زمان‌ها و مبالغ همان استعلام</td>
+                </tr>
+                <tr>
+                    <td><code>execution_paper</code></td>
+                    <td>پرونده اجرایی داخلی</td>
+                    <td>شناسه داخلی، وضعیت و ارتباط با سند و مؤدی</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="note"><strong>تفاوت کلاس و جدول:</strong> <code>SanimDocumentDetails</code> و
+            <code>SanimAmounts</code> هر دو <code>@Embeddable</code> هستند؛ جدول جدید و ستون JSON ندارند. ویژگی‌هایشان
+            به ستون‌های جدول میزبان تبدیل شده‌اند. منظور از snapshot، کپی اطلاعات در زمان دریافت است؛ نام یک جدول جدا
+            نیست.
+        </div>
+    </section>
+    <section id="relations"><h2>۲. نمودار روابط موجود</h2>
+        <figure dir="ltr">
+            <svg viewBox="0 0 1120 610" role="img" aria-labelledby="erdtitle" xmlns="http://www.w3.org/2000/svg"><title
+                    id="erdtitle">روابط مدل پیاده‌سازی‌شده؛ فلش از جدول دارای کلید خارجی به جدول مرجع است</title>
+                <defs>
+                    <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4" orient="auto">
+                        <path d="M0 0 L8 4 L0 8" fill="#487186"/>
+                    </marker>
+                </defs>
+                <path d="M320 70 H425" stroke="#487186" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+                <text x="370" y="57" text-anchor="middle" font-size="11" fill="#3b596a">source_document_id · N:1</text>
+                <path d="M170 155 V215 H500 V250" stroke="#487186" stroke-width="2" fill="none"
+                      marker-end="url(#arrow)"/>
+                <text x="263" y="203" text-anchor="middle" font-size="11" fill="#3b596a">execution_paper_id · N:1</text>
+                <path d="M320 310 H425" stroke="#487186" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+                <text x="370" y="297" text-anchor="middle" font-size="11" fill="#3b596a">N:1</text>
+                <path d="M575 250 V155" stroke="#487186" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+                <text x="598" y="208" text-anchor="middle" font-size="11" fill="#3b596a">N:1</text>
+                <path d="M575 475 V375" stroke="#487186" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+                <text x="599" y="431" text-anchor="middle" font-size="11" fill="#3b596a">N:1</text>
+                <path d="M725 310 H830" stroke="#487186" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+                <text x="775" y="298" text-anchor="middle" font-size="11" fill="#3b596a">N:1</text>
+                <path d="M695 250 V205 H960 V155" stroke="#487186" stroke-width="2" fill="none"
+                      marker-end="url(#arrow)"/>
+                <text x="878" y="195" text-anchor="middle" font-size="11" fill="#3b596a">tax_unit_id · N:1</text>
+                <rect x="20" y="30" width="300" height="125" rx="12" fill="#f0f6fa" stroke="#83a8bd"/>
+                <text x="170.0" y="73" text-anchor="middle" font-size="16" font-weight="bold">debt_paper_push_record
+                </text>
+                <text x="170.0" y="105" text-anchor="middle" font-size="13" fill="#456175">XML + receipt status</text>
+                <rect x="425" y="30" width="300" height="125" rx="12" fill="#f0f6fa" stroke="#83a8bd"/>
+                <text x="575.0" y="73" text-anchor="middle" font-size="16" font-weight="bold">finalized_debt_paper
+                </text>
+                <text x="575.0" y="105" text-anchor="middle" font-size="13" fill="#456175">Source facts + initial
+                    amounts
+                </text>
+                <rect x="425" y="250" width="300" height="125" rx="12" fill="#f0f6fa" stroke="#83a8bd"/>
+                <text x="575.0" y="293" text-anchor="middle" font-size="16" font-weight="bold">execution_paper</text>
+                <text x="575.0" y="325" text-anchor="middle" font-size="13" fill="#456175">Internal case</text>
+                <rect x="20" y="250" width="300" height="125" rx="12" fill="#f0f6fa" stroke="#83a8bd"/>
+                <text x="170.0" y="293" text-anchor="middle" font-size="16" font-weight="bold">debt_information</text>
+                <text x="170.0" y="325" text-anchor="middle" font-size="13" fill="#456175">Current amounts + version
+                </text>
+                <rect x="425" y="475" width="300" height="110" rx="12" fill="#f0f6fa" stroke="#83a8bd"/>
+                <text x="575.0" y="518" text-anchor="middle" font-size="16" font-weight="bold">debt_inquiry_result
+                </text>
+                <text x="575.0" y="550" text-anchor="middle" font-size="13" fill="#456175">Inquiry history</text>
+                <rect x="830" y="250" width="260" height="125" rx="12" fill="#f0f6fa" stroke="#83a8bd"/>
+                <text x="960.0" y="293" text-anchor="middle" font-size="16" font-weight="bold">taxpayer</text>
+                <text x="960.0" y="325" text-anchor="middle" font-size="13" fill="#456175">Natural / legal person</text>
+                <rect x="830" y="30" width="260" height="125" rx="12" fill="#f0f6fa" stroke="#83a8bd"/>
+                <text x="960.0" y="73" text-anchor="middle" font-size="16" font-weight="bold">tax_unit</text>
+                <text x="960.0" y="105" text-anchor="middle" font-size="13" fill="#456175">Optional internal
+                    organization
+                </text>
+            </svg>
+        </figure>
+        <p class="small">فلش از جدول دارای FK به مرجع است. نمودار روابط اصلی را نشان می‌دهد؛ روابط قدیمی اداره و اداره
+            کل سند در جدول مشخصات زیر آمده‌اند.</p>
+        <div class="note">رابطهٔ اطلاعات جاری با پرونده در کد <code>ManyToOne</code> است؛ هرچند سرویس برای هر پرونده یک
+            رکورد جاری می‌سازد، قید یکتای <code>execution_paper_id</code> در این نگاشت تعریف نشده است. نمودار عمداً
+            رابطهٔ تضمین‌شدهٔ ۱:۱ نشان نمی‌دهد.
+        </div>
+    </section>
+    <section id="amounts"><h2>۳. هفت مبلغ مشترک</h2>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr>
+                    <th>معنی</th>
+                    <th>ویژگی Java / API</th>
+                    <th>ستون فیزیکی</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>مانده بدهی</td>
+                    <td><code>outstandingDebtAmount</code></td>
+                    <td><code>aggregate_outstanding_debt_amount</code></td>
+                </tr>
+                <tr>
+                    <td>مالیات</td>
+                    <td><code>totalTaxAmount</code></td>
+                    <td><code>aggregate_total_tax_amount</code></td>
+                </tr>
+                <tr>
+                    <td>عوارض</td>
+                    <td><code>totalDutyAmount</code></td>
+                    <td><code>aggregate_total_duty_amount</code></td>
+                </tr>
+                <tr>
+                    <td>جرایم</td>
+                    <td><code>totalPenaltyAmount</code></td>
+                    <td><code>aggregate_total_penalty_amount</code></td>
+                </tr>
+                <tr>
+                    <td>پرداختی</td>
+                    <td><code>totalPaidAmount</code></td>
+                    <td><code>aggregate_total_paid_amount</code></td>
+                </tr>
+                <tr>
+                    <td>اعتبار</td>
+                    <td><code>totalCreditAmount</code></td>
+                    <td><code>aggregate_total_credit_amount</code></td>
+                </tr>
+                <tr>
+                    <td>بخشودگی</td>
+                    <td><code>totalRemissionAmount</code></td>
+                    <td><code>aggregate_total_remission_amount</code></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <p>نوع Java: <code>BigDecimal</code>؛ نوع ستون جدید SQLite: <code>TEXT</code> با
+            <code>ExactDecimalConverter</code>؛ خروجی API: رشته اعشاری دقیق. واحد سند <code>IRR</code> است. منفی بودن،
+            اعشار و صفرهای اعشاری بدون گردکردن ذخیره می‌شوند.</p>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr>
+                    <th>میزبان</th>
+                    <th>مسیر ویژگی</th>
+                    <th>قاعده نگهداری</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td><code>finalized_debt_paper</code></td>
+                    <td><code>sourceDocument.amounts</code></td>
+                    <td>مبالغ اولیه؛ مسیر استعلام آن‌ها را تغییر نمی‌دهد</td>
+                </tr>
+                <tr>
+                    <td><code>debt_information</code></td>
+                    <td><code>currentAmounts</code></td>
+                    <td>ابتدا کپی مستقل مبالغ اولیه؛ سپس به‌روزرسانی از پاسخ معتبر</td>
+                </tr>
+                <tr>
+                    <td><code>debt_inquiry_result</code></td>
+                    <td><code>amounts</code></td>
+                    <td>مبالغ استخراج‌شده همان پاسخ؛ ویژگی‌های ارسال‌نشده می‌توانند null باشند</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="small">در سند اولیه، ثابت ماندن اطلاعات رفتار سرویس است؛ موجودیت <code>FinalizedDebtPaper</code> در
+            سطح ORM با <code>@Immutable</code> قفل نشده است. تاریخچهٔ <code>DebtInquiryResult</code> این annotation را
+            دارد.</p></section>
+    <section id="source"><h2>۴. فیلدهای جدید سند اولیه</h2>
+        <p>این ۲۹ ویژگی متنی و هفت مبلغ بخش قبل، داخل جدول <code>finalized_debt_paper</code> ذخیره می‌شوند؛ نه در جدول
+            یا ستون جداگانه‌ای به نام <code>sourceDocument</code>. تاریخ‌های خام، متن اصلی XML هستند.</p>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr>
+                    <th>شرح</th>
+                    <th>ویژگی</th>
+                    <th>ستون؛ نوع TEXT</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>نوع قالب</td>
+                    <td><code>templateCode</code></td>
+                    <td><code>source_template_code</code></td>
+                </tr>
+                <tr>
+                    <td>نسخه نگاشت</td>
+                    <td><code>mappingVersion</code></td>
+                    <td><code>source_mapping_version</code></td>
+                </tr>
+                <tr>
+                    <td>شماره سند</td>
+                    <td><code>documentNumber</code></td>
+                    <td><code>source_document_number</code></td>
+                </tr>
+                <tr>
+                    <td>تاریخ سند، با قالب اصلی</td>
+                    <td><code>issueDateRaw</code></td>
+                    <td><code>source_issue_date_raw</code></td>
+                </tr>
+                <tr>
+                    <td>شماره مستند مبنای صدور</td>
+                    <td><code>basisDocumentNumber</code></td>
+                    <td><code>source_basis_document_number</code></td>
+                </tr>
+                <tr>
+                    <td>تاریخ مستند مبنا، با قالب اصلی</td>
+                    <td><code>basisDocumentDateRaw</code></td>
+                    <td><code>source_basis_document_date_raw</code></td>
+                </tr>
+                <tr>
+                    <td>شرح دلیل صدور</td>
+                    <td><code>issuanceReason</code></td>
+                    <td><code>source_issuance_reason</code></td>
+                </tr>
+                <tr>
+                    <td>سال مالیاتی</td>
+                    <td><code>taxYear</code></td>
+                    <td><code>source_tax_year</code></td>
+                </tr>
+                <tr>
+                    <td>دوره مالیاتی</td>
+                    <td><code>taxPeriod</code></td>
+                    <td><code>source_tax_period</code></td>
+                </tr>
+                <tr>
+                    <td>ابتدای دوره، متن اصلی</td>
+                    <td><code>taxPeriodStartRaw</code></td>
+                    <td><code>source_tax_period_start_raw</code></td>
+                </tr>
+                <tr>
+                    <td>انتهای دوره، متن اصلی</td>
+                    <td><code>taxPeriodEndRaw</code></td>
+                    <td><code>source_tax_period_end_raw</code></td>
+                </tr>
+                <tr>
+                    <td>شناسه مؤدی در سنیم / شماره اقتصادی</td>
+                    <td><code>taxpayerIdentifier</code></td>
+                    <td><code>source_taxpayer_identifier</code></td>
+                </tr>
+                <tr>
+                    <td>نوع شناسه مؤدی</td>
+                    <td><code>taxpayerIdentifierType</code></td>
+                    <td><code>source_taxpayer_identifier_type</code></td>
+                </tr>
+                <tr>
+                    <td>شماره هویتی</td>
+                    <td><code>identityNumber</code></td>
+                    <td><code>source_identity_number</code></td>
+                </tr>
+                <tr>
+                    <td>نوع شناسه هویتی</td>
+                    <td><code>identityType</code></td>
+                    <td><code>source_identity_type</code></td>
+                </tr>
+                <tr>
+                    <td>حقیقی یا حقوقی</td>
+                    <td><code>personType</code></td>
+                    <td><code>source_person_type</code></td>
+                </tr>
+                <tr>
+                    <td>نام مؤدی در سند</td>
+                    <td><code>taxpayerName</code></td>
+                    <td><code>source_taxpayer_name</code></td>
+                </tr>
+                <tr>
+                    <td>نام تجاری / شهرت کسبی</td>
+                    <td><code>tradeName</code></td>
+                    <td><code>source_trade_name</code></td>
+                </tr>
+                <tr>
+                    <td>عنوان فعالیت</td>
+                    <td><code>activityTitle</code></td>
+                    <td><code>source_activity_title</code></td>
+                </tr>
+                <tr>
+                    <td>تلفن مؤدی</td>
+                    <td><code>phone</code></td>
+                    <td><code>source_phone</code></td>
+                </tr>
+                <tr>
+                    <td>کد پستی مؤدی</td>
+                    <td><code>postalCode</code></td>
+                    <td><code>source_postal_code</code></td>
+                </tr>
+                <tr>
+                    <td>نشانی مؤدی</td>
+                    <td><code>address</code></td>
+                    <td><code>source_address</code></td>
+                </tr>
+                <tr>
+                    <td>نام اداره کل در سند</td>
+                    <td><code>generalDirectorateName</code></td>
+                    <td><code>source_general_directorate_name</code></td>
+                </tr>
+                <tr>
+                    <td>نام اداره در سند</td>
+                    <td><code>taxOfficeName</code></td>
+                    <td><code>source_tax_office_name</code></td>
+                </tr>
+                <tr>
+                    <td>کد خارجی اداره سنیم</td>
+                    <td><code>sourceTaxOfficeCode</code></td>
+                    <td><code>source_tax_office_code</code></td>
+                </tr>
+                <tr>
+                    <td>واحد پول؛ IRR</td>
+                    <td><code>currencyCode</code></td>
+                    <td><code>source_currency_code</code></td>
+                </tr>
+                <tr>
+                    <td>مبنای مبلغ مالیات</td>
+                    <td><code>taxAmountBasis</code></td>
+                    <td><code>source_tax_amount_basis</code></td>
+                </tr>
+                <tr>
+                    <td>مبنای مبلغ بخشودگی</td>
+                    <td><code>remissionBasis</code></td>
+                    <td><code>source_remission_basis</code></td>
+                </tr>
+                <tr>
+                    <td>وضعیت اعتبارسنجی نگاشت</td>
+                    <td><code>validationStatus</code></td>
+                    <td><code>source_validation_status</code></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+    <section id="entities"><h2>۵. مشخصات جدول‌های اصلی</h2>
+        <p class="small">نوع‌ها در جدول‌های زیر نوع Java هستند؛ NOT NULL و یکتایی از annotationهای JPA گزارش شده‌اند.
+            الزامی بودن ورودی سرویس می‌تواند از الزام پایگاه داده سخت‌گیرانه‌تر باشد. نام ستون‌های بدون annotation صریح،
+            مطابق نام‌گذاری snake_case و مهاجرت پروژه آمده است.</p>
+        <article><h3>رسید دریافت و XML اصلی <span><code>debt_paper_push_record</code></span></h3>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>ویژگی</th>
+                        <th>کاربرد</th>
+                        <th>نوع Java</th>
+                        <th>ستون</th>
+                        <th>قید / رابطه</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td><code>announcementType</code></td>
+                        <td>نوع قالب اعلام‌شده در پیام</td>
+                        <td><code>String</code></td>
+                        <td><code>announcement_type</code></td>
+                        <td>nullable در نگاشت JPA</td>
+                    </tr>
+                    <tr>
+                        <td><code>sourceTaxOfficeCode</code></td>
+                        <td>کد خارجی اداره سنیم</td>
+                        <td><code>String</code></td>
+                        <td><code>source_tax_office_code</code></td>
+                        <td>عدم به‌روزرسانی توسط JPA</td>
+                    </tr>
+                    <tr>
+                        <td><code>mappingVersion</code></td>
+                        <td>نسخه نگاشت</td>
+                        <td><code>String</code></td>
+                        <td><code>mapping_version</code></td>
+                        <td>nullable در نگاشت JPA</td>
+                    </tr>
+                    <tr>
+                        <td><code>sourceDocument</code></td>
+                        <td>اطلاعات و مبالغ اولیه سند</td>
+                        <td><code>FinalizedDebtPaper</code></td>
+                        <td><code>source_document_id</code></td>
+                        <td>FK؛ N:1</td>
+                    </tr>
+                    <tr>
+                        <td><code>id</code></td>
+                        <td>کلید اصلی</td>
+                        <td><code>Long</code></td>
+                        <td><code>id</code></td>
+                        <td>PK؛ تولید خودکار</td>
+                    </tr>
+                    <tr>
+                        <td><code>referenceId</code></td>
+                        <td>مرجع یکتای پیام؛ تکرار پذیرفته نمی‌شود</td>
+                        <td><code>String</code></td>
+                        <td><code>reference_id</code></td>
+                        <td>یکتا؛ NOT NULL؛ عدم به‌روزرسانی توسط JPA</td>
+                    </tr>
+                    <tr>
+                        <td><code>traceId</code></td>
+                        <td>شناسه پیگیری دریافت</td>
+                        <td><code>String</code></td>
+                        <td><code>trace_id</code></td>
+                        <td>NOT NULL؛ عدم به‌روزرسانی توسط JPA</td>
+                    </tr>
+                    <tr>
+                        <td><code>processingStatus</code></td>
+                        <td>وضعیت پردازش رسید</td>
+                        <td><code>DebtPaperProcessingStatus</code></td>
+                        <td><code>processing_status</code></td>
+                        <td>NOT NULL</td>
+                    </tr>
+                    <tr>
+                        <td><code>receivedAt</code></td>
+                        <td>زمان دریافت</td>
+                        <td><code>LocalDateTime</code></td>
+                        <td><code>received_at</code></td>
+                        <td>NOT NULL؛ عدم به‌روزرسانی توسط JPA</td>
+                    </tr>
+                    <tr>
+                        <td><code>sourceProduceDate</code></td>
+                        <td>زمان تولید پیام مبدأ</td>
+                        <td><code>OffsetDateTime</code></td>
+                        <td><code>source_produce_date</code></td>
+                        <td>NOT NULL؛ عدم به‌روزرسانی توسط JPA</td>
+                    </tr>
+                    <tr>
+                        <td><code>sourceHash</code></td>
+                        <td>هش ارسالی مبدأ</td>
+                        <td><code>String</code></td>
+                        <td><code>source_hash</code></td>
+                        <td>عدم به‌روزرسانی توسط JPA</td>
+                    </tr>
+                    <tr>
+                        <td><code>nationalId</code></td>
+                        <td>شناسه هویتی پوشش پیام</td>
+                        <td><code>String</code></td>
+                        <td><code>national_id</code></td>
+                        <td>NOT NULL؛ عدم به‌روزرسانی توسط JPA</td>
+                    </tr>
+                    <tr>
+                        <td><code>followCode</code></td>
+                        <td>کد پیگیری مبدأ</td>
+                        <td><code>String</code></td>
+                        <td><code>follow_code</code></td>
+                        <td>عدم به‌روزرسانی توسط JPA</td>
+                    </tr>
+                    <tr>
+                        <td><code>secondParameter</code></td>
+                        <td>پارامتر تکمیلی پیام</td>
+                        <td><code>String</code></td>
+                        <td><code>second_parameter</code></td>
+                        <td>عدم به‌روزرسانی توسط JPA</td>
+                    </tr>
+                    <tr>
+                        <td><code>year</code></td>
+                        <td>سال اعلام‌شده در پیام</td>
+                        <td><code>Integer</code></td>
+                        <td><code>source_year</code></td>
+                        <td>NOT NULL؛ عدم به‌روزرسانی توسط JPA</td>
+                    </tr>
+                    <tr>
+                        <td><code>period</code></td>
+                        <td>دوره اعلام‌شده در پیام</td>
+                        <td><code>Integer</code></td>
+                        <td><code>source_period</code></td>
+                        <td>NOT NULL؛ عدم به‌روزرسانی توسط JPA</td>
+                    </tr>
+                    <tr>
+                        <td><code>taxAmount</code></td>
+                        <td>مبلغ پوشش پیام، به صورت متن</td>
+                        <td><code>String</code></td>
+                        <td><code>tax_amount</code></td>
+                        <td>عدم به‌روزرسانی توسط JPA</td>
+                    </tr>
+                    <tr>
+                        <td><code>taxSource</code></td>
+                        <td>منبع مالیات</td>
+                        <td><code>String</code></td>
+                        <td><code>tax_source</code></td>
+                        <td>NOT NULL؛ عدم به‌روزرسانی توسط JPA</td>
+                    </tr>
+                    <tr>
+                        <td><code>xmlPayload</code></td>
+                        <td>XML کامل و بدون بازنویسی</td>
+                        <td><code>String</code></td>
+                        <td><code>xml_payload</code></td>
+                        <td>NOT NULL؛ عدم به‌روزرسانی توسط JPA</td>
+                    </tr>
+                    <tr>
+                        <td><code>failureReason</code></td>
+                        <td>شرح خطا / علت انتظار</td>
+                        <td><code>String</code></td>
+                        <td><code>failure_reason</code></td>
+                        <td>nullable در نگاشت JPA</td>
+                    </tr>
+                    <tr>
+                        <td><code>executionPaper</code></td>
+                        <td>رابط پرونده اجرایی</td>
+                        <td><code>ExecutionPaper</code></td>
+                        <td><code>execution_paper_id</code></td>
+                        <td>FK؛ N:1</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </article>
+        <article><h3>سند اولیه و اطلاعات زمان دریافت <span><code>finalized_debt_paper</code></span></h3>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>ویژگی</th>
+                        <th>کاربرد</th>
+                        <th>نوع Java</th>
+                        <th>ستون</th>
+                        <th>قید / رابطه</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td><code>sourceDocument</code></td>
+                        <td>اطلاعات و مبالغ اولیه سند</td>
+                        <td><code>SanimDocumentDetails</code></td>
+                        <td><code>—</code></td>
+                        <td>Embedded؛ ستون مستقل با این نام ندارد</td>
+                    </tr>
+                    <tr>
+                        <td><code>id</code></td>
+                        <td>کلید اصلی</td>
+                        <td><code>Long</code></td>
+                        <td><code>id</code></td>
+                        <td>PK؛ تولید خودکار</td>
+                    </tr>
+                    <tr>
+                        <td><code>debtPaperUniqueCode</code></td>
+                        <td>مرجع یکتای سند در سامانه؛ از reference پیام</td>
+                        <td><code>String</code></td>
+                        <td><code>debt_paper_unique_code</code></td>
+                        <td>یکتا</td>
+                    </tr>
+                    <tr>
+                        <td><code>taxSource</code></td>
+                        <td>منبع مالیات</td>
+                        <td><code>String</code></td>
+                        <td><code>tax_source</code></td>
+                        <td>nullable در نگاشت JPA</td>
+                    </tr>
+                    <tr>
+                        <td><code>mainTaxBureau</code></td>
+                        <td>رابط اداره کل داخلی</td>
+                        <td><code>GeneralDirectorateOfTaxAffairs</code></td>
+                        <td><code>main_tax_bureau_id</code></td>
+                        <td>FK؛ N:1</td>
+                    </tr>
+                    <tr>
+                        <td><code>taxBureau</code></td>
+                        <td>رابط اداره داخلی</td>
+                        <td><code>TaxAffairsOffice</code></td>
+                        <td><code>tax_bureau_id</code></td>
+                        <td>FK؛ N:1</td>
+                    </tr>
+                    <tr>
+                        <td><code>taxUnit</code></td>
+                        <td>رابط واحد مالیاتی داخلی؛ پیش‌شرط دریافت نیست</td>
+                        <td><code>TaxUnit</code></td>
+                        <td><code>tax_unit_id</code></td>
+                        <td>FK؛ N:1</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </article>
+        <article><h3>مبالغ جاری پرونده <span><code>debt_information</code></span></h3>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>ویژگی</th>
+                        <th>کاربرد</th>
+                        <th>نوع Java</th>
+                        <th>ستون</th>
+                        <th>قید / رابطه</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td><code>version</code></td>
+                        <td>نسخه قفل خوش‌بینانه؛ @Version</td>
+                        <td><code>Long</code></td>
+                        <td><code>version</code></td>
+                        <td>کنترل هم‌زمانی</td>
+                    </tr>
+                    <tr>
+                        <td><code>currentAmounts</code></td>
+                        <td>هفت مبلغ جاری؛ ستون‌های همین جدول</td>
+                        <td><code>SanimAmounts</code></td>
+                        <td><code>—</code></td>
+                        <td>Embedded؛ ستون مستقل با این نام ندارد</td>
+                    </tr>
+                    <tr>
+                        <td><code>currentAmountsAsOf</code></td>
+                        <td>زمان مؤثر آخرین به‌روزرسانی مبالغ</td>
+                        <td><code>LocalDateTime</code></td>
+                        <td><code>current_amounts_as_of</code></td>
+                        <td>nullable در نگاشت JPA</td>
+                    </tr>
+                    <tr>
+                        <td><code>id</code></td>
+                        <td>کلید اصلی</td>
+                        <td><code>Long</code></td>
+                        <td><code>id</code></td>
+                        <td>PK؛ تولید خودکار</td>
+                    </tr>
+                    <tr>
+                        <td><code>executionPaper</code></td>
+                        <td>رابط پرونده اجرایی</td>
+                        <td><code>ExecutionPaper</code></td>
+                        <td><code>execution_paper_id</code></td>
+                        <td>FK؛ N:1</td>
+                    </tr>
+                    <tr>
+                        <td><code>lastDebtInquiryAt</code></td>
+                        <td>زمان اعمال آخرین استعلام</td>
+                        <td><code>LocalDateTime</code></td>
+                        <td><code>last_debt_inquiry_at</code></td>
+                        <td>nullable در نگاشت JPA</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </article>
+        <article><h3>تاریخچه پاسخ استعلام <span><code>debt_inquiry_result</code></span></h3>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>ویژگی</th>
+                        <th>کاربرد</th>
+                        <th>نوع Java</th>
+                        <th>ستون</th>
+                        <th>قید / رابطه</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td><code>amounts</code></td>
+                        <td>هفت مبلغ استخراج‌شده پاسخ استعلام؛ همین جدول</td>
+                        <td><code>SanimAmounts</code></td>
+                        <td><code>—</code></td>
+                        <td>Embedded؛ ستون مستقل با این نام ندارد</td>
+                    </tr>
+                    <tr>
+                        <td><code>effectiveAt</code></td>
+                        <td>زمان مؤثر پاسخ؛ فعلاً lastActivityAt</td>
+                        <td><code>LocalDateTime</code></td>
+                        <td><code>effective_at</code></td>
+                        <td>nullable در نگاشت JPA</td>
+                    </tr>
+                    <tr>
+                        <td><code>mappingVersion</code></td>
+                        <td>نسخه نگاشت</td>
+                        <td><code>String</code></td>
+                        <td><code>mapping_version</code></td>
+                        <td>nullable در نگاشت JPA</td>
+                    </tr>
+                    <tr>
+                        <td><code>id</code></td>
+                        <td>کلید اصلی</td>
+                        <td><code>Long</code></td>
+                        <td><code>id</code></td>
+                        <td>PK؛ تولید خودکار</td>
+                    </tr>
+                    <tr>
+                        <td><code>requestId</code></td>
+                        <td>شناسه یکتای استعلام</td>
+                        <td><code>String</code></td>
+                        <td><code>request_id</code></td>
+                        <td>یکتا؛ NOT NULL؛ عدم به‌روزرسانی توسط JPA</td>
+                    </tr>
+                    <tr>
+                        <td><code>executionPaper</code></td>
+                        <td>رابط پرونده اجرایی</td>
+                        <td><code>ExecutionPaper</code></td>
+                        <td><code>execution_paper_id</code></td>
+                        <td>FK؛ N:1؛ NOT NULL؛ عدم به‌روزرسانی توسط JPA</td>
+                    </tr>
+                    <tr>
+                        <td><code>responseJson</code></td>
+                        <td>متن JSON پاسخ استعلام؛ جدا از XML اولیه</td>
+                        <td><code>String</code></td>
+                        <td><code>response_json</code></td>
+                        <td>NOT NULL؛ عدم به‌روزرسانی توسط JPA</td>
+                    </tr>
+                    <tr>
+                        <td><code>hash</code></td>
+                        <td>هش پاسخ ذخیره‌شده</td>
+                        <td><code>String</code></td>
+                        <td><code>hash</code></td>
+                        <td>NOT NULL؛ عدم به‌روزرسانی توسط JPA</td>
+                    </tr>
+                    <tr>
+                        <td><code>receivedAt</code></td>
+                        <td>زمان دریافت</td>
+                        <td><code>LocalDateTime</code></td>
+                        <td><code>received_at</code></td>
+                        <td>NOT NULL؛ عدم به‌روزرسانی توسط JPA</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </article>
+        <article><h3>پرونده اجرایی داخلی <span><code>execution_paper</code></span></h3>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>ویژگی</th>
+                        <th>کاربرد</th>
+                        <th>نوع Java</th>
+                        <th>ستون</th>
+                        <th>قید / رابطه</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td><code>id</code></td>
+                        <td>کلید اصلی</td>
+                        <td><code>Long</code></td>
+                        <td><code>id</code></td>
+                        <td>PK؛ تولید خودکار</td>
+                    </tr>
+                    <tr>
+                        <td><code>executionPaperUniqueCode</code></td>
+                        <td>کد یکتای داخلی پرونده</td>
+                        <td><code>String</code></td>
+                        <td><code>execution_paper_unique_code</code></td>
+                        <td>یکتا</td>
+                    </tr>
+                    <tr>
+                        <td><code>taxSource</code></td>
+                        <td>منبع مالیات</td>
+                        <td><code>String</code></td>
+                        <td><code>tax_source</code></td>
+                        <td>nullable در نگاشت JPA</td>
+                    </tr>
+                    <tr>
+                        <td><code>currentState</code></td>
+                        <td>وضعیت عملیاتی پرونده؛ مستقل از وضعیت رسید</td>
+                        <td><code>String</code></td>
+                        <td><code>current_state</code></td>
+                        <td>nullable در نگاشت JPA</td>
+                    </tr>
+                    <tr>
+                        <td><code>finalizedDebtPaper</code></td>
+                        <td>رابط سند اولیه</td>
+                        <td><code>FinalizedDebtPaper</code></td>
+                        <td><code>finalized_debt_paper_id</code></td>
+                        <td>FK؛ N:1</td>
+                    </tr>
+                    <tr>
+                        <td><code>taxpayer</code></td>
+                        <td>رابط مؤدی داخلی</td>
+                        <td><code>Taxpayer</code></td>
+                        <td><code>taxpayer_id</code></td>
+                        <td>FK؛ N:1</td>
+                    </tr>
+                    <tr>
+                        <td><code>taxUnit</code></td>
+                        <td>رابط واحد مالیاتی داخلی؛ پیش‌شرط دریافت نیست</td>
+                        <td><code>TaxUnit</code></td>
+                        <td><code>tax_unit_id</code></td>
+                        <td>FK؛ N:1</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </article>
+        <p>فیلدهای حسابرسی ارث‌رسیده از <code>BaseEntity</code> در هر پنج جدول: <code>created_at</code>، <code>updated_at</code>،
+            <code>created_by</code>، <code>updated_by</code>، <code>deleted_at</code>، <code>deleted_by</code> و <code>is_deleted</code>.
+            این کلاس جدول جدا ندارد.</p>
+        <p>ستون‌های مالی جزئی، کش موازی استعلام و مشخصات تکراری سند حذف شده‌اند. اطلاعات جاری فقط هفت مبلغ، زمان مؤثر،
+            زمان استعلام، نسخه هم‌زمانی و رابط پرونده دارد. تاریخ، سال، دوره و عنوان فعالیت فقط در sourceDocument هستند.
+            <a href="sanim-legacy-field-cleanup.fa.md">فهرست ۳۰ ستون حذف‌شده و راهنمای مهاجرت</a>.</p></section>
+    <section id="flow"><h2>۶. چرخه داده و وضعیت‌ها</h2>
+        <div class="steps"><span>ثبت پایدار XML</span><b>←</b><span>نگاشت و اعتبارسنجی</span><b>←</b><span>سند + مبالغ اولیه و جاری</span><b>←</b><span>استعلام و ثبت تاریخچه</span>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr>
+                    <th>وضعیت رسید</th>
+                    <th>معنی</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td><code>RECEIVED</code></td>
+                    <td>رسید ذخیره شده؛ نگاشت/پردازش هنوز کامل نشده است</td>
+                </tr>
+                <tr>
+                    <td><code>NEEDS_REVIEW</code></td>
+                    <td>نگاشت یا ایجاد پرونده شکست خورده؛ دلیل خطا و XML باقی می‌مانند</td>
+                </tr>
+                <tr>
+                    <td><code>PAPER_CREATED</code></td>
+                    <td>پرونده ساخته شده؛ نتیجه آغاز گردش‌کار هنوز ثبت نشده است</td>
+                </tr>
+                <tr>
+                    <td><code>WAITING_ORGANIZATION</code></td>
+                    <td>سند معتبر پذیرفته شده؛ واحد و ارجاع داخلی برای گردش‌کار تعیین نشده است</td>
+                </tr>
+                <tr>
+                    <td><code>SUCCESS</code></td>
+                    <td>ایجاد پرونده و آغاز گردش‌کار موفق بوده است</td>
+                </tr>
+                <tr>
+                    <td><code>WORKFLOW_START_FAILED</code></td>
+                    <td>پرونده ساخته شده ولی شروع گردش‌کار شکست خورده است</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <ul>
+            <li>وضعیت رسید با <code>ExecutionPaper.currentState</code> متفاوت است؛ پرونده جدید ابتدا
+                <code>UNASSIGNED</code> است.
+            </li>
+            <li>مرجع تکراری به فراخواننده HTTP 409 می‌دهد. XML ردشده پس از ثبت رسید، با rollback صدور حذف نمی‌شود.</li>
+            <li>در استعلام جزئی، فقط مقادیر غیرnull اعمال می‌شوند. پاسخ یکسان تکراری، قدیمی‌تر یا هم‌زمان با آخرین پاسخ
+                مؤثر، داده جدیدتر را بازنویسی نمی‌کند.
+            </li>
+            <li>زمان مؤثر فعلاً <code>lastActivityAt</code> است؛ پاسخ بدون زمان برای سند دارای مبالغ جاری تنها در
+                تاریخچه ذخیره می‌شود.
+            </li>
+        </ul>
+    </section>
+    <section id="mapping"><h2>۷. نگاشت مالی پیاده‌سازی‌شده</h2>
+        <p>قالب‌های ورودی پیشوند <code>LTR_</code> دارند. نسخه نگاشت <code>sanim-2026-09-v1</code> است؛ فرمول‌ها همچنان
+            نیازمند تأیید کارفرما هستند.</p>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr>
+                    <th>قالب</th>
+                    <th>مانده</th>
+                    <th>مالیات</th>
+                    <th>عوارض</th>
+                    <th>جرایم</th>
+                    <th>پرداختی</th>
+                    <th>اعتبار</th>
+                    <th>بخشودگی</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td><code>EF03</code></td>
+                    <td><code>HB</code></td>
+                    <td><code>CB</code></td>
+                    <td><code>0</code></td>
+                    <td><code>GB</code></td>
+                    <td><code>EB</code></td>
+                    <td><code>0</code></td>
+                    <td><code>DB</code></td>
+                </tr>
+                <tr>
+                    <td><code>EF104</code></td>
+                    <td><code>RB</code></td>
+                    <td><code>0</code></td>
+                    <td><code>0</code></td>
+                    <td><code>PB</code></td>
+                    <td><code>XB</code></td>
+                    <td><code>0</code></td>
+                    <td><code>QB</code></td>
+                </tr>
+                <tr>
+                    <td><code>EF23 / EF23_1</code></td>
+                    <td><code>LC + MC + BD + CD + JD + W.SD</code></td>
+                    <td><code>NB + RC</code></td>
+                    <td><code>OB + SC + ED + W.QD</code></td>
+                    <td><code>DC + EC + FC + GC + TC + UC + VC + WC + FD + GD + HD</code></td>
+                    <td><code>JC + KC + ZC + AD + ID + W.RD</code></td>
+                    <td><code>XB + YB + BC + CC</code></td>
+                    <td><code>0</code></td>
+                </tr>
+                <tr>
+                    <td><code>EF23_2</code></td>
+                    <td><code>PE + BD + CD + JD</code></td>
+                    <td><code>GE + RC</code></td>
+                    <td><code>SC + ED</code></td>
+                    <td><code>IE + JE + KE + LE + ME + NE + TC + UC + VC + WC + FD + GD + HD</code></td>
+                    <td><code>OE + ZC + AD + ID</code></td>
+                    <td><code>0</code></td>
+                    <td><code>0</code></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="note">نماد W فقط اشاره به پسماند است و تگ واقعی XML نیست. پیاده‌سازی فعلی برای QD/RD/SD تخت و مبهم،
+            تنها حالت غایب یا تماماً صفر را بدون خطا می‌پذیرد؛ مبلغ غیرصفر نیازمند بررسی است. نبود تگ مالی فعلاً صفر
+            است، اما تگ خالی یا غیرعددی صفر تلقی نمی‌شود.
+        </div>
+        <p>در EF03، DB ترکیب معافیت و بخشودگی است. در EF23_2، GE مقدار خالص گزارش‌شده است؛ از GE منفی، اعتبار مثبت
+            جداگانه ساخته نمی‌شود. صفرهای ثابت جدول به معنی نبود نگاشت مستقل هستند، نه اثبات صفر اقتصادی.</p></section>
+    <section id="limits"><h2>۸. حدود پیاده‌سازی و موارد باز</h2>
+        <ul>
+            <li><strong>ارجاع سازمانی:</strong> دریافت بدون واحد داخلی انجام می‌شود، اما گردش‌کار فعلی به آن نیاز دارد؛
+                مسیر تعیین ارجاع و ازسرگیری وضعیت انتظار هنوز اضافه نشده است.
+            </li>
+            <li><strong>تأیید مالی:</strong> قاعده صفر برای تگ ناموجود، معنای اعتبار، ترکیب بخشودگی و معافیت، GE و مسیر
+                پسماند باید با کارفرما نهایی شوند.
+            </li>
+            <li><strong>پوشش پیام:</strong> مبلغ <code>taxAmount</code> فعلاً با مالیات تجمیعی XML مقایسه می‌شود؛ معنای
+                قراردادی این مبلغ هنوز نیازمند تأیید است.
+            </li>
+            <li><strong>EF104:</strong> نگاشت فعلی شماره/تاریخ سند F/G و مستند مبنا O/P است؛ نقش این دو زوج باید تأیید
+                شود.
+            </li>
+            <li><strong>زمان استعلام:</strong> منطقه زمانی و نسبت زمان مؤثر پاسخ با زمان سند اولیه هنوز باید در قرارداد
+                مشخص شوند.
+            </li>
+            <li><strong>اطلاعات تاریخی:</strong> اسناد قدیمی فاقد داده کافی نیازمند بررسی هستند؛ مبالغ نامشخص صفر فرض
+                نمی‌شوند. داشبورد اکنون از BigDecimal استفاده می‌کند و مجموع نامشخص را null برمی‌گرداند.
+            </li>
+            <li><strong>فیلتر مبلغ:</strong> برای دقت SQLite، نامزدهای سایر فیلترها در حافظه مقایسه و سپس صفحه‌بندی
+                می‌شوند؛ حجم بالا نیازمند بهینه‌سازی است.
+            </li>
+        </ul>
+        <p>مهاجرت ابتدا پشتیبان کامل SQLite می‌سازد، سپس ۳۰ ستون قدیمی را در یک تراکنش حذف می‌کند؛ روابط و XML
+            دست‌نخورده می‌مانند. داده مالی تاریخیِ مبهم در پشتیبان محفوظ است و به مدل جدید حدس‌زنی نمی‌شود؛ سند ناقص
+            LEGACY_REVIEW_REQUIRED می‌گیرد. این گزارش تأیید اجرای مهاجرت روی پایگاه داده عملیاتی نیست.</p></section>
+    <section id="sources"><h2>۹. مبنای گزارش</h2>
+        <p>بررسی مستقیم کلاس‌های پنج موجودیت، <code>SanimDocumentDetails</code>، <code>SanimAmounts</code>، <code>BaseEntity</code>
+            و <code>SanimAggregateMapper</code> در شاخه فعلی. وضعیت آزمون‌ها و تغییر قراردادها در گزارش پاک‌سازی ثبت
+            می‌شود. روابط و فهرست فیلدها از کد فعلی استخراج شده‌اند.</p>
+        <p><a href="sanim-model-implementation.fa.md">راهنمای پیاده‌سازی و پیگیری</a> · <a
+                href="sanim-aggregate-formulas-report.fa.html">گزارش مبنای فرمول‌ها</a></p></section>
+    <footer>گزارش ساختار پیاده‌سازی؛ فاقد اطلاعات واقعی مؤدیان. قابل مشاهده آفلاین و چاپ؛ بدون وابستگی اینترنتی.
+    </footer>
+</main>
+</body>
+</html>

@@ -105,27 +105,32 @@ public class ExecutionPaperService {
         SanimModelValidation.requireDocument(request.sourceDocument());
         TaxpayerIdentityValidation.requireConsistentRegistration(taxpayerRepository, request);
         var organization = resolveOrganization(request);
+        var finalizationReason = com.mparsict.vosolmaliat.domain.enums.FinalizationReason
+                .fromSourceValue(request.sourceDocument().getIssuanceReason());
+        var sourceDocumentNumber = request.sourceDocument().getBasisDocumentNumber();
+        var sourceDocumentDate = com.mparsict.vosolmaliat.domain.value.PersianDates
+                .parse(request.sourceDocument().getBasisDocumentDateRaw());
         // 1. Find or create FinalTaxDebtPaper
         FinalTaxDebtPaper fdp = finalTaxDebtPaperRepository
-                .findByUniqueFinalTaxDebtNoticeId(request.debtPaperUniqueCode())
+                .findBySourceDocumentNumber(request.debtPaperUniqueCode())
                 .orElseGet(() ->
                         FinalTaxDebtPaper.builder()
-                                .uniqueFinalTaxDebtNoticeId(request.debtPaperUniqueCode())
+                                .uniqueFinalTaxDebtNoticeId(finalizationReason == com.mparsict.vosolmaliat.domain.enums.FinalizationReason.FINAL_NOTICE
+                                        ? sourceDocumentNumber : null)
                                 .paperType(request.sourceDocument().getPaperType())
-                                .finalTaxDebtNoticeIssueDate(com.mparsict.vosolmaliat.domain.value.PersianDates.parse(request.sourceDocument().getIssueDateRaw()))
-                                .finalizationReason(com.mparsict.vosolmaliat.domain.enums.FinalizationReason.fromSourceValue(request.sourceDocument().getIssuanceReason()))
-                                .taxReturnNumber(request.sourceDocument().getBasisDocumentNumber())
-                                .taxReturnDate(com.mparsict.vosolmaliat.domain.value.PersianDates.parse(request.sourceDocument().getBasisDocumentDateRaw()))
+                                .finalTaxDebtNoticeIssueDate(finalizationReason == com.mparsict.vosolmaliat.domain.enums.FinalizationReason.FINAL_NOTICE
+                                        ? sourceDocumentDate : null)
+                                .finalizationReason(finalizationReason)
+                                .taxReturnNumber(finalizationReason == com.mparsict.vosolmaliat.domain.enums.FinalizationReason.SELF_DECLARATION
+                                        ? sourceDocumentNumber : null)
+                                .taxReturnDate(finalizationReason == com.mparsict.vosolmaliat.domain.enums.FinalizationReason.SELF_DECLARATION
+                                        ? sourceDocumentDate : null)
                                 .finalTaxDebtPaperNotificationNumber(request.sourceDocument().getDocumentNumber())
                                 .finalTaxDebtPaperNotificationViewDate(null)
                                 .taxYear(Integer.valueOf(request.sourceDocument().getTaxYear()))
                                 .taxPeriod(request.sourceDocument().getTaxPeriod() == null ? null : com.mparsict.vosolmaliat.domain.enums.TaxPeriod.of(Integer.parseInt(request.sourceDocument().getTaxPeriod())))
                                 .periodStartDate(com.mparsict.vosolmaliat.domain.value.PersianDates.parse(request.sourceDocument().getTaxPeriodStartRaw()))
                                 .periodEndDate(com.mparsict.vosolmaliat.domain.value.PersianDates.parse(request.sourceDocument().getTaxPeriodEndRaw()))
-                                .taxSource(TaxSourceType.fromSourceValue(request.taxSource()))
-                                .nationalCode(request.taxpayer().nationalCode())
-                                .nationalId(request.taxpayer().nationalId())
-
                                 .taxAffairsOffice(organization.officeId() == null ? null : taxAffairsOfficeRepository.getReferenceById(organization.officeId()))
 
                                 .build());
@@ -135,7 +140,7 @@ public class ExecutionPaperService {
         Long legalPersonId = null;
         DebtPaperIssuanceRequest.TaxpayerInfo tpInfo = request.taxpayer();
 
-        if ("NATURAL".equalsIgnoreCase(tpInfo.type())) {
+        if (!"LEGAL".equalsIgnoreCase(tpInfo.type())) {
             NaturalPerson np = resolveNaturalPerson(tpInfo, request.sourceDocument().getTaxpayerName());
             naturalPersonId = np.getId();
         } else {
@@ -159,6 +164,7 @@ public class ExecutionPaperService {
                         Taxpayer.builder()
                                 .tin(tin)
                                 .registrationTraceCode(request.sourceDocument().getRegistrationTraceCode())
+                                .taxpayerType(com.mparsict.vosolmaliat.domain.enums.TaxpayerType.valueOf(tpInfo.type().toUpperCase(java.util.Locale.ROOT)))
                                 .naturalPerson(finalNaturalPersonId == null ? null : NaturalPerson.builder().id(finalNaturalPersonId).build())
                                 .legalPerson(finalLegalPersonId == null ? null : LegalPerson.builder().id(finalLegalPersonId).build())
                                 .build()
@@ -198,19 +204,17 @@ public class ExecutionPaperService {
         ExecutionPaperStateHistory history = ExecutionPaperStateHistory.builder()
                 .executionPaper(ep)
                 .state(ExecutionPaperState.UNASSIGNED.name())
-                .stateDate(LocalDate.now().toString())
                 .build();
         stateHistoryRepository.save(history);
         auditLogService.record(null, "EXECUTION_PAPER_CREATED", "EXECUTION_PAPER", ep.getId().toString(), null, ep.getExecutionPaperUniqueCode());
 
         // 5. Create DebtInformation
         DebtInformation debtInfo = DebtInformation.builder()
-                .executionPaper(ep).finalTaxDebtPaper(fdp)
+                .finalTaxDebtPaper(fdp)
                 .financialDetails(request.sourceDocument().getFinancialDetails() == null ? null : request.sourceDocument().getFinancialDetails().copy())
-                .currentAmountsAsOf(ep.getIssuanceDate())
                 .currentAmounts(request.sourceDocument().getAmounts().copy()).build();
         debtInformationRepository.save(debtInfo);
-        debtHistoryRepository.save(DebtInformationHistory.current(debtInfo, null, ep.getIssuanceDate()));
+        debtHistoryRepository.save(DebtInformationHistory.current(debtInfo, ep.getIssuanceDate()));
         executionPaperRepository.flush();
 
         log.info("Created ExecutionPaper id={}, code={}", ep.getId(), ep.getExecutionPaperUniqueCode());
@@ -239,9 +243,7 @@ public class ExecutionPaperService {
         }
         var source = request.sourceDocument();
         var matching = taxAffairsOfficeRepository.findAll().stream()
-            .filter(o -> o.getOfficeType() == null || o.getOfficeType() == 0)
-            .filter(o -> hasText(o.getOfficeCode()) ? o.getOfficeCode().equals(source.getSourceTaxOfficeCode())
-                : java.util.Objects.equals(o.getOfficeName(),source.getTaxOfficeName())
+            .filter(o -> java.util.Objects.equals(o.getOfficeName(),source.getTaxOfficeName())
                   && o.getGeneralDirectorateOfTaxAffairs()!=null
                   && java.util.Objects.equals(o.getGeneralDirectorateOfTaxAffairs().getGeneralDirectorateName(),source.getGeneralDirectorateName()))
             .toList();
@@ -296,13 +298,13 @@ public class ExecutionPaperService {
             // Fetch other-filter candidates, compare exact decimals, then paginate.
             var candidates = pageResult.getContent();
             var ids = candidates.stream().map(ExecutionPaper::getId).toList();
-            var amounts = new java.util.HashMap<Long, java.math.BigDecimal>();
+            var amountsByDebtPaper = new java.util.HashMap<Long, java.math.BigDecimal>();
             for (int offset = 0; offset < ids.size(); offset += 500) {
                 debtInformationRepository.findByExecutionPaperIdIn(ids.subList(offset, Math.min(offset + 500, ids.size())))
-                        .forEach(d -> amounts.put(d.getExecutionPaperId(), d.getExactOutstandingDebt()));
+                        .forEach(d -> amountsByDebtPaper.put(d.getFinalTaxDebtPaper().getId(), d.getExactOutstandingDebt()));
             }
             var matching = candidates.stream().filter(paper -> {
-                var amount = amounts.get(paper.getId());
+                var amount = amountsByDebtPaper.get(paper.getFinalTaxDebtPaper().getId());
                 return amount != null && (normalized.minDebt() == null || amount.compareTo(normalized.minDebt()) >= 0)
                         && (normalized.maxDebt() == null || amount.compareTo(normalized.maxDebt()) <= 0);
             }).toList();
@@ -364,9 +366,9 @@ public class ExecutionPaperService {
             execution.put("mainTaxBureauId", generalId);
             execution.put("taxBureauId", officeId);
             putOrganizationNames(execution, generalId, officeId);
-            execution.put("taxSource", sourcePaper.getTaxSource());
-            execution.put("taxSourceLabel", TaxSourceType.labelOf(sourcePaper.getTaxSource().name()));
-            execution.put("taxSourceDisplay", TaxSourceType.displayOf(sourcePaper.getTaxSource().name()));
+            execution.put("taxSource", sourcePaper.getPaperType().taxSource());
+            execution.put("taxSourceLabel", TaxSourceType.labelOf(sourcePaper.getPaperType().taxSource().name()));
+            execution.put("taxSourceDisplay", TaxSourceType.displayOf(sourcePaper.getPaperType().taxSource().name()));
         }
 
         execution.put("createdAt", ep.getCreatedAt());
@@ -374,14 +376,14 @@ public class ExecutionPaperService {
         Map<String, Object> finalized = new LinkedHashMap<>();
         finalTaxDebtPaperRepository.findById(ep.getFinalTaxDebtPaperId()).ifPresent(fdp -> {
             finalized.put("uniqueFinalTaxDebtNoticeId", fdp.getUniqueFinalTaxDebtNoticeId());
-            finalized.put("debtPaperUniqueCode", fdp.getUniqueFinalTaxDebtNoticeId());
+            finalized.put("debtPaperUniqueCode", fdp.getSourceDocumentNumber());
             finalized.put("finalTaxDebtNoticeIssueDate",fdp.getFinalTaxDebtNoticeIssueDate());
             finalized.put("finalizationReason",fdp.getFinalizationReason());
 
 
-            finalized.put("taxSource", fdp.getTaxSource());
-            finalized.put("taxSourceLabel", TaxSourceType.labelOf(fdp.getTaxSource().name()));
-            finalized.put("taxSourceDisplay", TaxSourceType.displayOf(fdp.getTaxSource().name()));
+            finalized.put("taxSource", fdp.getPaperType().taxSource());
+            finalized.put("taxSourceLabel", TaxSourceType.labelOf(fdp.getPaperType().taxSource().name()));
+            finalized.put("taxSourceDisplay", TaxSourceType.displayOf(fdp.getPaperType().taxSource().name()));
 
 
             Long officeId = fdp.getTaxAffairsOfficeId();
@@ -392,19 +394,19 @@ public class ExecutionPaperService {
 
             finalized.put("createdAt", fdp.getCreatedAt());
 
-            issuanceRequestRepository.findByDebtPaperUniqueCode(fdp.getUniqueFinalTaxDebtNoticeId())
+            issuanceRequestRepository.findByDebtPaperUniqueCode(fdp.getSourceDocumentNumber())
                     .ifPresent(request -> {
                         try {
                             DebtPaperIssuanceRequest original = objectMapper.readValue(
-                                    request.getPayload(), DebtPaperIssuanceRequest.class);
+                                    request.getXml(), DebtPaperIssuanceRequest.class);
                             finalized.put("sourceDocument", objectMapper.convertValue(
                                     original.sourceDocument(), new TypeReference<Map<String, Object>>() {}));
                             finalized.put("sourceTaxpayer", objectMapper.convertValue(
                                     original.taxpayer(), new TypeReference<Map<String, Object>>() {}));
                         } catch (Exception exception) {
                             log.warn("Could not restore source fields for final tax debt paper {}",
-                                    fdp.getUniqueFinalTaxDebtNoticeId(), exception);
-                            finalized.put("sourceXml", request.getXml());
+                                    fdp.getSourceDocumentNumber(), exception);
+                            finalized.put("sourcePayload", request.getXml());
                         }
                     });
         });
@@ -465,9 +467,7 @@ public class ExecutionPaperService {
         debtInformationRepository.findByExecutionPaperId(ep.getId()).ifPresent(di -> {
             debt.put("currentAmounts", di.getCurrentAmounts());
             debt.put("financialDetails", di.getFinancialDetails());
-            debt.put("currentAmountsAsOf", di.getCurrentAmountsAsOf());
             debt.put("outstandingDebtAmount", di.getExactOutstandingDebt() == null ? null : di.getExactOutstandingDebt().toPlainString());
-            debt.put("lastDebtInquiryAt", di.getLastDebtInquiryAt());
         });
 
         Map<String, Object> notification = new LinkedHashMap<>();
@@ -635,14 +635,7 @@ public class ExecutionPaperService {
     }
 
     private LocalDateTime stateHistoryDate(ExecutionPaperStateHistory history) {
-        if (history.getCreatedAt() != null) {
-            return history.getCreatedAt();
-        }
-        try {
-            return LocalDate.parse(history.getStateDate()).atTime(LocalTime.MIN);
-        } catch (Exception ex) {
-            return null;
-        }
+        return history.getCreatedAt();
     }
 
     private String stateLabel(String state) {

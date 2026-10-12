@@ -104,7 +104,7 @@ public class SanimAuditService {
             .orElseThrow(() -> new BusinessException("TAXPAYER_NOT_FOUND", "مؤدی یافت نشد")); }
     private SanimTaxpayerOptionResponse taxpayerOption(Taxpayer t) {
         if (t.getNaturalPerson() != null && t.getNaturalPerson().getNationalCode() != null)
-            return new SanimTaxpayerOptionResponse(t.getId(), TaxpayerType.NATURAL, t.getNaturalPerson().getNationalCode(),
+            return new SanimTaxpayerOptionResponse(t.getId(), t.getType(), t.getNaturalPerson().getNationalCode(),
                     t.getNaturalPerson().getFirstName() + " " + t.getNaturalPerson().getLastName());
         if (t.getLegalPerson() != null && t.getLegalPerson().getNationalId() != null)
             return new SanimTaxpayerOptionResponse(t.getId(), TaxpayerType.LEGAL, t.getLegalPerson().getNationalId(), t.getLegalPerson().getName());

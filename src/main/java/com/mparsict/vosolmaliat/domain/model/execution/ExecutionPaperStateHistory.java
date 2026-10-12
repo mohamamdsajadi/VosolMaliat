@@ -33,9 +33,9 @@ public class ExecutionPaperStateHistory extends BaseEntity {
 
     @Column(name = "state", nullable = false, updatable = false)
     private String state;
-
-    @Column(name = "state_date")
-    private String stateDate;
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="state", referencedColumnName="code", insertable=false, updatable=false)
+    private com.mparsict.vosolmaliat.domain.model.masterdata.ExecutionPaperStateDefinition stateDefinition;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "execution_paper_id", nullable = false, updatable = false)

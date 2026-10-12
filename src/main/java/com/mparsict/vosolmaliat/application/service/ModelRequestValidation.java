@@ -18,10 +18,19 @@ public final class ModelRequestValidation {
         if (d == null) missing.add("اطلاعات برگه بدهی قطعی");
         if (person == null) missing.add("اطلاعات مودی");
         fail(missing);
+        FinalizationReason finalizationReason;
+        try {
+            finalizationReason = FinalizationReason.fromSourceValue(d.getIssuanceReason());
+        } catch (IllegalArgumentException exception) {
+            throw SanimXmlValues.invalid(exception.getMessage());
+        }
         required(missing, d.getTaxpayerIdentifier(), "شناسه مودی (TIN)");
         required(missing, d.getRegistrationTraceCode(), "کد رهگیری ثبت‌نام");
         required(missing, d.getIssuanceReason(), "علت قطعیت");
-        required(missing, d.getBasisDocumentDateRaw(), "تاریخ صدور برگه بدهی قطعی");
+        required(missing, d.getBasisDocumentNumber(), finalizationReason == FinalizationReason.SELF_DECLARATION
+                ? "شماره اظهارنامه" : "شماره برگ بدهی قطعی");
+        required(missing, d.getBasisDocumentDateRaw(), finalizationReason == FinalizationReason.SELF_DECLARATION
+                ? "تاریخ اظهارنامه" : "تاریخ صدور برگ بدهی قطعی");
         required(missing, d.getDocumentNumber(), "شماره ابلاغ برگه بدهی قطعی");
         required(missing, person.postalCode(), "کد پستی");
         required(missing, person.address(), "اقامتگاه قانونی");
@@ -35,9 +44,15 @@ public final class ModelRequestValidation {
             required(missing, person.companyName(), "نام شخص حقوقی");
         } else throw SanimXmlValues.invalid("نوع مودی باید حقیقی یا حقوقی باشد.");
         fail(missing);
+        if (!request.debtPaperUniqueCode().equals(d.getBasisDocumentNumber())) {
+            throw SanimXmlValues.invalid("شماره سند مبنا با شناسه برگ بدهی درخواست مغایرت دارد.");
+        }
         try {
-            d.setIssuanceReason(FinalizationReason.fromSourceValue(d.getIssuanceReason()).name());
-            TaxSourceType.fromSourceValue(request.taxSource());
+            d.setIssuanceReason(finalizationReason.name());
+            TaxSourceType requestedTaxSource = TaxSourceType.fromSourceValue(request.taxSource());
+            if (d.getPaperType() == null || d.getPaperType().taxSource() != requestedTaxSource) {
+                throw new IllegalArgumentException("منبع مالیاتی با نوع برگ سازگار نیست");
+            }
             PersianDates.parse(d.getBasisDocumentDateRaw());
             if ("NATURAL".equals(person.type()) && !blank(person.birthDate())) PersianDates.parse(person.birthDate());
             else if ("LEGAL".equals(person.type()) && !blank(person.registrationDate())) PersianDates.parse(person.registrationDate());

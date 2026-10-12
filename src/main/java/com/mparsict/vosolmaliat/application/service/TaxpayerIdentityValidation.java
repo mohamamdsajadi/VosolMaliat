@@ -13,24 +13,13 @@ final class TaxpayerIdentityValidation {
         String tin = request.sourceDocument().getTaxpayerIdentifier();
         String follow = request.sourceDocument().getRegistrationTraceCode();
         var person = request.taxpayer();
-        java.util.Optional<com.mparsict.vosolmaliat.domain.model.Taxpayer> owner;
         if ("LEGAL".equalsIgnoreCase(person.type())) {
-            owner = taxpayers.findByLegalPerson_NationalId(person.nationalId());
-        } else if (person.nationalCode() != null) {
-            owner = taxpayers.findByNaturalPerson_NationalCode(person.nationalCode());
-        } else {
-            owner = taxpayers.findByNaturalPerson_Fida(person.fida());
+            taxpayers.findByLegalPerson_NationalId(person.nationalId()).ifPresent(existing -> {
+                if (!Objects.equals(tin, existing.getTin())) {
+                    throw new BusinessException("PERSON_TIN_CONFLICT", "برای شخص حقوقی قبلاً شناسه مؤدی دیگری ثبت شده است");
+                }
+            });
         }
-        owner.ifPresent(existing -> {
-            if (!Objects.equals(tin, existing.getTin())) {
-                throw new BusinessException("PERSON_TIN_CONFLICT", "در مدل فعلی، برای این شخص قبلاً شناسه مؤدی دیگری ثبت شده است");
-            }
-        });
-        taxpayers.findByRegistrationTraceCode(follow).ifPresent(existing -> {
-            if (!Objects.equals(tin, existing.getTin())) {
-                throw new BusinessException("FOLLOW_CODE_TIN_CONFLICT", "کد رهگیری ثبت‌نام قبلاً برای شناسه مؤدی دیگری ثبت شده است");
-            }
-        });
         taxpayers.findByTin(tin).ifPresent(existing -> {
             if (!Objects.equals(follow, existing.getRegistrationTraceCode())) {
                 throw new BusinessException("TIN_IDENTITY_CONFLICT", "شناسه مؤدی با کد رهگیری ثبت‌نام سازگار نیست");

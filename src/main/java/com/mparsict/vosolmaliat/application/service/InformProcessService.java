@@ -153,7 +153,6 @@ public class InformProcessService {
         stateHistoryRepository.save(ExecutionPaperStateHistory.builder()
                 .executionPaper(executionPaper)
                 .state(state)
-                .stateDate(LocalDate.now().toString())
                 .build());
     }
 

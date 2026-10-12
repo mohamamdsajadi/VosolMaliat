@@ -15,7 +15,7 @@ final class NullableEf03FieldsMigration {
         NULLABLE_COLUMNS.put("natural_person_extra_info", List.of("birth_date", "father_name"));
         NULLABLE_COLUMNS.put("legal_person_extra_info", List.of(
                 "registration_date", "registration_number", "trade_name"));
-        NULLABLE_COLUMNS.put("contact_info", List.of("phone_no", "mobile_no"));
+        NULLABLE_COLUMNS.put("contact_info", List.of("phone_no", "mobile_no", "zipcode", "address", "email"));
     }
 
     static void migrate(Connection connection) throws SQLException {

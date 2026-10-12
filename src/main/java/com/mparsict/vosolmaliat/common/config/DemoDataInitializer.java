@@ -92,13 +92,12 @@ public class DemoDataInitializer {
                 .finalTaxDebtPaper(FinalTaxDebtPaper.builder()
                         .id(1000L + Math.abs(code.hashCode() % 1000))
                         .taxpayer(Taxpayer.builder().id(taxpayerId).build())
-                        .taxSource(com.mparsict.vosolmaliat.domain.enums.TaxSourceType.VAT)
                         .build())
                 .currentState(state.name())
                 .build());
 
         debtInformationRepository.save(DebtInformation.builder()
-                .executionPaper(executionPaper)
+                .finalTaxDebtPaper(executionPaper.getFinalTaxDebtPaper())
                 .currentAmounts(com.mparsict.vosolmaliat.domain.model.sanim.SanimAmounts.builder()
                     .outstandingDebtAmount(java.math.BigDecimal.valueOf(remainingTax))
                     .totalTaxAmount(java.math.BigDecimal.valueOf(remainingTax))

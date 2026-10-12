@@ -1,0 +1,3999 @@
+{
+  "executionStatus": true,
+  "response": {
+    "result": {
+      "data": {
+        "Result": {
+          "Successful": true,
+          "Message": "فراخوانی با موفقیت انجام شد",
+          "No": "-1",
+          "Description": "فراخوانی با موفقیت انجام شد",
+          "Code": "1000"
+        },
+        "TheCCompany": {
+          "IsBranch": false,
+          "AddressDesc": "استان تهران - منطقه 19 ، شهرستان تهران ، بخش مركزي ، شهر تهران، محله كاووسيه ، خيابان وليعصر ، خيابان سرو ، پلاك 58 ، طبقه پنجم ، واحد 20",
+          "FixPhoneNumber": "2188781280",
+          "IssuanceDate": "1370/07/24",
+          "Name": "سرمايه گذاري غدير",
+          "NationalCode": "10101306234",
+          "PostCode": "1968944168",
+          "RegisterDate": "1370/07/24",
+          "RegisterNumber": "86180",
+          "SignatureAuthorityDesc": "  اسناد تعهدآور، اوراق بهادار و چک ها و حواله هاي صادره با امضاء مديرعامل به اتفاق يکي از اعضاء هيئت مديره و در غياب وي با امضاء متفق دو نفر از اعضاء هيئت مديره و ممهور به مهر شرکت و نصب هولوگرام معتبر خواهد بود. مکاتبات شرکت نيز با امضاء مديرعامل با حق تفويض به غير و مهر شرکت معتبر مي باشد",
+          "LastChangeDate": "1399/05/27",
+          "TheCCompanyActivitiesList": [
+            {
+              "ActivityDesc": "هدف شركت ايجاد توسعه راه اندازي و اداره انواع طرحها و در بخشها و فعاليتهاي مختلف اقتصادي  تاسيس تشكيل مشاركت در سرمايه خريد سهام بازسازي نوسازي و راه اندازي انواع شركتها و موسسات در داخل يا خارج از كشور فروش سهام واگذاري سهام شركتها و يا انحلال آنها آماده كردن شركتهاي مورد سرمايه گذاري جهت ورود به بورس اوراق بهادار استفاده از تسهيلات مالي و اعتباري بانكها و موسسات اعتباري",
+              "ActivityTimeState": 2.0,
+              "LicenseState": 0.0,
+              "State": 2.0
+            }
+          ],
+          "TheCCompanyBranchList": [],
+          "TheCCompanyChangeHistoryList": [],
+          "TheCCompanyClusterGroupList": [
+            {
+              "TheCICluster": {
+                "Code": "0002",
+                "Title": "سازمان بورس و اوراق بهادار"
+              },
+              "TheCIClusterGroup": {
+                "Code": "0005",
+                "Title": "سرمايه گذاري"
+              }
+            }
+          ],
+          "TheCCompanyFieldList": [],
+          "TheCCompanyTagList": [],
+          "TheCCompanyPersonList": [
+            {
+              "Address": "استان تهران، شهرستان تهران، بخش مركزي، شهر تهران، كاووسيه، خيابان وليعصر، خيابان دكتر ثمره (سرو)، پلاك 58، طبقه 5، واحد 20",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 0.0,
+              "ExternalNationalStatus": 1.0,
+              "FirstNameFA": "صندوق بازنشستگي وظيفه از كار افتادگي و پس انداز كاركنان بانكهاي ملي و ادغام شده",
+              "ManagingConfessionStatus": 0.0,
+              "MobileNumber4SMS": "09120000000",
+              "NationalityCode": "10103037570",
+              "PersonNumber": 4.0,
+              "PersonType": 2.0,
+              "PostCode": "1968944168",
+              "RecordNo": "19955",
+              "Sex": 0.0,
+              "State": 1.0,
+              "TheAgentsList": [
+                {
+                  "StartDate": "1397/12/22",
+                  "TheAgent": {
+                    "NationalityCode": "0051605031"
+                  },
+                  "TheAgentType": {
+                    "Code": "007",
+                    "State": 1.0,
+                    "Title": "نماينده حقوقي "
+                  }
+                },
+                {
+                  "StartDate": "1399/07/07",
+                  "TheAgent": {
+                    "NationalityCode": "4198486212"
+                  },
+                  "TheAgentType": {
+                    "Code": "007",
+                    "State": 1.0,
+                    "Title": "نماينده حقوقي "
+                  }
+                },
+                {
+                  "StartDate": "1401/09/28",
+                  "TheAgent": {
+                    "NationalityCode": "5659639968"
+                  },
+                  "TheAgentType": {
+                    "Code": "007",
+                    "State": 1.0,
+                    "Title": "نماينده حقوقي "
+                  }
+                },
+                {
+                  "StartDate": "1399/12/25",
+                  "TheAgent": {
+                    "NationalityCode": "1465410627"
+                  },
+                  "TheAgentType": {
+                    "Code": "007",
+                    "State": 1.0,
+                    "Title": "نماينده حقوقي "
+                  }
+                },
+                {
+                  "StartDate": "1404/04/17",
+                  "TheAgent": {
+                    "NationalityCode": "1170668267"
+                  },
+                  "TheAgentType": {
+                    "Code": "007",
+                    "State": 1.0,
+                    "Title": "نماينده حقوقي "
+                  }
+                }
+              ],
+              "TheCCompanyPersonPostList": [
+                {
+                  "EndDateValidity": "1405/12/08",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1404/04/17",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "006",
+                    "Id": "006",
+                    "Title": "عضو اصلي هيئت مديره"
+                  }
+                },
+                {
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 2.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1403/05/03",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "020",
+                    "Id": "020",
+                    "Title": "سهام دار"
+                  }
+                },
+                {
+                  "EndDateValidity": "1399/12/22",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1397/12/22",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "054",
+                    "Id": "054",
+                    "Title": "ناظر اول جلسه"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "استان تهران، شهرستان تهران، بخش مركزي، شهر تهران، كاووسيه، خيابان وليعصر، خيابان سرو، پلاك 58، طبقه 5، واحد 20",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 0.0,
+              "ExternalNationalStatus": 1.0,
+              "FirstNameFA": "حسابرسي و خدمات مالي و مديريت ايران مشهود",
+              "ManagingConfessionStatus": 0.0,
+              "MobileNumber4SMS": "94135435435",
+              "NationalityCode": "10100322973",
+              "PersonNumber": 2.0,
+              "PersonType": 2.0,
+              "PostCode": "1968944168",
+              "RecordNo": "7073",
+              "Sex": 0.0,
+              "State": 1.0,
+              "TheAgentsList": [
+                {
+                  "StartDate": "1403/12/08",
+                  "TheAgent": {
+                    "NationalityCode": "4132080749"
+                  },
+                  "TheAgentType": {
+                    "Code": "007",
+                    "State": 1.0,
+                    "Title": "نماينده حقوقي "
+                  }
+                }
+              ],
+              "TheCCompanyPersonPostList": [
+                {
+                  "EndDateValidity": "1391/12/08",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 0.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 2.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1391/12/08",
+                  "State": 2.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "009",
+                    "Id": "009",
+                    "Title": "بازرس علي البدل"
+                  }
+                },
+                {
+                  "EndDateValidity": "1400/12/25",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1399/12/25",
+                  "State": 2.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "009",
+                    "Id": "009",
+                    "Title": "بازرس علي البدل"
+                  }
+                },
+                {
+                  "EndDateValidity": "1404/09/30",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1403/12/08",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "008",
+                    "Id": "008",
+                    "Title": "بازرس اصلي"
+                  }
+                },
+                {
+                  "EndDateValidity": "1402/09/30",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1402/01/31",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "048",
+                    "Id": "048",
+                    "Title": "حسابرس"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "استان تهران، شهرستان تهران، بخش مركزي، شهر تهران، كاووسيه، خيابان وليعصر، خيابان دكتر ثمره (سرو)، پلاك 58، طبقه 5، واحد 20",
+              "BirthDateSH": "1387/04/11",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 0.0,
+              "ExternalNationalStatus": 1.0,
+              "FirstNameFA": "سرمايه گذاري تجاري شستان",
+              "ManagingConfessionStatus": 0.0,
+              "MobileNumber4SMS": "91200000000",
+              "NationalityCode": "10103653560",
+              "PersonNumber": 8.0,
+              "PersonType": 2.0,
+              "PostCode": "1968944168",
+              "RecordNo": "326039",
+              "Sex": 0.0,
+              "State": 1.0,
+              "TheAgentsList": [
+                {
+                  "StartDate": "1395/12/25",
+                  "TheAgent": {
+                    "NationalityCode": "6199124863"
+                  },
+                  "TheAgentType": {
+                    "Code": "007",
+                    "State": 1.0,
+                    "Title": "نماينده حقوقي "
+                  }
+                },
+                {
+                  "StartDate": "1403/09/19",
+                  "TheAgent": {
+                    "NationalityCode": "5179656524"
+                  },
+                  "TheAgentType": {
+                    "Code": "007",
+                    "State": 1.0,
+                    "Title": "نماينده حقوقي "
+                  }
+                },
+                {
+                  "StartDate": "1403/02/23",
+                  "TheAgent": {
+                    "NationalityCode": "3391885742"
+                  },
+                  "TheAgentType": {
+                    "Code": "007",
+                    "State": 1.0,
+                    "Title": "نماينده حقوقي "
+                  }
+                }
+              ],
+              "TheCCompanyPersonPostList": [
+                {
+                  "EndDateValidity": "1405/12/08",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1404/04/17",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "006",
+                    "Id": "006",
+                    "Title": "عضو اصلي هيئت مديره"
+                  }
+                },
+                {
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 2.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1403/05/03",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "020",
+                    "Id": "020",
+                    "Title": "سهام دار"
+                  }
+                },
+                {
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 0.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 2.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1397/04/25",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "039",
+                    "Id": "039",
+                    "Title": "مدير اجرايي"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": ".",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 0.0,
+              "ExternalNationalStatus": 1.0,
+              "FirstNameFA": "موسسه حسابرسي آزموده كاران",
+              "ManagingConfessionStatus": 0.0,
+              "NationalityCode": "10100468600",
+              "PersonNumber": 1.0,
+              "PersonType": 2.0,
+              "PostCode": "1111111111",
+              "RecordNo": "10100468600",
+              "Sex": 0.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 0.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 2.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1391/12/08",
+                  "State": 2.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "008",
+                    "Id": "008",
+                    "Title": "بازرس اصلي"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": ".",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 0.0,
+              "ExternalNationalStatus": 1.0,
+              "FirstNameFA": "بانك صادرات ايران",
+              "ManagingConfessionStatus": 0.0,
+              "NationalityCode": "10861736062",
+              "PersonNumber": 6.0,
+              "PersonType": 2.0,
+              "PostCode": "1111111111",
+              "RecordNo": "10861736062",
+              "Sex": 0.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 2.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1391/12/08",
+                  "State": 2.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "006",
+                    "Id": "006",
+                    "Title": "عضو اصلي هيئت مديره"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "استان تهران، شهرستان تهران، بخش مركزي، شهر تهران، كاووسيه، خيابان وليعصر، خيابان سرو، پلاك 58، طبقه 5، واحد 20",
+              "BirthDateSH": "1345/04/10",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 2.0,
+              "ExternalNationalStatus": 1.0,
+              "FatherNameFA": "احمد",
+              "FirstNameFA": "فرشاد",
+              "LastNameFA": "نجفي پور",
+              "ManagingConfessionStatus": 1.0,
+              "MobileNumber4SMS": "09134365435",
+              "NationalityCode": "0040191095",
+              "PersonNumber": 6.0,
+              "PersonType": 1.0,
+              "PostCode": "1968944168",
+              "Sex": 2.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "EndDateValidity": "1403/04/13",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 5.0,
+                  "StartDate": "1401/04/13",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "022",
+                    "Id": "022",
+                    "Title": "نماينده قانوني"
+                  }
+                },
+                {
+                  "EndDateValidity": "1403/04/13",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 5.0,
+                  "StartDate": "1401/04/13",
+                  "State": 2.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "002",
+                    "Id": "002",
+                    "Title": "رئيس هيئت مديره"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "تهران",
+              "BirthDateSH": "1344/01/01",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 2.0,
+              "ExternalNationalStatus": 1.0,
+              "FatherNameFA": "غلامعلي",
+              "FirstNameFA": "امير",
+              "LastNameFA": "گلشني نسب",
+              "ManagingConfessionStatus": 1.0,
+              "MobileNumber4SMS": "09356456346",
+              "NationalityCode": "1651752281",
+              "PersonNumber": 2.0,
+              "PersonType": 1.0,
+              "PostCode": "1535463543",
+              "Sex": 2.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 2.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1393/07/19",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "020",
+                    "Id": "020",
+                    "Title": "سهام دار"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "تهران",
+              "BirthDateSH": "1333/02/08",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 2.0,
+              "ExternalNationalStatus": 1.0,
+              "FatherNameFA": "محمدحسن",
+              "FirstNameFA": "مرتضي",
+              "LastNameFA": "سامي",
+              "ManagingConfessionStatus": 1.0,
+              "MobileNumber4SMS": "09354654545",
+              "NationalityCode": "1219835234",
+              "PersonNumber": 1.0,
+              "PersonType": 1.0,
+              "PostCode": "1535416343",
+              "Sex": 2.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 2.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1393/07/19",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "020",
+                    "Id": "020",
+                    "Title": "سهام دار"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "تهران",
+              "BirthDateSH": "1337/06/30",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 2.0,
+              "ExternalNationalStatus": 1.0,
+              "FatherNameFA": "شعبانعلي",
+              "FirstNameFA": "غلامرضا",
+              "LastNameFA": "سليماني اميري",
+              "ManagingConfessionStatus": 1.0,
+              "MobileNumber4SMS": "09120000000",
+              "NationalityCode": "2060537584",
+              "PersonNumber": 3.0,
+              "PersonType": 1.0,
+              "PostCode": "1565116516",
+              "Sex": 2.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 2.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1396/01/06",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "020",
+                    "Id": "020",
+                    "Title": "سهام دار"
+                  }
+                },
+                {
+                  "EndDateValidity": "1398/02/26",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 7.0,
+                  "StartDate": "1396/02/26",
+                  "State": 2.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "001",
+                    "Id": "001",
+                    "Title": "مديرعامل"
+                  }
+                },
+                {
+                  "EndDateValidity": "1398/02/26",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 7.0,
+                  "StartDate": "1396/02/26",
+                  "State": 2.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "006",
+                    "Id": "006",
+                    "Title": "عضو اصلي هيئت مديره"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "تهران",
+              "BirthDateSH": "1343/04/25",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 2.0,
+              "ExternalNationalStatus": 1.0,
+              "FatherNameFA": "عباسعلي",
+              "FirstNameFA": "محمدرضا",
+              "LastNameFA": "عرفاني",
+              "ManagingConfessionStatus": 1.0,
+              "MobileNumber4SMS": "09353545435",
+              "NationalityCode": "3051112720",
+              "PersonNumber": 3.0,
+              "PersonType": 1.0,
+              "PostCode": "1535436356",
+              "Sex": 2.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "EndDateValidity": "1395/11/26",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1393/11/26",
+                  "State": 2.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "004",
+                    "Id": "004",
+                    "Title": "نايب رئيس هيئت مديره"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "تهران",
+              "BirthDateSH": "1335/05/01",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 2.0,
+              "ExternalNationalStatus": 1.0,
+              "FatherNameFA": "احمد",
+              "FirstNameFA": "محمود",
+              "LastNameFA": "احمد پوردارياني",
+              "ManagingConfessionStatus": 1.0,
+              "MobileNumber4SMS": "09120000000",
+              "NationalityCode": "0034799591",
+              "PersonNumber": 4.0,
+              "PersonType": 1.0,
+              "PostCode": "1500000000",
+              "Sex": 2.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "EndDateValidity": "1399/04/25",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 7.0,
+                  "StartDate": "1397/04/25",
+                  "State": 2.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "002",
+                    "Id": "002",
+                    "Title": "رئيس هيئت مديره"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "استان تهران - منطقه 19 ، شهرستان تهران ، بخش مرکزي ، شهر تهران، محله کاووسيه ، خيابان وليعصر ، خيابان سرو ، پلاک 58 ، طبقه پنجم ، واحد 20",
+              "BirthDateSH": "1347/06/12",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 2.0,
+              "ExternalNationalStatus": 1.0,
+              "FatherNameFA": "حسنعلي",
+              "FirstNameFA": "فرشاد",
+              "LastNameFA": "حيدري",
+              "ManagingConfessionStatus": 1.0,
+              "MobileNumber4SMS": "09122000000",
+              "NationalityCode": "4198486212",
+              "PersonNumber": 6.0,
+              "PersonType": 1.0,
+              "PostCode": "1968944168",
+              "Sex": 2.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "EndDateValidity": "1401/07/07",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1399/07/07",
+                  "State": 2.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "006",
+                    "Id": "006",
+                    "Title": "عضو اصلي هيئت مديره"
+                  }
+                },
+                {
+                  "EndDateValidity": "1401/07/13",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1399/07/13",
+                  "State": 2.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "004",
+                    "Id": "004",
+                    "Title": "نايب رئيس هيئت مديره"
+                  }
+                },
+                {
+                  "EndDateValidity": "1401/07/07",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 5.0,
+                  "StartDate": "1399/07/07",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "022",
+                    "Id": "022",
+                    "Title": "نماينده قانوني"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "استان تهران، شهرستان تهران، بخش مركزي، شهر تهران، كاووسيه، خيابان وليعصر، خيابان سرو، پلاك 58، طبقه 5، واحد 20",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 0.0,
+              "ExternalNationalStatus": 1.0,
+              "FirstNameFA": "سرمايه گذاري ملي ايران",
+              "ManagingConfessionStatus": 0.0,
+              "MobileNumber4SMS": "02188787163",
+              "NationalityCode": "10100686779",
+              "PersonNumber": 14.0,
+              "PersonType": 2.0,
+              "PostCode": "1968944168",
+              "RecordNo": "23206",
+              "Sex": 0.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "EndDateValidity": "1395/12/25",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 1.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 7.0,
+                  "StartDate": "1393/12/25",
+                  "State": 2.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "006",
+                    "Id": "006",
+                    "Title": "عضو اصلي هيئت مديره"
+                  }
+                },
+                {
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 2.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1403/05/03",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "020",
+                    "Id": "020",
+                    "Title": "سهام دار"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "تهران",
+              "BirthDateSH": "1344/04/26",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 2.0,
+              "ExternalNationalStatus": 1.0,
+              "FatherNameFA": "غلامرضا",
+              "FirstNameFA": "مريم",
+              "LastNameFA": "زماني فريزهندي",
+              "ManagingConfessionStatus": 1.0,
+              "MobileNumber4SMS": "09143535453",
+              "NationalityCode": "0051605031",
+              "PersonNumber": 2.0,
+              "PersonType": 1.0,
+              "PostCode": "1543435535",
+              "Sex": 1.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 2.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1397/12/22",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "020",
+                    "Id": "020",
+                    "Title": "سهام دار"
+                  }
+                },
+                {
+                  "EndDateValidity": "1399/12/22",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1397/12/22",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "054",
+                    "Id": "054",
+                    "Title": "ناظر اول جلسه"
+                  }
+                },
+                {
+                  "EndDateValidity": "1399/12/22",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1397/12/22",
+                  "State": 2.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "022",
+                    "Id": "022",
+                    "Title": "نماينده قانوني"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "تهران",
+              "BirthDateSH": "1344/09/16",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 2.0,
+              "ExternalNationalStatus": 1.0,
+              "FatherNameFA": "حسين",
+              "FirstNameFA": "اميرهوشنگ",
+              "LastNameFA": "جنگي",
+              "ManagingConfessionStatus": 1.0,
+              "MobileNumber4SMS": "09120000000",
+              "NationalityCode": "0848930037",
+              "PersonNumber": 1.0,
+              "PersonType": 1.0,
+              "PostCode": "1565464848",
+              "Sex": 2.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 2.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1397/12/22",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "020",
+                    "Id": "020",
+                    "Title": "سهام دار"
+                  }
+                },
+                {
+                  "EndDateValidity": "1399/12/22",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1397/12/22",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "042",
+                    "Id": "042",
+                    "Title": "رئيس مجمع"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "تهران",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 0.0,
+              "ExternalNationalStatus": 1.0,
+              "FirstNameFA": "حسابرسي هوشيار مميز",
+              "ManagingConfessionStatus": 0.0,
+              "MobileNumber4SMS": "91454345522",
+              "NationalityCode": "10100439645",
+              "PersonNumber": 4.0,
+              "PersonType": 2.0,
+              "PostCode": "1453543545",
+              "RecordNo": "11021",
+              "Sex": 0.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "EndDateValidity": "1396/12/25",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1395/12/25",
+                  "State": 2.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "008",
+                    "Id": "008",
+                    "Title": "بازرس اصلي"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "تهران",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 0.0,
+              "ExternalNationalStatus": 1.0,
+              "FirstNameFA": "موسسه حسابرسي تدون و همكاران",
+              "ManagingConfessionStatus": 0.0,
+              "MobileNumber4SMS": "02166365632",
+              "NationalityCode": "10100527339",
+              "PersonNumber": 2.0,
+              "PersonType": 2.0,
+              "PostCode": "1566623653",
+              "RecordNo": "13995",
+              "Sex": 0.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "EndDateValidity": "1395/12/25",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1394/12/25",
+                  "State": 2.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "009",
+                    "Id": "009",
+                    "Title": "بازرس علي البدل"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "تهرن",
+              "BirthDateSH": "1342/03/02",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 2.0,
+              "ExternalNationalStatus": 1.0,
+              "FatherNameFA": "محمدحسين",
+              "FirstNameFA": "عيسي",
+              "LastNameFA": "رضائي",
+              "ManagingConfessionStatus": 1.0,
+              "MobileNumber4SMS": "09120000000",
+              "NationalityCode": "0491176813",
+              "PersonNumber": 5.0,
+              "PersonType": 1.0,
+              "PostCode": "1500000000",
+              "Sex": 2.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "EndDateValidity": "1399/04/25",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 7.0,
+                  "StartDate": "1397/04/25",
+                  "State": 2.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "006",
+                    "Id": "006",
+                    "Title": "عضو اصلي هيئت مديره"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "استان تهران، شهرستان تهران، بخش مركزي، شهر تهران، كاووسيه، خيابان وليعصر، خيابان سرو، پلاك 58، طبقه 5، واحد 20",
+              "BirthDateSH": "1339/06/01",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 2.0,
+              "ExternalNationalStatus": 1.0,
+              "FatherNameFA": "رضا",
+              "FirstNameFA": "عباسعلي",
+              "LastNameFA": "منصوري آراني",
+              "ManagingConfessionStatus": 1.0,
+              "MobileNumber4SMS": "09435435454",
+              "NationalityCode": "6199124863",
+              "PersonNumber": 3.0,
+              "PersonType": 1.0,
+              "PostCode": "1968944168",
+              "Sex": 2.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "EndDateValidity": "1403/04/13",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 5.0,
+                  "StartDate": "1401/04/13",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "022",
+                    "Id": "022",
+                    "Title": "نماينده قانوني"
+                  }
+                },
+                {
+                  "EndDateValidity": "1401/12/25",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 5.0,
+                  "StartDate": "1401/10/27",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "006",
+                    "Id": "006",
+                    "Title": "عضو اصلي هيئت مديره"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "تهران",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 0.0,
+              "ExternalNationalStatus": 1.0,
+              "FirstNameFA": "حسابرسي دش و همكاران",
+              "ManagingConfessionStatus": 0.0,
+              "MobileNumber4SMS": "94545435452",
+              "NationalityCode": "10100171271",
+              "PersonNumber": 5.0,
+              "PersonType": 2.0,
+              "PostCode": "1413545452",
+              "RecordNo": "1970",
+              "Sex": 0.0,
+              "State": 1.0,
+              "TheAgentsList": [
+                {
+                  "StartDate": "1403/12/08",
+                  "TheAgent": {
+                    "NationalityCode": "3873201798"
+                  },
+                  "TheAgentType": {
+                    "Code": "007",
+                    "State": 1.0,
+                    "Title": "نماينده حقوقي "
+                  }
+                }
+              ],
+              "TheCCompanyPersonPostList": [
+                {
+                  "EndDateValidity": "1404/09/30",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1403/12/08",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "009",
+                    "Id": "009",
+                    "Title": "بازرس علي البدل"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "استان تهران، شهرستان تهران، بخش مركزي، شهر تهران، كاووسيه، خيابان وليعصر، خيابان سرو، پلاك 58، طبقه 5، واحد 20",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 0.0,
+              "ExternalNationalStatus": 1.0,
+              "FirstNameFA": "صندوق بيمه نيروهاي مسلح",
+              "ManagingConfessionStatus": 0.0,
+              "MobileNumber4SMS": "91200000000",
+              "NationalityCode": "14007925590",
+              "PersonNumber": 2.0,
+              "PersonType": 2.0,
+              "PostCode": "1968944168",
+              "RecordNo": "45827",
+              "Sex": 0.0,
+              "State": 1.0,
+              "TheAgentsList": [
+                {
+                  "StartDate": "1397/05/22",
+                  "TheAgent": {
+                    "NationalityCode": "4579553179"
+                  },
+                  "TheAgentType": {
+                    "Code": "007",
+                    "State": 1.0,
+                    "Title": "نماينده حقوقي "
+                  }
+                },
+                {
+                  "StartDate": "1397/12/22",
+                  "TheAgent": {
+                    "NationalityCode": "2259671251"
+                  },
+                  "TheAgentType": {
+                    "Code": "007",
+                    "State": 1.0,
+                    "Title": "نماينده حقوقي "
+                  }
+                },
+                {
+                  "StartDate": "1399/07/13",
+                  "TheAgent": {
+                    "NationalityCode": "0040191095"
+                  },
+                  "TheAgentType": {
+                    "Code": "007",
+                    "State": 1.0,
+                    "Title": "نماينده حقوقي "
+                  }
+                }
+              ],
+              "TheCCompanyPersonPostList": [
+                {
+                  "EndDateValidity": "1399/12/22",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1397/12/22",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "055",
+                    "Id": "055",
+                    "Title": "ناظر دوم جلسه"
+                  }
+                },
+                {
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 2.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1403/05/03",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "020",
+                    "Id": "020",
+                    "Title": "سهام دار"
+                  }
+                },
+                {
+                  "EndDateValidity": "1399/05/22",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1397/05/22",
+                  "State": 2.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "002",
+                    "Id": "002",
+                    "Title": "رئيس هيئت مديره"
+                  }
+                },
+                {
+                  "EndDateValidity": "1403/04/13",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1401/04/13",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "006",
+                    "Id": "006",
+                    "Title": "عضو اصلي هيئت مديره"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "تهران",
+              "BirthDateSH": "1344/02/08",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 2.0,
+              "ExternalNationalStatus": 1.0,
+              "FatherNameFA": "اصغر",
+              "FirstNameFA": "هوشنگ",
+              "LastNameFA": "مهدوي",
+              "ManagingConfessionStatus": 1.0,
+              "MobileNumber4SMS": "09122000000",
+              "NationalityCode": "2062277962",
+              "PersonNumber": 3.0,
+              "PersonType": 1.0,
+              "PostCode": "1500000000",
+              "Sex": 2.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 2.0,
+                  "SignatureState": 7.0,
+                  "StartDate": "1396/09/27",
+                  "State": 2.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "006",
+                    "Id": "006",
+                    "Title": "عضو اصلي هيئت مديره"
+                  }
+                },
+                {
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 2.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1397/12/22",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "020",
+                    "Id": "020",
+                    "Title": "سهام دار"
+                  }
+                },
+                {
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 2.0,
+                  "SignatureState": 7.0,
+                  "StartDate": "1397/04/25",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "036",
+                    "Id": "036",
+                    "Title": "مدير صندوق"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "تهران",
+              "BirthDateSH": "1331/11/01",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 2.0,
+              "ExternalNationalStatus": 1.0,
+              "FatherNameFA": "هاشم",
+              "FirstNameFA": "محمدرضا",
+              "LastNameFA": "ساروخاني",
+              "ManagingConfessionStatus": 1.0,
+              "MobileNumber4SMS": "09120000000",
+              "NationalityCode": "4321934974",
+              "PersonNumber": 7.0,
+              "PersonType": 1.0,
+              "PostCode": "1500000000",
+              "Sex": 2.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "EndDateValidity": "1399/04/25",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1397/04/25",
+                  "State": 2.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "006",
+                    "Id": "006",
+                    "Title": "عضو اصلي هيئت مديره"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "استان تهران - منطقه 19 ، شهرستان تهران ، بخش مرکزي ، شهر تهران، محله کاووسيه ، خيابان وليعصر ، خيابان سرو ، پلاک 58 ، طبقه پنجم ، واحد 20",
+              "BirthDateSH": "1339/01/01",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 2.0,
+              "ExternalNationalStatus": 1.0,
+              "FatherNameFA": "علي",
+              "FirstNameFA": "سميع اله",
+              "LastNameFA": "حسيني مكارم",
+              "ManagingConfessionStatus": 1.0,
+              "MobileNumber4SMS": "09120000000",
+              "NationalityCode": "6199832744",
+              "PersonNumber": 5.0,
+              "PersonType": 1.0,
+              "PostCode": "1968944168",
+              "Sex": 2.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "EndDateValidity": "1401/07/07",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1399/07/07",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "022",
+                    "Id": "022",
+                    "Title": "نماينده قانوني"
+                  }
+                },
+                {
+                  "EndDateValidity": "1397/04/25",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 7.0,
+                  "StartDate": "1397/04/25",
+                  "State": 2.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "001",
+                    "Id": "001",
+                    "Title": "مديرعامل"
+                  }
+                },
+                {
+                  "EndDateValidity": "1401/07/13",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1399/07/13",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "006",
+                    "Id": "006",
+                    "Title": "عضو اصلي هيئت مديره"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "استان تهران، شهرستان تهران، بخش مركزي، شهر تهران، كاووسيه، خيابان وليعصر، خيابان دكتر ثمره (سرو)، پلاك 58، طبقه 5، واحد 20",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 0.0,
+              "ExternalNationalStatus": 1.0,
+              "FirstNameFA": "توسعه و مديريت سرمايه صبا",
+              "ManagingConfessionStatus": 0.0,
+              "MobileNumber4SMS": "09121000000",
+              "NationalityCode": "14003923256",
+              "PersonNumber": 10.0,
+              "PersonType": 2.0,
+              "PostCode": "1968944168",
+              "RecordNo": "450770",
+              "Sex": 0.0,
+              "State": 1.0,
+              "TheAgentsList": [
+                {
+                  "StartDate": "1399/12/25",
+                  "TheAgent": {
+                    "NationalityCode": "2291045490"
+                  },
+                  "TheAgentType": {
+                    "Code": "007",
+                    "State": 1.0,
+                    "Title": "نماينده حقوقي "
+                  }
+                },
+                {
+                  "StartDate": "1403/02/23",
+                  "TheAgent": {
+                    "NationalityCode": "4723540210"
+                  },
+                  "TheAgentType": {
+                    "Code": "007",
+                    "State": 1.0,
+                    "Title": "نماينده حقوقي "
+                  }
+                }
+              ],
+              "TheCCompanyPersonPostList": [
+                {
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 2.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1396/09/27",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "020",
+                    "Id": "020",
+                    "Title": "سهام دار"
+                  }
+                },
+                {
+                  "EndDateValidity": "1405/12/08",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1404/04/17",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "006",
+                    "Id": "006",
+                    "Title": "عضو اصلي هيئت مديره"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "استان تهران، شهرستان تهران، بخش مركزي، شهر تهران، كاووسيه، خيابان وليعصر، خيابان دكتر ثمره (سرو)، پلاك 58، طبقه 5، واحد 20",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 0.0,
+              "ExternalNationalStatus": 1.0,
+              "FirstNameFA": "صندوق بازنشستگي نيروهاي مسلح",
+              "ManagingConfessionStatus": 0.0,
+              "MobileNumber4SMS": "91200000000",
+              "NationalityCode": "14006945954",
+              "PersonNumber": 2.0,
+              "PersonType": 2.0,
+              "PostCode": "1968944168",
+              "RecordNo": "42316",
+              "Sex": 0.0,
+              "State": 1.0,
+              "TheAgentsList": [
+                {
+                  "StartDate": "1396/09/27",
+                  "TheAgent": {
+                    "NationalityCode": "6199832744"
+                  },
+                  "TheAgentType": {
+                    "Code": "007",
+                    "State": 1.0,
+                    "Title": "نماينده حقوقي "
+                  }
+                },
+                {
+                  "StartDate": "1399/07/07",
+                  "TheAgent": {
+                    "NationalityCode": "0033314284"
+                  },
+                  "TheAgentType": {
+                    "Code": "007",
+                    "State": 1.0,
+                    "Title": "نماينده حقوقي "
+                  }
+                },
+                {
+                  "StartDate": "1399/09/19",
+                  "TheAgent": {
+                    "NationalityCode": "0059660848"
+                  },
+                  "TheAgentType": {
+                    "Code": "007",
+                    "State": 1.0,
+                    "Title": "نماينده حقوقي "
+                  }
+                },
+                {
+                  "StartDate": "1401/09/08",
+                  "TheAgent": {
+                    "NationalityCode": "0057113122"
+                  },
+                  "TheAgentType": {
+                    "Code": "007",
+                    "State": 1.0,
+                    "Title": "نماينده حقوقي "
+                  }
+                },
+                {
+                  "StartDate": "1403/09/19",
+                  "TheAgent": {
+                    "NationalityCode": "0047149361"
+                  },
+                  "TheAgentType": {
+                    "Code": "007",
+                    "State": 1.0,
+                    "Title": "نماينده حقوقي "
+                  }
+                },
+                {
+                  "StartDate": "1403/02/23",
+                  "TheAgent": {
+                    "NationalityCode": "2092139738"
+                  },
+                  "TheAgentType": {
+                    "Code": "007",
+                    "State": 1.0,
+                    "Title": "نماينده حقوقي "
+                  }
+                }
+              ],
+              "TheCCompanyPersonPostList": [
+                {
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 2.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1403/05/03",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "020",
+                    "Id": "020",
+                    "Title": "سهام دار"
+                  }
+                },
+                {
+                  "EndDateValidity": "1399/12/22",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1397/12/22",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "042",
+                    "Id": "042",
+                    "Title": "رئيس مجمع"
+                  }
+                },
+                {
+                  "EndDateValidity": "1405/12/08",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1404/04/17",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "006",
+                    "Id": "006",
+                    "Title": "عضو اصلي هيئت مديره"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "استان تهران ، شهرستان تهران ، بخش مرکزي ، شهر تهران، محله کاووسيه ، خيابان وليعصر ، خيابان سرو ، پلاک 58 ، طبقه پنجم ، واحد 20",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 0.0,
+              "ExternalNationalStatus": 1.0,
+              "FirstNameFA": "ارقام نگر آريا",
+              "ManagingConfessionStatus": 0.0,
+              "MobileNumber4SMS": "91200000000",
+              "NationalityCode": "10100617632",
+              "PersonNumber": 7.0,
+              "PersonType": 2.0,
+              "PostCode": "1968944168",
+              "RecordNo": "10100617632",
+              "Sex": 0.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "EndDateValidity": "1400/12/25",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1399/12/25",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "048",
+                    "Id": "048",
+                    "Title": "حسابرس"
+                  }
+                },
+                {
+                  "EndDateValidity": "1400/12/25",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1399/12/25",
+                  "State": 2.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "008",
+                    "Id": "008",
+                    "Title": "بازرس اصلي"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "تهران",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 0.0,
+              "ExternalNationalStatus": 1.0,
+              "FirstNameFA": "سازمان تامين اجتماعي نيروهاي مسلح",
+              "ManagingConfessionStatus": 0.0,
+              "MobileNumber4SMS": "91200000000",
+              "NationalityCode": "14003309503",
+              "PersonNumber": 5.0,
+              "PersonType": 2.0,
+              "PostCode": "1554564684",
+              "RecordNo": "999",
+              "Sex": 0.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 2.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1396/12/23",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "020",
+                    "Id": "020",
+                    "Title": "سهام دار"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "تهران",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 0.0,
+              "ExternalNationalStatus": 1.0,
+              "FirstNameFA": "حسابرسي و خدمات مديريت آرمان نوين رسيدگي حسابداران رسمي",
+              "ManagingConfessionStatus": 0.0,
+              "MobileNumber4SMS": "91200000000",
+              "NationalityCode": "10103013428",
+              "PersonNumber": 6.0,
+              "PersonType": 2.0,
+              "PostCode": "1554849877",
+              "RecordNo": "19554",
+              "Sex": 0.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "EndDateValidity": "1397/12/23",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1396/12/23",
+                  "State": 2.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "008",
+                    "Id": "008",
+                    "Title": "بازرس اصلي"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "تهران",
+              "BirthDateSH": "1346/07/17",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 2.0,
+              "ExternalNationalStatus": 1.0,
+              "FatherNameFA": "آقا محمد",
+              "FirstNameFA": "نبي الله",
+              "LastNameFA": "الياسي",
+              "ManagingConfessionStatus": 1.0,
+              "MobileNumber4SMS": "09120000000",
+              "NationalityCode": "2259671251",
+              "PersonNumber": 4.0,
+              "PersonType": 1.0,
+              "PostCode": "1564148469",
+              "Sex": 2.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 2.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1397/12/22",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "020",
+                    "Id": "020",
+                    "Title": "سهام دار"
+                  }
+                },
+                {
+                  "EndDateValidity": "1399/12/22",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1397/12/22",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "055",
+                    "Id": "055",
+                    "Title": "ناظر دوم جلسه"
+                  }
+                },
+                {
+                  "EndDateValidity": "1399/12/22",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1397/12/22",
+                  "State": 2.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "022",
+                    "Id": "022",
+                    "Title": "نماينده قانوني"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "تهران",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 0.0,
+              "ExternalNationalStatus": 1.0,
+              "FirstNameFA": "حسابرسي بهراد مشار",
+              "ManagingConfessionStatus": 0.0,
+              "MobileNumber4SMS": "02100000000",
+              "NationalityCode": "10840017999",
+              "PersonNumber": 12.0,
+              "PersonType": 2.0,
+              "PostCode": "1500000000",
+              "RecordNo": "13898",
+              "Sex": 0.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "EndDateValidity": "1400/02/07",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1399/02/07",
+                  "State": 2.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "009",
+                    "Id": "009",
+                    "Title": "بازرس علي البدل"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "استان تهران - منطقه 19 ، شهرستان تهران ، بخش مرکزي ، شهر تهران، محله کاووسيه ، خيابان وليعصر ، خيابان سرو ، پلاک 58 ، طبقه پنجم ، واحد 20",
+              "BirthDateSH": "1330/12/16",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 2.0,
+              "ExternalNationalStatus": 1.0,
+              "FatherNameFA": "مرتضي",
+              "FirstNameFA": "مهدي",
+              "LastNameFA": "بازارگان",
+              "ManagingConfessionStatus": 1.0,
+              "MobileNumber4SMS": "09121487597",
+              "NationalityCode": "0033314284",
+              "PersonNumber": 1.0,
+              "PersonType": 1.0,
+              "PostCode": "1968944168",
+              "Sex": 2.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "EndDateValidity": "1401/07/13",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1399/07/13",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "006",
+                    "Id": "006",
+                    "Title": "عضو اصلي هيئت مديره"
+                  }
+                },
+                {
+                  "EndDateValidity": "1401/07/13",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1399/07/13",
+                  "State": 2.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "001",
+                    "Id": "001",
+                    "Title": "مديرعامل"
+                  }
+                },
+                {
+                  "EndDateValidity": "1401/07/07",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 5.0,
+                  "StartDate": "1399/07/07",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "022",
+                    "Id": "022",
+                    "Title": "نماينده قانوني"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "استان تهران، شهرستان تهران، بخش مركزي، شهر تهران، كاووسيه، خيابان وليعصر، خيابان سرو، پلاك 58، طبقه 5، واحد 20",
+              "BirthDateSH": "1355/01/01",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 2.0,
+              "ExternalNationalStatus": 1.0,
+              "FatherNameFA": "مجتبي",
+              "FirstNameFA": "اميرعباس",
+              "LastNameFA": "حسيني",
+              "ManagingConfessionStatus": 1.0,
+              "MobileNumber4SMS": "09121506574",
+              "NationalityCode": "0059660848",
+              "PersonNumber": 5.0,
+              "PersonType": 1.0,
+              "PostCode": "1968944168",
+              "Sex": 2.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "EndDateValidity": "1403/04/13",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 5.0,
+                  "StartDate": "1401/04/13",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "022",
+                    "Id": "022",
+                    "Title": "نماينده قانوني"
+                  }
+                },
+                {
+                  "EndDateValidity": "1403/04/13",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 5.0,
+                  "StartDate": "1401/04/13",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "006",
+                    "Id": "006",
+                    "Title": "عضو اصلي هيئت مديره"
+                  }
+                },
+                {
+                  "EndDateValidity": "1403/04/13",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 7.0,
+                  "StartDate": "1401/04/13",
+                  "State": 2.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "001",
+                    "Id": "001",
+                    "Title": "مديرعامل"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "استان تهران، شهرستان تهران، بخش مركزي، شهر تهران، كاووسيه، خيابان وليعصر، خيابان سرو، پلاك 58، طبقه 5، واحد 20",
+              "BirthDateSH": "1355/06/12",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 2.0,
+              "ExternalNationalStatus": 1.0,
+              "FatherNameFA": "اسکندر",
+              "FirstNameFA": "محمدرضا",
+              "LastNameFA": "شكوهي",
+              "ManagingConfessionStatus": 1.0,
+              "MobileNumber4SMS": "09143545435",
+              "NationalityCode": "2291045490",
+              "PersonNumber": 7.0,
+              "PersonType": 1.0,
+              "PostCode": "1968944168",
+              "Sex": 2.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "EndDateValidity": "1403/04/13",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 5.0,
+                  "StartDate": "1401/04/13",
+                  "State": 2.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "004",
+                    "Id": "004",
+                    "Title": "نايب رئيس هيئت مديره"
+                  }
+                },
+                {
+                  "EndDateValidity": "1403/04/13",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 5.0,
+                  "StartDate": "1401/04/13",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "022",
+                    "Id": "022",
+                    "Title": "نماينده قانوني"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "استان تهران، شهرستان تهران، بخش مركزي، شهر تهران، كاووسيه، خيابان وليعصر، خيابان سرو، پلاك 58، طبقه 5، واحد 20",
+              "BirthDateSH": "1361/06/31",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 2.0,
+              "ExternalNationalStatus": 1.0,
+              "FatherNameFA": "يونس",
+              "FirstNameFA": "عليرضا",
+              "LastNameFA": "عالي پناه",
+              "ManagingConfessionStatus": 1.0,
+              "MobileNumber4SMS": "09435436434",
+              "NationalityCode": "1465410627",
+              "PersonNumber": 9.0,
+              "PersonType": 1.0,
+              "PostCode": "1968944168",
+              "Sex": 2.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "EndDateValidity": "1403/04/13",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 5.0,
+                  "StartDate": "1401/04/13",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "006",
+                    "Id": "006",
+                    "Title": "عضو اصلي هيئت مديره"
+                  }
+                },
+                {
+                  "EndDateValidity": "1403/04/13",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 5.0,
+                  "StartDate": "1401/04/13",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "022",
+                    "Id": "022",
+                    "Title": "نماينده قانوني"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "استان تهران، شهرستان تهران، بخش مركزي، شهر تهران، كاووسيه، خيابان وليعصر، خيابان سرو، پلاك 58، طبقه 5، واحد 20",
+              "BirthDateSH": "1349/06/15",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 2.0,
+              "ExternalNationalStatus": 1.0,
+              "FatherNameFA": "محسن",
+              "FirstNameFA": "مازيار",
+              "LastNameFA": "حسيني",
+              "ManagingConfessionStatus": 1.0,
+              "MobileNumber4SMS": "09121069750",
+              "NationalityCode": "0057113122",
+              "PersonNumber": 1.0,
+              "PersonType": 1.0,
+              "PostCode": "1968944168",
+              "Sex": 2.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "EndDateValidity": "1401/12/25",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 7.0,
+                  "StartDate": "1401/10/27",
+                  "State": 2.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "001",
+                    "Id": "001",
+                    "Title": "مديرعامل"
+                  }
+                },
+                {
+                  "EndDateValidity": "1401/12/25",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 5.0,
+                  "StartDate": "1401/10/27",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "006",
+                    "Id": "006",
+                    "Title": "عضو اصلي هيئت مديره"
+                  }
+                },
+                {
+                  "EndDateValidity": "1401/12/25",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 5.0,
+                  "StartDate": "1401/09/08",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "022",
+                    "Id": "022",
+                    "Title": "نماينده قانوني"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "استان تهران، شهرستان تهران، بخش مركزي، شهر تهران، كاووسيه، خيابان وليعصر، خيابان دكتر ثمره (سرو)، پلاك 58، طبقه 5، واحد 20",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 0.0,
+              "ExternalNationalStatus": 1.0,
+              "FirstNameFA": "صندوق بيمه عمر و حوادث نيروهاي مسلح",
+              "ManagingConfessionStatus": 0.0,
+              "MobileNumber4SMS": "91354344446",
+              "NationalityCode": "14003309482",
+              "PersonNumber": 1.0,
+              "PersonType": 2.0,
+              "PostCode": "1968944168",
+              "RecordNo": "14003309482",
+              "Sex": 0.0,
+              "State": 1.0,
+              "TheAgentsList": [
+                {
+                  "StartDate": "1403/09/19",
+                  "TheAgent": {
+                    "NationalityCode": "3391885742"
+                  },
+                  "TheAgentType": {
+                    "Code": "007",
+                    "State": 1.0,
+                    "Title": "نماينده حقوقي "
+                  }
+                },
+                {
+                  "StartDate": "1403/02/23",
+                  "TheAgent": {
+                    "NationalityCode": "0938625500"
+                  },
+                  "TheAgentType": {
+                    "Code": "007",
+                    "State": 1.0,
+                    "Title": "نماينده حقوقي "
+                  }
+                }
+              ],
+              "TheCCompanyPersonPostList": [
+                {
+                  "EndDateValidity": "1405/12/08",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1404/04/17",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "006",
+                    "Id": "006",
+                    "Title": "عضو اصلي هيئت مديره"
+                  }
+                },
+                {
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 2.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1403/05/03",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "020",
+                    "Id": "020",
+                    "Title": "سهام دار"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "استان تهران، شهرستان تهران، بخش مركزي، شهر تهران، كاووسيه، خيابان وليعصر، خيابان سرو، پلاك 58، طبقه 5، واحد 20",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 0.0,
+              "ExternalNationalStatus": 1.0,
+              "FirstNameFA": "سرمايه گذاري توسعه نور دنا",
+              "ManagingConfessionStatus": 0.0,
+              "MobileNumber4SMS": "02188787163",
+              "NationalityCode": "10320401850",
+              "PersonNumber": 9.0,
+              "PersonType": 2.0,
+              "PostCode": "1968944168",
+              "RecordNo": "390127",
+              "Sex": 0.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 2.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1403/05/03",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "020",
+                    "Id": "020",
+                    "Title": "سهام دار"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "استان تهران، شهرستان تهران، بخش مركزي، شهر تهران، كاووسيه، خيابان وليعصر، خيابان سرو، پلاك 58، طبقه 5، واحد 20",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 0.0,
+              "ExternalNationalStatus": 1.0,
+              "FirstNameFA": "سرمايه گذاري امير",
+              "ManagingConfessionStatus": 0.0,
+              "MobileNumber4SMS": "02188787163",
+              "NationalityCode": "10102916359",
+              "PersonNumber": 6.0,
+              "PersonType": 2.0,
+              "PostCode": "1968944168",
+              "RecordNo": "251156",
+              "Sex": 0.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 2.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1403/05/03",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "020",
+                    "Id": "020",
+                    "Title": "سهام دار"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "استان تهران، شهرستان تهران، بخش مركزي، شهر تهران، كاووسيه، خيابان وليعصر، خيابان سرو، پلاك 58، طبقه 5، واحد 20",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 0.0,
+              "ExternalNationalStatus": 1.0,
+              "FirstNameFA": "بيمه اتكايي ايرانيان",
+              "ManagingConfessionStatus": 0.0,
+              "MobileNumber4SMS": "02188787163",
+              "NationalityCode": "10320202522",
+              "PersonNumber": 13.0,
+              "PersonType": 2.0,
+              "PostCode": "1968944168",
+              "RecordNo": "370373",
+              "Sex": 0.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 2.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1403/05/03",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "020",
+                    "Id": "020",
+                    "Title": "سهام دار"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "استان تهران، شهرستان تهران، بخش مركزي، شهر تهران، كاووسيه، خيابان وليعصر، خيابان سرو، پلاك 58، طبقه 5، واحد 20",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 0.0,
+              "ExternalNationalStatus": 1.0,
+              "FirstNameFA": "گروه مالي مسكن",
+              "ManagingConfessionStatus": 0.0,
+              "MobileNumber4SMS": "02188787163",
+              "NationalityCode": "10100687843",
+              "PersonNumber": 10.0,
+              "PersonType": 2.0,
+              "PostCode": "1968944168",
+              "RecordNo": "23313",
+              "Sex": 0.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 2.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1403/05/03",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "020",
+                    "Id": "020",
+                    "Title": "سهام دار"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "استان تهران، شهرستان تهران، بخش مركزي، شهر تهران، كاووسيه، خيابان وليعصر، خيابان سرو، پلاك 58، طبقه 5، واحد 20",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 0.0,
+              "ExternalNationalStatus": 1.0,
+              "FirstNameFA": "گروه توسعه مالي مهر آيندگان",
+              "ManagingConfessionStatus": 0.0,
+              "MobileNumber4SMS": "02188787163",
+              "NationalityCode": "10101638604",
+              "PersonNumber": 7.0,
+              "PersonType": 2.0,
+              "PostCode": "1968944168",
+              "RecordNo": "120320",
+              "Sex": 0.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 2.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1403/05/03",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "020",
+                    "Id": "020",
+                    "Title": "سهام دار"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "استان تهران، شهرستان تهران، بخش مركزي، شهر تهران، كاووسيه، خيابان وليعصر، خيابان دكتر ثمره (سرو)، پلاك 58، طبقه 5، واحد 20",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 0.0,
+              "ExternalNationalStatus": 1.0,
+              "FirstNameFA": "بيمه كوثر",
+              "ManagingConfessionStatus": 0.0,
+              "MobileNumber4SMS": "02188787163",
+              "NationalityCode": "10320357598",
+              "PersonNumber": 11.0,
+              "PersonType": 2.0,
+              "PostCode": "1968944168",
+              "RecordNo": "386198",
+              "Sex": 0.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 2.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1403/05/03",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "020",
+                    "Id": "020",
+                    "Title": "سهام دار"
+                  }
+                },
+                {
+                  "EndDateValidity": "1405/12/08",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1403/12/08",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "007",
+                    "Id": "007",
+                    "Title": "عضو علي البدل هيئت مديره"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "استان تهران، شهرستان تهران، بخش مركزي، شهر تهران، كاووسيه، خيابان وليعصر، خيابان سرو، پلاك 58، طبقه 5، واحد 20",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 0.0,
+              "ExternalNationalStatus": 1.0,
+              "FirstNameFA": "سرمايه گذاري مهر",
+              "ManagingConfessionStatus": 0.0,
+              "MobileNumber4SMS": "02188787163",
+              "NationalityCode": "10103837776",
+              "PersonNumber": 5.0,
+              "PersonType": 2.0,
+              "PostCode": "1968944168",
+              "RecordNo": "267171",
+              "Sex": 0.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 2.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1403/05/03",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "020",
+                    "Id": "020",
+                    "Title": "سهام دار"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "استان تهران، شهرستان تهران، بخش مركزي، شهر تهران، كاووسيه، خيابان وليعصر، خيابان سرو، پلاك 58، طبقه 5، واحد 20",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 0.0,
+              "ExternalNationalStatus": 1.0,
+              "FirstNameFA": "سرمايه گذاري سپه",
+              "ManagingConfessionStatus": 0.0,
+              "MobileNumber4SMS": "02188787163",
+              "NationalityCode": "10101296740",
+              "PersonNumber": 12.0,
+              "PersonType": 2.0,
+              "PostCode": "1968944168",
+              "RecordNo": "85207",
+              "Sex": 0.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 2.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1403/05/03",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "020",
+                    "Id": "020",
+                    "Title": "سهام دار"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "استان تهران، شهرستان تهران، بخش مركزي، شهر تهران، سعادت آباد، بلوار شهرداري، خيابان سرو غربي، پلاك 14، طبقه 6",
+              "BirthDateSH": "1357/04/07",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 2.0,
+              "ExternalNationalStatus": 1.0,
+              "FatherNameFA": "کرم رضا",
+              "FirstNameFA": "احد",
+              "LastNameFA": "اميري",
+              "ManagingConfessionStatus": 1.0,
+              "MobileNumber4SMS": "09123379421",
+              "NationalityCode": "3391885742",
+              "PersonNumber": 12.0,
+              "PersonType": 1.0,
+              "PostCode": "1998843339",
+              "Sex": 2.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "EndDateValidity": "1405/12/08",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1404/04/17",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "022",
+                    "Id": "022",
+                    "Title": "نماينده قانوني"
+                  }
+                },
+                {
+                  "EndDateValidity": "1404/01/31",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 5.0,
+                  "StartDate": "1403/02/23",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "006",
+                    "Id": "006",
+                    "Title": "عضو اصلي هيئت مديره"
+                  }
+                },
+                {
+                  "EndDateValidity": "1405/12/08",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 5.0,
+                  "StartDate": "1404/04/17",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "002",
+                    "Id": "002",
+                    "Title": "رئيس هيئت مديره"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "استان تهران، شهرستان تهران، بخش مركزي، شهر تهران، سعادت آباد، بلوار شهرداري، خيابان سرو غربي، پلاك 14، طبقه 6",
+              "BirthDateSH": "1343/04/06",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 2.0,
+              "ExternalNationalStatus": 1.0,
+              "FatherNameFA": "حسين",
+              "FirstNameFA": "عباس",
+              "LastNameFA": "فرهاديه",
+              "ManagingConfessionStatus": 1.0,
+              "MobileNumber4SMS": "09121790214",
+              "NationalityCode": "4723540210",
+              "PersonNumber": 13.0,
+              "PersonType": 1.0,
+              "PostCode": "1998843339",
+              "Sex": 2.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "EndDateValidity": "1405/12/08",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1404/04/17",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "022",
+                    "Id": "022",
+                    "Title": "نماينده قانوني"
+                  }
+                },
+                {
+                  "EndDateValidity": "1404/01/31",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 5.0,
+                  "StartDate": "1403/02/23",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "006",
+                    "Id": "006",
+                    "Title": "عضو اصلي هيئت مديره"
+                  }
+                },
+                {
+                  "EndDateValidity": "1405/12/08",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 5.0,
+                  "StartDate": "1404/04/17",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "004",
+                    "Id": "004",
+                    "Title": "نايب رئيس هيئت مديره"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "استان تهران، شهرستان تهران، بخش مركزي، شهر تهران، سعادت آباد، بلوار شهرداري، خيابان سرو غربي، پلاك 14، طبقه 6",
+              "BirthDateSH": "1343/05/09",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 2.0,
+              "ExternalNationalStatus": 1.0,
+              "FatherNameFA": "علي",
+              "FirstNameFA": "سيدمجيد",
+              "LastNameFA": "ابن الرضا",
+              "ManagingConfessionStatus": 1.0,
+              "MobileNumber4SMS": "09122993730",
+              "NationalityCode": "0938625500",
+              "PersonNumber": 11.0,
+              "PersonType": 1.0,
+              "PostCode": "1998843339",
+              "Sex": 2.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "EndDateValidity": "1404/01/31",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1403/02/23",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "022",
+                    "Id": "022",
+                    "Title": "نماينده قانوني"
+                  }
+                },
+                {
+                  "EndDateValidity": "1404/01/31",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 5.0,
+                  "StartDate": "1403/02/23",
+                  "State": 2.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "002",
+                    "Id": "002",
+                    "Title": "رئيس هيئت مديره"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "استان تهران، شهرستان تهران، بخش مركزي، شهر تهران، سعادت آباد، بلوار شهرداري، خيابان سرو غربي، پلاك 14، طبقه 6",
+              "BirthDateSH": "1360/06/12",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 2.0,
+              "ExternalNationalStatus": 1.0,
+              "FatherNameFA": "حسن",
+              "FirstNameFA": "مهدي",
+              "LastNameFA": "عبوري",
+              "ManagingConfessionStatus": 2.0,
+              "MobileNumber4SMS": "09111555791",
+              "NationalityCode": "2092139738",
+              "PersonNumber": 1.0,
+              "PersonType": 1.0,
+              "PostCode": "1998843339",
+              "Sex": 2.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "EndDateValidity": "1404/01/31",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 7.0,
+                  "StartDate": "1403/02/23",
+                  "State": 2.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "001",
+                    "Id": "001",
+                    "Title": "مديرعامل"
+                  }
+                },
+                {
+                  "EndDateValidity": "1404/01/31",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 5.0,
+                  "StartDate": "1403/02/23",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "006",
+                    "Id": "006",
+                    "Title": "عضو اصلي هيئت مديره"
+                  }
+                },
+                {
+                  "EndDateValidity": "1404/01/31",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1403/02/23",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "022",
+                    "Id": "022",
+                    "Title": "نماينده قانوني"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "استان تهران، شهرستان تهران، بخش مركزي، شهر تهران، كاووسيه، خيابان وليعصر، خيابان دكتر ثمره (سرو)، پلاك 58، طبقه 5، واحد 20",
+              "BirthDateSH": "1358/05/29",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 2.0,
+              "ExternalNationalStatus": 1.0,
+              "FatherNameFA": "قدمعلي",
+              "FirstNameFA": "علي اكبر",
+              "LastNameFA": "مصطفي پور",
+              "ManagingConfessionStatus": 2.0,
+              "MobileNumber4SMS": "09125789049",
+              "NationalityCode": "1170668267",
+              "PersonNumber": 32.0,
+              "PersonType": 1.0,
+              "PostCode": "1968944168",
+              "Sex": 2.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "EndDateValidity": "1405/12/08",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 5.0,
+                  "StartDate": "1404/04/17",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "006",
+                    "Id": "006",
+                    "Title": "عضو اصلي هيئت مديره"
+                  }
+                },
+                {
+                  "EndDateValidity": "1405/12/08",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1404/04/17",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "022",
+                    "Id": "022",
+                    "Title": "نماينده قانوني"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "استان تهران، شهرستان تهران، بخش مركزي، شهر تهران، المهدي، خيابان شهيد كريم نوروز پور [نشاط]، كوچه سوم غربي، پلاك 24، طبقه 1",
+              "BirthDateSH": "1329/03/26",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 2.0,
+              "ExternalNationalStatus": 1.0,
+              "FatherNameFA": "سيدحبيب",
+              "FirstNameFA": "سيدحسين",
+              "LastNameFA": "عرب زاده",
+              "ManagingConfessionStatus": 1.0,
+              "MobileNumber4SMS": "09122580517",
+              "NationalityCode": "3873201798",
+              "PersonNumber": 30.0,
+              "PersonType": 1.0,
+              "PostCode": "1475963111",
+              "Sex": 2.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "EndDateValidity": "1404/09/30",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1403/12/08",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "022",
+                    "Id": "022",
+                    "Title": "نماينده قانوني"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "استان تهران، شهرستان تهران، بخش مركزي، شهر تهران، كاووسيه، خيابان وليعصر، خيابان سرو، پلاك 58، طبقه 5، واحد 20",
+              "BirthDateSH": "1361/04/11",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 2.0,
+              "ExternalNationalStatus": 1.0,
+              "FatherNameFA": "حسن",
+              "FirstNameFA": "محمدابراهيم",
+              "LastNameFA": "آقابابائي",
+              "ManagingConfessionStatus": 1.0,
+              "MobileNumber4SMS": "09131354354",
+              "NationalityCode": "5659639968",
+              "PersonNumber": 1.0,
+              "PersonType": 1.0,
+              "PostCode": "1968944168",
+              "Sex": 2.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "EndDateValidity": "1404/01/31",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 5.0,
+                  "StartDate": "1403/02/23",
+                  "State": 2.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "004",
+                    "Id": "004",
+                    "Title": "نايب رئيس هيئت مديره"
+                  }
+                },
+                {
+                  "EndDateValidity": "1404/01/31",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1403/02/23",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "022",
+                    "Id": "022",
+                    "Title": "نماينده قانوني"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "استان تهران، شهرستان تهران، بخش مركزي، شهر تهران، كاووسيه، خيابان وليعصر، خيابان دكتر ثمره (سرو)، پلاك 58، طبقه 5، واحد 20",
+              "BirthDateSH": "1361/01/22",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 2.0,
+              "ExternalNationalStatus": 1.0,
+              "FatherNameFA": "حسين",
+              "FirstNameFA": "مهدي",
+              "LastNameFA": "رياضي كلاهدوز محله",
+              "ManagingConfessionStatus": 2.0,
+              "MobileNumber4SMS": "09126097630",
+              "NationalityCode": "5179656524",
+              "PersonNumber": 30.0,
+              "PersonType": 1.0,
+              "PostCode": "1968944168",
+              "Sex": 2.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "EndDateValidity": "1405/12/08",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 5.0,
+                  "StartDate": "1404/04/17",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "006",
+                    "Id": "006",
+                    "Title": "عضو اصلي هيئت مديره"
+                  }
+                },
+                {
+                  "EndDateValidity": "1405/12/08",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1404/04/17",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "022",
+                    "Id": "022",
+                    "Title": "نماينده قانوني"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "استان تهران، شهرستان تهران، بخش مركزي، شهر تهران، كاووسيه، خيابان وليعصر، خيابان دكتر ثمره (سرو)، پلاك 58، طبقه 5، واحد 20",
+              "BirthDateSH": "1336/04/27",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 2.0,
+              "ExternalNationalStatus": 1.0,
+              "FatherNameFA": "جواد",
+              "FirstNameFA": "سيد مجيد",
+              "LastNameFA": "هدايت",
+              "ManagingConfessionStatus": 2.0,
+              "MobileNumber4SMS": "09122901084",
+              "NationalityCode": "0047149361",
+              "PersonNumber": 31.0,
+              "PersonType": 1.0,
+              "PostCode": "1968944168",
+              "Sex": 2.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "EndDateValidity": "1405/12/08",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 7.0,
+                  "StartDate": "1404/04/17",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "001",
+                    "Id": "001",
+                    "Title": "مديرعامل"
+                  }
+                },
+                {
+                  "EndDateValidity": "1405/12/08",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 7.0,
+                  "StartDate": "1404/04/17",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "006",
+                    "Id": "006",
+                    "Title": "عضو اصلي هيئت مديره"
+                  }
+                },
+                {
+                  "EndDateValidity": "1405/12/08",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1404/04/17",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "022",
+                    "Id": "022",
+                    "Title": "نماينده قانوني"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "استان تهران، شهرستان تهران، بخش مركزي، شهر تهران، دريان نو، خيابان زنجان شمالي، خيابان شهيد سيد حميد متوليان، پلاك 7، ساختمان صادقيان، طبقه 7، واحد غربي",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 0.0,
+              "ExternalNationalStatus": 1.0,
+              "FirstNameFA": "گروه مالي مهرگان تامين پارس",
+              "ManagingConfessionStatus": 0.0,
+              "MobileNumber4SMS": "02102154708",
+              "NationalityCode": "10103460290",
+              "PersonNumber": 30.0,
+              "PersonType": 2.0,
+              "PostCode": "1455693923",
+              "RecordNo": "307520",
+              "Sex": 0.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "EndDateValidity": "1405/12/08",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1403/12/08",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "007",
+                    "Id": "007",
+                    "Title": "عضو علي البدل هيئت مديره"
+                  }
+                }
+              ]
+            },
+            {
+              "Address": "استان تهران، شهرستان تهران، بخش مركزي، شهر تهران، كاووسيه، بلوار نلسون ماندلا، خيابان شهيد سرتيپ هوشنگ وحيددستگردي، پلاك 290-، طبقه 3",
+              "BirthDateSH": "1332/12/08",
+              "CapitalStatus": 0.0,
+              "ClearanceConfessionStatus": 2.0,
+              "ExternalNationalStatus": 1.0,
+              "FatherNameFA": "غلامحسين",
+              "FirstNameFA": "عليرضا",
+              "LastNameFA": "عطوفي",
+              "ManagingConfessionStatus": 1.0,
+              "MobileNumber4SMS": "09121241426",
+              "NationalityCode": "4132080749",
+              "PersonNumber": 31.0,
+              "PersonType": 1.0,
+              "PostCode": "1917684815",
+              "Sex": 2.0,
+              "State": 1.0,
+              "TheAgentsList": [],
+              "TheCCompanyPersonPostList": [
+                {
+                  "EndDateValidity": "1404/09/30",
+                  "IsNonDirectMember": 0.0,
+                  "IsNonPartnership": 2.0,
+                  "ManagingConfessionStatus": 0.0,
+                  "PeriodTime": 1.0,
+                  "SignatureState": 4.0,
+                  "StartDate": "1403/12/08",
+                  "State": 1.0,
+                  "TheCCompanyPerson": {
+                    "TheAgentedsList": [],
+                    "TheAgentsList": [],
+                    "TheCCompanyAttorneyList": [],
+                    "TheCCompanyBranchPostsList": [],
+                    "TheCCompanyPersonPostList": [],
+                    "TheCCompanyPersonStocksList": []
+                  },
+                  "TheCIPostType": {
+                    "Code": "022",
+                    "Id": "022",
+                    "Title": "نماينده قانوني"
+                  }
+                }
+              ]
+            }
+          ],
+          "TheCCompanyStatuteList": [],
+          "TheCCompanyStocksList": [
+            {
+              "FromDate": "1395/12/04",
+              "NumberOfStock": 7.2E10,
+              "Price": 1000.0,
+              "State": 2.0,
+              "TheCISharesType": {
+                "Code": "001",
+                "State": 1.0,
+                "Title": "با نام عادي"
+              },
+              "TotalPrice": 7.2E13
+            },
+            {
+              "FromDate": "1394/11/25",
+              "NumberOfStock": 4.608E7,
+              "Price": 1000.0,
+              "State": 2.0,
+              "TheCISharesType": {
+                "Code": "001",
+                "State": 1.0,
+                "Title": "با نام عادي"
+              },
+              "TotalPrice": 4.608E10
+            },
+            {
+              "FromDate": "1392/11/13",
+              "NumberOfStock": 1.8E10,
+              "Price": 1000.0,
+              "State": 2.0,
+              "TheCISharesType": {
+                "Code": "001",
+                "State": 1.0,
+                "Title": "با نام عادي"
+              },
+              "TotalPrice": 1.8E13
+            },
+            {
+              "FromDate": "1393/11/26",
+              "NumberOfStock": 3.6E10,
+              "Price": 1000.0,
+              "State": 2.0,
+              "TheCISharesType": {
+                "Code": "001",
+                "State": 1.0,
+                "Title": "با نام عادي"
+              },
+              "TotalPrice": 3.6E13
+            },
+            {
+              "FromDate": "1393/07/19",
+              "NumberOfStock": 36000.0,
+              "Price": 1000.0,
+              "State": 2.0,
+              "TheCISharesType": {
+                "Code": "001",
+                "State": 1.0,
+                "Title": "با نام عادي"
+              },
+              "TotalPrice": 3.6E7
+            },
+            {
+              "FromDate": "1403/05/03",
+              "NumberOfStock": 2.16E11,
+              "Price": 1000.0,
+              "State": 1.0,
+              "TheCISharesType": {
+                "Code": "001",
+                "State": 1.0,
+                "Title": "با نام عادي"
+              },
+              "TotalPrice": 2.16E14
+            }
+          ],
+          "TheCICompanyType": {
+            "Code": "007",
+            "Title": "شركت سهامي عام"
+          },
+          "TheNAJAUnit": {
+            "Title": "اداره کل ثبت شرکت ها و موسسات غیر تجاری",
+            "Code": "1001001",
+            "State": 1.0,
+            "TheChildUnitList": [],
+            "TheGUnitRelatedNajaUnitList": []
+          },
+          "TheObjectState": {
+            "Code": "004118",
+            "StateType": 1.0,
+            "Title": "معتبر"
+          },
+          "TheUnit": {
+            "Code": "00901",
+            "UnitName": "اداره ثبت شركت ها و موسسات غيرتجاري تهران"
+          }
+        }
+      },
+      "status": {
+        "statusCode": 200.0,
+        "message": "OK"
+      }
+    },
+    "status": {
+      "statusCode": 200.0,
+      "message": "OK"
+    }
+  },
+  "errorMessages": []
+}

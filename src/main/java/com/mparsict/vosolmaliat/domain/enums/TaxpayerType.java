@@ -1,14 +1,20 @@
 package com.mparsict.vosolmaliat.domain.enums;
 
-public enum TaxpayerType {
-    NATURAL("حقیقی"),
-    LEGAL("حقوقی");
+public enum TaxpayerType implements LookupValue {
+    LEGAL(1, "حقوقی"),
+    NATURAL(2, "حقیقی"),
+    PARTNERSHIP(3, "حقیقی مشارکتی");
 
+    private final int id;
     private final String persianLabel;
 
-    TaxpayerType(String persianLabel) {
+    TaxpayerType(int id, String persianLabel) {
+        this.id = id;
         this.persianLabel = persianLabel;
     }
+
+    @Override public int id() { return id; }
+    @Override public String label() { return persianLabel; }
 
     public String getPersianLabel() {
         return persianLabel;

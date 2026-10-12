@@ -92,7 +92,7 @@ public class DashboardService {
         java.math.BigDecimal total = java.math.BigDecimal.ZERO;
         for (var request : issuanceRequestRepository.findByRejectionReasonIsNotNull()) {
             try {
-                var payload = objectMapper.readValue(request.getPayload(), DebtPaperIssuanceRequest.class);
+                var payload = objectMapper.readValue(request.getXml(), DebtPaperIssuanceRequest.class);
                 if (payload.sourceDocument() == null || payload.sourceDocument().getAmounts() == null
                         || payload.sourceDocument().getAmounts().getOutstandingDebtAmount() == null) return null;
                 total = total.add(payload.sourceDocument().getAmounts().getOutstandingDebtAmount());

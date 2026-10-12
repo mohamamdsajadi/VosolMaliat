@@ -18,8 +18,10 @@ public class RelatedPersonPostInitializer implements CommandLineRunner {
     @Transactional
     public void run(String... args) {
         for (RelatedPersonPostCode code : RelatedPersonPostCode.values()) {
+            if (!code.hasCompanyRegistrationCode()) continue;
             if (relatedPersonPostRepository.findByCode(code).isEmpty()) {
-                relatedPersonPostRepository.save(RelatedPersonPost.builder().code(code).build());
+                relatedPersonPostRepository.save(RelatedPersonPost.builder().code(code)
+                        .codeInCompanyRegistrationSystem(code.companyRegistrationCode()).title(code.label()).build());
             }
         }
     }

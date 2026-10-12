@@ -25,6 +25,9 @@ public class DynamicControlRuleHistory extends BaseEntity {
     @Column(name = "document_file_path", nullable = false, updatable = false) private String filePath;
     @Column(updatable = false) private String description;
     @Enumerated(EnumType.STRING) @Column(name = "rule_scope", nullable = false, updatable = false) private RuleScope ruleScope;
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="rule_scope", referencedColumnName="code", insertable=false, updatable=false)
+    private com.mparsict.vosolmaliat.domain.model.masterdata.RuleScopeDefinition ruleScopeDefinition;
     @Column(name = "parent_rule_id", updatable = false) private Long parentRuleId;
     @Column(name = "error_code", nullable = false, updatable = false) private String errorCode;
     @Column(name = "error_message", nullable = false, updatable = false) private String errorMessage;

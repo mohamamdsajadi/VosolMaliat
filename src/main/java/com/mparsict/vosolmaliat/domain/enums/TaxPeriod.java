@@ -1,9 +1,12 @@
 package com.mparsict.vosolmaliat.domain.enums;
 
-public enum TaxPeriod {
-    SPRING(1), SUMMER(2), AUTUMN(3), WINTER(4);
+public enum TaxPeriod implements LookupValue {
+    SPRING(1, "بهار"), SUMMER(2, "تابستان"), AUTUMN(3, "پاییز"), WINTER(4, "زمستان");
     private final int number;
-    TaxPeriod(int number) { this.number = number; }
+    private final String label;
+    TaxPeriod(int number, String label) { this.number = number; this.label = label; }
+    @Override public int id() { return number; }
+    @Override public String label() { return label; }
     public int number() { return number; }
     public static TaxPeriod of(int number) {
         for (var period : values()) if (period.number == number) return period;

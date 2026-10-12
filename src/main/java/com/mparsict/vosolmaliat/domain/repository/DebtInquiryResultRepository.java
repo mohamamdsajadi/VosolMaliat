@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface DebtInquiryResultRepository extends JpaRepository<DebtInquiryResult, Long> {
-    Optional<DebtInquiryResult> findByRequestId(String requestId);
+    Optional<DebtInquiryResult> findFirstByHashAndFinalTaxDebtPaperNotificationId(String hash, String notificationId);
 }

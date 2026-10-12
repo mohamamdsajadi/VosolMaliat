@@ -18,7 +18,7 @@ class DocumentModelContractTest {
                 .taxYear("1404").taxPeriod("1").issuanceReason("برگه بدهی قطعی")
                 .phone("02112345678").mobile("09121234567").taxpayerName("علی نمونه")
                 .activityTypeId(1L).amounts(com.mparsict.vosolmaliat.TestSanimDocuments.amounts()).build();
-        return new DebtPaperIssuanceRequest("D1","VAT",1L,1L,
+        return new DebtPaperIssuanceRequest("F1","TAXB",1L,1L,
                 new DebtPaperIssuanceRequest.TaxpayerInfo("NATURAL","0012345678",null,"علی","نمونه","حسن","1360/01/01","1234567890","تهران",null,null,null,null),null,document);
     }
     @Test void acceptsCompleteRequestAndNormalizesDocumentReasonAndPeriod() {
@@ -60,6 +60,24 @@ class DocumentModelContractTest {
         notification.recordView(LocalDateTime.of(2026,1,11,10,0));
         assertThat(notification.paymentDeadline()).isEqualTo(LocalDateTime.of(2026,2,10,10,0));
         assertThatThrownBy(()->notification.recordView(LocalDateTime.of(2025,12,31,10,0))).hasMessageContaining("تاریخ رویت");
+    }
+
+    @Test void finalNoticeRequiresOnlyFinalNoticeNumberAndDate() {
+        var paper = com.mparsict.vosolmaliat.domain.model.execution.FinalTaxDebtPaper.builder()
+                .finalizationReason(com.mparsict.vosolmaliat.domain.enums.FinalizationReason.FINAL_NOTICE)
+                .uniqueFinalTaxDebtNoticeId("F-1").finalTaxDebtNoticeIssueDate(LocalDateTime.now()).build();
+        assertThatCode(paper::validateSourceDocument).doesNotThrowAnyException();
+        paper.setTaxReturnNumber("R-1");
+        assertThatThrownBy(paper::validateSourceDocument).hasMessageContaining("برگ قطعی");
+    }
+
+    @Test void selfDeclarationRequiresOnlyTaxReturnNumberAndDate() {
+        var paper = com.mparsict.vosolmaliat.domain.model.execution.FinalTaxDebtPaper.builder()
+                .finalizationReason(com.mparsict.vosolmaliat.domain.enums.FinalizationReason.SELF_DECLARATION)
+                .taxReturnNumber("R-1").taxReturnDate(LocalDateTime.now()).build();
+        assertThatCode(paper::validateSourceDocument).doesNotThrowAnyException();
+        paper.setUniqueFinalTaxDebtNoticeId("F-1");
+        assertThatThrownBy(paper::validateSourceDocument).hasMessageContaining("خوداظهاری");
     }
 
     @Test void naturalPersonProfileUpdateCreatesOneCompletePriorVersion() {

@@ -18,7 +18,8 @@ public interface ExecutionPaperRepository extends JpaRepository<ExecutionPaper, 
 
     Optional<ExecutionPaper> findByExecutionPaperUniqueCode(String code);
 
-    Optional<ExecutionPaper> findByFinalTaxDebtPaperUniqueFinalTaxDebtNoticeId(String uniqueFinalTaxDebtNoticeId);
+    @Query("SELECT paper FROM ExecutionPaper paper WHERE paper.finalTaxDebtPaper.uniqueFinalTaxDebtNoticeId = :number OR paper.finalTaxDebtPaper.taxReturnNumber = :number")
+    Optional<ExecutionPaper> findByFinalTaxDebtPaperSourceDocumentNumber(@Param("number") String number);
 
 
 
@@ -26,7 +27,7 @@ public interface ExecutionPaperRepository extends JpaRepository<ExecutionPaper, 
      * تاریخ صدور برگ بدهی متصل به برگ اجرا را برای بازیابی متغیر فرایند برمی‌گرداند.
      */
     @Query("""
-            SELECT cast(finalTaxDebtPaper.finalTaxDebtNoticeIssueDate as string)
+            SELECT cast(COALESCE(finalTaxDebtPaper.taxReturnDate, finalTaxDebtPaper.finalTaxDebtNoticeIssueDate) as string)
             FROM ExecutionPaper executionPaper
             JOIN executionPaper.finalTaxDebtPaper finalTaxDebtPaper
             WHERE executionPaper.id = :executionPaperId

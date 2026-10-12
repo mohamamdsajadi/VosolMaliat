@@ -87,7 +87,7 @@ public class RelatedPersonService {
             String debtYear) {
         List<RelatedPerson> activeRelationships = new ArrayList<>(
                 existingRelationships.stream()
-                        .filter(item -> !hasText(item.getEndDate()))
+                        .filter(item -> item.getEndDate() == null)
                         .toList()
         );
         if (activeRelationships.isEmpty()) {
@@ -99,13 +99,10 @@ public class RelatedPersonService {
         int countToExpire = maximumToExpire == 1
                 ? 1
                 : ThreadLocalRandom.current().nextInt(1, maximumToExpire + 1);
-        String syncedAt = LocalDateTime.now().toString();
-
         activeRelationships.stream()
                 .limit(countToExpire)
                 .forEach(relationship -> {
                     relationship.setEndDate(randomExpiryDate(relationship, debtYear));
-                    relationship.setLastSyncedAt(syncedAt);
                     relatedPersonRepository.save(relationship);
                 });
     }
@@ -114,17 +111,16 @@ public class RelatedPersonService {
         return hasText(debtYear) ? debtYear + "-01-01" : "1400-01-01";
     }
 
-    private String randomExpiryDate(RelatedPerson relationship, String debtYear) {
+    private LocalDateTime randomExpiryDate(RelatedPerson relationship, String debtYear) {
         String year = hasText(debtYear) ? debtYear : "1400";
         ThreadLocalRandom random = ThreadLocalRandom.current();
         int month = random.nextInt(1, 13);
         int maximumDay = month <= 6 ? 31 : month <= 11 ? 30 : 29;
         int day = random.nextInt(1, maximumDay + 1);
         String candidate = "%s-%02d-%02d".formatted(year, month, day);
-        String startDate = normalizeJalaliDate(relationship.getStartDate());
-        return hasText(startDate) && startDate.compareTo(candidate) > 0
-                ? startDate
-                : candidate;
+        LocalDateTime candidateDate = com.mparsict.vosolmaliat.domain.value.PersianDates.parse(candidate);
+        LocalDateTime startDate = relationship.getStartDate();
+        return startDate != null && startDate.isAfter(candidateDate) ? startDate : candidateDate;
     }
 
     @Transactional
@@ -147,37 +143,33 @@ public class RelatedPersonService {
             ExecutionContext context,
             List<CompanyRegistryRelatedPersonData> externalData,
             String sourceSystem) {
-        String syncedAt = LocalDateTime.now().toString();
-
         for (CompanyRegistryRelatedPersonData item : externalData) {
             validateExternalItem(item);
-            RelatedPerson relationship = relatedPersonRepository
-                    .findByOwnerLegalPersonIdAndSourceSystemAndSourceRecordId(
-                            context.owner().getId(),
-                            sourceSystem,
-                            item.sourceRecordId()
-                    )
+            RelatedPersonPost post = resolvePost(item);
+            LocalDateTime startDate = parseJalaliDate(item.startDate());
+            NaturalPerson naturalPerson = item.personType() == RelatedPersonType.NATURAL
+                    ? resolveNaturalPerson(item) : null;
+            LegalPerson legalPerson = item.personType() == RelatedPersonType.LEGAL
+                    ? resolveLegalPerson(item) : null;
+            RelatedPerson relationship = (naturalPerson != null
+                    ? relatedPersonRepository.findByOwnerLegalPersonIdAndPostIdAndNaturalPersonIdAndStartDate(
+                            context.owner().getId(), post.getId(), naturalPerson.getId(), startDate)
+                    : relatedPersonRepository.findByOwnerLegalPersonIdAndPostIdAndLegalPersonIdAndStartDate(
+                            context.owner().getId(), post.getId(), legalPerson.getId(), startDate))
                     .orElseGet(RelatedPerson::new);
 
             relationship.setOwnerLegalPerson(context.owner());
-            relationship.setTaxpayer(context.taxpayer());
-            relationship.setPost(resolvePost(item));
-            relationship.setStartDate(normalizeJalaliDate(item.startDate()));
-            relationship.setEndDate(normalizeJalaliDate(item.endDate()));
-            relationship.setHasSignatoryAuthority(item.hasSignatoryAuthority());
-            String postCode = item.postCode().name();
-            relationship.setBoardMember(postCode.contains("BOARD") || postCode.equals("CEO"));
-            relationship.setPartner(postCode.contains("PARTNER") || postCode.equals("SHAREHOLDER"));
-            relationship.setSourceSystem(sourceSystem);
-            relationship.setSourceRecordId(item.sourceRecordId());
-            relationship.setLastSyncedAt(syncedAt);
+            relationship.setPost(post);
+            relationship.setStartDate(startDate);
+            relationship.setEndDate(parseJalaliDate(item.endDate()));
+            relationship.setPositionExpiryDate(parseJalaliDate(item.endDate()));
 
-            if (item.personType() == RelatedPersonType.NATURAL) {
-                relationship.setNaturalPerson(resolveNaturalPerson(item));
+            if (naturalPerson != null) {
+                relationship.setNaturalPerson(naturalPerson);
                 relationship.setLegalPerson(null);
                 relationship.setLegalRepresentativeNaturalPerson(null);
             } else {
-                relationship.setLegalPerson(resolveLegalPerson(item));
+                relationship.setLegalPerson(legalPerson);
                 relationship.setNaturalPerson(null);
                 relationship.setLegalRepresentativeNaturalPerson(
                         resolveNaturalPerson(item.legalRepresentative())
@@ -209,9 +201,10 @@ public class RelatedPersonService {
                 .map(this::toResponse)
                 .toList();
         String lastSyncedAt = allRelationships.stream()
-                .map(RelatedPerson::getLastSyncedAt)
-                .filter(value -> value != null && !value.isBlank())
-                .max(String::compareTo)
+                .map(RelatedPerson::getUpdatedAt)
+                .filter(java.util.Objects::nonNull)
+                .max(LocalDateTime::compareTo)
+                .map(LocalDateTime::toString)
                 .orElse(null);
 
         return new ExecutionPaperRelatedPersonsResponse(
@@ -330,12 +323,13 @@ public class RelatedPersonService {
         if (!hasText(debtYear)) {
             return true;
         }
-        String yearStart = debtYear + "-01-01";
-        String nextYearStart = (Integer.parseInt(debtYear) + 1) + "-01-01";
-        String startDate = normalizeJalaliDate(relationship.getStartDate());
-        String endDate = normalizeJalaliDate(relationship.getEndDate());
-        return (!hasText(startDate) || startDate.compareTo(nextYearStart) < 0)
-                && (!hasText(endDate) || endDate.compareTo(yearStart) >= 0);
+        LocalDateTime yearStart = com.mparsict.vosolmaliat.domain.value.PersianDates.parse(debtYear + "-01-01");
+        LocalDateTime nextYearStart = com.mparsict.vosolmaliat.domain.value.PersianDates.parse(
+                (Integer.parseInt(debtYear) + 1) + "-01-01");
+        LocalDateTime startDate = relationship.getStartDate();
+        LocalDateTime endDate = relationship.getEndDate();
+        return (startDate == null || startDate.isBefore(nextYearStart))
+                && (endDate == null || !endDate.isBefore(yearStart));
     }
 
     private RelatedPersonResponse toResponse(RelatedPerson relationship) {
@@ -348,11 +342,11 @@ public class RelatedPersonService {
                 relationship.getId(),
                 personType,
                 post == null ? null : post.getId(),
-                post == null || post.getCode() == null ? null : post.getCode().name(),
-                post == null || post.getCode() == null ? null : post.getCode().label(),
-                relationship.getStartDate(),
-                relationship.getEndDate(),
-                Integer.valueOf(1).equals(relationship.getHasSignatoryAuthority()),
+                post == null ? null : post.getCodeInCompanyRegistrationSystem(),
+                post == null ? null : post.getTitle(),
+                formatJalaliDate(relationship.getStartDate()),
+                formatJalaliDate(relationship.getEndDate()),
+                false,
                 naturalPerson == null ? null : naturalPerson.getId(),
                 naturalPerson == null ? null : naturalPerson.getNationalCode(),
                 naturalPerson == null ? null : naturalPerson.getFida(),
@@ -399,6 +393,15 @@ public class RelatedPersonService {
             return null;
         }
         return toEnglishDigits(value.trim()).replace('/', '-');
+    }
+
+    private LocalDateTime parseJalaliDate(String value) {
+        String normalized = normalizeJalaliDate(value);
+        return hasText(normalized) ? com.mparsict.vosolmaliat.domain.value.PersianDates.parse(normalized) : null;
+    }
+
+    private String formatJalaliDate(LocalDateTime value) {
+        return value == null ? null : com.mparsict.vosolmaliat.domain.value.PersianDates.format(value);
     }
 
     private String toEnglishDigits(String value) {

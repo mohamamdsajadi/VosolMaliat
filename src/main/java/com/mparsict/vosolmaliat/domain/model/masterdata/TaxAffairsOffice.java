@@ -13,9 +13,6 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class TaxAffairsOffice extends BaseEntity {
-    @Column(name="office_type") @Builder.Default private Integer officeType = 0;
-    @Column(name="office_code", unique=true) private String officeCode;
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

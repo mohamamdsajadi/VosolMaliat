@@ -89,16 +89,12 @@ public class Ef03SampleImportService {
                         .phone("")
                         .build()));
 
-        String officeCode = blankToNull(details.getSourceTaxOfficeCode());
         String officeName = required(details.getTaxOfficeName(), "tax office");
         boolean officeExists = taxOffices.findAll().stream().anyMatch(item ->
-                officeCode != null ? officeCode.equals(item.getOfficeCode())
-                        : officeName.equals(item.getOfficeName())
+                officeName.equals(item.getOfficeName())
                         && general.getId().equals(item.getGeneralDirectorateOfTaxAffairsId()));
         if (!officeExists) {
             taxOffices.save(TaxAffairsOffice.builder()
-                    .officeType(0)
-                    .officeCode(officeCode)
                     .officeName(officeName)
                     .postalCode(value(xml.text("J")))
                     .phone(value(xml.text("K")))

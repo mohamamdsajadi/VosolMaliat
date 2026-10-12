@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 // The audit columns on this table reference the reserved system actor.  Seed
 // that actor first so SQLite foreign-key enforcement cannot make startup
 // ordering nondeterministic.
-@Order(Ordered.HIGHEST_PRECEDENCE + 1)
+@Order(Ordered.HIGHEST_PRECEDENCE + 2)
 @RequiredArgsConstructor
 public class PaperTypeDataInitializer implements ApplicationRunner {
     private final PaperTypeDefinitionRepository repository;
@@ -26,7 +26,8 @@ public class PaperTypeDataInitializer implements ApplicationRunner {
         for (PaperType type : PaperType.values()) {
             if (!repository.existsByCode(type.code())) {
                 repository.save(PaperTypeDefinition.builder()
-                        .code(type.code()).paperTitle(type.getPersianTitle()).build());
+                        .code(type.code()).paperTitle(type.getPersianTitle())
+                        .taxSource(type.taxSource()).build());
             }
         }
     }

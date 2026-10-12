@@ -61,7 +61,7 @@ public class DebtPaperPushPersistenceService {
     public Long prepareWorkflow(Long recordId, DebtPaperIssuanceRequest request) {
         codes.lockIssuance();
         TaxpayerIdentityValidation.requireConsistentRegistration(taxpayers, request);
-        sourcePapers.findByUniqueFinalTaxDebtNoticeId(request.debtPaperUniqueCode()).ifPresent(source -> {
+        sourcePapers.findBySourceDocumentNumber(request.debtPaperUniqueCode()).ifPresent(source -> {
             if (!java.util.Objects.equals(source.getTaxpayer().getTin(), request.sourceDocument().getTaxpayerIdentifier())) {
                 throw new com.mparsict.vosolmaliat.common.exception.BusinessException(
                         "DEBT_PAPER_TAXPAYER_CONFLICT", "برگ بدهی قطعی به مؤدی دیگری تعلق دارد");

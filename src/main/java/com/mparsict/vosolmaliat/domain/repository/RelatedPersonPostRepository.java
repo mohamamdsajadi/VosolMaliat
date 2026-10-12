@@ -10,5 +10,11 @@ import java.util.Optional;
 @Repository
 public interface RelatedPersonPostRepository extends JpaRepository<RelatedPersonPost, Long> {
 
-    Optional<RelatedPersonPost> findByCode(RelatedPersonPostCode code);
+    Optional<RelatedPersonPost> findByCodeInCompanyRegistrationSystem(String code);
+
+    default Optional<RelatedPersonPost> findByCode(RelatedPersonPostCode code) {
+        return code == null || !code.hasCompanyRegistrationCode()
+                ? Optional.empty()
+                : findByCodeInCompanyRegistrationSystem(code.companyRegistrationCode());
+    }
 }

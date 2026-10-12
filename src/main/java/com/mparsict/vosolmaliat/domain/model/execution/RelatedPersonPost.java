@@ -6,7 +6,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "related_person_post")
+@Table(name = "post_in_company")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -18,7 +18,31 @@ public class RelatedPersonPost extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "code", nullable = false, unique = true)
+    @Transient
     private RelatedPersonPostCode code;
+
+    @Column(name = "code_in_company_registration_system", nullable = false, unique = true, length = 64)
+    private String codeInCompanyRegistrationSystem;
+
+    @Column(name="title", nullable=false) private String title;
+
+    @PrePersist
+    @PreUpdate
+    private void normalizeCode() {
+        if (codeInCompanyRegistrationSystem == null && code != null) {
+            codeInCompanyRegistrationSystem = code.companyRegistrationCode();
+        }
+        if (codeInCompanyRegistrationSystem == null || codeInCompanyRegistrationSystem.isBlank()) {
+            throw new IllegalStateException("کد سمت در سامانه ثبت شرکت‌ها الزامی است");
+        }
+    }
+
+    @PostLoad
+    private void resolveInternalCode() {
+        try {
+            code = RelatedPersonPostCode.fromCompanyRegistrationCode(codeInCompanyRegistrationSystem);
+        } catch (IllegalArgumentException ignored) {
+            code = null;
+        }
+    }
 }

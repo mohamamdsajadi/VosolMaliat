@@ -76,7 +76,7 @@ public class AdminDataEntryService {
                 .build());
 
         com.mparsict.vosolmaliat.application.service.SanimModelValidation.requireAmounts(request.currentAmounts());
-        debtInformationRepository.save(DebtInformation.builder().executionPaper(saved).finalTaxDebtPaper(finalTaxDebtPaper)
+        debtInformationRepository.save(DebtInformation.builder().finalTaxDebtPaper(finalTaxDebtPaper)
                 .currentAmounts(request.currentAmounts().copy()).build());
         return executionPaperService.getDetails(saved.getId());
     }
@@ -87,8 +87,8 @@ public class AdminDataEntryService {
                 finalTaxDebtPaperRepository.findAll().stream()
                         .map(item -> new AdminDataSummaryResponse.FinalTaxDebtPaperSummary(
                                 item.getId(),
-                                item.getUniqueFinalTaxDebtNoticeId(),
-                                item.getTaxSource().name()
+                                item.getSourceDocumentNumber(),
+                                item.getPaperType().taxSource().name()
                         ))
                         .toList(),
                 taxpayerRepository.findAll().stream()

@@ -49,9 +49,6 @@ class RelatedPersonServiceUnitTest {
                 .isBetween(1, 2);
         assertThat(state.relationships).hasSize(secondRefresh.relatedPersons().size());
         assertThat(state.relationships)
-                .extracting(RelatedPerson::getSourceRecordId)
-                .doesNotHaveDuplicates();
-        assertThat(state.relationships)
                 .filteredOn(item -> item.getEndDate() != null)
                 .hasSizeBetween(1, Math.min(2, firstRefresh.relatedPersons().size()));
         assertThat(secondRefresh.relatedPersons())
@@ -68,7 +65,7 @@ class RelatedPersonServiceUnitTest {
                 .doesNotContainNull();
         assertThat(secondRefresh.relatedPersons())
                 .allSatisfy(item -> assertThat(
-                        RelatedPersonPostCode.valueOf(item.postCode())
+                        RelatedPersonPostCode.fromCompanyRegistrationCode(item.postCode())
                                 .supports(RelatedPersonType.valueOf(item.personType()))
                 ).isTrue());
         assertThat(auditLogService.action)
@@ -87,7 +84,7 @@ class RelatedPersonServiceUnitTest {
         assertThat(response.relatedPersons())
                 .hasSizeBetween(1, 2)
                 .allSatisfy(item -> assertThat(
-                        RelatedPersonPostCode.valueOf(item.postCode())
+                        RelatedPersonPostCode.fromCompanyRegistrationCode(item.postCode())
                                 .supports(RelatedPersonType.valueOf(item.personType()))
                 ).isTrue());
     }
@@ -124,7 +121,11 @@ class RelatedPersonServiceUnitTest {
         private RepositoryState(String debtYear) {
             long postId = 1;
             for (RelatedPersonPostCode code : RelatedPersonPostCode.values()) {
-                postsByCode.put(code, RelatedPersonPost.builder().id(postId++).code(code).build());
+                if (code.hasCompanyRegistrationCode()) {
+                    postsByCode.put(code, RelatedPersonPost.builder().id(postId++).code(code)
+                            .codeInCompanyRegistrationSystem(code.companyRegistrationCode())
+                            .title(code.label()).build());
+                }
             }
             legalPeopleByNationalId.put(owner.getNationalId(), owner);
             taxpayer = Taxpayer.builder().id(3L).legalPerson(owner).build();
@@ -216,10 +217,17 @@ class RelatedPersonServiceUnitTest {
                                 .comparing(RelatedPerson::getStartDate)
                                 .thenComparing(RelatedPerson::getId))
                         .toList();
-                case "findByOwnerLegalPersonIdAndSourceSystemAndSourceRecordId" -> relationships.stream()
+                case "findByOwnerLegalPersonIdAndPostIdAndNaturalPersonIdAndStartDate" -> relationships.stream()
                         .filter(item -> item.getOwnerLegalPersonId().equals(args[0])
-                                && item.getSourceSystem().equals(args[1])
-                                && item.getSourceRecordId().equals(args[2]))
+                                && item.getPost().getId().equals(args[1])
+                                && item.getNaturalPerson() != null && item.getNaturalPerson().getId().equals(args[2])
+                                && java.util.Objects.equals(item.getStartDate(), args[3]))
+                        .findFirst();
+                case "findByOwnerLegalPersonIdAndPostIdAndLegalPersonIdAndStartDate" -> relationships.stream()
+                        .filter(item -> item.getOwnerLegalPersonId().equals(args[0])
+                                && item.getPost().getId().equals(args[1])
+                                && item.getLegalPerson() != null && item.getLegalPerson().getId().equals(args[2])
+                                && java.util.Objects.equals(item.getStartDate(), args[3]))
                         .findFirst();
                 case "save" -> {
                     RelatedPerson relationship = (RelatedPerson) args[0];

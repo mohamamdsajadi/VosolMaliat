@@ -128,7 +128,7 @@ class Ef03PipelineLiveTest {
                             .postalCode("").address("").phone("").build()));
             String officeCode = officeCode(tags.get("i"));
             if (officeCodes.add(officeCode)) offices.save(TaxAffairsOffice.builder()
-                    .officeCode(officeCode).officeName(tags.get("i")).generalDirectorateOfTaxAffairs(general)
+                    .officeName(tags.get("i")).generalDirectorateOfTaxAffairs(general)
                     .address(tags.getOrDefault("l", "")).phone(tags.getOrDefault("k", ""))
                     .postalCode(tags.getOrDefault("j", "")).build());
             String title = tags.get("u");

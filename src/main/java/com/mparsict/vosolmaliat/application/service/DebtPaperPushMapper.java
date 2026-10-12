@@ -36,7 +36,7 @@ public class DebtPaperPushMapper {
             throw invalid("nationalID conflicts with XML identity.");
         TaxpayerType type =
                 resolveType(config.text(xml, PERSON_TYPE), identifier);
-        boolean foreign = type == TaxpayerType.NATURAL
+        boolean foreign = natural(type)
                 && naturalPersons.findByFida(identifier).isPresent();
         String name = config.required(xml, TAXPAYER_NAME);
         String year = digits(config.required(xml, TAX_YEAR));
@@ -76,9 +76,9 @@ public class DebtPaperPushMapper {
                 .validationStatus(config.validationStatus()).amounts(amounts).build();
         ModelRequestValidation.normalizePeriod(details);
         var taxpayer = new DebtPaperIssuanceRequest.TaxpayerInfo(type.name(),
-                type == TaxpayerType.NATURAL && !foreign ? identifier : null,
+                natural(type) && !foreign ? identifier : null,
                 foreign ? identifier : null,
-                type == TaxpayerType.NATURAL ? name : null,
+                natural(type) ? name : null,
                 null, null, null, details.getPostalCode(), details.getAddress(),
                 type == TaxpayerType.LEGAL ? identifier : null,
                 null, null,
@@ -94,7 +94,7 @@ public class DebtPaperPushMapper {
                 ? null
                 : DebtPaperSourceTaxpayerType.fromValue(digits(raw)).taxpayerType();
         if (natural && legal || type != null
-                && (type == TaxpayerType.NATURAL && legal
+                && (natural(type) && legal
                 || type == TaxpayerType.LEGAL && natural))
             throw invalid("Conflicting taxpayer identity/type requires review.");
         if (type == null) {
@@ -108,7 +108,7 @@ public class DebtPaperPushMapper {
                 type = TaxpayerType.LEGAL;
             else throw invalid("Taxpayer type cannot be resolved; review required.");
         }
-        if (type == TaxpayerType.NATURAL
+        if (natural(type)
                 && !natural && !DebtPaperIdentifierFormat.NATURAL_PERSON.matches(identifier))
             throw invalid("Natural person identity requires review.");
         if (type == TaxpayerType.LEGAL
@@ -123,4 +123,6 @@ public class DebtPaperPushMapper {
                 ? DebtPaperMappedValue.NATIONAL_ID.value()
                 : DebtPaperMappedValue.NATIONAL_CODE.value();
     }
+
+    private boolean natural(TaxpayerType type) { return type != TaxpayerType.LEGAL; }
 }

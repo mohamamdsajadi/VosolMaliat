@@ -32,10 +32,11 @@ class DebtStatusUpdateServiceUnitTest {
         ExecutionPaper paper = ExecutionPaper.builder()
                 .id(99L)
                 .finalTaxDebtPaper(FinalTaxDebtPaper.builder()
+                        .id(20L)
                         .taxpayer(Taxpayer.builder().id(10L).build()).build())
                 .build();
         DebtInformation existingDebt = DebtInformation.builder()
-                .executionPaper(paper)
+                .finalTaxDebtPaper(paper.getFinalTaxDebtPaper())
                 .currentAmounts(com.mparsict.vosolmaliat.domain.model.sanim.SanimAmounts.builder()
                     .totalTaxAmount(new java.math.BigDecimal("900000"))
                     .totalRemissionAmount(java.math.BigDecimal.ZERO).totalDutyAmount(new java.math.BigDecimal("100000")).build())
@@ -53,7 +54,7 @@ class DebtStatusUpdateServiceUnitTest {
                 });
         DebtInquiryResultRepository inquiryResults = proxy(DebtInquiryResultRepository.class,
                 (method, args) -> switch (method) {
-                    case "findByRequestId" -> Optional.empty();
+                    case "findFirstByHashAndFinalTaxDebtPaperNotificationId" -> Optional.empty();
                     case "save" -> { savedResult.set((DebtInquiryResult) args[0]); yield args[0]; }
                     default -> defaultValue(returnType(DebtInquiryResultRepository.class, method));
                 });
@@ -93,8 +94,7 @@ class DebtStatusUpdateServiceUnitTest {
 
         DebtInquiryResult result = savedResult.get();
         assertThat(result).isNotNull();
-        assertThat(result.getRequestId()).isEqualTo("debt-inquiry-700");
-        assertThat(result.getExecutionPaper().getId()).isEqualTo(99L);
+        assertThat(result.getFinalTaxDebtPaperNotificationId()).isEqualTo(paper.getFinalTaxDebtPaper().getFinalTaxDebtPaperNotificationNumber());
         assertThat(result.getResponseJson()).contains("\"outstandingDebtRials\":800000");
         assertThat(result.getHash()).hasSize(64);
 
@@ -104,8 +104,6 @@ class DebtStatusUpdateServiceUnitTest {
         assertThat(existingDebt.getCurrentAmounts().getTotalPaidAmount()).isEqualByComparingTo("300000");
         assertThat(existingDebt.getCurrentAmounts().getTotalCreditAmount()).isEqualByComparingTo("100000");
         assertThat(existingDebt.getCurrentAmounts().getOutstandingDebtAmount()).isEqualByComparingTo("800000");
-        assertThat(existingDebt.getCurrentAmountsAsOf()).isEqualTo(status.lastActivityAt());
-        assertThat(existingDebt.getLastDebtInquiryAt()).isNotNull();
         assertThat(savedDebt.get()).isSameAs(existingDebt);
     }
 

@@ -15,16 +15,13 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class ExecutionPaperIssuanceRequest extends BaseEntity {
-    @Column(name="xml", columnDefinition="TEXT") private String xml;
+    @Column(name="xml", nullable=false, updatable=false, columnDefinition="TEXT") private String xml;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "debt_paper_unique_code", nullable=false, updatable=false)
     private String debtPaperUniqueCode;
-
-    @Column(name = "payload", nullable=false, updatable=false, columnDefinition = "TEXT")
-    private String payload;
 
     @Column(name = "hash", nullable=false, updatable=false)
     private String hash;
@@ -40,5 +37,4 @@ public class ExecutionPaperIssuanceRequest extends BaseEntity {
     @com.fasterxml.jackson.annotation.JsonIgnore
     private DynamicControlRule rejectionRule;
 
-    @Column(name="original_request_id", updatable=false) private Long originalRequestId;
 }

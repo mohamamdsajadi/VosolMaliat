@@ -23,6 +23,10 @@ public abstract class DynamicControlRule extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "rule_scope", insertable = false, updatable = false)
     @Setter(AccessLevel.NONE) private RuleScope ruleScope;
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="rule_scope", referencedColumnName="code", insertable=false, updatable=false)
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private com.mparsict.vosolmaliat.domain.model.masterdata.RuleScopeDefinition ruleScopeDefinition;
     @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "parent_rule_id")
     @com.fasterxml.jackson.annotation.JsonIgnore private DynamicControlRule parentRule;
     @Column(name = "error_code", nullable = false) private String errorCode;

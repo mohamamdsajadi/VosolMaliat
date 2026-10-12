@@ -37,8 +37,7 @@ public class IssuanceRequestService {
 
         ExecutionPaperIssuanceRequest entity = ExecutionPaperIssuanceRequest.builder()
                 .debtPaperUniqueCode(request.debtPaperUniqueCode())
-                .payload(json)
-                .xml(request.sourceDocument().getXml())
+                .xml(json)
                 .hash(hash)
                 .build();
 
@@ -52,11 +51,11 @@ public class IssuanceRequestService {
         ExecutionPaperIssuanceRequest entity = repository.findById(requestId)
                 .orElseThrow(() -> new BusinessException(
                         "ISSUANCE_REQUEST_NOT_FOUND", "درخواست صدور با شناسه " + requestId + " یافت نشد"));
-        if (entity.getPayload() == null || entity.getPayload().isBlank()) {
+        if (entity.getXml() == null || entity.getXml().isBlank()) {
             throw new BusinessException("ISSUANCE_PAYLOAD_MISSING", "بدنه درخواست صدور ذخیره نشده است");
         }
         try {
-            DebtPaperIssuanceRequest request = objectMapper.readValue(entity.getPayload(), DebtPaperIssuanceRequest.class);
+            DebtPaperIssuanceRequest request = objectMapper.readValue(entity.getXml(), DebtPaperIssuanceRequest.class);
             if (request == null) throw new BusinessException("ISSUANCE_PAYLOAD_INVALID", "بدنه درخواست صدور خالی است");
             return request;
         } catch (JsonProcessingException exception) {
@@ -69,8 +68,8 @@ public class IssuanceRequestService {
     public void markAsRejected(Long requestId, String rejectionReason, Long ruleId) {
         repository.findById(requestId).ifPresent(req -> {
             repository.save(ExecutionPaperIssuanceRequest.builder()
-                    .originalRequestId(requestId).debtPaperUniqueCode(req.getDebtPaperUniqueCode())
-                    .payload(req.getPayload()).xml(req.getXml()).hash(req.getHash())
+                    .debtPaperUniqueCode(req.getDebtPaperUniqueCode())
+                    .xml(req.getXml()).hash(req.getHash())
                     .rejectionReason(rejectionReason).rejectionReasonId(ruleId).build());
             log.debug("Marked issuance request id={} as rejected with reason={}", requestId, rejectionReason);
         });

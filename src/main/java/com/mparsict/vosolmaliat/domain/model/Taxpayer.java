@@ -25,18 +25,20 @@ public class Taxpayer extends BaseEntity {
         activityType.changeActivity(value);
     }
     @Column(name="taxpayer_id", nullable=false, unique=true, updatable=false) private String tin;
-    @Column(name="registeration_trace_code", nullable=false, unique=true, updatable=false) private String registrationTraceCode;
+    @Column(name="follow_code", nullable=false, updatable=false) private String registrationTraceCode;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "taxpayer_type", nullable = false, updatable = false)
+    @Convert(converter = com.mparsict.vosolmaliat.domain.model.masterdata.EnumLookupConverters.TaxpayerTypeConverter.class)
+    @Column(name = "taxpayer_type_id", nullable = false, updatable = false)
     private TaxpayerType taxpayerType;
+    @ManyToOne(fetch=FetchType.LAZY) @JoinColumn(name="taxpayer_type_id", insertable=false, updatable=false)
+    private com.mparsict.vosolmaliat.domain.model.masterdata.TaxpayerTypeDefinition taxpayerTypeDefinition;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "natural_person_id", unique = true)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "natural_person_id")
     private NaturalPerson naturalPerson;
 
     @OneToOne(fetch = FetchType.LAZY)
@@ -54,7 +56,9 @@ public class Taxpayer extends BaseEntity {
         if ((naturalPerson == null) == (legalPerson == null)) {
             throw new IllegalStateException("Taxpayer must reference exactly one natural or legal person");
         }
-        TaxpayerType derived = naturalPerson != null ? TaxpayerType.NATURAL : TaxpayerType.LEGAL;
+        TaxpayerType derived = naturalPerson != null
+                ? (taxpayerType == TaxpayerType.PARTNERSHIP ? TaxpayerType.PARTNERSHIP : TaxpayerType.NATURAL)
+                : TaxpayerType.LEGAL;
         if (taxpayerType == null) taxpayerType = derived;
         if (taxpayerType != derived) {
             throw new IllegalStateException("Taxpayer type conflicts with its person reference");

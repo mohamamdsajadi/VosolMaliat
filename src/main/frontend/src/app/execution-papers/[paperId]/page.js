@@ -38,9 +38,7 @@ function isDateTimeField(key) {
     'nextDebtInquiryDate',
     'rejectedAt',
     'InformDate',
-    'notificationDate',
-
-    'lastDebtInquiryAt'
+    'notificationDate'
   ].includes(key)
 }
 
@@ -1092,10 +1090,6 @@ function SanimDocumentSection({ data }) {
           <FinancialBreakdowns details={debt.financialDetails} title="جزئیات جاری بدهی" defaultOpen />
           <FinancialBreakdowns details={source.financialDetails} title="جزئیات ثبت‌شده هنگام دریافت EF03" />
           {!debt.financialDetails && !source.financialDetails && <p className="epd-empty">جزئیات مالی برای این برگه ثبت نشده است.</p>}
-        </div>
-        <div className="epd-data-freshness">
-          <span>زمان مبنای مبالغ جاری: <b>{formatPersianDateTime(debt.currentAmountsAsOf)}</b></span>
-          <span>آخرین استعلام بدهی: <b>{formatPersianDateTime(debt.lastDebtInquiryAt)}</b></span>
         </div>
       </section>
 

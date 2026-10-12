@@ -8,7 +8,7 @@ Last Updated: 2026-07-26
 
 ## تعریف رابطه
 
-`RelatedPerson` خودِ شخص نیست؛ یک رابطه زمان‌دار میان یک شخص حقوقیِ مالک و دقیقاً یک شخص حقیقی یا حقوقیِ مرتبط است. بنابراین اطلاعات هویتی در `NaturalPerson` یا `LegalPerson` نگهداری می‌شود. سمت در جدول مرجع `RelatedPersonPost` و بازه اعتبار و حق امضا در `RelatedPerson` قرار می‌گیرد.
+`RelatedPerson` خودِ شخص نیست؛ یک رابطه زمان‌دار میان یک شخص حقوقیِ مالک و دقیقاً یک شخص حقیقی یا حقوقیِ مرتبط است. بنابراین اطلاعات هویتی در `NaturalPerson` یا `LegalPerson` نگهداری می‌شود. سمت در جدول مرجع `post_in_company` با کد واقعی سامانه ثبت شرکت‌ها و بازه اعتبار و حق امضا در `RelatedPerson` قرار می‌گیرد.
 
 ```mermaid
 erDiagram
@@ -60,19 +60,17 @@ erDiagram
 
 | کد سمت | عنوان | حقیقی | حقوقی |
 |---|---|:---:|:---:|
-| `CEO` | مدیرعامل | بله | خیر |
-| `BOARD_CHAIR` | رئیس هیئت‌مدیره | بله | خیر |
-| `BOARD_VICE_CHAIR` | نایب‌رئیس هیئت‌مدیره | بله | خیر |
-| `BOARD_MEMBER` | عضو هیئت‌مدیره | بله | بله |
-| `ALTERNATE_BOARD_MEMBER` | عضو علی‌البدل هیئت‌مدیره | بله | بله |
-| `MANAGING_PARTNER` | شریک مدیر | بله | خیر |
-| `PARTNER` | شریک | بله | بله |
-| `SHAREHOLDER` | سهام‌دار | بله | بله |
-| `LEGAL_REPRESENTATIVE` | نماینده قانونی | بله | بله |
-| `LEGAL_ENTITY_REPRESENTATIVE` | نماینده شخص حقوقی | بله | خیر |
-| `LIQUIDATOR` | مدیر تصفیه | بله | بله |
-| `PRIMARY_INSPECTOR` | بازرس اصلی | بله | بله |
-| `ALTERNATE_INSPECTOR` | بازرس علی‌البدل | بله | بله |
+| `001` | مدیرعامل | بله | خیر |
+| `002` | رئیس هیئت‌مدیره | بله | خیر |
+| `004` | نایب‌رئیس هیئت‌مدیره | بله | خیر |
+| `006` | عضو هیئت‌مدیره | بله | بله |
+| `007` | عضو علی‌البدل هیئت‌مدیره | بله | بله |
+| `008` | بازرس اصلی | بله | بله |
+| `009` | بازرس علی‌البدل | بله | بله |
+| `020` | سهام‌دار | بله | بله |
+| `022` | نماینده قانونی | بله | بله |
+
+enumهای داخلی که هنوز کد رسمی ثبت شرکت‌ها برای آن‌ها تأیید نشده، در جدول پایه seed نمی‌شوند.
 | `PARENT_COMPANY` | شرکت مادر | خیر | بله |
 | `SUBSIDIARY` | شرکت تابعه | خیر | بله |
 | `AFFILIATE` | شخص حقوقی وابسته | خیر | بله |
@@ -150,7 +148,7 @@ POST /api/v1/execution-papers/{id}/related-persons/refresh
 1. شناسه ملی شخص حقوقی مودی از روی برگ اجرا پیدا می‌شود.
 2. از میان رابطه‌های فعال موجود، یک یا دو رابطه به‌صورت تصادفی با تاریخ پایان در سال بدهی منقضی می‌شوند؛ اگر فقط یک رابطه فعال باشد همان یک مورد منقضی می‌شود.
 3. سرویس `FakeCompanyRegistryService` یک یا دو شخص جدید با شناسه خارجی یکتا و سمت تصادفی مجاز برای نوع شخص تولید می‌کند.
-4. داده ورودی از نظر نوع شخص، سمت و شناسه هویتی اعتبارسنجی می‌شود و سمت از جدول `related_person_post` resolve می‌شود.
+4. داده ورودی از نظر نوع شخص، سمت و شناسه هویتی اعتبارسنجی می‌شود و سمت با کد ثبت شرکت‌ها از جدول `post_in_company` resolve می‌شود.
 5. شخص حقیقی با `nationalCode` و در نبود آن با `fida` پیدا یا ایجاد می‌شود.
 6. شخص حقوقی با `nationalId` و در نبود آن با `registrationNumber` پیدا یا ایجاد می‌شود.
 7. رابطه با کلید `(ownerLegalPersonId, sourceSystem, sourceRecordId)` درج یا به‌روزرسانی می‌شود.
@@ -176,7 +174,7 @@ POST /api/v1/execution-papers/{id}/related-persons/refresh
 |---|---|
 | `sourceRecordId` | شناسه پایدار رکورد در سامانه مبدأ |
 | `personType` | `NATURAL` یا `LEGAL` |
-| `postCode` | enum کد سمت |
+| `postCode` | کد سمت سامانه ثبت شرکت‌ها؛ مانند `001` یا `006` |
 | `startDate`, `endDate` | بازه اعتبار شمسی |
 | `hasSignatoryAuthority` | داشتن حق امضا |
 | `nationalCode`, `fida` | شناسه‌های شخص حقیقی |
@@ -197,7 +195,7 @@ POST /api/v1/execution-papers/{id}/related-persons/refresh
 | `LEGAL_PERSON_NATIONAL_ID_REQUIRED` | شناسه ملی مالک برای استعلام موجود نیست |
 | `COMPANY_REGISTRY_DATA_INVALID` | نوع شخص یا سمت در ورودی نامعتبر است |
 | `RELATED_PERSON_POST_NOT_ALLOWED` | سمت برای نوع شخص مقصد مجاز نیست |
-| `RELATED_PERSON_POST_NOT_CONFIGURED` | enum سمت در جدول مرجع سمت‌ها وجود ندارد |
+| `RELATED_PERSON_POST_NOT_CONFIGURED` | کد سمت در جدول مرجع سمت‌های ثبت شرکت‌ها وجود ندارد |
 | `RELATED_NATURAL_PERSON_IDENTIFIER_REQUIRED` | شناسه شخص حقیقی موجود نیست |
 | `RELATED_LEGAL_PERSON_IDENTIFIER_REQUIRED` | شناسه شخص حقوقی موجود نیست |
 | `RELATED_LEGAL_PERSON_REPRESENTATIVE_REQUIRED` | نماینده حقیقی شخص حقوقی ارسال نشده یا شناسه ندارد |
@@ -206,7 +204,7 @@ POST /api/v1/execution-papers/{id}/related-persons/refresh
 
 ## پایگاه داده و قیود
 
-اسکریپت دستی `003_company_registry_related_persons_schema.sql` جدول enum سمت‌ها را می‌سازد، داده‌های قبلی `role` را به `post_id` تبدیل می‌کند و ستون‌های `execution_paper_id`، `post_name` و `role` را با بازسازی جدول حذف می‌کند. indexهای زیر نیز ایجاد می‌شوند:
+مهاجرت راه‌اندازی، جدول قدیمی سمت‌ها را به `post_in_company` تبدیل می‌کند، کدهای داخلی شناخته‌شده را به کد ثبت شرکت‌ها نگاشت می‌کند و کلید خارجی `post_id` را به جدول جدید متصل می‌کند. اسکریپت دستی قدیمی `003_company_registry_related_persons_schema.sql` فقط برای ساختار legacy نگهداری شده است. indexهای مورد نیاز عبارت‌اند از:
 
 - index روی `owner_legal_person_id`
 - index روی `post_id`
@@ -219,7 +217,7 @@ POST /api/v1/execution-papers/{id}/related-persons/refresh
 ## محدودیت‌ها و نکات فنی
 
 - integration فعلی fake است؛ پاسخ نمونه endpoint مستقل ثابت است، اما refresh برگ اجرا برای شبیه‌سازی تغییرات ثبتی به‌صورت تصادفی یک یا دو رابطه را اضافه و یک یا دو رابطه فعال را منقضی می‌کند.
-- قیود «مالک الزامی»، «دقیقاً یک مقصد» و وجود `post_id` در اسکریپت migration نیز اعمال می‌شوند؛ مجاز بودن enum سمت برای نوع مقصد در سطح برنامه کنترل می‌شود.
+- قیود «مالک الزامی»، «دقیقاً یک مقصد» و وجود `post_id` در migration نیز اعمال می‌شوند؛ مجاز بودن سمت برای نوع مقصد با ویژگی‌های رکورد `post_in_company` در سطح برنامه کنترل می‌شود.
 - مقایسه بازه‌ها رشته‌ای است و به تاریخ‌های صفرگذاری‌شده با قالب `yyyy-MM-dd` وابسته است.
 - `lastSyncedAt` به صورت رشته `LocalDateTime` بدون timezone ذخیره می‌شود.
 - endpoint همگام‌سازی عملیات تغییردهنده است، اما در حال حاضر مجوز مجزایی برای refresh ندارد.

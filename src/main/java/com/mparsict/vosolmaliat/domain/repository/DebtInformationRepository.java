@@ -11,19 +11,19 @@ import java.util.Optional;
 @Repository
 public interface DebtInformationRepository extends JpaRepository<DebtInformation, Long> {
 
-    @Query("SELECT d FROM DebtInformation d WHERE d.executionPaper.id IN :ids")
+    @Query("SELECT DISTINCT d FROM DebtInformation d JOIN ExecutionPaper ep ON ep.finalTaxDebtPaper = d.finalTaxDebtPaper WHERE ep.id IN :ids")
     java.util.List<DebtInformation> findByExecutionPaperIdIn(@Param("ids") java.util.Collection<Long> executionPaperIds);
 
-    @Query("SELECT d FROM DebtInformation d WHERE d.executionPaper.id = :executionPaperId")
+    @Query("SELECT d FROM DebtInformation d JOIN ExecutionPaper ep ON ep.finalTaxDebtPaper = d.finalTaxDebtPaper WHERE ep.id = :executionPaperId")
     Optional<DebtInformation> findByExecutionPaperId(@Param("executionPaperId") Long executionPaperId);
 
-    @Query("SELECT d FROM DebtInformation d JOIN d.executionPaper ep WHERE ep.workflowState.currentState = :state")
+    @Query("SELECT DISTINCT d FROM DebtInformation d JOIN ExecutionPaper ep ON ep.finalTaxDebtPaper = d.finalTaxDebtPaper WHERE ep.workflowState.currentState = :state")
     java.util.List<DebtInformation> findAmountsByState(@Param("state") String state);
 
-    @Query("SELECT DISTINCT d FROM DebtInformation d LEFT JOIN ExecutionPaperNotification n ON n.executionPaper = d.executionPaper WHERE n.notificationDate IS NULL")
+    @Query("SELECT DISTINCT d FROM DebtInformation d JOIN ExecutionPaper ep ON ep.finalTaxDebtPaper = d.finalTaxDebtPaper LEFT JOIN ExecutionPaperNotification n ON n.executionPaper = ep WHERE n.notificationDate IS NULL")
     java.util.List<DebtInformation> findNotInformedAmounts();
 
-    @Query("SELECT DISTINCT d FROM DebtInformation d LEFT JOIN ExecutionPaperNotification n ON n.executionPaper = d.executionPaper WHERE n.notificationDate IS NOT NULL")
+    @Query("SELECT DISTINCT d FROM DebtInformation d JOIN ExecutionPaper ep ON ep.finalTaxDebtPaper = d.finalTaxDebtPaper LEFT JOIN ExecutionPaperNotification n ON n.executionPaper = ep WHERE n.notificationDate IS NOT NULL")
     java.util.List<DebtInformation> findInformedAmounts();
 
     default java.math.BigDecimal sumPaidByState(String state) {

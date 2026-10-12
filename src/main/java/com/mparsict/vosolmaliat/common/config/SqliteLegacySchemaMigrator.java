@@ -33,6 +33,7 @@ public class SqliteLegacySchemaMigrator
 
         // The document model is a deliberate rebuild, not a lossy automatic migration.
         try (Connection connection = DriverManager.getConnection(jdbcUrl)) {
+            EnumLookupSchemaMigration.migrate(connection);
             NullableEf03FieldsMigration.migrate(connection);
             SqliteDocumentModelFieldCleanup.migrate(connection);
             if (tableExists(connection, "execution_paper") && !tableExists(connection, "dynamic_control_rule"))
@@ -42,33 +43,11 @@ public class SqliteLegacySchemaMigrator
 
     public static void migrate(String jdbcUrl) {
         try (Connection connection = DriverManager.getConnection(jdbcUrl)) {
+            EnumLookupSchemaMigration.migrate(connection);
             SanimDocumentSchemaMigration.migrate(connection);
             SanimLegacyFieldCleanup.migrate(connection);
             NullableEf03FieldsMigration.migrate(connection);
             SqliteDocumentModelFieldCleanup.migrate(connection);
-            if (!tableExists(connection, DEBT_INQUIRY_RESULT)) {
-                return;
-            }
-
-            boolean migrated = false;
-            migrated |= addColumnIfMissing(connection, "request_id", "VARCHAR(255)");
-            migrated |= addColumnIfMissing(connection, "execution_paper_id", "INTEGER");
-            migrated |= addColumnIfMissing(connection, "received_at", "TIMESTAMP");
-
-            try (Statement statement = connection.createStatement()) {
-                statement.execute("""
-                        CREATE UNIQUE INDEX IF NOT EXISTS uk_debt_inquiry_result_request_id
-                        ON debt_inquiry_result(request_id)
-                        """);
-                statement.execute("""
-                        CREATE INDEX IF NOT EXISTS idx_debt_inquiry_execution_paper
-                        ON debt_inquiry_result(execution_paper_id)
-                        """);
-            }
-
-            if (migrated) {
-                log.info("Upgraded legacy debt_inquiry_result table for SANIM debt inquiry correlation");
-            }
         } catch (SQLException exception) {
             throw new IllegalStateException("Could not upgrade the SQLite debt inquiry schema", exception);
         }

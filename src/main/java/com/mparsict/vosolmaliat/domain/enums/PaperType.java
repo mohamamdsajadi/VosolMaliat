@@ -6,18 +6,25 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Locale;
 
 /** Canonical SANIM paper types. Source aliases are normalized at the boundary. */
-public enum PaperType {
-    EF03("برگ اجرایی"),
-    EF23("برگ قطعی مالیات و عوارض ارزش افزوده"),
-    EF23_1("برگ قطعی مالیات و عوارض ارزش افزوده ـ نوع ۱"),
-    EF23_2("برگ قطعی مالیات و عوارض ارزش افزوده ـ نوع ۲"),
-    EF104("برگ قطعی جرائم مالیاتی");
+public enum PaperType implements LookupValue {
+    EF03(1, "برگ اجرایی", TaxSourceType.INCOME_TAX),
+    EF23(2, "برگ قطعی مالیات و عوارض ارزش افزوده", TaxSourceType.VAT),
+    EF23_1(3, "برگ قطعی مالیات و عوارض ارزش افزوده ـ نوع ۱", TaxSourceType.VAT),
+    EF23_2(4, "برگ قطعی مالیات و عوارض ارزش افزوده ـ نوع ۲", TaxSourceType.VAT),
+    EF104(5, "برگ قطعی جرائم مالیاتی", TaxSourceType.DIRECT_TAX);
 
+    private final int id;
     private final String persianTitle;
+    private final TaxSourceType taxSource;
 
-    PaperType(String persianTitle) {
+    PaperType(int id, String persianTitle, TaxSourceType taxSource) {
+        this.id = id;
         this.persianTitle = persianTitle;
+        this.taxSource = taxSource;
     }
+
+    @Override public int id() { return id; }
+    @Override public String label() { return persianTitle; }
 
     @JsonValue
     public String code() {
@@ -26,6 +33,10 @@ public enum PaperType {
 
     public String getPersianTitle() {
         return persianTitle;
+    }
+
+    public TaxSourceType taxSource() {
+        return taxSource;
     }
 
     public String sourceCode() {

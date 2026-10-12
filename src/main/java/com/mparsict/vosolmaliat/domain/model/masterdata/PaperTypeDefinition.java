@@ -23,4 +23,12 @@ public class PaperTypeDefinition extends com.mparsict.vosolmaliat.domain.model.B
 
     @Column(name = "paper_title", nullable = false, updatable = false)
     private String paperTitle;
+
+    @Convert(converter = EnumLookupConverters.TaxSourceConverter.class)
+    @Column(name = "tax_source_id", nullable = false, updatable = false)
+    private com.mparsict.vosolmaliat.domain.enums.TaxSourceType taxSource;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tax_source_id", insertable = false, updatable = false)
+    private TaxSourceDefinition taxSourceDefinition;
 }

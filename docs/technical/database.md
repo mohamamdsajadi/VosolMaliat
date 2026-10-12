@@ -31,7 +31,7 @@ Last Updated: 2026-07-15
 | `ExecutionPaperNotification` | `execution_paper_notification` | وضعیت ابلاغ | execution paper |
 | `ExecutionPaperStateHistory` | `execution_paper_state_history` | تاریخچه وضعیت | execution paper |
 | `RelatedPerson` | `related_persons` | رابطه زمان‌دار اشخاص حقیقی/حقوقی با شخص حقوقی مودی | owner legal person, natural/legal target, mandatory natural representative for legal target |
-| `RelatedPersonPost` | `related_person_post` | جدول مرجع enum سمت اشخاص مرتبط | referenced by related persons |
+| `RelatedPersonPost` | `post_in_company` | جدول مرجع سمت ثبت شرکت‌ها با `code_in_company_registration_system` | referenced by related persons |
 | `FakeElectronicNotificationRequest` | `fake_electronic_notification_request` | fake ابلاغ | execution paper |
 | `FakeSanimInformRequest` | `fake_sanim_inform_request` | fake سنیم | execution paper |
 

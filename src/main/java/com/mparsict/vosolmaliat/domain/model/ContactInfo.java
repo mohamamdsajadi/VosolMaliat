@@ -36,10 +36,10 @@ public class ContactInfo extends BaseEntity {
     @Column(name = "mobile_no")
     private String mobileNo;
 
-    @Column(name = "zipcode", nullable=false)
+    @Column(name = "zipcode")
     private String postalCode;
 
-    @Column(name = "address", nullable=false)
+    @Column(name = "address")
     private String legalAddress;
 
     @Column(name = "email")

@@ -42,9 +42,10 @@ public class DebtStatusUpdateService {
 
         String responseJson = serialize(status);
         String responseHash = sha256(responseJson);
-        var existing = debtInquiryResultRepository.findByRequestId(requestId);
+        String notificationId = executionPaper.getFinalTaxDebtPaper() == null ? null
+                : executionPaper.getFinalTaxDebtPaper().getFinalTaxDebtPaperNotificationNumber();
+        var existing = debtInquiryResultRepository.findFirstByHashAndFinalTaxDebtPaperNotificationId(responseHash, notificationId);
         if (existing.isPresent()) {
-            validateExistingResult(existing.get(), executionPaperId, responseHash);
             return; // identical delivery cannot revert a newer result
         }
         var patch = status.amounts() != null ? status.amounts().copy()
@@ -53,42 +54,32 @@ public class DebtStatusUpdateService {
                     .totalPenaltyAmount(java.math.BigDecimal.valueOf(status.totalPenaltyRials()))
                     .totalPaidAmount(java.math.BigDecimal.valueOf(status.totalPaymentRials()))
                     .totalCreditAmount(java.math.BigDecimal.valueOf(status.totalCreditRials())).build();
-        var effectiveAt = status.lastActivityAt();
         debtInquiryResultRepository.save(DebtInquiryResult.builder()
-                .requestId(requestId).finalTaxDebtPaperNotificationId(executionPaper.getFinalTaxDebtPaper() == null ? null : executionPaper.getFinalTaxDebtPaper().getFinalTaxDebtPaperNotificationNumber()).executionPaper(executionPaper).responseJson(responseJson).hash(responseHash)
-                .receivedAt(LocalDateTime.now()).effectiveAt(effectiveAt).amounts(patch.copy())
-                .mappingVersion("sanim-inquiry-v1").build());
+                .finalTaxDebtPaperNotificationId(notificationId).responseJson(responseJson).hash(responseHash).build());
 
         DebtInformation debt = debtInformationRepository.findByExecutionPaperId(executionPaperId)
-                .orElseGet(() -> DebtInformation.builder().executionPaper(executionPaper).finalTaxDebtPaper(executionPaper.getFinalTaxDebtPaper()).build());
-        if (debt.getCurrentAmountsAsOf() != null
-                && (effectiveAt == null || !effectiveAt.isAfter(debt.getCurrentAmountsAsOf()))) return;
-        // Without an effective timestamp a Sanim document cannot safely be overwritten.
-        if (effectiveAt == null && debt.getCurrentAmounts() != null) return;
+                .orElseGet(() -> DebtInformation.builder().finalTaxDebtPaper(executionPaper.getFinalTaxDebtPaper()).build());
         if (debt.getId() != null && debt.getCurrentAmounts() != null) {
-            historyRepository.findFirstByDebtInformationIdAndNextInquiryDateIsNullOrderByIdDesc(debt.getId())
+            historyRepository.findFirstByFinalTaxDebtPaperIdAndNextInquiryDateIsNullOrderByIdDesc(
+                            debt.getFinalTaxDebtPaper().getId())
                     .ifPresent(previous -> { previous.close(LocalDateTime.now()); historyRepository.save(previous); });
             // Inquiry responses carry aggregates only; old breakdowns remain in the source snapshot/history.
             if (debt.getFinancialDetails() != null) {
                 var details=debt.getFinancialDetails(); var old=debt.getCurrentAmounts();
-                if (changed(old.getTotalTaxAmount(),patch.getTotalTaxAmount())) details.setTaxLiabilityDetails(null);
                 if (changed(old.getTotalCreditAmount(),patch.getTotalCreditAmount())) details.setTaxCreditDetails(null);
                 if (changed(old.getTotalPenaltyAmount(),patch.getTotalPenaltyAmount())) details.setTotalPenaltiesDetails(null);
                 if (changed(old.getTotalPaidAmount(),patch.getTotalPaidAmount())) details.setTotalPaymentsDetails(null);
                 if (changed(old.getTotalRemissionAmount(),patch.getTotalRemissionAmount())) details.setTotalRemissionsDetails(null);
-                if (changed(old.getOutstandingDebtAmount(),patch.getOutstandingDebtAmount())) details.setOutstandingDebtDetails(null);
             }
         }
         if (debt.getCurrentAmounts() == null)
             debt.setCurrentAmounts(new com.mparsict.vosolmaliat.domain.model.sanim.SanimAmounts());
         debt.getCurrentAmounts().merge(patch);
-        debt.setCurrentAmountsAsOf(effectiveAt);
-        debt.setLastDebtInquiryAt(LocalDateTime.now());
         if (debt.getFinalTaxDebtPaper() == null) debt.setFinalTaxDebtPaper(executionPaper.getFinalTaxDebtPaper());
         SanimModelValidation.requireAmounts(debt.getCurrentAmounts());
         debtInformationRepository.save(debt);
         historyRepository.save(com.mparsict.vosolmaliat.domain.model.execution.DebtInformationHistory.current(
-                debt, requestId, debt.getLastDebtInquiryAt()));
+                debt, LocalDateTime.now()));
 
         auditLogService.record(
                 null,
@@ -115,19 +106,6 @@ public class DebtStatusUpdateService {
             throw new BusinessException(
                     "SANIM_DEBT_TAXPAYER_MISMATCH",
                     "پاسخ بدهی سنیم متعلق به مؤدی برگ اجرا نیست"
-            );
-        }
-    }
-
-    private void validateExistingResult(
-            DebtInquiryResult existing,
-            Long executionPaperId,
-            String responseHash) {
-        if (!executionPaperId.equals(existing.getExecutionPaper().getId())
-                || !responseHash.equals(existing.getHash())) {
-            throw new BusinessException(
-                    "SANIM_DEBT_INQUIRY_RESULT_CONFLICT",
-                    "پاسخ دیگری قبلاً برای شناسه همبستگی استعلام بدهی ثبت شده است"
             );
         }
     }

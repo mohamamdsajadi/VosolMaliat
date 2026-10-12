@@ -1,0 +1,12 @@
+<details>
+    <item>
+        <value name="tag">FB</value>
+        <value name="amount">100000000</value>
+        <value name="reported">true</value>
+    </item>
+    <item>
+        <value name="tag">HB</value>
+        <value name="amount">100000000</value>
+        <value name="reported">true</value>
+    </item>
+</details>

@@ -629,7 +629,7 @@ class CamundaJobWorkersUnitTest {
                 ExecutionPaperRepository.class.getClassLoader(),
                 new Class<?>[]{ExecutionPaperRepository.class},
                 (proxy, method, args) -> {
-                    if ("findByFinalTaxDebtPaperUniqueFinalTaxDebtNoticeId".equals(method.getName())
+                    if ("findByFinalTaxDebtPaperSourceDocumentNumber".equals(method.getName())
                             && debtPaperUniqueCode.equals(args[0])) {
                         return Optional.of(ExecutionPaper.builder().id(executionPaperId).build());
                     }
@@ -645,7 +645,7 @@ class CamundaJobWorkersUnitTest {
                 ExecutionPaperRepository.class.getClassLoader(),
                 new Class<?>[]{ExecutionPaperRepository.class},
                 (proxy, method, args) -> {
-                    if ("findByFinalTaxDebtPaperUniqueFinalTaxDebtNoticeId".equals(method.getName())) {
+                    if ("findByFinalTaxDebtPaperSourceDocumentNumber".equals(method.getName())) {
                         return Optional.empty();
                     }
                     if ("findByTaxpayerDebtPaperUniqueCode".equals(method.getName())

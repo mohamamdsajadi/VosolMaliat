@@ -28,12 +28,6 @@ public class TaxAffairsOfficeHistory extends BaseEntity {
     @Column(name = "office_name", nullable = false, updatable = false)
     private String officeName;
 
-    @Column(name = "office_type", updatable = false)
-    private Integer officeType;
-
-    @Column(name = "office_code", updatable = false)
-    private String officeCode;
-
     @Column(name = "postal_code", updatable = false)
     private String postalCode;
 
@@ -50,8 +44,7 @@ public class TaxAffairsOfficeHistory extends BaseEntity {
         return TaxAffairsOfficeHistory.builder()
                 .taxAffairsOfficeId(source.getId())
                 .generalDirectorateId(source.getGeneralDirectorateOfTaxAffairsId())
-                .officeName(source.getOfficeName()).officeType(source.getOfficeType())
-                .officeCode(source.getOfficeCode()).postalCode(source.getPostalCode())
+                .officeName(source.getOfficeName()).postalCode(source.getPostalCode())
                 .address(source.getAddress()).phone(source.getPhone()).changeType(changeType).build();
     }
 }

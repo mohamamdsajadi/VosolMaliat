@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 @MappedSuperclass
 @Getter @Setter
 public abstract class VersionHistory extends BaseEntity {
-    @Column(name = "next_version_creation_date", nullable = false, updatable = false)
+    @Column(name = "next_version_creation_date", updatable = false)
     private LocalDateTime nextVersionCreationDate;
 
     public void captureAudit(BaseEntity source) {
@@ -21,8 +21,4 @@ public abstract class VersionHistory extends BaseEntity {
         nextVersionCreationDate = LocalDateTime.now();
     }
 
-    @PrePersist
-    private void requireTransferDate() {
-        if (nextVersionCreationDate == null) nextVersionCreationDate = LocalDateTime.now();
-    }
 }

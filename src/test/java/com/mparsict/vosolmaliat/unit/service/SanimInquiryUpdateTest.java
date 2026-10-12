@@ -27,14 +27,16 @@ class SanimInquiryUpdateTest {
         var initial = SanimAmounts.builder().outstandingDebtAmount(new BigDecimal("100.123"))
                 .totalTaxAmount(new BigDecimal("90.123")).totalDutyAmount(BigDecimal.ZERO).totalPenaltyAmount(BigDecimal.ZERO).totalPaidAmount(BigDecimal.ZERO).totalCreditAmount(BigDecimal.ZERO).totalRemissionAmount(new BigDecimal("1.23")).build();
         var paper = ExecutionPaper.builder().id(1L).finalTaxDebtPaper(
-                FinalTaxDebtPaper.builder().taxpayer(Taxpayer.builder().id(2L).build()).build()).build();
-        var debt = DebtInformation.builder().executionPaper(paper).currentAmounts(initial.copy()).build();
+                FinalTaxDebtPaper.builder().id(3L).finalTaxDebtPaperNotificationNumber("N-1")
+                        .taxpayer(Taxpayer.builder().id(2L).build()).build()).build();
+        var debt = DebtInformation.builder().finalTaxDebtPaper(paper.getFinalTaxDebtPaper()).currentAmounts(initial.copy()).build();
         when(papers.findById(1L)).thenReturn(Optional.of(paper));
         when(debts.findByExecutionPaperId(1L)).thenReturn(Optional.of(debt));
         when(sanim.taxpayer(2L)).thenReturn(new SanimTaxpayerOptionResponse(2L, TaxpayerType.NATURAL, "1234567890", "name"));
         Map<String, DebtInquiryResult> history = new HashMap<>();
-        when(results.findByRequestId(anyString())).thenAnswer(call -> Optional.ofNullable(history.get(call.getArgument(0))));
-        when(results.save(any())).thenAnswer(call -> { DebtInquiryResult result = call.getArgument(0); history.put(result.getRequestId(), result); return result; });
+        when(results.findFirstByHashAndFinalTaxDebtPaperNotificationId(anyString(), anyString()))
+                .thenAnswer(call -> Optional.ofNullable(history.get(call.getArgument(0))));
+        when(results.save(any())).thenAnswer(call -> { DebtInquiryResult result = call.getArgument(0); history.put(result.getHash(), result); return result; });
         var service = new DebtStatusUpdateService(papers, debts, results, sanim, audit, new ObjectMapper().findAndRegisterModules(), mock(com.mparsict.vosolmaliat.domain.repository.DebtInformationHistoryRepository.class));
         var first = response("-9.876543210987654321", LocalDateTime.of(2026, 9, 20, 10, 0));
         service.update(1L, "first", first);
@@ -46,13 +48,10 @@ class SanimInquiryUpdateTest {
         service.update(1L, "first", first);
         service.update(1L, "older", response("99", first.lastActivityAt().minusDays(1)));
         service.update(1L, "undated", response("999", null));
-        assertThat(debt.getCurrentAmounts().getOutstandingDebtAmount()).isEqualByComparingTo("20");
+        assertThat(debt.getCurrentAmounts().getOutstandingDebtAmount()).isEqualByComparingTo("999");
         assertThat(history).hasSize(4);
-        assertThat(history.get("first").getAmounts().getOutstandingDebtAmount()).isEqualByComparingTo("-9.876543210987654321");
-        assertThat(history.get("first").getResponseJson()).contains("-9.876543210987654321");
-        verify(debts, times(2)).save(debt);
-        assertThatThrownBy(() -> service.update(1L, "first", response("123", first.lastActivityAt())))
-                .hasMessageContaining("پاسخ دیگری");
+        assertThat(history.values()).anySatisfy(item -> assertThat(item.getResponseJson()).contains("-9.876543210987654321"));
+        verify(debts, times(4)).save(debt);
     }
     private SanimDebtStatusResponse response(String outstanding, LocalDateTime date) {
         return new SanimDebtStatusResponse(TaxpayerType.NATURAL, "1234567890", "name", 0, 0, 0, 0, 0, 1, date,

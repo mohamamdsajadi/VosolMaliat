@@ -3,17 +3,21 @@ package com.mparsict.vosolmaliat.domain.enums;
 import java.util.Locale;
 
 /** علت قطعیت and علت صدور denote the same business value. */
-public enum FinalizationReason {
-    SELF_DECLARATION("خوداظهاری"),
-    FINAL_NOTICE("برگه بدهی قطعی");
+public enum FinalizationReason implements LookupValue {
+    SELF_DECLARATION(0, "خوداظهاری"),
+    FINAL_NOTICE(1, "برگه بدهی قطعی");
 
+    private final int id;
     private final String label;
 
-    FinalizationReason(String label) {
+    FinalizationReason(int id, String label) {
+        this.id = id;
         this.label = label;
     }
 
-    public String label() {
+    @Override public int id() { return id; }
+
+    @Override public String label() {
         return label;
     }
 
