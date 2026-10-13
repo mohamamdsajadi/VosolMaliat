@@ -27,8 +27,6 @@ import java.util.regex.Pattern;
 public class TestRegistrationService {
 
     private static final Object FILE_LOCK = new Object();
-    private static final Pattern LETTER = Pattern.compile("[A-Za-z\\p{IsArabic}]");
-    private static final Pattern DIGIT = Pattern.compile("\\d");
     private static final Pattern REPEATED = Pattern.compile("^(.)\\1{5,}$");
     private static final Set<String> COMMON_PASSWORDS = Set.of(
             "123456", "1234567", "12345678", "123456789", "1234567890",
@@ -78,11 +76,8 @@ public class TestRegistrationService {
         if (!password.equals(request.confirmationPassword())) {
             throw badRequest("رمز عبور و تکرار آن یکسان نیستند");
         }
-        if (password.isBlank() || password.chars().anyMatch(Character::isWhitespace)) {
-            throw badRequest("رمز عبور نباید شامل فاصله باشد");
-        }
-        if (!LETTER.matcher(password).find() || !DIGIT.matcher(password).find()) {
-            throw badRequest("رمز عبور باید حداقل یک حرف و یک عدد داشته باشد");
+        if (password.length() <= 6 || password.length() > 128) {
+            throw badRequest("رمز عبور باید بین ۷ تا ۱۲۸ کاراکتر باشد");
         }
 
         String normalized = password.toLowerCase(Locale.ROOT);
@@ -90,15 +85,6 @@ public class TestRegistrationService {
                 || REPEATED.matcher(normalized).matches()
                 || containsSimpleSequence(normalized)) {
             throw badRequest("این رمز عبور بیش از حد ساده یا قابل حدس است");
-        }
-
-        String firstName = request.firstName().trim().toLowerCase(Locale.ROOT);
-        String lastName = request.lastName().trim().toLowerCase(Locale.ROOT);
-        if ((!firstName.isEmpty() && normalized.contains(firstName))
-                || (!lastName.isEmpty() && normalized.contains(lastName))
-                || normalized.contains(request.nationalCode())
-                || normalized.contains(request.phoneNumber())) {
-            throw badRequest("رمز عبور نباید شامل اطلاعات شخصی شما باشد");
         }
     }
 

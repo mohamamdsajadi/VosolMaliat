@@ -49,6 +49,24 @@ class TestRegistrationServiceUnitTest {
     }
 
     @Test
+    void acceptsPasswordsWithoutCharacterCompositionRequirements() {
+        TestRegistrationService service = service();
+
+        assertThat(service.register(request("onlyletters", "onlyletters")).saved()).isTrue();
+        assertThat(service.register(request("8472635", "8472635")).saved()).isTrue();
+        assertThat(service.register(request("!@#$%^&", "!@#$%^&")).saved()).isTrue();
+    }
+
+    @Test
+    void rejectsPasswordsThatAreNotLongerThanSixCharacters() {
+        TestRegistrationService service = service();
+
+        assertThatThrownBy(() -> service.register(request("abc123", "abc123")))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("۷ تا ۱۲۸");
+    }
+
+    @Test
     void rejectsMismatchedConfirmationPassword() {
         TestRegistrationService service = service();
 

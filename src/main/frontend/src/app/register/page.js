@@ -28,23 +28,15 @@ function toEnglishDigits(value) {
   });
 }
 
-function passwordChecks(password, form) {
+function passwordChecks(password) {
   const normalized = password.toLowerCase();
-  const containsPersonalData = [form.firstName, form.lastName, form.nationalCode, form.phoneNumber]
-    .map((item) => item.trim().toLowerCase())
-    .filter(Boolean)
-    .some((item) => normalized.includes(item));
   const isSimple = COMMON_PASSWORDS.has(normalized)
     || /(123456|654321|abcdef|qwerty)/.test(normalized)
     || /^(.)\1{5,}$/.test(normalized);
 
   return {
-    length: password.length >= 6 && password.length <= 128,
-    letter: /[A-Za-z\u0600-\u06ff]/.test(password),
-    number: /\d/.test(password),
-    noSpace: password.length > 0 && !/\s/.test(password),
+    length: password.length > 6 && password.length <= 128,
     notSimple: password.length > 0 && !isSimple,
-    noPersonalData: password.length > 0 && !containsPersonalData,
   };
 }
 
@@ -78,7 +70,7 @@ export default function RegisterPage() {
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const checks = useMemo(() => passwordChecks(form.password, form), [form]);
+  const checks = useMemo(() => passwordChecks(form.password), [form.password]);
 
   const update = (name, value) => {
     const nextValue = ['nationalCode', 'phoneNumber'].includes(name)
@@ -95,11 +87,8 @@ export default function RegisterPage() {
     if (!form.lastName.trim()) nextErrors.lastName = 'نام خانوادگی را وارد کنید.';
     if (!/^\d{10}$/.test(form.nationalCode)) nextErrors.nationalCode = 'کد ملی باید دقیقاً ۱۰ رقم باشد.';
     if (!/^09\d{9}$/.test(form.phoneNumber)) nextErrors.phoneNumber = 'شماره موبایل باید ۱۱ رقم و با ۰۹ شروع شود.';
-    if (!checks.length) nextErrors.password = 'رمز عبور باید بین ۶ تا ۱۲۸ کاراکتر باشد.';
-    else if (!checks.letter || !checks.number) nextErrors.password = 'ترکیبی از حرف و عدد وارد کنید.';
-    else if (!checks.noSpace) nextErrors.password = 'رمز عبور نباید فاصله داشته باشد.';
+    if (!checks.length) nextErrors.password = 'رمز عبور باید بین ۷ تا ۱۲۸ کاراکتر باشد.';
     else if (!checks.notSimple) nextErrors.password = 'این رمز عبور بیش از حد ساده است.';
-    else if (!checks.noPersonalData) nextErrors.password = 'از اطلاعات شخصی در رمز عبور استفاده نکنید.';
     if (form.password !== form.confirmationPassword) nextErrors.confirmationPassword = 'تکرار رمز عبور یکسان نیست.';
     if (!form.confirmationPassword) nextErrors.confirmationPassword = 'تکرار رمز عبور را وارد کنید.';
     setErrors(nextErrors);
@@ -178,7 +167,7 @@ export default function RegisterPage() {
             </div>
 
             <FormField label="رمز عبور" name="password" icon="lock" error={errors.password}>
-              <input dir="ltr" type={showPassword ? 'text' : 'password'} value={form.password} onChange={(e) => update('password', e.target.value)} maxLength={128} autoComplete="new-password" placeholder="حداقل ۶ کاراکتر" />
+              <input dir="ltr" type={showPassword ? 'text' : 'password'} value={form.password} onChange={(e) => update('password', e.target.value)} maxLength={128} autoComplete="new-password" placeholder="حداقل ۷ کاراکتر" />
               <button type="button" className={styles.showButton} onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? 'پنهان کردن رمز' : 'نمایش رمز'}>
                 {showPassword ? 'پنهان' : 'نمایش'}
               </button>

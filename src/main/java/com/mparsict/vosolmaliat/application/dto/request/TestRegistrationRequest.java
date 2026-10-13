@@ -22,7 +22,7 @@ public record TestRegistrationRequest(
         String phoneNumber,
 
         @NotBlank(message = "رمز عبور الزامی است")
-        @Size(min = 6, max = 128, message = "رمز عبور باید بین ۶ تا ۱۲۸ کاراکتر باشد")
+        @Size(min = 7, max = 128, message = "رمز عبور باید بین ۷ تا ۱۲۸ کاراکتر باشد")
         String password,
 
         @NotBlank(message = "تکرار رمز عبور الزامی است")
