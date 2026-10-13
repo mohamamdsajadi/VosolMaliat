@@ -104,7 +104,8 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/index.html", "/_next/**", "/images/**", "/fonts/**",
-                                "/brand/**", "/favicon.ico", "/login", "/auth/callback",
+                                "/brand/**", "/favicon.ico", "/login", "/register", "/auth/callback",
+                                "/api/v1/test/registrations",
                                 "/api/v1/dashboard/stats",
                                 "/api/v1/fake-electronic-notification/callback").permitAll()
                         .anyRequest().authenticated())

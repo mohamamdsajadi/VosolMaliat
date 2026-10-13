@@ -4,7 +4,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { getAccessToken } from '../lib/api';
 
-const PUBLIC_PATHS = ['/login', '/auth/callback'];
+const PUBLIC_PATHS = ['/login', '/register', '/auth/callback'];
 
 export default function AuthGuard({ children }) {
   const pathname = usePathname();

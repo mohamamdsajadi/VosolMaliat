@@ -90,6 +90,10 @@ app:
     database-reset:
       # Destructive test utility. Enable only in an isolated development/test environment.
       enabled: ${DATABASE_RESET_ENABLED:true}
+    registration:
+      # Test-only utility: stores submitted passwords as plain text. Disable outside local test use.
+      enabled: ${TEST_REGISTRATION_ENABLED:true}
+      output-path: ${TEST_REGISTRATION_OUTPUT_PATH:./temp/test-registrations.txt}
   security:
     bootstrap-admin:
       keycloak-user-id: ${ADMIN_KEYCLOAK_USER_ID:9c512620-10f2-4fcb-a432-57e7c84fb1f5}

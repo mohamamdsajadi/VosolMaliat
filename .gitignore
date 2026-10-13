@@ -45,6 +45,7 @@ build/
 
 /ef03.sqlite
 /ef03.sqlite-*
+/temp/test-registrations.txt
 
 # Runtime execution-paper imports and generated reports
 /import/execution-papers/inbox/*
