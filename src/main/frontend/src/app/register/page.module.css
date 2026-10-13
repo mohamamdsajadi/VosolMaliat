@@ -155,18 +155,6 @@
 .featureList strong { color: #dce4df; font-size: 13px; }
 .featureList small { color: #65736c; font-size: 11px; line-height: 1.8; }
 
-.testNote {
-  position: relative;
-  z-index: 1;
-  margin-top: auto;
-  padding: 16px 18px;
-  border-right: 3px solid #ffca3a;
-  background: #ffca3a0c;
-}
-
-.testNote span { color: #ffca3a; font-size: 11px; font-weight: 900; }
-.testNote p { margin: 6px 0 0; color: #a99e7f; font-size: 11px; line-height: 1.8; }
-
 .formPanel {
   padding: 48px clamp(28px, 5vw, 64px);
   background: var(--surface);
@@ -229,26 +217,6 @@
   font-weight: 800;
 }
 
-.passwordGuide {
-  padding: 17px 18px;
-  border: 1px solid #27312b;
-  background: #0d120f;
-}
-
-.strengthHead { display: flex; align-items: center; justify-content: space-between; gap: 16px; color: #829088; font-size: 10px; }
-.strengthHead strong { color: #e6ede9; }
-.meter { direction: ltr; display: flex; gap: 5px; }
-.meter i { width: 34px; height: 3px; background: #29322d; transition: background .2s ease, box-shadow .2s ease; }
-.passwordGuide[data-level='1'] .meter i:first-child { background: #ff5d67; }
-.passwordGuide[data-level='2'] .meter i:nth-child(-n+2) { background: #ffca3a; }
-.passwordGuide[data-level='3'] .meter i { background: var(--lime); box-shadow: 0 0 8px #b7ff3c55; }
-.passwordGuide > p { margin: 14px 0 8px; color: #a7b1ac; font-size: 11px; font-weight: 800; }
-.passwordGuide ul { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 20px; margin: 0; padding: 0; list-style: none; }
-.passwordGuide li { position: relative; padding-right: 15px; color: #59665f; font-size: 9px; line-height: 1.8; transition: color .18s ease; }
-.passwordGuide li::before { content: '×'; position: absolute; right: 0; color: #58625d; }
-.passwordGuide li.passed { color: #afc4b8; }
-.passwordGuide li.passed::before { content: '✓'; color: var(--lime); }
-
 .submitButton {
   min-height: 54px;
   display: flex;
@@ -292,9 +260,8 @@
   .intro { min-height: auto; padding: 30px; border-left: 0; border-bottom: 1px solid var(--line); }
   .brandMark { margin-bottom: 36px; }
   .intro h1 { max-width: 600px; font-size: 32px; }
-  .featureList { grid-template-columns: repeat(3, 1fr); margin-top: 32px; gap: 12px; }
+  .featureList { grid-template-columns: repeat(2, 1fr); margin-top: 32px; gap: 12px; }
   .featureList > div { grid-template-columns: 1fr; gap: 6px; }
-  .testNote { margin-top: 28px; }
 }
 
 @media (max-width: 600px) {
@@ -307,7 +274,6 @@
   .featureList { display: none; }
   .formPanel { padding: 32px 22px 42px; }
   .twoColumns { grid-template-columns: 1fr; }
-  .passwordGuide ul { grid-template-columns: 1fr; }
   .footer { display: none; }
 }
 

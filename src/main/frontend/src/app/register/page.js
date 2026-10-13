@@ -45,7 +45,6 @@ function passwordChecks(password, form) {
     noSpace: password.length > 0 && !/\s/.test(password),
     notSimple: password.length > 0 && !isSimple,
     noPersonalData: password.length > 0 && !containsPersonalData,
-    symbol: /[^A-Za-z\d\u0600-\u06ff\s]/.test(password),
   };
 }
 
@@ -80,15 +79,6 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   const checks = useMemo(() => passwordChecks(form.password, form), [form]);
-  const strengthScore = [checks.length, checks.letter, checks.number, checks.notSimple, checks.noPersonalData, checks.symbol]
-    .filter(Boolean).length;
-  const strength = form.password.length === 0
-    ? { label: 'هنوز وارد نشده', level: 0 }
-    : strengthScore <= 2
-      ? { label: 'ضعیف', level: 1 }
-      : strengthScore <= 4
-        ? { label: 'متوسط', level: 2 }
-        : { label: 'قوی', level: 3 };
 
   const update = (name, value) => {
     const nextValue = ['nationalCode', 'phoneNumber'].includes(name)
@@ -157,13 +147,7 @@ export default function RegisterPage() {
 
           <div className={styles.featureList}>
             <div><span>۰۱</span><p><strong>سریع و روشن</strong><small>فرم کوتاه، بازخورد فوری و بدون مرحله اضافه</small></p></div>
-            <div><span>۰۲</span><p><strong>راهنمای رمز پویا</strong><small>هم‌زمان با تایپ، قدرت رمز را بررسی کنید</small></p></div>
-            <div><span>۰۳</span><p><strong>کاملاً فارسی</strong><small>تجربه‌ای راست‌چین و سازگار با موبایل</small></p></div>
-          </div>
-
-          <div className={styles.testNote}>
-            <span>نسخه آزمایشی</span>
-            <p>اطلاعات در فایل محلی ذخیره می‌شوند؛ از رمز واقعی خود استفاده نکنید.</p>
+            <div><span>۰۲</span><p><strong>کاملاً فارسی</strong><small>تجربه‌ای راست‌چین و سازگار با موبایل</small></p></div>
           </div>
         </aside>
 
@@ -199,20 +183,6 @@ export default function RegisterPage() {
                 {showPassword ? 'پنهان' : 'نمایش'}
               </button>
             </FormField>
-
-            <div className={styles.passwordGuide} data-level={strength.level}>
-              <div className={styles.strengthHead}>
-                <span>قدرت رمز: <strong>{strength.label}</strong></span>
-                <span className={styles.meter}><i /><i /><i /></span>
-              </div>
-              <p>برای انتخاب یک رمز قوی:</p>
-              <ul>
-                <li className={checks.length ? styles.passed : ''}>بین ۶ تا ۱۲۸ کاراکتر باشد</li>
-                <li className={checks.letter && checks.number ? styles.passed : ''}>حداقل یک حرف و یک عدد داشته باشد</li>
-                <li className={checks.notSimple && checks.noPersonalData ? styles.passed : ''}>ساده نباشد و اطلاعات شخصی شما را نداشته باشد</li>
-                <li className={checks.symbol ? styles.passed : ''}>برای امنیت بیشتر از نمادهایی مثل ! و @ استفاده کنید</li>
-              </ul>
-            </div>
 
             <FormField label="تکرار رمز عبور" name="confirmationPassword" icon="lock" error={errors.confirmationPassword}>
               <input dir="ltr" type={showPassword ? 'text' : 'password'} value={form.confirmationPassword} onChange={(e) => update('confirmationPassword', e.target.value)} maxLength={128} autoComplete="new-password" placeholder="رمز را دوباره وارد کنید" />
