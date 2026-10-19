@@ -1,4 +1,5 @@
 import { clearAuthTokens, setAuthTokens } from './api';
+import { fetchIdentityConfiguration, loginWithMockIdentity, logoutMockIdentity, safeLoginNext } from './identity-provider';
 
 const DEFAULT_REALM = 'vosol-maliat';
 
@@ -16,7 +17,11 @@ export function getKeycloakConfig() {
   };
 }
 
-export async function startKeycloakLogin(nextPath = '/') {
+export async function startKeycloakLogin(nextPath = '/', mockUsername) {
+  const identity = await fetchIdentityConfiguration();
+  if (identity.provider === 'mock') {
+    return loginWithMockIdentity(mockUsername, nextPath);
+  }
   const config = getKeycloakConfig();
   const verifier = createCodeVerifier();
   const challenge = await createCodeChallenge(verifier);
@@ -24,7 +29,7 @@ export async function startKeycloakLogin(nextPath = '/') {
 
   window.sessionStorage.setItem('pkce_verifier', verifier);
   window.sessionStorage.setItem('oauth_state', state);
-  window.sessionStorage.setItem('login_next', nextPath || '/');
+  window.sessionStorage.setItem('login_next', safeLoginNext(nextPath));
 
   const authorizeUrl = new URL(`${config.baseUrl}/realms/${config.realm}/protocol/openid-connect/auth`);
   authorizeUrl.searchParams.set('client_id', config.clientId);
@@ -39,6 +44,8 @@ export async function startKeycloakLogin(nextPath = '/') {
 }
 
 export async function completeKeycloakLogin(code, state) {
+  const identity = await fetchIdentityConfiguration();
+  if (identity.provider !== 'keycloak') throw new Error('ورود سازمانی غیرفعال است؛ از صفحه ورود آزمایشی وارد شوید.');
   const expectedState = window.sessionStorage.getItem('oauth_state');
   const verifier = window.sessionStorage.getItem('pkce_verifier');
   if (!code || !state || state !== expectedState || !verifier) {
@@ -79,10 +86,20 @@ export function consumeLoginNext() {
   }
   const next = window.sessionStorage.getItem('login_next') || '/';
   window.sessionStorage.removeItem('login_next');
-  return next;
+  return safeLoginNext(next);
 }
 
-export function logoutFromKeycloak() {
+export async function logoutFromKeycloak() {
+  try {
+    const identity = await fetchIdentityConfiguration();
+    if (identity.provider === 'mock') return await logoutMockIdentity();
+    logoutRealIdentity();
+  } catch (error) {
+    window.alert(error.message || 'خروج ناموفق بود؛ دوباره تلاش کنید.');
+  }
+}
+
+function logoutRealIdentity() {
   const config = getKeycloakConfig();
   clearAuthTokens();
   const logoutUrl = new URL(`${config.baseUrl}/realms/${config.realm}/protocol/openid-connect/logout`);

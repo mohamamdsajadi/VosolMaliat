@@ -22,6 +22,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.beans.factory.annotation.Value;
 
 @Configuration
 @org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(
@@ -33,6 +34,9 @@ public class SecurityConfig {
 
     private final KeycloakJwtAuthenticationConverter jwtAuthenticationConverter;
     private final ObjectMapper objectMapper;
+
+    @Value("${app.security.provider:keycloak}")
+    private String identityProvider;
 
     @Bean
     AuthenticationProvider debtPaperAuthenticationProvider(DebtPaperSecurityProperties properties) {
@@ -102,13 +106,19 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
+                .authorizeHttpRequests(auth -> {
+                    auth.requestMatchers("/api/v1/auth/config").permitAll();
+                    if ("mock".equals(identityProvider)) {
+                        auth.requestMatchers("/api/v1/auth/mock/users", "/api/v1/auth/mock/login").permitAll();
+                    }
+                    auth
                         .requestMatchers("/", "/index.html", "/_next/**", "/images/**", "/fonts/**",
                                 "/brand/**", "/favicon.ico", "/login", "/register", "/auth/callback",
                                 "/api/v1/test/registrations",
                                 "/api/v1/dashboard/stats",
                                 "/api/v1/fake-electronic-notification/callback").permitAll()
-                        .anyRequest().authenticated())
+                        .anyRequest().authenticated();
+                })
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter)))
                 .build();
     }

@@ -57,7 +57,7 @@ camunda:
         max-jobs-active: ${CAMUNDA_WORKER_MAX_JOBS_ACTIVE:10}
         poll-interval: ${CAMUNDA_WORKER_POLL_INTERVAL:PT10S}
         request-timeout: ${CAMUNDA_WORKER_REQUEST_TIMEOUT:PT15S}
-    enabled: true
+    enabled: ${CAMUNDA_CLIENT_ENABLED:true}
 
 server:
   port: ${SERVER_PORT:8025}
@@ -95,6 +95,7 @@ app:
       enabled: ${TEST_REGISTRATION_ENABLED:true}
       output-path: ${TEST_REGISTRATION_OUTPUT_PATH:./temp/test-registrations.txt}
   security:
+    provider: ${AUTH_PROVIDER:keycloak}
     bootstrap-admin:
       keycloak-user-id: ${ADMIN_KEYCLOAK_USER_ID:9c512620-10f2-4fcb-a432-57e7c84fb1f5}
       username: ${ADMIN_USERNAME:admin}

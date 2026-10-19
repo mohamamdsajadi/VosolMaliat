@@ -33,8 +33,10 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 @Service
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(
+        name = "camunda.client.enabled", havingValue = "true", matchIfMissing = true)
 @RequiredArgsConstructor
-public class CartableService {
+public class CartableService implements CartableOperations {
 
     private final CamundaClient camundaClient;
     private final SecurityIdentityService securityIdentityService;

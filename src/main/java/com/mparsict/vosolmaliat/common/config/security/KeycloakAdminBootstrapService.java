@@ -24,6 +24,9 @@ public class KeycloakAdminBootstrapService {
     @Value("${app.keycloak.bootstrap-users.enabled:false}")
     private boolean enabled;
 
+    @Value("${app.security.provider:keycloak}")
+    private String identityProvider;
+
     @Value("${app.keycloak.bootstrap-users.issuer-uri:}")
     private String issuerUri;
 
@@ -40,7 +43,7 @@ public class KeycloakAdminBootstrapService {
     private boolean temporaryPassword;
 
     public boolean isEnabled() {
-        return enabled;
+        return enabled && !"mock".equals(identityProvider);
     }
 
     public Optional<String> ensureUser(
@@ -94,7 +97,7 @@ public class KeycloakAdminBootstrapService {
     }
 
     private String validationMessage() {
-        if (!enabled) {
+        if (!isEnabled()) {
             return "KEYCLOAK_BOOTSTRAP_USERS_ENABLED is false";
         }
         if (isBlank(issuerUri)) {

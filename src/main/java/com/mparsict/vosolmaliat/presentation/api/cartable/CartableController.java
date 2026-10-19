@@ -7,7 +7,7 @@ import com.mparsict.vosolmaliat.application.dto.request.cartable.CompleteTaskReq
 import com.mparsict.vosolmaliat.application.dto.request.cartable.DelegateTaskRequest;
 import com.mparsict.vosolmaliat.application.dto.response.cartable.CartableTaskResponse;
 import com.mparsict.vosolmaliat.application.dto.response.cartable.DelegationTargetResponse;
-import com.mparsict.vosolmaliat.application.service.cartable.CartableService;
+import com.mparsict.vosolmaliat.application.service.cartable.CartableOperations;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +23,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CartableController {
 
-    private final CartableService cartableService;
+    private final CartableOperations cartableService;
 
     @GetMapping("/my-tasks")
     @PreAuthorize("hasAuthority('TASK_VIEW_OWN')")

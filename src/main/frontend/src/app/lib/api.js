@@ -21,6 +21,7 @@ export function setAccessToken(token) {
   } else {
     window.localStorage.removeItem("access_token");
   }
+  window.dispatchEvent(new Event('auth-tokens-changed'));
 }
 
 export function setAuthTokens({ accessToken, refreshToken, expiresIn }) {
@@ -43,6 +44,16 @@ export function clearAuthTokens() {
   window.localStorage.removeItem("access_token");
   window.localStorage.removeItem("refresh_token");
   window.localStorage.removeItem("token_expires_at");
+  window.dispatchEvent(new Event('auth-tokens-changed'));
+}
+
+export function subscribeAuthTokens(onChange) {
+  window.addEventListener('storage', onChange);
+  window.addEventListener('auth-tokens-changed', onChange);
+  return () => {
+    window.removeEventListener('storage', onChange);
+    window.removeEventListener('auth-tokens-changed', onChange);
+  };
 }
 
 export async function apiFetch(path, options = {}) {

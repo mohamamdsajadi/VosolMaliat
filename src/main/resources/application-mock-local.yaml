@@ -1,0 +1,23 @@
+# Opt-in local frontend testing. Remove this profile to restore real integrations.
+app:
+  security:
+    provider: ${AUTH_PROVIDER:mock}
+  keycloak:
+    bootstrap-users:
+      enabled: false
+  execution-paper:
+    inbox:
+      enabled: false
+  test:
+    database-reset:
+      enabled: false
+    registration:
+      enabled: false
+camunda:
+  client:
+    enabled: ${CAMUNDA_CLIENT_ENABLED:false}
+spring:
+  datasource:
+    url: jdbc:sqlite:${MOCK_DB_PATH:./ef03.mock.sqlite}
+server:
+  address: 127.0.0.1

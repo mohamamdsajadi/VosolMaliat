@@ -57,6 +57,9 @@ public class SecurityDataInitializer {
     @Value("${app.security.bootstrap-admin.email:${ADMIN_EMAIL:admin@vosol-maliat.local}}")
     private String bootstrapAdminEmail;
 
+    @Value("${app.security.provider:keycloak}")
+    private String identityProvider;
+
     @Bean
     CommandLineRunner seedSecurityData() {
         return args -> initializeSecurityData();
@@ -199,6 +202,10 @@ public class SecurityDataInitializer {
             BusinessRole businessRole,
             Long generalDirectorateId,
             Long taxAffairsOfficeId) {
+        // Mock login reuses existing identities; never replace real subject IDs or profile edits.
+        if ("mock".equals(identityProvider) && userProfileRepository.existsByUsername(username)) {
+            return;
+        }
         String effectiveKeycloakUserId = keycloakAdminBootstrapService
                 .ensureUser(username, email, firstName, lastName, businessRole)
                 .orElse(keycloakUserId);
