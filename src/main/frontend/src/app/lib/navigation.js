@@ -63,7 +63,7 @@ export function visibleNavItems(currentUser) {
 
 export function canSeeNavItem(currentUser, item) {
   if (item.key === "processes") {
-    return isAdminUser(currentUser);
+    return isAdminUser(currentUser) || isGeneralOfficeHead(currentUser);
   }
   if (!item.permissions || item.permissions.length === 0) {
     return true;
@@ -79,6 +79,10 @@ export function canSeeNavItem(currentUser, item) {
     ...(currentUser.allowedActions || [])
   ]);
   return item.permissions.some((permission) => permissions.has(permission));
+}
+
+export function isGeneralOfficeHead(currentUser) {
+  return currentUser?.businessRole === 'GENERAL_OFFICE_HEAD';
 }
 
 export function isAdminUser(currentUser) {

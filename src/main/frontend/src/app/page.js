@@ -7,7 +7,9 @@ import AppShell from "./components/app-shell";
 import RefreshButton from "./components/refresh-button";
 import { apiFetch } from "./lib/api";
 import { fetchCurrentUser } from "./lib/security";
-import { isAdminUser } from "./lib/navigation";
+import { isAdminUser, isGeneralOfficeHead } from "./lib/navigation";
+import ManagerDashboard from "./components/manager-dashboard/manager-dashboard";
+import { fetchManagerDashboard } from "./lib/manager-dashboard";
 
 const PieChartComponent = dynamic(() => import("./components/PieChartWidget"), {
   ssr: false,
@@ -69,47 +71,65 @@ const DEBT_SUMMARY = [
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [checkingAccess, setCheckingAccess] = useState(true);
-  const [error, setError] = useState(null);
-
-  const fetchStats = useCallback(() => {
-    setLoading(true);
-    setError(null);
-    apiFetch("/api/v1/dashboard/stats")
-      .then((response) => {
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        return response.json();
-      })
-      .then((data) => {
-        setStats(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError(err.message || "دریافت اطلاعات ناموفق بود.");
-        setLoading(false);
-      });
-  }, []);
+  const [user, setUser] = useState(null);
+  const [accessError, setAccessError] = useState('');
+  const [accessAttempt, setAccessAttempt] = useState(0);
 
   useEffect(() => {
-    fetchCurrentUser()
-      .then((user) => {
-        if (!isAdminUser(user)) {
-          router.replace("/tasks");
-          return;
-        }
-        setCheckingAccess(false);
-        fetchStats();
-      })
-      .catch(() => {
-        router.replace("/login");
-      });
-  }, [fetchStats, router]);
+    let active = true;
+    fetchCurrentUser().then(current => {
+      if (!active) return;
+      if (isGeneralOfficeHead(current) || isAdminUser(current)) setUser(current);
+      else router.replace('/tasks');
+    }).catch(() => { if (active) setAccessError('دریافت اطلاعات کاربر ناموفق بود.'); });
+    return () => { active = false; };
+  }, [router, accessAttempt]);
 
-  if (checkingAccess) {
-    return null;
-  }
+  if (accessError) return <div className="dashboard-error" role="alert"><strong>{accessError}</strong><button className="primary-action" onClick={() => { setAccessError(''); setAccessAttempt(value => value + 1); }}>تلاش مجدد</button></div>;
+  if (!user) return <div className="dashboard-loading" role="status">در حال دریافت میزکار...</div>;
+  return isGeneralOfficeHead(user) ? <GeneralOfficeDashboard user={user} /> : <AdminDashboardPage />;
+}
+
+function GeneralOfficeDashboard({ user }) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const refresh = useCallback(async () => {
+    setLoading(true);
+    try { setData(await fetchManagerDashboard()); }
+    finally { setLoading(false); }
+  }, []);
+  useEffect(() => { refresh(); }, [refresh]);
+  return <ManagerDashboard user={user} data={data} loading={loading} onRefresh={refresh} />;
+}
+
+function AdminDashboardPage() {
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const loadStats = useCallback(async () => {
+    try {
+      const response = await apiFetch('/api/v1/dashboard/stats');
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      setStats(await response.json());
+    } catch (err) {
+      setError(err.message || 'دریافت اطلاعات ناموفق بود.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchStats = () => {
+    setLoading(true);
+    setError(null);
+    loadStats();
+  };
+
+  useEffect(() => {
+    loadStats();
+  }, [loadStats]);
+
+  const router = useRouter();
 
   return (
     <AppShell

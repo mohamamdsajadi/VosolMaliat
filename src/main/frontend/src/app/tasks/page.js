@@ -35,7 +35,17 @@ export default function AllTasksPage() {
   const [message, setMessage] = useState("");
   const [filterForm, setFilterForm] = useState(EMPTY_FILTERS);
   const [filters, setFilters] = useState(EMPTY_FILTERS);
+  const [filtersReady, setFiltersReady] = useState(false);
   const handledTaskKeys = useRef(new Set());
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const initialFilters = { ...EMPTY_FILTERS };
+    Object.keys(initialFilters).forEach(key => { initialFilters[key] = params.get(key) || ''; });
+    setFilterForm(initialFilters);
+    setFilters(initialFilters);
+    setFiltersReady(true);
+  }, []);
 
   const loadTasks = useCallback(async () => {
     setLoadingTasks(true);
@@ -59,8 +69,8 @@ export default function AllTasksPage() {
   }, []);
 
   useEffect(() => {
-    loadTasks();
-  }, [loadTasks]);
+    if (filtersReady) loadTasks();
+  }, [loadTasks, filtersReady]);
 
   const isAdmin = currentUser?.businessRole === 'ADMIN' || currentUser?.allowedActions?.includes('ADMIN');
 
