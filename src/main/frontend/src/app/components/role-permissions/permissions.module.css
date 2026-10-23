@@ -1,0 +1,31 @@
+.page { background: white; border: 1px solid #e8ebef; border-radius: 12px; padding: 24px; min-height: calc(100dvh - 190px); }
+.heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.heading h1 { font-size: 21px; font-weight: 700; }
+.heading p, .roleHeading p { color: #748297; font-size: 12px; margin-top: 8px; }
+.page button { font: inherit; cursor: pointer; }
+.heading > button, .error button { border: 1px solid #3177d8; color: #3177d8; background: white; padding: 8px 16px; border-radius: 8px; }
+.page button:focus-visible, .page input:focus-visible { outline: 3px solid #5a92e0; outline-offset: 3px; }
+.notice { min-height: 24px; color: #298b5f; font-size: 13px; margin-block: 12px !important; }
+.layout { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 24px; }
+.roles { border: 1px solid #e8ebef; border-radius: 12px; overflow: hidden; align-self: start; }
+.roles h2 { font-weight: 700; padding: 16px; background: #eaf1fb; display: flex; justify-content: space-between; }
+.roles button { display: block; text-align: start; width: 100%; padding: 14px 16px; border: 0; border-bottom: 1px solid #edf1f6; background: white; font-size: 13px; line-height: 1.9; }
+.roles button[aria-pressed='true'] { background: #eaf1fb; color: #3177d8; border-inline-start: 3px solid #3177d8; font-weight: 700; }
+.roles small { display: block; color: #748297; font-size: 10px; }
+.access { min-width: 0; }
+.roleHeading { display: flex; justify-content: space-between; align-items: start; gap: 16px; padding-bottom: 20px; border-bottom: 1px solid #e8ebef; }
+.roleHeading h2 { font-size: 18px; font-weight: 700; }
+.roleHeading > span { background: #eaf1fb; color: #3177d8; padding: 5px 10px; border-radius: 20px; font-size: 11px; white-space: nowrap; }
+.group { margin: 24px 0 0; padding: 16px; border: 1px solid #e1e7ef; border-radius: 10px; }
+.group legend { padding-inline: 8px; font-size: 14px; font-weight: 700; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.permission { display: flex; align-items: start; gap: 10px; padding: 10px 8px; background: #f7f9fd; border-radius: 8px; font-size: 12px; line-height: 1.8; cursor: pointer; }
+.permission input { flex: 0 0 18px; width: 18px; height: 18px; margin-top: 2px; accent-color: #3177d8; }
+.permission small { display: block; color: #748297; font-size: 10px; }
+.info { padding: 12px; background: #eaf1fb; border-radius: 8px; margin-top: 16px !important; font-size: 12px; line-height: 1.8; }
+.note { display: flex; align-items: start; gap: 8px; color: #748297; font-size: 11px; line-height: 2; margin-top: 20px !important; }
+.note img { flex-shrink: 0; }
+.empty { padding: 40px; text-align: center; color: #748297; }
+.error { display: flex; justify-content: space-between; align-items: center; gap: 16px; color: #b3261e; background: #fff2f3; padding: 12px; margin-top: 16px; border-radius: 8px; font-size: 13px; }
+@media (max-width: 1150px) { .layout { grid-template-columns: 240px minmax(0, 1fr); gap: 16px; } .grid { grid-template-columns: 1fr; } }
+@media (max-width: 800px) { .page { padding: 16px; } .layout { grid-template-columns: 1fr; } .roles { max-height: 230px; overflow-y: auto; } .heading, .roleHeading { flex-wrap: wrap; } .heading h1 { font-size: 18px; } }

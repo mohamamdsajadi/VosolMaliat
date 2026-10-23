@@ -12,14 +12,16 @@ export default function TaskDetailPage() {
   const searchParams = useSearchParams();
   const taskId = params?.taskId;
   const processDefinitionKey = searchParams.get('processDefinitionKey');
+  const referral = searchParams.get('intent') === 'referral';
   const backHref = processDefinitionKey
     ? `/processes/${encodeURIComponent(processDefinitionKey)}/tasks`
     : '/tasks';
 
   return (
     <AppShell
+      mobileDrawer
       active="tasks"
-      title="تکمیل کار فعال"
+      title={referral ? 'ارجاع برگ اجرا' : 'تکمیل کار فعال'}
       eyebrow="فرم مرحله"
       contextItems={[
         `شناسه کار: ${formatCompactId(taskId)}`,
@@ -48,8 +50,8 @@ export default function TaskDetailPage() {
           </div>
           <div>
             <p className="eyebrow">پرونده در جریان</p>
-            <h2>مسیر تکمیل کار</h2>
-            <p>فرم این مرحله را بررسی و نتیجه را ثبت کنید. پس از ثبت موفق، کار از صف فعال خارج می‌شود.</p>
+            <h2>{referral ? 'ارجاع به مسئول مرحله بعد' : 'مسیر تکمیل کار'}</h2>
+            <p>{referral ? 'فرم ارجاع مرحله جاری را بررسی کنید. پس از ثبت موفق، پرونده طبق فرایند به مسئول بعدی می‌رسد.' : 'فرم این مرحله را بررسی و نتیجه را ثبت کنید. پس از ثبت موفق، کار از صف فعال خارج می‌شود.'}</p>
           </div>
           <div className="task-detail-steps">
             <span className="task-detail-step task-detail-step--done">دریافت از صف</span>
@@ -60,6 +62,7 @@ export default function TaskDetailPage() {
 
         <TaskDetail
           taskId={taskId}
+          intent={referral ? 'referral' : undefined}
           order={1}
           onDone={() => router.push(backHref)}
         />

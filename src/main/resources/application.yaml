@@ -68,6 +68,9 @@ server:
       force: true
 
 app:
+  arrest-order:
+    # Temporary durable workflow. Independent of the Camunda connection switch.
+    engine: ${ARREST_ORDER_ENGINE:local}
   execution-paper:
     samples-path: ${EXECUTION_PAPER_SAMPLES_PATH:docs/paper-types-examples/نمونه اوراق اجرایی.xlsx}
     inbox:

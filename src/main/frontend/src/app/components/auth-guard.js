@@ -42,7 +42,7 @@ export default function AuthGuard({ children }) {
   return <>
     {mode && (mode.provider === 'mock' || mode.workflow === 'mock') && <div className="mock-mode-banner" role="status">
       حالت آزمایشی — {mode.provider === 'mock' ? 'ورود محلی' : 'ورود سازمانی'}
-      {mode.workflow === 'mock' ? '؛ Camunda غیرفعال و کارتابل خالی است' : ''}
+      {mode.workflow === 'mock' ? '؛ Camunda غیرفعال است. گردش دستور بازداشت در بخش «دستور بازداشت اموال» پیگیری می‌شود.' : ''}
     </div>}
     {children}
   </>;

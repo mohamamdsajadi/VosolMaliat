@@ -83,7 +83,7 @@ public class MockIdentityProvider implements JwtDecoder {
     }
 
     private boolean available(AppUserProfile profile) {
-        return Boolean.TRUE.equals(profile.getEnabledInBusinessSystem())
+        return profile.getBusinessRole() != null && Boolean.TRUE.equals(profile.getEnabledInBusinessSystem())
                 && !Boolean.TRUE.equals(profile.getLockedInBusinessSystem());
     }
 

@@ -1,0 +1,100 @@
+.pageCard { min-height: calc(100dvh - 189px); border: 1px solid #e8ebef; border-radius: 12px; padding: 15px; background: white; }
+.pageCard button, .pageCard a { font: inherit; }
+.pageCard button:focus-visible, .pageCard a:focus-visible, .pageCard [tabindex='0']:focus-visible { outline: 3px solid #5a92e0; outline-offset: 2px; }
+.tabs { display: flex; margin-top: 30px; height: 46px; border-bottom: 2px solid #f2f2f2; overflow-x: auto; overflow-y: hidden; }
+.tabs button { flex: 0 0 auto; height: 44px; padding: 10px 20px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: #aaa; font-size: 16px; white-space: nowrap; }
+.tabs button[aria-selected='true'] { background: linear-gradient(180deg, #3177d800, #3177d81a); border-bottom-color: #3177d8; color: #3177d8; font-weight: 700; }
+.panel { margin-top: 28px; min-height: 400px; }
+.debtScroll { overflow-x: auto; border: 1px solid #e8ebef; border-radius: 12px; }
+.debtTable { width: 100%; min-width: 850px; table-layout: fixed; text-align: center; border-collapse: separate; border-spacing: 0; font-size: 14px; }
+.debtTable th { height: 47px; background: #eaf1fb; font-weight: 700; border-inline-end: 2px solid #a7c7f0; padding: 4px; white-space: nowrap; }
+.debtTable th:last-child { border-inline-end: 0; }
+.debtTable td { height: 37px; padding: 6px 4px; border-inline-end: 1px solid #eaf1fb; }
+.debtTable td:first-child { background: #f7f9fd; }
+.debtTable td:last-child { border-inline-end: 0; }
+.debtTable tr + tr td { border-top: 2px solid #eaf1fb; }
+.snapshotDate { display: flex; justify-content: center; align-items: center; gap: 6px; white-space: nowrap; }
+.aggregateNote { display: block; font-size: 10px; color: #747474; }
+.aggregateHelp { font-size: 11px; color: #747474; line-height: 1.8; margin-top: 10px !important; }
+.snapshotLabel { display: block; font-size: 10px; color: #747474; font-weight: 400; }
+.amountButton { display: flex; align-items: center; justify-content: center; gap: 5px; width: 100%; padding: 4px 0; border: 0; background: transparent; color: inherit; cursor: pointer; }
+.amountButton svg { width: 15px; height: 15px; flex-shrink: 0; color: #3177d8; }
+.amountButton:hover { color: #3177d8; background: #eaf1fb; border-radius: 4px; }
+.amountButton:disabled { cursor: default; }
+.breakdownCard { border: 1px solid #e1e6ed; border-radius: 12px; background: #fbfcfe; padding: 16px 24px 24px; }
+.breakdownCard h3 { display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 700; }
+.breakdownDate { font-size: 12px; color: #747474; margin: 8px 0 20px !important; }
+.breakdownScroll { max-width: 840px; margin: 0 auto; overflow-x: auto; border: 1px solid #e1e6ed; border-radius: 12px; }
+.breakdownTable { width: 100%; min-width: 480px; border-collapse: separate; border-spacing: 0; table-layout: fixed; text-align: center; font-size: 14px; }
+.breakdownTable th, .breakdownTable td { height: 38px; padding: 8px; border-inline-end: 2px solid #eaf1fb; border-bottom: 2px solid #eaf1fb; overflow-wrap: anywhere; }
+.breakdownTable th:last-child, .breakdownTable td:last-child { border-inline-end: 0; }
+.breakdownTable thead th { height: 47px; background: #eaf1fb; border-inline-end-color: #a7c7f0; }
+.breakdownTable tbody, .breakdownTable tfoot { background: white; }
+.breakdownTable tfoot th, .breakdownTable tfoot td { font-weight: 700; border-bottom: 0; }
+.increased { color: #ee3f44; font-weight: 700; }
+.otherPapersAlert { display: flex; width: fit-content; max-width: 100%; gap: 12px; align-items: center; background: #ee3f441a; border-radius: 8px; padding: 10px 12px; margin-top: 20px; font-size: 12px; }
+.otherPapersAlert > svg { color: #ee3f44; flex-shrink: 0; width: 20px; height: 20px; }
+.otherPapersAlert button { color: #ee3f44; border: 0; padding: 2px 16px; background: transparent; font-size: 11px; }
+.otherPapersList { list-style: none; padding: 0; margin: 20px 0 0; }
+.otherPapersList a { display: flex; align-items: center; gap: 8px; padding: 12px; border: 1px solid #e8ebef; border-radius: 8px; margin-top: 8px; color: #3177d8; }
+.otherPapersList svg { margin-inline-start: auto; }
+.workflowScroll { overflow-x: auto; scrollbar-width: thin; }
+.workflow { display: flex; justify-content: space-between; list-style: none; min-width: 850px; padding: 0; margin: 0; }
+.workflow li { position: relative; width: 118px; flex: 0 0 118px; }
+.step { width: 104px; min-height: 144px; border: 0; padding: 16px 4px; background: transparent; border-radius: 12px; display: flex; flex-direction: column; align-items: center; }
+.step[aria-pressed='true'] { background: #f1f6fb; }
+.stepIcon { position: relative; display: block; width: 56px; height: 56px; }
+.stepInner { position: absolute; top: 8px; left: 8px; }
+.stepSymbol { position: absolute; inset: 0; display: grid; place-items: center; }
+.stepName { font-size: 12px; white-space: nowrap; margin-top: 8px; line-height: 18px; }
+.stepStatus { display: flex; align-items: center; gap: 4px; padding: 2px 12px; margin-top: 12px; border-radius: 20px; font-size: 11px; line-height: 17px; color: #747474; background: #aaaaaa1a; white-space: nowrap; }
+.stepStatus.done { color: #298b5f; background: #298b5f1a; }
+.stepStatus.active { color: #3177d8; background: #3177d81a; }
+.stepArrow { position: absolute; top: 56px; inset-inline-end: -12px; pointer-events: none; }
+.stageCard, .infoCard { border: 1px solid #e8ebef; border-radius: 12px; background: #fbfcfe; padding: 16px; }
+.stageCard { margin-top: 28px; }
+.stageCard h2, .infoCard h2 { display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 700; line-height: 27px; }
+.stageFacts { display: grid; grid-template-columns: 1fr 1.3fr 2fr; gap: 16px; margin: 24px 0 0; font-size: 16px; }
+.stageFacts > div, .infoGrid > div { display: flex; gap: 8px; align-items: baseline; min-width: 0; }
+.stageFacts dt, .infoGrid dt { font-weight: 700; color: #49617d; flex-shrink: 0; }
+.stageFacts dd, .infoGrid dd { margin: 0; overflow-wrap: anywhere; }
+.stageSubject { line-height: 1.8; }
+.actions { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-top: 24px; }
+.primaryAction, .outlineAction { display: flex; align-items: center; justify-content: center; gap: 8px; height: 40px; min-width: 88px; padding: 8px 14px; border: 1px solid #3177d8; border-radius: 8px; font-size: 14px; }
+.primaryAction { background: #3177d8; color: white !important; }
+.outlineAction { background: white; color: #3177d8 !important; }
+.textAction { background: transparent; border: 0; color: #3177d8 !important; padding: 8px 4px; font-size: 12px !important; }
+.infoGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px 40px; margin: 24px 0 0; font-size: 16px; line-height: 1.8; }
+.wideInfo { grid-column: 1 / -1; }
+.infoGrid > div { flex-wrap: wrap; }
+.supplemental { border: 1px solid #e8ebef; border-radius: 12px; margin-top: 20px; padding: 16px; }
+.supplemental summary { cursor: pointer; color: #49617d; }
+.fileActions { display: flex; gap: 16px; margin-top: 16px; }
+.dialog { inset: 0; margin: auto; padding: 0; border: 1px solid #e8ebef; border-radius: 12px; color: #102742; width: 1100px; max-width: calc(100vw - 32px); max-height: calc(100dvh - 40px); }
+.dialog::backdrop { background: #10274266; }
+.dialog > div { padding: 24px; }
+.dialog h2 { font-size: 18px; margin: 0 0 20px !important; }
+.dialogClose { float: left; width: 28px; height: 28px; line-height: 1; font-size: 26px !important; border: 0; background: transparent; border-radius: 6px; }
+.documentTools { display: flex; justify-content: flex-end; margin-bottom: 12px; }
+.message { padding: 30px !important; text-align: center; color: #747474; white-space: normal !important; }
+.error { display: flex; align-items: center; gap: 12px; padding: 15px; color: #b3261e; }
+.error button { border: 1px solid #e8ebef; border-radius: 8px; padding: 6px 12px; background: white; flex-shrink: 0; }
+.muted { color: #747474; padding: 10px; font-size: 12px; }
+.srOnly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+@media print {
+  :global(body.execution-printing) .dialog, :global(body.execution-printing) .dialog::backdrop { display: none !important; }
+}
+@media (max-width: 1280px) { .stageFacts { grid-template-columns: 1fr 1fr; } .stageSubject { grid-column: 1 / -1; } }
+@media (max-width: 800px) {
+  .pageCard { padding: 12px; min-height: calc(100dvh - 205px); }
+  .tabs { margin-top: 24px; }
+  .tabs button { padding-inline: 16px; font-size: 14px; }
+  .panel { margin-top: 24px; }
+  .stageFacts, .infoGrid { grid-template-columns: 1fr; gap: 20px; font-size: 14px; }
+  .stageCard h2, .infoCard h2 { font-size: 16px; }
+  .otherPapersAlert { gap: 8px; padding: 8px; font-size: 11px; }
+  .otherPapersAlert button { padding-inline: 4px; }
+  .dialog > div { padding: 12px; }
+  .actions { gap: 12px; }
+  .error { flex-wrap: wrap; }
+}

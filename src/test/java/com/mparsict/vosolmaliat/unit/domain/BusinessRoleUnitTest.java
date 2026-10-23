@@ -8,16 +8,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 class BusinessRoleUnitTest {
 
     @Test
-    void nextDelegationRoleFollowsOrganizationalHierarchy() {
-        assertThat(BusinessRole.GENERAL_OFFICE_HEAD.nextDelegationRole()).isEqualTo(BusinessRole.TAX_OFFICE_HEAD);
-        assertThat(BusinessRole.TAX_OFFICE_HEAD.nextDelegationRole()).isEqualTo(BusinessRole.TAX_EXPERT);
-        assertThat(BusinessRole.TAX_EXPERT.nextDelegationRole()).isNull();
-        assertThat(BusinessRole.ADMIN.nextDelegationRole()).isNull();
+    void newRoleCatalogHasTenOperationalRolesAndAwaitsApprovedDelegationHierarchy() {
+        assertThat(BusinessRole.values()).hasSize(11);
+        for (var role : BusinessRole.values()) assertThat(role.nextDelegationRole()).isNull();
     }
 
     @Test
     void adminIsNotOperationalRole() {
         assertThat(BusinessRole.ADMIN.isOperational()).isFalse();
-        assertThat(BusinessRole.TAX_EXPERT.isOperational()).isTrue();
+        assertThat(BusinessRole.EXECUTION_OFFICER.isOperational()).isTrue();
     }
 }

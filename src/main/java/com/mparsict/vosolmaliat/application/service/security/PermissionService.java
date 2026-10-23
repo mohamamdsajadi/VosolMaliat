@@ -52,6 +52,8 @@ public class PermissionService {
 
     @Transactional
     public GroupPermissionResponse assignPermission(AssignGroupPermissionRequest request) {
+        try { com.mparsict.vosolmaliat.domain.enums.BusinessRole.valueOf(request.groupName()); }
+        catch (IllegalArgumentException ex) { throw new BusinessException("INVALID_BUSINESS_ROLE", "نقش انتخاب‌شده معتبر نیست"); }
         Permission permission = permissionRepository.findByCode(request.permissionCode())
                 .orElseThrow(() -> new BusinessException("PERMISSION_NOT_FOUND", "مجوز یافت نشد"));
         return groupPermissionRepository.findByGroupNameAndPermissionCode(request.groupName(), request.permissionCode())
@@ -71,6 +73,8 @@ public class PermissionService {
     public void removePermission(Long id) {
         GroupPermission groupPermission = groupPermissionRepository.findById(id)
                 .orElseThrow(() -> new BusinessException("GROUP_PERMISSION_NOT_FOUND", "مجوز گروه یافت نشد"));
+        if ("ADMIN".equals(groupPermission.getGroupName()))
+            throw new BusinessException("ADMIN_ACCESS_IMMUTABLE", "دسترسی کامل مدیر سامانه قابل لغو نیست");
         String oldValue = groupPermission.getGroupName() + ":" + groupPermission.getPermission().getCode();
         groupPermissionRepository.delete(groupPermission);
         auditLogService.record(securityIdentityService.currentUser(), "GROUP_PERMISSION_REMOVED", "GROUP_PERMISSION",

@@ -8,6 +8,8 @@ import {
 } from '../lib/display';
 import EvaluationReviewForm from './evaluation-review-form';
 import IncompleteInformationForm from './incomplete-information-form';
+import TaskReferralForm from './task-referral/task-referral-form';
+import { fetchCurrentUser } from '../lib/security';
 import { completeTask, fetchTask, hasRenderableSchema, isEvaluationReviewTask, isExecutionPaperReviewTask, isIncompleteInformationTask } from '../lib/tasks';
 
 const ProcessForm = dynamic(
@@ -15,11 +17,13 @@ const ProcessForm = dynamic(
   { ssr: false, loading: () => <TaskSkeleton /> }
 )
 
-export default function Task({ taskId, order, onDone }) {
+export default function Task({ taskId, order, onDone, intent }) {
   const [task, setTask] = useState();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [currentUser, setCurrentUser] = useState(null);
+  const [revision, setRevision] = useState(0);
   const hasError = Boolean(error);
   const isUnavailable = !loading && !task;
   const state = loading
@@ -61,7 +65,8 @@ export default function Task({ taskId, order, onDone }) {
       setTask(undefined);
 
       try {
-        setTask(await fetchTask(taskId));
+        const [result, user] = await Promise.all([fetchTask(taskId), intent === 'referral' ? fetchCurrentUser() : Promise.resolve(null)]);
+        setTask(result); setCurrentUser(user);
 
       } catch (err) {
         setError(err.message || "خطایی در دریافت اطلاعات رخ داد.");
@@ -73,7 +78,7 @@ export default function Task({ taskId, order, onDone }) {
     if (taskId) {
       loadTask();
     }
-  }, [taskId]);
+  }, [taskId, intent, revision]);
 
   return (
     <article className={`task-card task-card--${state}`}>
@@ -104,6 +109,8 @@ export default function Task({ taskId, order, onDone }) {
 
       {loading ? (
         <TaskSkeleton />
+      ) : intent === 'referral' ? (
+        <TaskReferralForm task={task} user={currentUser} onComplete={submitTask} onReload={() => setRevision(value => value + 1)} submitting={submitting} />
       ) : isEvaluationReviewTask(task) ? (
         <div className="form-stage">
           <EvaluationReviewForm

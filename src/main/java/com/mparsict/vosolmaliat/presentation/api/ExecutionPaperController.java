@@ -23,11 +23,12 @@ import java.util.List;
 public class ExecutionPaperController {
 
     private final ExecutionPaperService executionPaperService;
+    private final com.mparsict.vosolmaliat.application.service.security.ExecutionPaperVisibility visibility;
     private final RelatedPersonService relatedPersonService;
     private final ExternalSystemRequestService externalSystemRequestService;
 
     @GetMapping
-    @PreAuthorize("hasAuthority('REPORT_VIEW')")
+    @PreAuthorize("hasAnyAuthority('REPORT_VIEW','EXECUTION_PAPER_LIST_VIEW')")
     public ExecutionPaperPageResponse getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -37,9 +38,15 @@ public class ExecutionPaperController {
             @RequestParam(required = false) String currentState,
             @RequestParam(required = false) String notificationStatus,
             @RequestParam(required = false) java.math.BigDecimal minDebt,
-            @RequestParam(required = false) java.math.BigDecimal maxDebt) {
+            @RequestParam(required = false) java.math.BigDecimal maxDebt,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String taxpayerType,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate issuedFrom,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate issuedTo,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String sortDirection) {
         ExecutionPaperSearchCriteria criteria = new ExecutionPaperSearchCriteria(
-                uniqueCode, taxpayerName, taxpayerNationalId, currentState, notificationStatus, minDebt, maxDebt);
+                uniqueCode, taxpayerName, taxpayerNationalId, currentState, notificationStatus, minDebt, maxDebt, search, taxpayerType, issuedFrom, issuedTo, sortBy, sortDirection);
         log.debug("GET /api/v1/execution-papers page={}, size={}, criteria={}", page, size, criteria);
         return executionPaperService.getAll(page, size, criteria);
     }
@@ -61,6 +68,7 @@ public class ExecutionPaperController {
     @GetMapping("/{id}/external-requests")
     @PreAuthorize("hasAnyAuthority('REPORT_VIEW','EXECUTION_PAPER_DETAIL_VIEW')")
     public List<ExternalSystemRequestResponse> getExternalRequests(@PathVariable Long id) {
+        visibility.requireVisible(id);
         log.debug("GET /api/v1/execution-papers/{}/external-requests", id);
         return externalSystemRequestService.findByExecutionPaperId(id);
     }
@@ -68,6 +76,7 @@ public class ExecutionPaperController {
     @GetMapping("/{id}/related-persons")
     @PreAuthorize("hasAnyAuthority('REPORT_VIEW','EXECUTION_PAPER_DETAIL_VIEW')")
     public ExecutionPaperRelatedPersonsResponse getRelatedPersons(@PathVariable Long id) {
+        visibility.requireVisible(id);
         log.debug("GET /api/v1/execution-papers/{}/related-persons", id);
         return relatedPersonService.getForExecutionPaper(id);
     }
@@ -75,12 +84,13 @@ public class ExecutionPaperController {
     @PostMapping("/{id}/related-persons/refresh")
     @PreAuthorize("hasAnyAuthority('REPORT_VIEW','EXECUTION_PAPER_DETAIL_VIEW')")
     public ExecutionPaperRelatedPersonsResponse refreshRelatedPersons(@PathVariable Long id) {
+        visibility.requireVisible(id);
         log.info("POST /api/v1/execution-papers/{}/related-persons/refresh", id);
         return relatedPersonService.refreshForExecutionPaper(id);
     }
 
     @GetMapping("/assigned")
-    @PreAuthorize("hasAuthority('REPORT_VIEW')")
+    @PreAuthorize("hasAnyAuthority('REPORT_VIEW','EXECUTION_PAPER_LIST_VIEW')")
     public ExecutionPaperPageResponse getAssigned(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -90,15 +100,21 @@ public class ExecutionPaperController {
             @RequestParam(required = false) String currentState,
             @RequestParam(required = false) String notificationStatus,
             @RequestParam(required = false) java.math.BigDecimal minDebt,
-            @RequestParam(required = false) java.math.BigDecimal maxDebt) {
+            @RequestParam(required = false) java.math.BigDecimal maxDebt,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String taxpayerType,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate issuedFrom,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate issuedTo,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String sortDirection) {
         ExecutionPaperSearchCriteria criteria = new ExecutionPaperSearchCriteria(
-                uniqueCode, taxpayerName, taxpayerNationalId, currentState, notificationStatus, minDebt, maxDebt);
+                uniqueCode, taxpayerName, taxpayerNationalId, currentState, notificationStatus, minDebt, maxDebt, search, taxpayerType, issuedFrom, issuedTo, sortBy, sortDirection);
         log.debug("GET /api/v1/execution-papers/assigned page={}, size={}, criteria={}", page, size, criteria);
         return executionPaperService.getAssigned(page, size, criteria);
     }
 
     @GetMapping("/unassigned")
-    @PreAuthorize("hasAuthority('REPORT_VIEW')")
+    @PreAuthorize("hasAnyAuthority('REPORT_VIEW','EXECUTION_PAPER_LIST_VIEW')")
     public ExecutionPaperPageResponse getUnassigned(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -108,9 +124,15 @@ public class ExecutionPaperController {
             @RequestParam(required = false) String currentState,
             @RequestParam(required = false) String notificationStatus,
             @RequestParam(required = false) java.math.BigDecimal minDebt,
-            @RequestParam(required = false) java.math.BigDecimal maxDebt) {
+            @RequestParam(required = false) java.math.BigDecimal maxDebt,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String taxpayerType,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate issuedFrom,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate issuedTo,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String sortDirection) {
         ExecutionPaperSearchCriteria criteria = new ExecutionPaperSearchCriteria(
-                uniqueCode, taxpayerName, taxpayerNationalId, currentState, notificationStatus, minDebt, maxDebt);
+                uniqueCode, taxpayerName, taxpayerNationalId, currentState, notificationStatus, minDebt, maxDebt, search, taxpayerType, issuedFrom, issuedTo, sortBy, sortDirection);
         log.debug("GET /api/v1/execution-papers/unassigned page={}, size={}, criteria={}", page, size, criteria);
         return executionPaperService.getUnassigned(page, size, criteria);
     }

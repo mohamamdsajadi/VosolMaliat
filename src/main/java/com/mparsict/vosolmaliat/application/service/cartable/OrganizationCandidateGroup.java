@@ -9,15 +9,9 @@ public final class OrganizationCandidateGroup {
     }
 
     public static String forUser(BusinessRole role, MasterdataOrganizationResponse organization) {
-        if (role == null || organization == null) {
-            return null;
-        }
-        return switch (role) {
-            case GENERAL_OFFICE_HEAD -> forOrganization(role, organization.generalDirectorateId());
-            case TAX_OFFICE_HEAD -> forOrganization(role, organization.taxAffairsOfficeId());
-            case TAX_EXPERT -> forOrganization(role, organization.taxAffairsOfficeId());
-            case ADMIN -> null;
-        };
+        if (role == null || role == BusinessRole.ADMIN) return null;
+        if (role.isNationalScope()) return role.name();
+        return organization == null ? null : forOrganization(role, organization.generalDirectorateId());
     }
 
     public static String forOrganization(BusinessRole role, Long organizationId) {

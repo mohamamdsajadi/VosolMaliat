@@ -18,9 +18,9 @@ public final class SecurityDtoMapper {
         }
         return new MasterdataOrganizationResponse(
                 profile.getGeneralDirectorateId(),
-                null,
+                profile.getGeneralDirectorate() == null ? null : profile.getGeneralDirectorate().getGeneralDirectorateName(),
                 profile.getTaxAffairsOfficeId(),
-                null
+                profile.getTaxAffairsOffice() == null ? null : profile.getTaxAffairsOffice().getOfficeName()
         );
     }
 

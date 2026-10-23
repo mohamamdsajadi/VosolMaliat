@@ -18,8 +18,19 @@ public record ExecutionPaperSearchCriteria(
         String currentState,
         String notificationStatus,
         java.math.BigDecimal minDebt,
-        java.math.BigDecimal maxDebt
+        java.math.BigDecimal maxDebt,
+        String search,
+        String taxpayerType,
+        java.time.LocalDate issuedFrom,
+        java.time.LocalDate issuedTo,
+        String sortBy,
+        String sortDirection
 ) {
+    public ExecutionPaperSearchCriteria(String uniqueCode, String taxpayerName, String taxpayerNationalId,
+            String currentState, String notificationStatus, java.math.BigDecimal minDebt, java.math.BigDecimal maxDebt) {
+        this(uniqueCode, taxpayerName, taxpayerNationalId, currentState, notificationStatus, minDebt, maxDebt,
+                null, null, null, null, null, null);
+    }
     /** @return معیار جست‌وجوی بدون فیلتر */
     public static ExecutionPaperSearchCriteria empty() {
         return new ExecutionPaperSearchCriteria(null, null, null, null, null, null, null);

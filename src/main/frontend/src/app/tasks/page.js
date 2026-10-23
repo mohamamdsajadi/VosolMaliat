@@ -1,4 +1,5 @@
-'use client'
+'use client';
+import { BUSINESS_ROLES, businessRoleLabel } from '../lib/business-roles';
 
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -6,8 +7,9 @@ import AppShell from '../components/app-shell';
 import JalaliInput from '../components/jalali-input';
 import RefreshButton from '../components/refresh-button';
 import { formatFaNumber, formatJalaliDateTime } from '../lib/display';
-import { claimCartableTask, completeTask, delegateTask, fetchCartableTasks, fetchDelegationTargets, isExecutionPaperReviewTask } from '../lib/tasks';
+import { claimCartableTask, completeTask, fetchCartableTasks, isExecutionPaperReviewTask } from '../lib/tasks';
 import { fetchCurrentUser } from '../lib/security';
+import TaskReferralAction from '../components/task-referral/task-referral-action';
 
 const TABLE_HEADERS = [
   '#',
@@ -91,6 +93,7 @@ export default function AllTasksPage() {
 
   return (
     <AppShell
+      mobileDrawer
       active="tasks"
       title={isAdmin ? "مشاهده همه کارهای فعال" : "کارتابل شخصی"}
       eyebrow="کارتابل"
@@ -141,9 +144,7 @@ export default function AllTasksPage() {
               <span>نقش مجاز</span>
               <select name="candidateGroup" value={filterForm.candidateGroup} onChange={updateFilter}>
                 <option value="">همه نقش‌ها</option>
-                <option value="GENERAL_OFFICE_HEAD">رئیس اداره کل</option>
-                <option value="TAX_OFFICE_HEAD">رئیس اداره مالیات</option>
-                <option value="TAX_EXPERT">کارشناس مالیاتی</option>
+                {BUSINESS_ROLES.filter(role => role.value !== 'ADMIN').map(role => <option key={role.value} value={role.value}>{role.label}</option>)}
               </select>
             </label>
             <label>
@@ -199,6 +200,7 @@ export default function AllTasksPage() {
                       onChanged={loadTasks}
                       onHandled={removeHandledTask}
                       readOnly={isAdmin}
+                      currentUser={currentUser}
                       zebra={index % 2 === 1}
                     />
                   ))}
@@ -212,16 +214,11 @@ export default function AllTasksPage() {
   );
 }
 
-function CartableTaskRow({ task, index, onChanged, onHandled, readOnly, zebra }) {
-  const [targets, setTargets] = useState([]);
-  const [target, setTarget] = useState('');
-  const [loadingTargets, setLoadingTargets] = useState(false);
+function CartableTaskRow({ task, index, onChanged, onHandled, readOnly, zebra, currentUser }) {
   const [message, setMessage] = useState('');
   const [claiming, setClaiming] = useState(false);
-  const [delegating, setDelegating] = useState(false);
   const [finishingReview, setFinishingReview] = useState(false);
   const canClaim = task.allowedActions?.claim && !readOnly;
-  const canDelegate = task.allowedActions?.delegate && !readOnly;
   const canFinishReview = isExecutionPaperReviewTask(task) && task.allowedActions?.complete && !readOnly;
   const variables = variableMap(task.variables);
   const executionPaperId = firstValue(variables, ['executionPaperId', 'execution_paper_id']);
@@ -239,37 +236,6 @@ function CartableTaskRow({ task, index, onChanged, onHandled, readOnly, zebra })
       setMessage(error.message || 'دریافت کار ناموفق بود.');
     } finally {
       setClaiming(false);
-    }
-  };
-
-  const loadTargets = async () => {
-    setLoadingTargets(true);
-    setMessage('');
-    try {
-      const result = await fetchDelegationTargets(task.taskKey);
-      setTargets(result);
-      setTarget(result[0]?.username || '');
-    } catch (error) {
-      setMessage(error.message || 'دریافت کاربران مقصد ناموفق بود.');
-    } finally {
-      setLoadingTargets(false);
-    }
-  };
-
-  const delegateToUser = async () => {
-    if (!target) {
-      setMessage('ابتدا کاربر مقصد را انتخاب کنید.');
-      return;
-    }
-    setDelegating(true);
-    setMessage('');
-    try {
-      await delegateTask(task.taskKey, { assignee: target });
-      onHandled(task.taskKey);
-    } catch (error) {
-      setMessage(error.message || 'ارجاع کاربر ناموفق بود.');
-    } finally {
-      setDelegating(false);
     }
   };
 
@@ -323,27 +289,11 @@ function CartableTaskRow({ task, index, onChanged, onHandled, readOnly, zebra })
                 <span>جزئیات برگ اجرا</span>
               </Link>
             )}
+            <TaskReferralAction task={task} user={currentUser} />
             {canClaim && (
               <button className="task-table-primary-action" type="button" onClick={claimTask} disabled={claiming}>
                 {claiming ? 'در حال دریافت' : 'دریافت کار'}
               </button>
-            )}
-            {canDelegate && (
-              <div className="task-table-delegate">
-                <button className="task-table-secondary-action" type="button" onClick={loadTargets} disabled={loadingTargets}>
-                  {loadingTargets ? 'در حال دریافت' : 'نمایش مقصدها'}
-                </button>
-                {targets.length > 0 && (
-                  <>
-                    <select value={target} onChange={(event) => setTarget(event.target.value)}>
-                      {targets.map((item) => <option value={item.username} key={item.username}>{item.fullName} - {roleLabel(item.businessRole)}</option>)}
-                    </select>
-                    <button className="task-table-primary-action" type="button" onClick={delegateToUser} disabled={delegating}>
-                      {delegating ? 'در حال ارجاع' : 'ارجاع به کاربر'}
-                    </button>
-                  </>
-                )}
-              </div>
             )}
             {canFinishReview && (
               <button
@@ -392,11 +342,4 @@ function formatDate(value) {
   return formatJalaliDateTime(value);
 }
 
-function roleLabel(value) {
-  return {
-    GENERAL_OFFICE_HEAD: 'رئیس اداره کل',
-    TAX_OFFICE_HEAD: 'رئیس اداره مالیات',
-    TAX_EXPERT: 'کارشناس مالیاتی',
-    ADMIN: 'مدیر سامانه'
-  }[value] || value;
-}
+function roleLabel(value) { return businessRoleLabel(value); }

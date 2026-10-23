@@ -44,6 +44,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class ExecutionPaperService {
+    private final com.mparsict.vosolmaliat.application.service.security.ExecutionPaperVisibility visibility;
 
     private final DebtInformationHistoryRepository debtHistoryRepository;
     private final ActivityTypeRepository activityTypeRepository;
@@ -64,6 +65,12 @@ public class ExecutionPaperService {
     private final ExecutionPaperIssuanceRequestRepository issuanceRequestRepository;
     private final com.mparsict.vosolmaliat.domain.repository.DebtPaperPushRecordRepository debtPaperPushRecordRepository;
     private final ObjectMapper objectMapper;
+    @Transactional(readOnly = true)
+    public ExecutionPaperDto getSummary(Long id) {
+        visibility.requireVisible(id);
+        return toDto(executionPaperRepository.findById(id).orElseThrow(() ->
+                new com.mparsict.vosolmaliat.common.exception.BusinessException("EXECUTION_PAPER_NOT_FOUND", "برگ اجرا یافت نشد")));
+    }
     @Transactional
     public void recordIssuanceProcess(Long requestId, long processInstanceKey) {
         uniqueCodeGenerator.lockIssuance();
@@ -292,10 +299,29 @@ public class ExecutionPaperService {
     }
 
     private ExecutionPaperPageResponse search(String assignmentMode, ExecutionPaperSearchCriteria criteria, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
         ExecutionPaperSearchCriteria normalized = normalize(criteria);
+        if (page < 0 || size < 1 || size > 100) throw invalidSearch();
+        if (normalized.issuedFrom() != null && normalized.issuedTo() != null && normalized.issuedFrom().isAfter(normalized.issuedTo()))
+            throw invalidSearch();
+        if (normalized.taxpayerType() != null && !java.util.Set.of("NATURAL", "LEGAL").contains(normalized.taxpayerType()))
+            throw invalidSearch();
+        String sortField = normalized.sortBy() == null ? "id" : switch (normalized.sortBy()) {
+            case "issuanceDate" -> "issuanceDate";
+            case "taxYear" -> "finalTaxDebtPaper.taxYear";
+            case "taxPeriod" -> "finalTaxDebtPaper.taxPeriod";
+            case "totalDebt", "id" -> "id";
+            default -> throw invalidSearch();
+        };
+        String sortDirection = normalized.sortDirection() == null ? "desc" : normalized.sortDirection();
+        if (!java.util.Set.of("asc", "desc").contains(sortDirection)) throw invalidSearch();
+        boolean sortDebt = "totalDebt".equals(normalized.sortBy());
+        Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortField);
+        if (!"id".equals(sortField)) sort = sort.and(Sort.by("id").descending());
+        Pageable pageable = PageRequest.of(page, size, sort);
         boolean amountFilter = normalized.minDebt() != null || normalized.maxDebt() != null;
+        var visibleIds = visibility.restrictedPaperIds();
         Page<ExecutionPaper> pageResult = executionPaperRepository.search(
+                visibleIds != null, visibleIds == null || visibleIds.isEmpty() ? List.of(-1L) : visibleIds,
                 assignmentMode,
                 ExecutionPaperState.UNASSIGNED.name(),
                 normalized.uniqueCode(),
@@ -303,9 +329,12 @@ public class ExecutionPaperService {
                 normalized.taxpayerNationalId(),
                 normalized.currentState(),
                 normalized.notificationStatus(),
-                amountFilter ? Pageable.unpaged(pageable.getSort()) : pageable
+                normalized.search(), normalized.taxpayerType(),
+                normalized.issuedFrom() == null ? null : normalized.issuedFrom().atStartOfDay(),
+                normalized.issuedTo() == null ? null : normalized.issuedTo().plusDays(1).atStartOfDay(),
+                amountFilter || sortDebt ? Pageable.unpaged(pageable.getSort()) : pageable
         );
-        if (amountFilter) {
+        if (amountFilter || sortDebt) {
             // SQLite TEXT amounts cannot safely be compared with SQL casts to REAL.
             // Fetch other-filter candidates, compare exact decimals, then paginate.
             var candidates = pageResult.getContent();
@@ -315,11 +344,18 @@ public class ExecutionPaperService {
                 debtInformationRepository.findByExecutionPaperIdIn(ids.subList(offset, Math.min(offset + 500, ids.size())))
                         .forEach(d -> amountsByDebtPaper.put(d.getFinalTaxDebtPaper().getId(), d.getExactOutstandingDebt()));
             }
-            var matching = candidates.stream().filter(paper -> {
+            var matching = new java.util.ArrayList<>(candidates.stream().filter(paper -> {
                 var amount = amountsByDebtPaper.get(paper.getFinalTaxDebtPaper().getId());
-                return amount != null && (normalized.minDebt() == null || amount.compareTo(normalized.minDebt()) >= 0)
+                return !amountFilter || amount != null && (normalized.minDebt() == null || amount.compareTo(normalized.minDebt()) >= 0)
                         && (normalized.maxDebt() == null || amount.compareTo(normalized.maxDebt()) <= 0);
-            }).toList();
+            }).toList());
+            if (sortDebt) {
+                java.util.Comparator<java.math.BigDecimal> amounts = "asc".equals(sortDirection)
+                        ? java.util.Comparator.naturalOrder() : java.util.Comparator.reverseOrder();
+                matching.sort(java.util.Comparator.comparing(
+                        (ExecutionPaper paper) -> amountsByDebtPaper.get(paper.getFinalTaxDebtPaper().getId()),
+                        java.util.Comparator.nullsLast(amounts)).thenComparing(ExecutionPaper::getId));
+            }
             int from = (int) Math.min(pageable.getOffset(), matching.size());
             int to = Math.min(from + pageable.getPageSize(), matching.size());
             pageResult = new org.springframework.data.domain.PageImpl<>(matching.subList(from, to), pageable, matching.size());
@@ -329,6 +365,11 @@ public class ExecutionPaperService {
 
     public ExecutionPaperPageResponse getAssigned(int page, int size) {
         return search("ASSIGNED", ExecutionPaperSearchCriteria.empty(), page, size);
+    }
+
+    private com.mparsict.vosolmaliat.common.exception.BusinessException invalidSearch() {
+        return new com.mparsict.vosolmaliat.common.exception.BusinessException(
+                "INVALID_EXECUTION_PAPER_SEARCH", "پارامترهای جستجوی برگ اجرا معتبر نیستند.");
     }
 
     public ExecutionPaperPageResponse getUnassigned(int page, int size) {
@@ -346,7 +387,8 @@ public class ExecutionPaperService {
                 blankToNull(criteria.currentState()),
                 blankToNull(criteria.notificationStatus()),
                 criteria.minDebt(),
-                criteria.maxDebt()
+                criteria.maxDebt(), blankToNull(criteria.search()), blankToNull(criteria.taxpayerType()),
+                criteria.issuedFrom(), criteria.issuedTo(), blankToNull(criteria.sortBy()), blankToNull(criteria.sortDirection())
         );
     }
 
@@ -360,6 +402,7 @@ public class ExecutionPaperService {
 
     @Transactional(readOnly = true)
     public ExecutionPaperDetailResponse getDetails(Long id) {
+        visibility.requireVisible(id);
         ExecutionPaper ep = executionPaperRepository.findById(id)
                 .orElseThrow(() -> new com.mparsict.vosolmaliat.common.exception.BusinessException("EXECUTION_PAPER_NOT_FOUND", "برگ اجرا یافت نشد"));
 
@@ -391,6 +434,9 @@ public class ExecutionPaperService {
             finalized.put("debtPaperUniqueCode", fdp.getSourceDocumentNumber());
             finalized.put("finalTaxDebtNoticeIssueDate",fdp.getFinalTaxDebtNoticeIssueDate());
             finalized.put("finalizationReason",fdp.getFinalizationReason());
+            finalized.put("paperTypeTitle", paperTypeTitle(fdp));
+            finalized.put("taxYear", fdp.getTaxYear());
+            finalized.put("taxPeriod", fdp.getTaxPeriod() == null ? null : fdp.getTaxPeriod().number());
 
 
             finalized.put("taxSource", fdp.getPaperType().taxSource());
@@ -445,6 +491,10 @@ public class ExecutionPaperService {
         Map<String, Object> taxpayerMap = new LinkedHashMap<>();
         Long taxpayerId = sourcePaper == null || sourcePaper.getTaxpayer() == null
                 ? null : sourcePaper.getTaxpayer().getId();
+        var visiblePaperIds = visibility.restrictedPaperIds();
+        execution.put("otherActivePapers", taxpayerId == null ? List.of()
+                : executionPaperRepository.findOtherActivePapers(taxpayerId, id, List.of("COMPLETED", "CANCELLED"))
+                    .stream().filter(link -> visiblePaperIds == null || visiblePaperIds.contains(link.id())).toList());
         taxpayerRepository.findById(taxpayerId).ifPresent(taxpayer -> {
             taxpayerMap.put("id", taxpayer.getId());
             taxpayerMap.put("type", taxpayer.getType().name());
@@ -456,6 +506,7 @@ public class ExecutionPaperService {
             findContactInfo(taxpayer).ifPresent(contactInfo -> {
                 taxpayerMap.put("postalCode", contactInfo.getPostalCode());
                 taxpayerMap.put("address", contactInfo.getLegalAddress());
+                taxpayerMap.put("phone", contactInfo.getPhoneNo());
             });
             if (taxpayer.getNaturalPersonId() != null) {
                 naturalPersonRepository.findById(taxpayer.getNaturalPersonId()).ifPresent(np -> {
@@ -471,6 +522,7 @@ public class ExecutionPaperService {
                     taxpayerMap.put("registrationNumber", lp.getRegistrationNumber());
                     taxpayerMap.put("registrationDate", lp.getRegistrationDate());
                     taxpayerMap.put("companyName", lp.getName());
+                    taxpayerMap.put("tradeName", lp.getTradeName());
                 });
             }
         });
@@ -480,6 +532,27 @@ public class ExecutionPaperService {
             debt.put("currentAmounts", di.getCurrentAmounts());
             debt.put("financialDetails", di.getFinancialDetails());
             debt.put("outstandingDebtAmount", di.getExactOutstandingDebt() == null ? null : di.getExactOutstandingDebt().toPlainString());
+            var history = debtHistoryRepository.findByFinalTaxDebtPaperIdOrderByCreatedAtAscIdAsc(ep.getFinalTaxDebtPaperId());
+            List<Map<String, Object>> snapshots = new java.util.ArrayList<>();
+            if (!history.isEmpty()) {
+                var row = history.getFirst();
+                var snapshot = debtSnapshot(row.getId(), row.getCreatedAt(), false,
+                        row.getTotalLiability(), row.getTotalPenalties(), row.getTotalRemissions(),
+                        row.getTotalPayments(), row.getOutstandingTaxDebt(), row.getTotalCredits(),
+                        new com.mparsict.vosolmaliat.domain.model.sanim.DebtFinancialDetails(
+                                row.getTaxLiabilityDetails(), row.getCreditsDetail(), row.getPenaltiesDetail(),
+                                row.getPaymentsDetail(), row.getRemissionsDetail(), row.getOutstandingDebtDetails()));
+                snapshots.add(snapshot);
+            } else {
+                // Do not label the current record as the initial record when history is missing.
+                var initial = debtSnapshot(null, ep.getIssuanceDate(), false, null, null, null, null, null, null, null);
+                initial.put("unavailable", true);
+                snapshots.add(initial);
+            }
+            snapshots.add(debtSnapshot(di.getId(), di.getUpdatedAt() == null ? di.getCreatedAt() : di.getUpdatedAt(), true,
+                    di.getTotalLiability(), di.getTotalPenalties(), di.getTotalRemissions(),
+                    di.getTotalPayments(), di.getExactOutstandingDebt(), di.getTotalCredits(), di.getFinancialDetails()));
+            debt.put("history", snapshots);
         });
 
         Map<String, Object> notification = new LinkedHashMap<>();
@@ -525,6 +598,26 @@ public class ExecutionPaperService {
 
         return new ExecutionPaperDetailResponse(toDto(ep), execution, finalized, taxpayerMap, debt, notification, ruleRejection);
     }
+
+    private Map<String, Object> debtSnapshot(Long id, LocalDateTime receivedAt, boolean current,
+            java.math.BigDecimal principal, java.math.BigDecimal penalties, java.math.BigDecimal remissions,
+            java.math.BigDecimal payments, java.math.BigDecimal outstanding, java.math.BigDecimal credits,
+            com.mparsict.vosolmaliat.domain.model.sanim.DebtFinancialDetails details) {
+        Map<String, Object> snapshot = new LinkedHashMap<>();
+        snapshot.put("id", id);
+        snapshot.put("receivedAt", receivedAt);
+        snapshot.put("current", current);
+        snapshot.put("principalAmount", decimalString(principal));
+        snapshot.put("penaltyAmount", decimalString(penalties));
+        snapshot.put("remissionAmount", decimalString(remissions));
+        snapshot.put("paidAmount", decimalString(payments));
+        snapshot.put("outstandingAmount", decimalString(outstanding));
+        snapshot.put("creditAmount", decimalString(credits));
+        snapshot.put("financialDetails", details);
+        return snapshot;
+    }
+
+    private String decimalString(java.math.BigDecimal value) { return value == null ? null : value.toPlainString(); }
 
     private String stringValue(Object value) {
         return value == null || value.toString().isBlank() ? null : value.toString();
@@ -606,6 +699,7 @@ public class ExecutionPaperService {
     }
 
     public ExecutionPaperTraceResponse getTrace(Long id) {
+        visibility.requireVisible(id);
         ExecutionPaper ep = executionPaperRepository.findById(id)
                 .orElseThrow(() -> new com.mparsict.vosolmaliat.common.exception.BusinessException("EXECUTION_PAPER_NOT_FOUND", "برگ اجرا یافت نشد"));
 
@@ -691,6 +785,8 @@ public class ExecutionPaperService {
                     "بروزرسانی اشخاص مرتبط از سامانه ثبت شرکت‌ها";
             case "RELATED_PERSONS_STORED_FROM_OFFICIAL_GAZETTE" ->
                     "ذخیره اشخاص مرتبط دریافتی از روزنامه رسمی";
+            case "RELATED_PERSONS_FILTERED_BY_DEBT_PAPER_DATE" -> "تعیین اشخاص مرتبط براساس تاریخ ایجاد بدهی";
+            case "RELATED_PERSONS_LINKED_TO_EXECUTION_PAPER" -> "ایجاد ارتباط برگ اجرا و اشخاص مرتبط";
             case "OFFICIAL_GAZETTE_REQUEST_SENT" -> "ارسال درخواست به روزنامه رسمی";
             case "OFFICIAL_GAZETTE_RESPONSE_SENT" -> "دریافت پاسخ روزنامه رسمی";
             case "RESTRICTION_REQUEST_SENT" -> "ارسال اشخاص مرتبط برای اعمال محدودیت";
@@ -727,7 +823,9 @@ public class ExecutionPaperService {
                 taxpayerType = "حقیقی";
                 Optional<NaturalPerson> np = naturalPersonRepository.findById(taxpayer.getNaturalPersonId());
                 if (np.isPresent()) {
-                    taxpayerName = np.get().getFirstName() + " " + np.get().getLastName();
+                    taxpayerName = java.util.stream.Stream.of(np.get().getFirstName(), np.get().getLastName())
+                            .filter(java.util.Objects::nonNull).map(String::trim).filter(value -> !value.isEmpty())
+                            .collect(java.util.stream.Collectors.joining(" "));
                     taxpayerNationalId = np.get().getNationalCode();
                 }
             } else if (taxpayer.getLegalPersonId() != null) {
@@ -780,8 +878,21 @@ public class ExecutionPaperService {
                 paymentDeadlineStatus,
                 totalDebt,
                 notificationStatus,
-                ep.getCurrentState()
+                ep.getCurrentState(),
+                ep.getIssuanceDate(),
+                taxpayerOpt.map(Taxpayer::getTin).orElse(null),
+                paperTypeTitle(ep.getFinalTaxDebtPaper()),
+                ep.getFinalTaxDebtPaper() == null ? null : ep.getFinalTaxDebtPaper().getTaxYear(),
+                ep.getFinalTaxDebtPaper() == null || ep.getFinalTaxDebtPaper().getTaxPeriod() == null
+                        ? null : ep.getFinalTaxDebtPaper().getTaxPeriod().number()
         );
+    }
+
+    private String paperTypeTitle(FinalTaxDebtPaper paper) {
+        if (paper == null) return null;
+        var definition = paper.getPaperTypeDefinition();
+        if (definition != null && hasText(definition.getPaperTitle())) return definition.getPaperTitle();
+        return paper.getPaperType() == null ? null : paper.getPaperType().getPersianTitle();
     }
 
     private Optional<Taxpayer> findImportTaxpayer(DebtPaperIssuanceRequest.TaxpayerInfo info, String tin) {

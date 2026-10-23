@@ -78,6 +78,19 @@ public class GlobalExceptionHandler {
                 "message", "این عملیات با رابطه یا یکتایی داده‌ها ناسازگار است؛ رکورد دارای وابستگی را نمی‌توان حذف کرد."));
     }
 
+    @ExceptionHandler({org.springframework.orm.ObjectOptimisticLockingFailureException.class, jakarta.persistence.OptimisticLockException.class})
+    public ResponseEntity<Map<String,Object>> handleStaleWorkflow(Exception ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", "STALE_WORKFLOW",
+                "message", "این کار توسط کاربر دیگری تغییر کرده است؛ صفحه را بروزرسانی کنید."));
+    }
+
+    @ExceptionHandler({org.springframework.http.converter.HttpMessageNotReadableException.class,
+            org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class})
+    public ResponseEntity<Map<String,Object>> handleMalformedRequest(Exception ex) {
+        return ResponseEntity.badRequest().body(Map.of("error", "INVALID_REQUEST",
+                "message", "قالب یا مقدار داده‌های ارسالی معتبر نیست."));
+    }
+
     @ExceptionHandler(jakarta.validation.ConstraintViolationException.class)
     public ResponseEntity<Map<String,Object>> handleConstraint(jakarta.validation.ConstraintViolationException ex) {
         return ResponseEntity.unprocessableEntity().body(Map.of("error", "MODEL_VALIDATION_FAILED",

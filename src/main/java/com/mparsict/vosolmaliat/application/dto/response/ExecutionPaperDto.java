@@ -13,6 +13,10 @@ package com.mparsict.vosolmaliat.application.dto.response;
  * @param totalDebt مجموع بدهی
  * @param notificationStatus وضعیت ابلاغ
  * @param currentState وضعیت جاری برگ اجرا
+ * @param taxpayerCode شناسه مؤدی (TIN)
+ * @param taxType عنوان فارسی نوع برگ از جدول paper_type
+ * @param taxYear سال مالیاتی برگ بدهی قطعی
+ * @param taxPeriod شماره دوره مالیاتی برگ بدهی قطعی
  */
 public record ExecutionPaperDto(
         Long id,
@@ -25,5 +29,10 @@ public record ExecutionPaperDto(
         @com.fasterxml.jackson.databind.annotation.JsonSerialize(using = com.mparsict.vosolmaliat.domain.model.sanim.ExactDecimalSerializer.class)
         java.math.BigDecimal totalDebt,
         String notificationStatus,
-        String currentState
+        String currentState,
+        java.time.LocalDateTime issuanceDate,
+        String taxpayerCode,
+        String taxType,
+        Integer taxYear,
+        Integer taxPeriod
 ) {}

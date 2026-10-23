@@ -1,8 +1,10 @@
 export const NAV_ITEMS = [
+  { key: 'arrest', href: '/arrest-orders', label: 'دستور بازداشت اموال', helper: 'صدور و پیگیری ارجاع‌ها', permissions: ['ARREST_ORDER_VIEW'] },
+  { key: 'role-permissions', href: '/admin/permissions', label: 'نقش‌ها و دسترسی‌ها', helper: 'مدیریت دسترسی نقش‌ها', permissions: ['GROUP_PERMISSION_VIEW', 'PERMISSION_VIEW'], requiresAll: true },
   {
     key: "processes",
     href: "/",
-    label: "میزکار مدیریتی",
+    label: "داشبورد",
     helper: "",
     permissions: []
   },
@@ -11,7 +13,7 @@ export const NAV_ITEMS = [
     href: "/execution-papers",
     label: "برگ‌های اجرا",
     helper: "مشاهده و پیگیری برگ‌ها",
-    permissions: ["REPORT_VIEW"]
+    permissions: ["REPORT_VIEW", "EXECUTION_PAPER_LIST_VIEW"]
   },
   {
     key: "tasks",
@@ -63,7 +65,7 @@ export function visibleNavItems(currentUser) {
 
 export function canSeeNavItem(currentUser, item) {
   if (item.key === "processes") {
-    return isAdminUser(currentUser) || isGeneralOfficeHead(currentUser);
+    return Boolean(currentUser);
   }
   if (!item.permissions || item.permissions.length === 0) {
     return true;
@@ -78,11 +80,11 @@ export function canSeeNavItem(currentUser, item) {
     ...(currentUser.localBusinessPermissions || []),
     ...(currentUser.allowedActions || [])
   ]);
-  return item.permissions.some((permission) => permissions.has(permission));
+  return item.requiresAll ? item.permissions.every(permission => permissions.has(permission)) : item.permissions.some((permission) => permissions.has(permission));
 }
 
 export function isGeneralOfficeHead(currentUser) {
-  return currentUser?.businessRole === 'GENERAL_OFFICE_HEAD';
+  return currentUser?.businessRole === 'TAX_DIRECTORATE_DIRECTOR_GENERAL';
 }
 
 export function isAdminUser(currentUser) {

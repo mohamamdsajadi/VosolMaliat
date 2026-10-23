@@ -10,6 +10,7 @@
   line-height: 1.5;
   direction: rtl;
 }
+.quickActions { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; }
 .dashboard a { color: inherit; text-decoration: none; }
 .dashboard button { cursor: pointer; color: inherit; }
 .dashboard button:disabled { cursor: wait; opacity: .6; }
@@ -176,3 +177,6 @@
   .popover { position: fixed; top: 92px; left: 12px; }
 }
 @media (prefers-reduced-motion: reduce) { .dashboard *, .dashboard *::before, .dashboard *::after { animation: none !important; transition: none !important; } }
+@media print {
+  :global(body.execution-printing) .dashboard { display: none !important; }
+}

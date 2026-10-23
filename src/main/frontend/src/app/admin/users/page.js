@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import AppShell from '../../components/app-shell';
+import { BUSINESS_ROLES } from '../../lib/business-roles';
 import RefreshButton from '../../components/refresh-button';
 import {
   createUserProfile,
@@ -21,17 +22,12 @@ const initialForm = {
   firstName: '',
   lastName: '',
   phoneNumber: '',
-  businessRole: 'TAX_EXPERT',
+  businessRole: 'EXECUTION_OFFICER',
   generalDirectorateId: '',
   taxAffairsOfficeId: ''
 };
 
-const businessRoles = [
-  { value: 'GENERAL_OFFICE_HEAD', label: 'رئیس اداره کل' },
-  { value: 'TAX_OFFICE_HEAD', label: 'رئیس اداره مالیات' },
-  { value: 'TAX_EXPERT', label: 'کارشناس مالیاتی' },
-  { value: 'ADMIN', label: 'مدیر سامانه' }
-];
+const businessRoles = BUSINESS_ROLES;
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState([]);
@@ -98,7 +94,7 @@ export default function AdminUsersPage() {
       firstName: user.firstName || '',
       lastName: user.lastName || '',
       phoneNumber: user.phoneNumber || '',
-      businessRole: user.businessRole || 'TAX_EXPERT',
+      businessRole: user.businessRole || 'EXECUTION_OFFICER',
       generalDirectorateId: user.organization?.generalDirectorateId ? String(user.organization.generalDirectorateId) : '',
       taxAffairsOfficeId: user.organization?.taxAffairsOfficeId ? String(user.organization.taxAffairsOfficeId) : ''
     });

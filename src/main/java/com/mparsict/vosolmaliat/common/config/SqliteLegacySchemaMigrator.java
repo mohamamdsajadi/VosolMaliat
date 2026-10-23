@@ -33,6 +33,7 @@ public class SqliteLegacySchemaMigrator
 
         // The document model is a deliberate rebuild, not a lossy automatic migration.
         try (Connection connection = DriverManager.getConnection(jdbcUrl)) {
+            SqliteBusinessRoleMigration.migrate(connection);
             EnumLookupSchemaMigration.migrate(connection);
             NullableEf03FieldsMigration.migrate(connection);
             SqliteDocumentModelFieldCleanup.migrate(connection);
@@ -43,6 +44,7 @@ public class SqliteLegacySchemaMigrator
 
     public static void migrate(String jdbcUrl) {
         try (Connection connection = DriverManager.getConnection(jdbcUrl)) {
+            SqliteBusinessRoleMigration.migrate(connection);
             EnumLookupSchemaMigration.migrate(connection);
             SanimDocumentSchemaMigration.migrate(connection);
             SanimLegacyFieldCleanup.migrate(connection);

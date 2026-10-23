@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useCallback, useEffect, useState } from 'react';
 import { startKeycloakLogin } from '../lib/keycloak';
 import { fetchIdentityConfiguration, fetchMockUsers } from '../lib/identity-provider';
+import { businessRoleLabel } from '../lib/business-roles';
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
@@ -22,7 +23,7 @@ export default function LoginPage() {
       if (config.provider === 'mock') {
         const available = await fetchMockUsers();
         setUsers(available);
-        setUsername(available.find(user => user.username === 'tehran_general_office_head')?.username || available[0]?.username || '');
+        setUsername(available.find(user => user.username === 'admin')?.username || available[0]?.username || '');
       }
       setConfiguration(config);
     } catch (error) {
@@ -69,7 +70,7 @@ export default function LoginPage() {
         {mock && <div className="mock-login-options">
           <label htmlFor="mock-user">کاربر آزمایشی</label>
           <select id="mock-user" value={username} onChange={event => setUsername(event.target.value)}>
-            {users.map(user => <option key={user.username} value={user.username}>{user.fullName} — {user.username} ({user.businessRole})</option>)}
+            {users.map(user => <option key={user.username} value={user.username}>{businessRoleLabel(user.businessRole)} — {user.username}</option>)}
           </select>
           {!users.length && <p role="status">کاربر آزمایشی فعالی موجود نیست.</p>}
           {configuration.workflow === 'mock' && <p>Camunda غیرفعال است؛ کارتابل آزمایشی خالی است و فرایندها اجرا نمی‌شوند.</p>}

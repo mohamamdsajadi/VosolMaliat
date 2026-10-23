@@ -287,12 +287,12 @@ public class CartableService implements CartableOperations {
     }
 
     private boolean isInDelegationScope(CurrentUserContext actor, AppUserProfile target) {
-        if (actor.businessRole() == BusinessRole.GENERAL_OFFICE_HEAD) {
+        if (actor.businessRole() == BusinessRole.TAX_DIRECTORATE_DIRECTOR_GENERAL) {
             return actor.organization() != null
                     && actor.organization().generalDirectorateId() != null
                     && Objects.equals(actor.organization().generalDirectorateId(), target.getGeneralDirectorateId());
         }
-        if (actor.businessRole() == BusinessRole.TAX_OFFICE_HEAD) {
+        if (actor.businessRole() == BusinessRole.DIRECTORATE_EXECUTION_UNIT_HEAD) {
             return actor.organization() != null
                     && actor.organization().taxAffairsOfficeId() != null
                     && Objects.equals(actor.organization().taxAffairsOfficeId(), target.getTaxAffairsOfficeId());
@@ -383,12 +383,8 @@ public class CartableService implements CartableOperations {
     }
 
     private Long organizationIdForRole(BusinessRole role, Map<String, Object> variables) {
-        Object value = switch (role) {
-            case GENERAL_OFFICE_HEAD -> firstPresent(variables, "generalDirectorateId", "mainTaxBureauId", "general_directorate_id", "main_tax_bureau_id");
-            case TAX_OFFICE_HEAD -> firstPresent(variables, "taxAffairsOfficeId", "taxBureauId", "tax_affairs_office_id", "tax_bureau_id");
-            case TAX_EXPERT -> firstPresent(variables, "taxAffairsOfficeId", "taxBureauId", "tax_affairs_office_id", "tax_bureau_id");
-            case ADMIN -> null;
-        };
+        Object value = role == null || role.isNationalScope() ? null : firstPresent(variables,
+                "generalDirectorateId", "mainTaxBureauId", "general_directorate_id", "main_tax_bureau_id");
         if (value instanceof Number number) {
             return number.longValue();
         }

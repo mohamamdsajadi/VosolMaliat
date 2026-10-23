@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { logoutFromKeycloak } from '../lib/keycloak';
 import { visibleNavItems } from '../lib/navigation';
 import { fetchCurrentUser } from '../lib/security';
@@ -14,12 +14,23 @@ export default function AppShell({
   actions,
   children,
   processLinks = [],
-  contextItems = []
+  contextItems = [],
+  mobileDrawer = false
 }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [now, setNow] = useState(new Date());
+  const toggleRef = useRef(null);
+  const drawerCloseRef = useRef(null);
   const navItems = visibleNavItems(currentUser);
+  const closeSidebar = () => { setSidebarOpen(false); toggleRef.current?.focus(); };
+  useEffect(() => {
+    if (!mobileDrawer) return;
+    const frame = window.requestAnimationFrame(() => { if (window.innerWidth <= 920) setSidebarOpen(false); });
+    const escape = event => { if (event.key === 'Escape' && window.innerWidth <= 920) { setSidebarOpen(false); toggleRef.current?.focus(); } };
+    document.addEventListener('keydown', escape);
+    return () => { window.cancelAnimationFrame(frame); document.removeEventListener('keydown', escape); };
+  }, [mobileDrawer]);
 
   useEffect(() => {
     fetchCurrentUser()
@@ -33,8 +44,16 @@ export default function AppShell({
   }, []);
 
   return (
-    <main className={`app-frame${sidebarOpen ? "" : " app-frame--sidebar-collapsed"}`}>
-      <aside className="app-sidebar" aria-label="منوی اصلی">
+    <main className={`app-frame${sidebarOpen ? "" : " app-frame--sidebar-collapsed"}${mobileDrawer ? ' app-frame--mobile-drawer' : ''}`}>
+      {mobileDrawer && sidebarOpen && <button className="app-sidebar-backdrop" type="button" onClick={closeSidebar} aria-label="بستن منوی اصلی" />}
+      <aside id="app-sidebar" className="app-sidebar" aria-label="منوی اصلی" inert={!sidebarOpen} onKeyDown={event => {
+        if (!mobileDrawer || window.innerWidth > 920 || event.key !== 'Tab') return;
+        const controls = Array.from(event.currentTarget.querySelectorAll('a[href],button:not(:disabled)'));
+        const first = controls[0], last = controls.at(-1);
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+      }}>
+        {mobileDrawer && <button ref={drawerCloseRef} className="app-sidebar-close" type="button" onClick={closeSidebar} aria-label="بستن منوی کارتابل">×</button>}
         <Link className="sidebar-brand" href="/">
           <img src="/images/iran-tax-logo.png" alt="سازمان امور مالیاتی کشور" />
           <span>
@@ -94,9 +113,14 @@ export default function AppShell({
             <button
               className={`sidebar-toggle${sidebarOpen ? " sidebar-toggle--open" : ""}`}
               type="button"
-              onClick={() => setSidebarOpen((current) => !current)}
+              ref={toggleRef}
+              onClick={() => {
+                setSidebarOpen(!sidebarOpen);
+                if (!sidebarOpen && mobileDrawer && window.innerWidth <= 920) window.requestAnimationFrame(() => drawerCloseRef.current?.focus());
+              }}
               aria-label={sidebarOpen ? "بستن منوی اصلی" : "باز کردن منوی اصلی"}
               aria-expanded={sidebarOpen}
+              aria-controls="app-sidebar"
             >
               <span />
               <span />

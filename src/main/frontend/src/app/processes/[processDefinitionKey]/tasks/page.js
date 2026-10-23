@@ -1,10 +1,13 @@
-'use client'
+'use client';
+import { businessRoleLabel } from '../../../lib/business-roles';
 
 import Link from 'next/link';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import AppShell from '../../../components/app-shell';
 import RefreshButton from '../../../components/refresh-button';
+import TaskReferralAction from '../../../components/task-referral/task-referral-action';
+import { fetchCurrentUser } from '../../../lib/security';
 import {
   formatCompactId,
   formatFaNumber,
@@ -38,6 +41,7 @@ export default function ProcessTasksPage() {
   const startedInstanceHandled = useRef("");
   const [processDefinition, setProcessDefinition] = useState();
   const [tasks, setTasks] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
   const [loadingProcess, setLoadingProcess] = useState(true);
   const [loadingTasks, setLoadingTasks] = useState(true);
   const [starting, setStarting] = useState(false);
@@ -66,7 +70,8 @@ export default function ProcessTasksPage() {
     setMessage("");
 
     try {
-      const items = await fetchTasks(processDefinitionKey);
+      const [items, me] = await Promise.all([fetchTasks(processDefinitionKey), fetchCurrentUser()]);
+      setCurrentUser(me);
       setTasks(items);
       return items;
     } catch (error) {
@@ -150,6 +155,7 @@ export default function ProcessTasksPage() {
 
   return (
     <AppShell
+      mobileDrawer
       active="processes"
       title={title}
       eyebrow="صف کار فرایند"
@@ -256,6 +262,7 @@ export default function ProcessTasksPage() {
                     <ProcessTaskRow
                       key={task.id}
                       task={task}
+                      currentUser={currentUser}
                       index={index}
                       zebra={index % 2 === 1}
                     />
@@ -274,7 +281,7 @@ function delay(milliseconds) {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
-function ProcessTaskRow({ task, index, zebra }) {
+function ProcessTaskRow({ task, index, zebra, currentUser }) {
   const variables = variableMap(task.variables);
   const executionPaperId = firstValue(variables, ['executionPaperId', 'execution_paper_id']);
   const executionPaperCode = firstValue(variables, ['executionPaperCode', 'executionPaperUniqueCode', 'execution_paper_code']);
@@ -321,6 +328,7 @@ function ProcessTaskRow({ task, index, zebra }) {
               <span>جزئیات برگ اجرا</span>
             </Link>
           )}
+          <TaskReferralAction task={task} user={currentUser} processDefinitionKey={processDefinitionKey} />
           <Link className="task-table-secondary-link" href={taskHref}>
             باز کردن کار
           </Link>
@@ -349,11 +357,4 @@ function firstValue(values, keys) {
   return null;
 }
 
-function roleLabel(value) {
-  return {
-    GENERAL_OFFICE_HEAD: 'رئیس اداره کل',
-    TAX_OFFICE_HEAD: 'رئیس اداره مالیات',
-    TAX_EXPERT: 'کارشناس مالیاتی',
-    ADMIN: 'مدیر سامانه'
-  }[value] || value;
-}
+function roleLabel(value) { return businessRoleLabel(value); }

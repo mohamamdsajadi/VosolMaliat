@@ -28,16 +28,13 @@ public class SecurityDataInitializer {
             "USER_PROFILE_CREATE", "USER_PROFILE_UPDATE", "USER_PROFILE_VIEW", "USER_PROFILE_ENABLE_DISABLE",
             "USER_PROFILE_ASSIGN_ORGANIZATION", "PERMISSION_VIEW", "PERMISSION_ASSIGN", "GROUP_PERMISSION_VIEW",
             "GROUP_PERMISSION_UPDATE", "TASK_VIEW_OWN", "TASK_VIEW_CANDIDATE", "TASK_CLAIM", "TASK_UNCLAIM",
-            "TASK_COMPLETE", "TASK_ASSIGN", "TASK_DELEGATE", "TASK_VIEW_ORG_SCOPE", "EXECUTION_PAPER_DETAIL_VIEW",
-            "EXECUTION_PAPER_TRACE_VIEW", "REPORT_VIEW", "AUDIT_VIEW"
+            "TASK_COMPLETE", "TASK_ASSIGN", "TASK_DELEGATE", "TASK_VIEW_ORG_SCOPE", "EXECUTION_PAPER_LIST_VIEW", "EXECUTION_PAPER_DETAIL_VIEW",
+            "EXECUTION_PAPER_TRACE_VIEW", "REPORT_VIEW", "AUDIT_VIEW",
+            "ARREST_ORDER_VIEW", "ARREST_ORDER_START", "ARREST_ORDER_APPROVE", "ARREST_ORDER_ASSIGN"
     );
 
     private static final List<String> OPERATIONAL_TASK_PERMISSIONS = List.of(
             "TASK_VIEW_OWN", "TASK_VIEW_CANDIDATE", "TASK_CLAIM", "TASK_UNCLAIM", "TASK_COMPLETE", "TASK_VIEW_ORG_SCOPE"
-    );
-
-    private static final List<String> MANAGER_TASK_PERMISSIONS = List.of(
-            "TASK_VIEW_OWN", "TASK_VIEW_CANDIDATE", "TASK_CLAIM", "TASK_UNCLAIM", "TASK_COMPLETE", "TASK_DELEGATE", "TASK_VIEW_ORG_SCOPE"
     );
 
     private final PermissionRepository permissionRepository;
@@ -47,6 +44,8 @@ public class SecurityDataInitializer {
     private final TaxAffairsOfficeRepository taxAffairsOfficeRepository;
     private final TransactionTemplate transactionTemplate;
     private final KeycloakAdminBootstrapService keycloakAdminBootstrapService;
+    private final com.mparsict.vosolmaliat.domain.repository.security.SecurityBootstrapStateRepository bootstrapStateRepository;
+    private final org.springframework.jdbc.core.JdbcTemplate jdbc;
 
     @Value("${app.security.bootstrap-admin.keycloak-user-id:${ADMIN_KEYCLOAK_USER_ID:dev-admin-keycloak-user-id}}")
     private String bootstrapAdminKeycloakUserId;
@@ -59,6 +58,8 @@ public class SecurityDataInitializer {
 
     @Value("${app.security.provider:keycloak}")
     private String identityProvider;
+    @Value("${app.security.demo-users.enabled:true}")
+    private boolean demoUsersEnabled;
 
     @Bean
     CommandLineRunner seedSecurityData() {
@@ -77,16 +78,27 @@ public class SecurityDataInitializer {
             for (String code : PERMISSIONS) {
                 ensureGroupPermission("ADMIN", code);
             }
-            for (String role : List.of("GENERAL_OFFICE_HEAD", "TAX_OFFICE_HEAD")) {
-                for (String code : MANAGER_TASK_PERMISSIONS) {
-                    ensureGroupPermission(role, code);
+            if (!bootstrapStateRepository.existsById("demo-roles-v2")) {
+                migrateLegacyRoles();
+                for (BusinessRole role : BusinessRole.values()) {
+                    if (role == BusinessRole.ADMIN) continue;
+                    for (String code : OPERATIONAL_TASK_PERMISSIONS) ensureGroupPermission(role.name(), code);
+                    for (String code : List.of("EXECUTION_PAPER_LIST_VIEW", "EXECUTION_PAPER_DETAIL_VIEW", "EXECUTION_PAPER_TRACE_VIEW"))
+                        ensureGroupPermission(role.name(), code);
                 }
+                bootstrapStateRepository.save(new com.mparsict.vosolmaliat.domain.model.security.SecurityBootstrapState("demo-roles-v2"));
             }
-            for (String code : OPERATIONAL_TASK_PERMISSIONS) {
-                ensureGroupPermission("TAX_EXPERT", code);
+            if (!bootstrapStateRepository.existsById("arrest-order-permissions-v1")) {
+                for (BusinessRole role : BusinessRole.values()) ensureGroupPermission(role.name(), "ARREST_ORDER_VIEW");
+                for (BusinessRole role : List.of(BusinessRole.DIRECTORATE_EXECUTION_UNIT_HEAD, BusinessRole.SPECIAL_EXECUTION_DEPARTMENT_HEAD)) {
+                    ensureGroupPermission(role.name(), "ARREST_ORDER_START");
+                    ensureGroupPermission(role.name(), "ARREST_ORDER_APPROVE");
+                }
+                ensureGroupPermission(BusinessRole.DIRECTORATE_EXECUTION_TEAM_SUPERVISOR.name(), "ARREST_ORDER_ASSIGN");
+                bootstrapStateRepository.save(new com.mparsict.vosolmaliat.domain.model.security.SecurityBootstrapState("arrest-order-permissions-v1"));
             }
             seedLocalAdminProfile();
-            seedSampleOperationalUsers();
+            if (demoUsersEnabled) seedSampleOperationalUsers();
         });
     }
 
@@ -121,49 +133,30 @@ public class SecurityDataInitializer {
     }
 
     private void seedSampleOperationalUsers() {
-        List<ProvinceSample> samples = List.of(
-                new ProvinceSample("tehran", "تهران", "تهرانی", "021"),
-                new ProvinceSample("isfahan", "اصفهان", "اصفهانی", "031"),
-                new ProvinceSample("fars", "فارس", "شیرازی", "071"),
-                new ProvinceSample("khorasan", "خراسان رضوی", "مشهدی", "051"),
-                new ProvinceSample("azarbayjan", "آذربایجان شرقی", "تبریزی", "041")
-        );
-        samples.forEach(this::seedProvinceOperationalUsers);
+        var sample = new ProvinceSample("tehran", "تهران", "تهرانی", "021");
+        var general = findOrCreateGeneralDirectorate(sample);
+        var office = findOrCreateTaxAffairsOffice(sample, general);
+        for (BusinessRole role : BusinessRole.values()) {
+            if (role == BusinessRole.ADMIN) continue;
+            String username = "demo_" + role.name().toLowerCase(java.util.Locale.ROOT);
+            seedSampleUser("demo-role-" + role.name(), username, username + "@vosol-maliat.local",
+                    role.getTitle(), "", role, role.isNationalScope() ? null : general.getId(),
+                    role.isNationalScope() ? null : office.getId());
+        }
     }
 
-    private void seedProvinceOperationalUsers(ProvinceSample sample) {
-        GeneralDirectorateOfTaxAffairs general = findOrCreateGeneralDirectorate(sample);
-        TaxAffairsOffice office = findOrCreateTaxAffairsOffice(sample, general);
-        seedSampleUser(
-                "sample-" + sample.slug() + "-general-office-head",
-                sample.slug() + "_general_office_head",
-                sample.slug() + ".general.office.head@vosol-maliat.local",
-                "مدیرکل",
-                sample.lastName(),
-                BusinessRole.GENERAL_OFFICE_HEAD,
-                general.getId(),
-                null
-        );
-        seedSampleUser(
-                "sample-" + sample.slug() + "-tax-office-head",
-                sample.slug() + "_tax_office_head",
-                sample.slug() + ".tax.office.head@vosol-maliat.local",
-                "رئیس اداره",
-                sample.lastName(),
-                BusinessRole.TAX_OFFICE_HEAD,
-                general.getId(),
-                office.getId()
-        );
-        seedSampleUser(
-                "sample-" + sample.slug() + "-tax-expert",
-                sample.slug() + "_tax_expert",
-                sample.slug() + ".tax.expert@vosol-maliat.local",
-                "کارشناس",
-                sample.lastName(),
-                BusinessRole.TAX_EXPERT,
-                general.getId(),
-                office.getId()
-        );
+    private void migrateLegacyRoles() {
+        // Remove only the fifteen known sample identities, before loading retired enum values.
+        for (String province : List.of("tehran", "isfahan", "fars", "khorasan", "azarbayjan")) {
+            for (String suffix : List.of("general_office_head", "tax_office_head", "tax_expert"))
+                jdbc.update("DELETE FROM app_user_profile WHERE username = ?", province + "_" + suffix);
+        }
+        // Preserve non-sample profiles with the nearest replacement role.
+        for (var mapping : java.util.Map.of("GENERAL_OFFICE_HEAD", "TAX_DIRECTORATE_DIRECTOR_GENERAL",
+                "TAX_OFFICE_HEAD", "DIRECTORATE_EXECUTION_UNIT_HEAD", "TAX_EXPERT", "EXECUTION_OFFICER").entrySet()) {
+            jdbc.update("UPDATE app_user_profile SET business_role = ? WHERE business_role = ?", mapping.getValue(), mapping.getKey());
+            jdbc.update("DELETE FROM group_permission WHERE group_name = ?", mapping.getKey());
+        }
     }
 
     private GeneralDirectorateOfTaxAffairs findOrCreateGeneralDirectorate(ProvinceSample sample) {

@@ -463,6 +463,8 @@ textarea {
         var(--color-page);
     transition: grid-template-columns 220ms ease;
 }
+.app-sidebar-backdrop, .app-sidebar-close { display: none; }
+.app-frame--mobile-drawer .task-filter-grid { grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr)); }
 
 .app-frame--sidebar-collapsed {
     grid-template-columns: 0 minmax(0, 1fr);
@@ -4738,6 +4740,40 @@ textarea {
 }
 
 @media (max-width: 920px) {
+    .app-frame--mobile-drawer .formal-header { position: static; gap: 12px; }
+    .app-frame--mobile-drawer .formal-header__identity,
+    .app-frame--mobile-drawer .formal-header__page,
+    .app-frame--mobile-drawer .formal-header__meta { flex: 0 1 auto; min-width: 0; }
+    .app-frame--mobile-drawer .app-sidebar {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        width: min(280px, 90vw);
+        z-index: 61;
+        min-height: 0;
+        overflow-y: auto;
+    }
+
+    .app-frame--mobile-drawer .app-sidebar-backdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        z-index: 60;
+        border: 0;
+        background: #10274266;
+    }
+
+    .app-frame--mobile-drawer .app-sidebar-close {
+        display: block;
+        margin-inline-start: auto;
+        border: 0;
+        background: transparent;
+        color: #102742;
+        font-size: 28px;
+        width: 36px;
+        height: 36px;
+    }
     .app-frame,
     .app-frame--sidebar-collapsed,
     .admin-two-column {

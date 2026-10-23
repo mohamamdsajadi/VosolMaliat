@@ -64,10 +64,10 @@ public class ExecutionPaperWorkflowVariablesFactory {
         variables.put(ProcessConstants.VAR_TAX_AFFAIRS_OFFICE_ID, taxAffairsOfficeId);
         variables.put(ProcessConstants.VAR_GENERAL_DIRECTORATE_ID, generalDirectorateId);
         variables.put(ProcessConstants.VAR_GENERAL_OFFICE_HEAD_CANDIDATE_GROUPS,
-                generalDirectorateId == null ? List.of() : List.of(OrganizationCandidateGroup.forOrganization(BusinessRole.GENERAL_OFFICE_HEAD, generalDirectorateId)));
+                generalDirectorateId == null ? List.of() : List.of(OrganizationCandidateGroup.forOrganization(BusinessRole.TAX_DIRECTORATE_DIRECTOR_GENERAL, generalDirectorateId)));
         variables.put(ProcessConstants.VAR_TAX_OFFICE_HEAD_CANDIDATE_GROUPS,
-                taxAffairsOfficeId == null ? List.of() : List.of(OrganizationCandidateGroup.forOrganization(BusinessRole.TAX_OFFICE_HEAD, taxAffairsOfficeId)));
+                generalDirectorateId == null ? List.of() : List.of(OrganizationCandidateGroup.forOrganization(BusinessRole.DIRECTORATE_EXECUTION_UNIT_HEAD, generalDirectorateId)));
         variables.put(ProcessConstants.VAR_TAX_EXPERT_CANDIDATE_GROUPS,
-                taxAffairsOfficeId == null ? List.of() : List.of(OrganizationCandidateGroup.forOrganization(BusinessRole.TAX_EXPERT, taxAffairsOfficeId)));
+                generalDirectorateId == null ? List.of() : List.of(OrganizationCandidateGroup.forOrganization(BusinessRole.EXECUTION_OFFICER, generalDirectorateId)));
     }
 }

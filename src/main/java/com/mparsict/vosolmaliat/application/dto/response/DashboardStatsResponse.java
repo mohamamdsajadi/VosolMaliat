@@ -59,5 +59,8 @@ public record DashboardStatsResponse(
         @com.fasterxml.jackson.databind.annotation.JsonSerialize(using = com.mparsict.vosolmaliat.domain.model.sanim.ExactDecimalSerializer.class)
         java.math.BigDecimal collectedAmounts,
         @com.fasterxml.jackson.databind.annotation.JsonSerialize(using = com.mparsict.vosolmaliat.domain.model.sanim.ExactDecimalSerializer.class)
-        java.math.BigDecimal uncollectedAmounts
+        java.math.BigDecimal uncollectedAmounts,
+        long closedExecutionPapers,
+        com.mparsict.vosolmaliat.application.service.arrest.ArrestOrderService.WorkStats arrestOrderPerformance,
+        boolean taskListsAvailable
 ) {}

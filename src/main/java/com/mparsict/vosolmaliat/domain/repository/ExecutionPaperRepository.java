@@ -18,6 +18,17 @@ public interface ExecutionPaperRepository extends JpaRepository<ExecutionPaper, 
 
     Optional<ExecutionPaper> findByExecutionPaperUniqueCode(String code);
 
+    @Query("""
+            SELECT new com.mparsict.vosolmaliat.application.dto.response.ExecutionPaperLinkResponse(ep.id, ep.executionPaperUniqueCode)
+            FROM ExecutionPaper ep
+            WHERE ep.finalTaxDebtPaper.taxpayer.id = :taxpayerId AND ep.id <> :paperId
+              AND ep.workflowState.currentState NOT IN :closedStates
+            ORDER BY ep.id DESC
+            """)
+    List<com.mparsict.vosolmaliat.application.dto.response.ExecutionPaperLinkResponse> findOtherActivePapers(
+            @Param("taxpayerId") Long taxpayerId, @Param("paperId") Long paperId,
+            @Param("closedStates") Collection<String> closedStates);
+
     @Query("SELECT paper FROM ExecutionPaper paper WHERE paper.finalTaxDebtPaper.uniqueFinalTaxDebtNoticeId = :number OR paper.finalTaxDebtPaper.taxReturnNumber = :number")
     Optional<ExecutionPaper> findByFinalTaxDebtPaperSourceDocumentNumber(@Param("number") String number);
 
@@ -66,7 +77,7 @@ public interface ExecutionPaperRepository extends JpaRepository<ExecutionPaper, 
     @Query("SELECT ep FROM ExecutionPaper ep WHERE ep.workflowState.currentState <> :state")
     Page<ExecutionPaper> findByCurrentStateNot(@Param("state") String state, Pageable pageable);
 
-    @EntityGraph(attributePaths = {"finalTaxDebtPaper", "finalTaxDebtPaper.taxpayer"})
+    @EntityGraph(attributePaths = {"finalTaxDebtPaper", "finalTaxDebtPaper.taxpayer", "finalTaxDebtPaper.paperTypeDefinition"})
     @Query(value = """
             SELECT DISTINCT ep
             FROM ExecutionPaper ep
@@ -77,7 +88,8 @@ public interface ExecutionPaperRepository extends JpaRepository<ExecutionPaper, 
             LEFT JOIN np.extraInfo ninfo
             LEFT JOIN lp.extraInfo linfo
             LEFT JOIN ExecutionPaperNotification notification ON notification.executionPaper = ep
-            WHERE (:assignmentMode IS NULL
+            WHERE (:restrictAssignments = false OR ep.id IN :visiblePaperIds)
+              AND (:assignmentMode IS NULL
                 OR (:assignmentMode = 'ASSIGNED' AND ep.workflowState.currentState <> :unassignedState)
                 OR (:assignmentMode = 'UNASSIGNED' AND ep.workflowState.currentState = :unassignedState))
               AND (:uniqueCode IS NULL OR LOWER(ep.executionPaperUniqueCode) LIKE LOWER(CONCAT('%', :uniqueCode, '%')))
@@ -93,6 +105,17 @@ public interface ExecutionPaperRepository extends JpaRepository<ExecutionPaper, 
               AND (:notificationStatus IS NULL
                 OR (:notificationStatus = 'NOTIFIED' AND notification.notificationDate IS NOT NULL)
                 OR (:notificationStatus = 'NOT_NOTIFIED' AND notification.notificationDate IS NULL))
+              AND (:search IS NULL
+                OR LOWER(ep.executionPaperUniqueCode) LIKE LOWER(CONCAT('%', :search, '%'))
+                OR np.nationalCode LIKE CONCAT('%', :search, '%')
+                OR lp.nationalId LIKE CONCAT('%', :search, '%')
+                OR taxpayer.tin LIKE CONCAT('%', :search, '%')
+                OR LOWER(CONCAT(ninfo.firstName, ' ', ninfo.lastName)) LIKE LOWER(CONCAT('%', :search, '%'))
+                OR LOWER(linfo.name) LIKE LOWER(CONCAT('%', :search, '%')))
+              AND (:taxpayerType IS NULL OR (:taxpayerType = 'NATURAL' AND np IS NOT NULL)
+                OR (:taxpayerType = 'LEGAL' AND lp IS NOT NULL))
+              AND (:issuedFrom IS NULL OR ep.issuanceDate >= :issuedFrom)
+              AND (:issuedBefore IS NULL OR ep.issuanceDate < :issuedBefore)
             """,
             countQuery = """
             SELECT COUNT(DISTINCT ep)
@@ -104,7 +127,8 @@ public interface ExecutionPaperRepository extends JpaRepository<ExecutionPaper, 
             LEFT JOIN np.extraInfo ninfo
             LEFT JOIN lp.extraInfo linfo
             LEFT JOIN ExecutionPaperNotification notification ON notification.executionPaper = ep
-            WHERE (:assignmentMode IS NULL
+            WHERE (:restrictAssignments = false OR ep.id IN :visiblePaperIds)
+              AND (:assignmentMode IS NULL
                 OR (:assignmentMode = 'ASSIGNED' AND ep.workflowState.currentState <> :unassignedState)
                 OR (:assignmentMode = 'UNASSIGNED' AND ep.workflowState.currentState = :unassignedState))
               AND (:uniqueCode IS NULL OR LOWER(ep.executionPaperUniqueCode) LIKE LOWER(CONCAT('%', :uniqueCode, '%')))
@@ -120,8 +144,21 @@ public interface ExecutionPaperRepository extends JpaRepository<ExecutionPaper, 
               AND (:notificationStatus IS NULL
                 OR (:notificationStatus = 'NOTIFIED' AND notification.notificationDate IS NOT NULL)
                 OR (:notificationStatus = 'NOT_NOTIFIED' AND notification.notificationDate IS NULL))
+              AND (:search IS NULL
+                OR LOWER(ep.executionPaperUniqueCode) LIKE LOWER(CONCAT('%', :search, '%'))
+                OR np.nationalCode LIKE CONCAT('%', :search, '%')
+                OR lp.nationalId LIKE CONCAT('%', :search, '%')
+                OR taxpayer.tin LIKE CONCAT('%', :search, '%')
+                OR LOWER(CONCAT(ninfo.firstName, ' ', ninfo.lastName)) LIKE LOWER(CONCAT('%', :search, '%'))
+                OR LOWER(linfo.name) LIKE LOWER(CONCAT('%', :search, '%')))
+              AND (:taxpayerType IS NULL OR (:taxpayerType = 'NATURAL' AND np IS NOT NULL)
+                OR (:taxpayerType = 'LEGAL' AND lp IS NOT NULL))
+              AND (:issuedFrom IS NULL OR ep.issuanceDate >= :issuedFrom)
+              AND (:issuedBefore IS NULL OR ep.issuanceDate < :issuedBefore)
             """)
     Page<ExecutionPaper> search(
+            @Param("restrictAssignments") boolean restrictAssignments,
+            @Param("visiblePaperIds") Collection<Long> visiblePaperIds,
             @Param("assignmentMode") String assignmentMode,
             @Param("unassignedState") String unassignedState,
             @Param("uniqueCode") String uniqueCode,
@@ -129,6 +166,10 @@ public interface ExecutionPaperRepository extends JpaRepository<ExecutionPaper, 
             @Param("taxpayerNationalId") String taxpayerNationalId,
             @Param("currentState") String currentState,
             @Param("notificationStatus") String notificationStatus,
+            @Param("search") String search,
+            @Param("taxpayerType") String taxpayerType,
+            @Param("issuedFrom") java.time.LocalDateTime issuedFrom,
+            @Param("issuedBefore") java.time.LocalDateTime issuedBefore,
             Pageable pageable);
 
     @Query("SELECT ep FROM ExecutionPaper ep WHERE ep.workflowState.currentState = :state")

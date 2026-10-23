@@ -211,9 +211,9 @@ class CamundaJobWorkersUnitTest {
                 .containsEntry(ProcessConstants.VAR_EXECUTION_PAPER_CODE, "EP-99")
                 .containsEntry(ProcessConstants.VAR_TAX_AFFAIRS_OFFICE_ID, 70L)
                 .containsEntry(ProcessConstants.VAR_GENERAL_DIRECTORATE_ID, 700L)
-                .containsEntry(ProcessConstants.VAR_GENERAL_OFFICE_HEAD_CANDIDATE_GROUPS, List.of("GENERAL_OFFICE_HEAD:700"))
-                .containsEntry(ProcessConstants.VAR_TAX_OFFICE_HEAD_CANDIDATE_GROUPS, List.of("TAX_OFFICE_HEAD:70"))
-                .containsEntry(ProcessConstants.VAR_TAX_EXPERT_CANDIDATE_GROUPS, List.of("TAX_EXPERT:70"))
+                .containsEntry(ProcessConstants.VAR_GENERAL_OFFICE_HEAD_CANDIDATE_GROUPS, List.of("TAX_DIRECTORATE_DIRECTOR_GENERAL:700"))
+                .containsEntry(ProcessConstants.VAR_TAX_OFFICE_HEAD_CANDIDATE_GROUPS, List.of("DIRECTORATE_EXECUTION_UNIT_HEAD:700"))
+                .containsEntry(ProcessConstants.VAR_TAX_EXPERT_CANDIDATE_GROUPS, List.of("EXECUTION_OFFICER:700"))
                 .containsEntry(ProcessConstants.VAR_LEGAL_PERSON_NATIONAL_ID, "14001234567")
                 .containsEntry(ProcessConstants.VAR_DEBT_PAPER_DATE, "2026-07-18")
                 .containsKey(ProcessConstants.VAR_DEBT_PAPER_PAYLOAD)
@@ -848,7 +848,7 @@ class CamundaJobWorkersUnitTest {
 
         private StubExecutionPaperService(ExecutionPaper executionPaper) {
             super(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
-                    null, null);
+                    null, null, null);
             this.executionPaper = executionPaper;
         }
 

@@ -21,7 +21,7 @@ class MockIdentityProviderTest {
 
     private AppUserProfile user() {
         AppUserProfile user = AppUserProfile.builder().keycloakUserId("existing-real-subject")
-                .username("manager").firstName("مدیرکل").businessRole(BusinessRole.GENERAL_OFFICE_HEAD).build();
+                .username("manager").firstName("مدیرکل").businessRole(BusinessRole.TAX_DIRECTORATE_DIRECTOR_GENERAL).build();
         when(clock.instant()).thenReturn(now);
         when(profiles.findByUsername("manager")).thenReturn(Optional.of(user));
         when(profiles.findByKeycloakUserId("existing-real-subject")).thenReturn(Optional.of(user));
@@ -36,7 +36,7 @@ class MockIdentityProviderTest {
         assertThat(first.accessToken()).startsWith("mock_").isNotEqualTo(second.accessToken());
         var jwt = provider.decode(first.accessToken());
         assertThat(jwt.getSubject()).isEqualTo("existing-real-subject");
-        assertThat(jwt.getClaimAsMap("realm_access")).containsEntry("roles", List.of("GENERAL_OFFICE_HEAD"));
+        assertThat(jwt.getClaimAsMap("realm_access")).containsEntry("roles", List.of("TAX_DIRECTORATE_DIRECTOR_GENERAL"));
         provider.logout(first.accessToken());
         assertThatThrownBy(() -> provider.decode(first.accessToken())).isInstanceOf(BadJwtException.class);
         assertThat(provider.decode(second.accessToken()).getSubject()).isEqualTo(jwt.getSubject());
