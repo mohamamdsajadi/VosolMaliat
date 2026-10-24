@@ -12,53 +12,72 @@ import PaperArrestAttachment from '../arrest-orders/paper-arrest-attachment';
 
 const TABS = ['اطلاعات بدهی', 'اقدامات انجام شده', 'اطلاعات مؤدی', 'اطلاعات پرونده'];
 
-export default function PaperDetailPage({ resource, trace, related, external, canTrace, canViewArrest, onPrint, onRefreshRelated, refreshingRelated, taskHref, hrefFor }) {
-  const [tab, setTab] = useState(0);
-  const [stage, setStage] = useState('issue');
+export default function PaperDetailPage({ resource, trace, related, external, canTrace, canViewArrest, onPrint, onRefreshRelated, refreshingRelated, taskHref, hrefFor, embedded = false, onClose, paymentDeadline }) {
+  const [tab, setTab] = useState(embedded ? 1 : 0);
+  const [stage, setStage] = useState(embedded ? null : 'issue');
   const tabs = useRef([]);
   const documentDialog = useRef(null);
   const historyDialog = useRef(null);
   const data = resource.data;
   const steps = workflowSteps(data, trace.data);
+  const selectedStage = stage || steps.find(step => step.status === 'active')?.key || steps.findLast(step => step.status === 'done')?.key || 'issue';
   const openDocument = () => documentDialog.current.showModal();
   const openHistory = () => historyDialog.current.showModal();
-  return <section className={styles.pageCard} aria-labelledby="paper-detail-heading" aria-busy={resource.loading}>
-    <h1 className={styles.srOnly} id="paper-detail-heading">جزئیات برگ اجرا {identifier(data?.summary?.uniqueCode)}</h1>
+  const tabItems = embedded ? [{ key: 1, label: 'فرآیند اجرایی' }, { key: 2, label: 'اطلاعات هویتی' }, { key: 0, label: 'اطلاعات مالیاتی' }, { key: 4, label: 'اقدامات انجام شده' }] : TABS.map((label, key) => ({ key, label }));
+  const idPrefix = embedded ? 'paper-summary' : 'paper';
+  return <section className={`${styles.pageCard} ${embedded ? styles.embedded : ''}`} aria-labelledby={`${idPrefix}-heading`} aria-busy={resource.loading}>
+    {embedded ? <header className={styles.previewHeader}><h2 id={`${idPrefix}-heading`}><Icon name="document" />جزئیات برگ اجرا — <bdi>{identifier(data?.summary?.uniqueCode)}</bdi></h2><div>{data && <Link className={styles.textAction} href={hrefFor(data.summary.id)}>مشاهده جزئیات کامل</Link>}<button className={styles.previewClose} onClick={onClose} aria-label="بستن خلاصه برگ اجرا">×</button></div></header>
+      : <h1 className={styles.srOnly} id={`${idPrefix}-heading`}>جزئیات برگ اجرا {identifier(data?.summary?.uniqueCode)}</h1>}
     {resource.loading ? <p className={styles.message} role="status">در حال دریافت جزئیات برگ اجرا…</p>
       : resource.error ? <Retry message={resource.error} onRetry={resource.retry} /> : !data ? <p className={styles.message}>اطلاعات این برگ اجرا در دسترس نیست.</p> : <>
-        <PaperTable papers={[data.summary]} summary />
-        {canViewArrest && <PaperArrestAttachment paperId={data.summary.id} />}
-        <div className={styles.tabs} role="tablist" aria-label="بخش‌های جزئیات برگ اجرا">{TABS.map((label, index) => <button role="tab" id={`paper-tab-${index}`} key={label} ref={element => { tabs.current[index] = element; }}
-          aria-selected={tab === index} aria-controls={`paper-panel-${index}`} tabIndex={tab === index ? 0 : -1} onClick={() => setTab(index)} onKeyDown={event => {
+        {!embedded && <PaperTable papers={[data.summary]} summary />}
+        {!embedded && canViewArrest && <PaperArrestAttachment paperId={data.summary.id} />}
+        <div className={embedded ? styles.previewLayout : undefined}>
+        {embedded && <DebtSummary data={data} paymentDeadline={paymentDeadline} />}
+        <div className={embedded ? styles.previewContent : undefined}>
+        <div className={styles.tabs} role="tablist" aria-label="بخش‌های جزئیات برگ اجرا">{tabItems.map(({ label, key }, index) => <button role="tab" id={`${idPrefix}-tab-${key}`} key={key} ref={element => { tabs.current[index] = element; }}
+          aria-selected={tab === key} aria-controls={`${idPrefix}-panel-${key}`} tabIndex={tab === key ? 0 : -1} onClick={() => setTab(key)} onKeyDown={event => {
             const next = event.key === 'ArrowLeft' ? (index + 1) % 4 : event.key === 'ArrowRight' ? (index + 3) % 4 : event.key === 'Home' ? 0 : event.key === 'End' ? 3 : null;
-            if (next != null) { event.preventDefault(); setTab(next); tabs.current[next]?.focus(); }
+            if (next != null) { event.preventDefault(); setTab(tabItems[next].key); tabs.current[next]?.focus(); }
           }}>{label}</button>)}</div>
-        <div id={`paper-panel-${tab}`} role="tabpanel" aria-labelledby={`paper-tab-${tab}`} tabIndex={0} className={styles.panel}>
+        <div id={`${idPrefix}-panel-${tab}`} role="tabpanel" aria-labelledby={`${idPrefix}-tab-${tab}`} tabIndex={0} className={styles.panel}>
           {tab === 0 && <DebtHistory data={data} hrefFor={hrefFor} />}
           {tab === 1 && <>
             <div className={styles.workflowScroll} role="region" aria-label="مراحل فرآیند اجرایی" tabIndex={0}><ol className={styles.workflow}>{steps.map((step, index) => <li key={step.key}>
-              <button className={styles.step} aria-pressed={stage === step.key} onClick={() => setStage(step.key)}>
+              <button className={styles.step} aria-pressed={selectedStage === step.key} onClick={() => setStage(step.key)}>
                 <span className={styles.stepIcon}><Icon name={step.status === 'done' ? 'doneOuter' : step.status === 'active' ? 'activeOuter' : 'pendingOuter'} />
                   <span className={styles.stepInner}><Icon name={step.status === 'done' ? 'doneInner' : step.status === 'active' ? 'activeInner' : 'pendingInner'} /></span>
                   <span className={styles.stepSymbol}><Icon name={step.status === 'done' ? 'done' : step.icon} /></span></span>
                 <span className={styles.stepName}>{step.label}</span><span className={`${styles.stepStatus} ${styles[step.status] || ''}`}><Icon name={step.status === 'done' ? 'doneDot' : step.status === 'active' ? 'activeDot' : 'pendingDot'} />{step.status === 'done' ? 'انجام شده' : step.status === 'active' ? 'در حال انجام' : 'ثبت نشده'}</span>
+                {embedded && <time className={styles.stepDate}>{paperDate(step.date)}</time>}
               </button>{index < steps.length - 1 && <span className={styles.stepArrow}><Icon name="stepArrow" /></span>}
             </li>)}</ol></div>
-            <StageDetails data={data} step={steps.find(step => step.key === stage) || steps[0]} onView={openDocument} onHistory={openHistory} onPrint={onPrint} canTrace={canTrace} taskHref={taskHref} />
+            <StageDetails data={data} step={steps.find(step => step.key === selectedStage) || steps[0]} onView={openDocument} onHistory={openHistory} onPrint={onPrint} canTrace={canTrace} taskHref={taskHref} />
             {trace.loading && <p className={styles.muted} role="status">در حال دریافت سوابق مراحل…</p>}
             {trace.error && <Retry message="دریافت تاریخچه ناموفق بود؛ وضعیت مراحل ممکن است کامل نباشد." onRetry={trace.retry} />}
             {!canTrace && <p className={styles.muted}>دسترسی مشاهده سوابق فرایند برای این حساب فعال نیست.</p>}
           </>}
           {tab === 2 && <TaxpayerInfo data={data} related={related} refreshing={refreshingRelated} onRefresh={onRefreshRelated} />}
           {tab === 3 && <FileInfo data={data} onView={openDocument} onPrint={onPrint} />}
+          {tab === 4 && (canTrace ? <><TraceSection trace={trace.data} loading={trace.loading} error={trace.error} externalRequests={external.data || []} externalRequestsLoading={external.loading} externalRequestsError={external.error} />{(trace.error || external.error) && <Retry message="دریافت سوابق ناموفق بود." onRetry={() => { trace.retry(); external.retry(); }} />}</> : <p className={styles.muted}>دسترسی مشاهده سوابق فرایند برای این حساب فعال نیست.</p>)}
         </div>
-        <DetailDialog dialogRef={documentDialog} title="سند کامل برگ اجرا" closeLabel="بستن سند کامل"><div className={styles.documentTools}><button className={styles.outlineAction} onClick={onPrint}><ViewIcon name="print" />چاپ برگ اجرا</button></div><SanimDocumentSection data={data} /></DetailDialog>
+        </div></div>
+        <DetailDialog dialogRef={documentDialog} title="سند کامل برگ اجرا" closeLabel="بستن سند کامل">{onPrint && <div className={styles.documentTools}><button className={styles.outlineAction} onClick={onPrint}><ViewIcon name="print" />چاپ برگ اجرا</button></div>}<SanimDocumentSection data={data} /></DetailDialog>
         <DetailDialog dialogRef={historyDialog} title="سوابق و استعلام‌های برگ اجرا" closeLabel="بستن سوابق">
           {canTrace ? <><TraceSection trace={trace.data} loading={trace.loading} error={trace.error} externalRequests={external.data || []} externalRequestsLoading={external.loading} externalRequestsError={external.error} />
             {(trace.error || external.error) && <button onClick={() => { trace.retry(); external.retry(); }}>تلاش مجدد</button>}</> : <p>شما مجوز مشاهده تاریخچه این برگ اجرا را ندارید.</p>}
         </DetailDialog>
       </>}
   </section>;
+}
+
+function DebtSummary({ data, paymentDeadline }) {
+  const current = data.debtInformation?.history?.find(row => row.current);
+  return <aside className={styles.previewDebt} aria-label="خلاصه اطلاعات بدهی"><h3>اطلاعات بدهی</h3><dl>
+    <div><dt>مبلغ اصل بدهی</dt><dd><bdi>{money(current?.principalAmount)}</bdi> <span>ریال</span></dd></div>
+    <div><dt>مبلغ جرایم و خسارات</dt><dd><bdi>{money(current?.penaltyAmount)}</bdi> <span>ریال</span></dd></div>
+    <div className={styles.previewTotal}><dt>جمع بدهی باقیمانده</dt><dd><bdi>{money(data.debtInformation?.outstandingDebtAmount ?? data.summary?.totalDebt)}</bdi> <span>ریال</span></dd></div>
+  </dl><dl className={styles.previewDates}><div><dt><Icon name="timer" />تاریخ صدور</dt><dd><bdi>{paperDate(data.executionPaper?.issuanceDate)}</bdi></dd></div><div><dt><ViewIcon name="alert" />مهلت پرداخت</dt><dd><bdi>{paperDate(data.notification?.paymentDeadline || paymentDeadline)}</bdi></dd></div></dl></aside>;
 }
 
 function DebtHistory({ data, hrefFor }) {
@@ -104,7 +123,7 @@ function StageDetails({ data, step, onView, onHistory, onPrint, canTrace, taskHr
   return <section className={styles.stageCard} aria-label="جزئیات مرحله انتخاب‌شده"><h2><Icon name="receipt" />{issue ? 'جزئیات صدور' : `جزئیات ${step.label}`}</h2>
     <dl className={styles.stageFacts}><Info label={issue ? 'تاریخ صدور:' : 'تاریخ ثبت:'} value={paperDate(step.date)} /><Info label={issue ? 'مبنای صدور:' : 'انجام‌دهنده:'} value={issue ? reason : step.event?.actorUsername} />
       <div className={styles.stageSubject}><dt>موضوع:</dt><dd>{issue ? <>{reason || 'سند مبنا'} به شماره <bdi>{identifier(source.debtPaperUniqueCode || source.uniqueFinalTaxDebtNoticeId)}</bdi> و تاریخ <bdi>{paperDate(source.finalTaxDebtNoticeIssueDate || source.sourceDocument?.issueDateRaw)}</bdi></> : step.event?.label || 'اطلاعاتی برای این مرحله ثبت نشده است.'}</dd></div></dl>
-    <div className={styles.actions}>{issue && <><button className={styles.primaryAction} onClick={onView}><ViewIcon name="eye" />مشاهده</button><button className={styles.outlineAction} onClick={onPrint}><ViewIcon name="print" />چاپ</button></>}
+    <div className={styles.actions}>{issue && <><button className={styles.primaryAction} onClick={onView}><ViewIcon name="eye" />مشاهده</button>{onPrint && <button className={styles.outlineAction} onClick={onPrint}><ViewIcon name="print" />چاپ</button>}</>}
       {canTrace && <button className={styles.textAction} onClick={onHistory}>سوابق و استعلام‌ها</button>}{taskHref && <Link className={styles.textAction} href={taskHref}>مشاهده کارتابل</Link>}</div>
   </section>;
 }
@@ -135,4 +154,4 @@ function FileInfo({ data, onView, onPrint }) {
 
 function Info({ label, value, wide }) { return <div className={wide ? styles.wideInfo : ''}><dt>{label}</dt><dd><bdi>{identifier(value)}</bdi></dd></div>; }
 function DetailDialog({ dialogRef, title, closeLabel, children, hideHeading = false }) { return <dialog ref={dialogRef} className={styles.dialog} aria-label={title} onClick={event => { if (event.target === event.currentTarget) dialogRef.current.close(); }}><div><form method="dialog"><button className={styles.dialogClose} aria-label={closeLabel}>×</button></form><h2 className={hideHeading ? styles.srOnly : undefined}>{title}</h2>{children}</div></dialog>; }
-export function Retry({ message, onRetry }) { return <div className={styles.error} role="alert"><p>{message}</p><button onClick={onRetry}>تلاش مجدد</button></div>; }
+export function Retry({ message, onRetry }) { return <div className={styles.error} role="alert"><p>{message}</p>{onRetry && <button onClick={onRetry}>تلاش مجدد</button>}</div>; }

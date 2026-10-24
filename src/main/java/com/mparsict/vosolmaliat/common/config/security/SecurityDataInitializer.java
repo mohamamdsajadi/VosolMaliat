@@ -30,7 +30,7 @@ public class SecurityDataInitializer {
             "GROUP_PERMISSION_UPDATE", "TASK_VIEW_OWN", "TASK_VIEW_CANDIDATE", "TASK_CLAIM", "TASK_UNCLAIM",
             "TASK_COMPLETE", "TASK_ASSIGN", "TASK_DELEGATE", "TASK_VIEW_ORG_SCOPE", "EXECUTION_PAPER_LIST_VIEW", "EXECUTION_PAPER_DETAIL_VIEW",
             "EXECUTION_PAPER_TRACE_VIEW", "REPORT_VIEW", "AUDIT_VIEW",
-            "ARREST_ORDER_VIEW", "ARREST_ORDER_START", "ARREST_ORDER_APPROVE", "ARREST_ORDER_ASSIGN"
+            "ARREST_ORDER_VIEW", "ARREST_ORDER_START", "ARREST_ORDER_APPROVE", "ARREST_ORDER_ASSIGN", "LEGAL_RESTRICTION_VIEW"
     );
 
     private static final List<String> OPERATIONAL_TASK_PERMISSIONS = List.of(
@@ -98,6 +98,10 @@ public class SecurityDataInitializer {
                 bootstrapStateRepository.save(new com.mparsict.vosolmaliat.domain.model.security.SecurityBootstrapState("arrest-order-permissions-v1"));
             }
             seedLocalAdminProfile();
+            if (!bootstrapStateRepository.existsById("legal-restriction-view-v1")) {
+                for (BusinessRole role : BusinessRole.values()) ensureGroupPermission(role.name(), "LEGAL_RESTRICTION_VIEW");
+                bootstrapStateRepository.save(new com.mparsict.vosolmaliat.domain.model.security.SecurityBootstrapState("legal-restriction-view-v1"));
+            }
             if (demoUsersEnabled) seedSampleOperationalUsers();
         });
     }

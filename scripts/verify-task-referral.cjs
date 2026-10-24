@@ -73,23 +73,6 @@ async function fulfill(event) {
   await send('Fetch.fulfillRequest',{requestId:event.requestId,responseCode:code,responseHeaders:[{name:'Content-Type',value:'application/json; charset=utf-8'}],body:code===204?'':Buffer.from(JSON.stringify(body)).toString('base64')});
 }
 async function screenshot(name){await evaluate('document.fonts.ready');await delay(150);const r=await send('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.resolve(__dirname,'../temp/'+name),Buffer.from(r.data,'base64'));}
-async function runPaperChecks(){
-  await navigate('/execution-papers');await waitFor("document.querySelectorAll('[data-paper-referral]').length===5");
-  assert.ok(await evaluate("[...document.querySelectorAll('[data-paper-referral]')].every(b=>b.previousElementSibling?.hasAttribute('data-paper-details'))"));
-  await screenshot('execution-paper-referral-desktop.png');
-  assert.ok(await evaluate("[...document.querySelectorAll('[data-paper-referral]')].every(b=>b.textContent.trim()===''&&b.getBoundingClientRect().width===b.previousElementSibling.getBoundingClientRect().width)"));
-  await evaluate("document.querySelector('[data-paper-referral]').click()");await waitFor("document.querySelector('dialog[open]').innerText.includes('فرم انتخاب مقصد این مرحله هنوز در دسترس نیست')");
-  await evaluate("document.querySelector('dialog[open] p').click()");assert.equal(await evaluate('location.pathname'),'/execution-papers');await escape();
-  await evaluate("document.querySelectorAll('[data-paper-referral]')[2].click()");await waitFor("document.querySelector('dialog[open]').innerText.includes('مجوز ارجاع در وضعیت فعلی وجود ندارد')");await escape();
-  for(const index of [3,4]){await evaluate(`document.querySelectorAll('[data-paper-referral]')[${index}].click()`);await waitFor("document.querySelector('dialog[open]').innerText.includes('وظیفه ارجاعی برای این برگ')");await escape();}
-  failPaperTasks=true;await navigate('/execution-papers');await waitFor("document.querySelectorAll('[data-paper-referral]').length===5");await evaluate("document.querySelector('[data-paper-referral]').click()");await waitFor("document.querySelector('dialog[open] [role=alert]')");
-  failPaperTasks=false;await evaluate("[...document.querySelectorAll('dialog[open] button')].find(b=>b.textContent.includes('به‌روزرسانی')).click()");await waitFor("document.querySelector('dialog[open]').innerText.includes('فرم انتخاب مقصد این مرحله هنوز در دسترس نیست')");await escape();
-  await send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:false});assert.ok(await evaluate('document.documentElement.scrollWidth<=innerWidth'));
-  await evaluate("document.querySelectorAll('[data-paper-referral]')[4].click()");await waitFor("document.querySelector('dialog[open]')");assert.ok(await evaluate("document.querySelector('dialog[open]').getBoundingClientRect().width<=innerWidth"));await screenshot('execution-paper-referral-mobile.png');await escape();
-  await send('Emulation.setDeviceMetricsOverride',{width:1440,height:1024,deviceScaleFactor:1,mobile:false});
-  role='EXECUTION_OFFICER';await navigate('/execution-papers');await waitFor("document.querySelectorAll('[data-paper-details]').length===5");assert.equal(await evaluate("document.querySelectorAll('[data-paper-referral]').length"),0);
-  role='DIRECTORATE_EXECUTION_UNIT_HEAD';console.log('PASS: execution-paper row referral placement, matching task, unavailable/wrong-stage, denied actions, retry, role visibility and mobile dialog.');
-}
 async function runChecks(){
   const manualRoles=['DIRECTORATE_EXECUTION_UNIT_HEAD','DIRECTORATE_EXECUTION_TEAM_SUPERVISOR','SPECIAL_COLLECTION_DIRECTOR_GENERAL','SPECIAL_EXECUTION_DEPUTY','SPECIAL_EXECUTION_DEPARTMENT_HEAD'];
   for(const value of manualRoles){role=value;await navigate('/tasks');await waitFor("document.querySelectorAll('.task-grid-row').length===4");assert.equal(await evaluate("document.querySelectorAll('a[aria-label^=\"ارجاع برگ اجرا\"]').length"),3);assert.equal(await evaluate("document.querySelectorAll('button[aria-label^=\"ارجاع برگ اجرا\"]:disabled').length"),1);}
@@ -110,45 +93,6 @@ async function runChecks(){
   await waitFor("document.querySelector('[aria-controls=app-sidebar]').getAttribute('aria-expanded')==='false'");
   await evaluate("document.querySelector('[aria-controls=app-sidebar]').click()");await waitFor("document.activeElement.getAttribute('aria-label')==='بستن منوی کارتابل'");await escape();await waitFor("document.querySelector('#app-sidebar').inert===true");
   assert.deepEqual(legacyDelegations,[]);assert.deepEqual(exceptions,[]);assert.deepEqual(externalRequests,[]);console.log('PASS: referral roles, row placement, permissions, unavailable/wrong-stage states, claim, process form completion, retry, process return link and mobile.');
-}
-async function runBulkChecks(){
-  role='DIRECTORATE_EXECUTION_UNIT_HEAD';withSchema=true;
-  paperIds=[201,202,203];tasks.push(makeTask(201,true,false),makeTask(202,false,true),makeTask(203,true,false));
-  await send('Emulation.setDeviceMetricsOverride',{width:1440,height:1024,deviceScaleFactor:1,mobile:false});
-  await navigate('/execution-papers');await waitFor("document.querySelectorAll('[data-paper-referral]').length===3");
-  await evaluate("document.querySelector('input[aria-label=\"انتخاب همه برگ‌های این صفحه\"]').click()");
-  assert.equal(await evaluate("document.querySelectorAll('tbody input:checked').length"),3);
-  await evaluate("document.querySelector('tbody input').click()");
-  assert.equal(await evaluate("document.querySelector('thead input').indeterminate"),true);assert.equal(await evaluate('location.pathname'),'/execution-papers');
-  await evaluate("document.querySelector('tbody input').click()");
-  const sortBy=async label=>{await evaluate(`document.querySelector('button[aria-label="مرتب‌سازی بر اساس ${label}"]').click()`);await waitFor("document.querySelectorAll('tbody input[type=checkbox]').length===3");};
-  await sortBy('تاریخ صدور');assert.equal(await evaluate("document.querySelectorAll('tbody input:checked').length"),0);
-  await evaluate("document.querySelector('thead input').click()");await sortBy('سال');await sortBy('تاریخ صدور');assert.equal(await evaluate("document.querySelectorAll('tbody input:checked').length"),0);
-  await evaluate("document.querySelector('thead input').click()");await screenshot('execution-paper-bulk-selection.png');
-  const openBulk=()=>evaluate("[...document.querySelectorAll('button')].find(b=>b.textContent.trim()==='ارجاع گروهی').click()");
-  const refresh=()=>evaluate("[...document.querySelectorAll('dialog[open] button')].find(b=>b.textContent.includes('به‌روزرسانی')).click()");
-  mismatchId=203;await openBulk();await waitFor("document.querySelector('dialog[open] [role=alert]')");assert.equal(await evaluate("document.querySelectorAll('dialog[open] .fjs-form').length"),0);
-  mismatchId=null;await refresh();await waitFor("document.querySelector('dialog[open] .fjs-form input')");
-  assert.ok(await evaluate("document.querySelector('dialog[open] fieldset').disabled"));
-  async function fillAndSubmit(){
-    await evaluate("document.querySelector('dialog[open] label input[type=checkbox]').click()");await delay(400);
-    await evaluate("document.querySelector('dialog[open] .fjs-form input').focus()");await send('Input.insertText',{text:'demo_execution_officer'});
-    await send('Input.dispatchKeyEvent',{type:'keyDown',key:'Tab',code:'Tab',windowsVirtualKeyCode:9});await send('Input.dispatchKeyEvent',{type:'keyUp',key:'Tab',code:'Tab',windowsVirtualKeyCode:9});await delay(700);
-    await screenshot('execution-paper-bulk-form.png');
-    await evaluate("[...document.querySelectorAll('dialog[open] button')].find(b=>b.textContent.trim()==='ثبت ارجاع').click()");
-  }
-  failCompletionId=202;await fillAndSubmit();await waitFor("document.querySelector('dialog[open]').innerText.includes('عملیات متوقف شد')");
-  assert.deepEqual(completionAttempts.filter(id=>id>=200),[201,202]);assert.equal(claims.filter(id=>id===202).length,1);
-  assert.equal(completions.filter(c=>c.id===201).length,1);await screenshot('execution-paper-bulk-partial.png');
-  failCompletionId=null;await refresh();await waitFor("document.querySelector('dialog[open] .fjs-form input')");await fillAndSubmit();
-  await waitFor("document.querySelector('dialog[open]').innerText.includes('EXEC-۲۰۳: ارجاع شد')||document.querySelector('dialog[open]').innerText.includes('EXEC-203: ارجاع شد')");
-  assert.deepEqual(completionAttempts.filter(id=>id>=200),[201,202,202,203]);
-  for(const id of paperIds){const done=completions.filter(c=>c.id===id);assert.equal(done.length,1);assert.deepEqual(done[0].body.variables,{selectedAssignee:'demo_execution_officer'});}
-  await escape();await waitFor("document.querySelectorAll('[data-paper-referral]').length===3");assert.equal(await evaluate("document.querySelectorAll('tbody input:checked').length"),0);
-  await evaluate("document.querySelector('thead input').click()");await evaluate("[...document.querySelectorAll('button')].find(b=>b.textContent.trim()==='لغو انتخاب').click()");assert.equal(await evaluate("document.querySelectorAll('tbody input:checked').length"),0);
-  await send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:false});await evaluate("document.querySelector('thead input').click()");await openBulk();await waitFor("document.querySelector('dialog[open]').innerText.includes('وظیفه ارجاعی برای این برگ')");
-  assert.ok(await evaluate("document.querySelector('dialog[open]').getBoundingClientRect().width<=innerWidth"));assert.ok(await evaluate('document.documentElement.scrollWidth<=innerWidth'));await screenshot('execution-paper-bulk-mobile.png');await escape();
-  assert.deepEqual(exceptions,[]);assert.deepEqual(legacyDelegations,[]);console.log('PASS: icon-only row actions, page selection, indeterminate/select-all/clear, schema compatibility, common destination, candidate claim, partial failure, remaining-only retry, exact payload isolation and mobile.');
 }
 (async () => {
   let target;
@@ -175,7 +119,7 @@ async function runBulkChecks(){
   await send('Fetch.enable', {patterns:[{urlPattern:'*api/v1/*'}]});
   await send('Page.addScriptToEvaluateOnNewDocument', {source:"localStorage.setItem('access_token','paper-browser-fixture');"});
   await send('Emulation.setDeviceMetricsOverride',{width:1440,height:1024,deviceScaleFactor:1,mobile:false});
-  await runPaperChecks();await runChecks();await runBulkChecks();
+  await runChecks();
 })().catch(error => { console.error(error); process.exitCode = 1; }).finally(async () => {
   if (ws?.readyState === WebSocket.OPEN) { try { await send('Browser.close'); } catch {} ws.close(); }
   browser.kill();

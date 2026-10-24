@@ -9,6 +9,7 @@ import { fetchCurrentUser, fetchPermissions, fetchGroupPermissions, assignGroupP
 import styles from './permissions.module.css';
 
 const LABELS = {
+  LEGAL_RESTRICTION_VIEW: 'مشاهده درخواست‌ها، اشخاص مشمول و سوابق محدودیت‌های قانونی',
   ARREST_ORDER_VIEW: 'مشاهده دستورهای بازداشت و برگ‌های آماده صدور', ARREST_ORDER_START: 'آغاز دستور بازداشت و تهیه پیش‌نویس',
   ARREST_ORDER_APPROVE: 'تأیید و صدور دستور بازداشت', ARREST_ORDER_ASSIGN: 'ارجاع دستور بازداشت به مأمور اجرا',
   USER_PROFILE_CREATE: 'ایجاد کاربر و ورود دستی داده', USER_PROFILE_UPDATE: 'ویرایش کاربران', USER_PROFILE_VIEW: 'مشاهده کاربران',
@@ -20,11 +21,12 @@ const LABELS = {
   EXECUTION_PAPER_DETAIL_VIEW: 'مشاهده جزئیات برگ اجرا', EXECUTION_PAPER_TRACE_VIEW: 'مشاهده سوابق برگ اجرا', REPORT_VIEW: 'مشاهده گزارش‌ها', AUDIT_VIEW: 'مشاهده سوابق ممیزی',
 };
 const GROUPS = [
+  { title: 'محدودیت‌های قانونی', accepts: code => code.startsWith('LEGAL_RESTRICTION_') },
   { title: 'دستور بازداشت اموال', accepts: code => code.startsWith('ARREST_ORDER_') },
   { title: 'برگ‌های اجرا و گزارش‌ها', accepts: code => code.startsWith('EXECUTION_') || ['REPORT_VIEW', 'AUDIT_VIEW'].includes(code) },
   { title: 'کارتابل و اقدامات اجرایی', accepts: code => code.startsWith('TASK_') },
   { title: 'مدیریت کاربران و کنترل دسترسی', accepts: code => code.startsWith('USER_') || code.includes('PERMISSION') },
-  { title: 'سایر مجوزها', accepts: code => !code.startsWith('ARREST_ORDER_') && !code.startsWith('EXECUTION_') && !code.startsWith('TASK_') && !code.startsWith('USER_') && !code.includes('PERMISSION') && !['REPORT_VIEW', 'AUDIT_VIEW'].includes(code) },
+  { title: 'سایر مجوزها', accepts: code => !code.startsWith('LEGAL_RESTRICTION_') && !code.startsWith('ARREST_ORDER_') && !code.startsWith('EXECUTION_') && !code.startsWith('TASK_') && !code.startsWith('USER_') && !code.includes('PERMISSION') && !['REPORT_VIEW', 'AUDIT_VIEW'].includes(code) },
 ];
 const has = (profile, code) => isAdminUser(profile) || [...(profile?.allowedActions || []), ...(profile?.localBusinessPermissions || [])].includes(code);
 

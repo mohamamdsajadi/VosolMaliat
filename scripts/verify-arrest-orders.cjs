@@ -296,6 +296,187 @@ async function privacyChecks() {
   assert.deepEqual(exceptions, []);
   console.log('PASS: personal metrics, numeric letters, info dialogs, actionable inbox, separate history, assignment-only lists, desktop/mobile.');
 }
+async function paperViewChecks() {
+  for(let n=0;n<120;n++){try{if((await fetch(backend+'/api/v1/auth/config')).ok)break;}catch{}await delay(250);}
+  await navigate('/login'); await waitFor("document.querySelector('#mock-user')");
+  const head = 'demo_directorate_execution_unit_head';
+  const token = await login(head);
+  const list = await api('/api/v1/execution-papers?size=50', token);
+  const unread = list.content.filter(row => !list.lastViewedAt?.[row.id]);
+  assert.ok(unread.length >= 2, 'Use a disposable database with two unread papers');
+  const [first, second] = unread;
+  const listRoute = paper => '/execution-papers?search=' + encodeURIComponent(paper.uniqueCode);
+  const status = (paper, viewed) => `document.querySelector('[data-paper-id="${paper.id}"][data-paper-viewed="${viewed}"]')`;
+  const hasView = async paper => Boolean((await api('/api/v1/execution-papers?search=' + encodeURIComponent(paper.uniqueCode), token)).lastViewedAt?.[paper.id]);
+  const waitView = async paper => { for(let n=0;n<80;n++){if(await hasView(paper))return;await delay(100);}throw Error('Viewing was not persisted'); };
+  await navigate(listRoute(first)); await waitFor(status(first, false));
+  await evaluate("document.querySelector('tbody input[type=checkbox]').click()"); await waitFor("document.querySelector('#paper-summary-tab-1')");
+  assert.equal(await hasView(first), false, 'An inline preview must leave the envelope closed');
+  await evaluate("document.querySelector('a[data-paper-details]').click()"); await waitFor("document.querySelector('#paper-tab-0')");
+  await waitView(first);
+  await evaluate('history.back()'); await waitFor(status(first, true));
+  assert.ok(await evaluate(`document.querySelector('[data-paper-id="${first.id}"]').title.includes('آخرین مشاهده')`));
+  await send('Page.reload'); await waitFor(status(first, true));
+  await login('admin'); await navigate(listRoute(first)); await waitFor(status(first, false));
+  await login(head);
+  const originalForward = forward;
+  let blockDetails = true, failReceipt = true, receiptPosts = 0;
+  forward = async event => {
+    const url = new URL(event.request.url);
+    let message;
+    if (url.pathname === '/api/v1/execution-papers/' + second.id && blockDetails) message = 'جزئیات آزمایشی در دسترس نیست';
+    if (url.pathname === '/api/v1/execution-papers/' + second.id + '/viewed') {
+      receiptPosts++;
+      if (failReceipt) { failReceipt = false; message = 'خطای آزمایشی ثبت مشاهده'; }
+    }
+    if (message) await send('Fetch.fulfillRequest', { requestId:event.requestId, responseCode:500, responseHeaders:[{name:'Content-Type',value:'application/json'}], body:Buffer.from(JSON.stringify({message})).toString('base64') });
+    else await originalForward(event);
+  };
+  await navigate('/execution-papers/' + second.id); await waitFor("document.querySelector('[role=alert]')?.textContent.includes('جزئیات آزمایشی')");
+  assert.equal(receiptPosts, 0); assert.equal(await hasView(second), false);
+  blockDetails = false;
+  await send('Page.reload'); await waitFor("document.querySelector('[role=alert]')?.textContent.includes('خطای آزمایشی ثبت مشاهده')");
+  assert.equal(await hasView(second), false);
+  await clickText('تلاش مجدد', '[role=alert] button'); await waitView(second);
+  assert.equal(receiptPosts, 2);
+  await navigate('/execution-papers'); await waitFor(status(first, true) + ' && ' + status(second, true));
+  assert.ok(await evaluate("document.querySelector('[data-paper-viewed=false]')!==null"));
+  await screenshot('paper-view-icons-desktop.png');
+  for (const paper of [first,second]) {
+    assert.ok(await evaluate(`document.querySelector('[data-paper-id="${paper.id}"]').parentElement.querySelector('a[data-paper-details]')!==null`));
+  }
+  await send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:false});
+  await send('Page.reload'); await waitFor(status(first,true));
+  await evaluate(`document.querySelector('[data-paper-id="${first.id}"]').scrollIntoView({block:'nearest',inline:'nearest'})`);
+  assert.ok(await evaluate('document.documentElement.scrollWidth<=innerWidth'));
+  await screenshot('paper-view-icons-mobile.png');
+  fs.writeFileSync(path.resolve(__dirname,'../temp/paper-view-checkpoint.json'), JSON.stringify({paperId:first.id, uniqueCode:first.uniqueCode, username:head}));
+  assert.deepEqual(exceptions, []);
+  console.log('PASS: closed/open envelopes beside the eye, personal server storage, reload/back navigation, preview exclusion, failed details, receipt retry, account isolation, desktop/mobile. Only disposable personal view metadata changed.');
+}
+
+async function gridSummaryChecks() {
+  await navigate('/login'); await waitFor("document.querySelector('#mock-user')");
+  const token = await login('demo_directorate_execution_unit_head');
+  const candidates = (await api('/api/v1/arrest-orders/candidates?size=20', token)).content;
+  assert.ok(candidates.length >= 2, 'Need at least two eligible papers');
+  const legal = candidates.find(row => ['LEGAL', 'حقوقی'].includes(row.paper.taxpayerType));
+  assert.ok(legal, 'Need a legal candidate to check the legal restriction stage');
+  const route = '/execution-papers?search=' + encodeURIComponent(legal.paper.uniqueCode);
+  const preview = "document.querySelector('#paper-summary-heading')";
+  const loaded = "document.querySelector('#paper-summary-tab-1')";
+  const checkPreview = async count => {
+    await waitFor(loaded);
+    assert.equal(await evaluate("document.querySelectorAll('[class*=workflow] [class*=stepName]').length"), count);
+    assert.ok(await evaluate("document.querySelector('[aria-label=\"خلاصه اطلاعات بدهی\"]').textContent.includes('ریال')"));
+  };
+  await navigate(route); await waitFor("document.querySelectorAll('tbody input[type=checkbox]').length===1");
+  await evaluate("document.querySelector('tbody input[type=checkbox]').click()");
+  await checkPreview(7); await screenshot('grid-paper-summary-desktop.png');
+  await evaluate("document.querySelector('#paper-summary-tab-2').click()");
+  await waitFor("document.querySelector('[role=tabpanel]').textContent.includes('مؤدی حقوقی')");
+  await evaluate("document.querySelector('#paper-summary-tab-0').click()");
+  await waitFor("document.querySelector('[aria-label=\"جدول تاریخچه بدهی\"]')");
+  await evaluate("document.querySelector('#paper-summary-tab-4').click()");
+  await waitFor("document.querySelector('[role=tabpanel]').textContent.includes('RESTRICTION') || document.querySelector('[role=tabpanel]').textContent.includes('محدودیت')");
+  await evaluate("document.querySelector('button[aria-label=\"بستن خلاصه برگ اجرا\"]').click()");
+  assert.equal(await evaluate(`Boolean(${preview})`), false);
+  assert.equal(await evaluate("document.querySelector('tbody input[type=checkbox]').checked"), false);
+  const originalForward = forward;
+  let failDetail = true;
+  forward = async event => {
+    if (failDetail && new URL(event.request.url).pathname === '/api/v1/execution-papers/' + legal.paper.id) {
+      failDetail = false;
+      await send('Fetch.fulfillRequest', { requestId: event.requestId, responseCode: 500, responseHeaders: [{ name: 'Content-Type', value: 'application/json' }], body: Buffer.from(JSON.stringify({ message: 'خطای آزمایشی دریافت خلاصه' })).toString('base64') });
+    } else await originalForward(event);
+  };
+  await evaluate("document.querySelector('tbody input[type=checkbox]').click()");
+  await waitFor("document.querySelector('#paper-summary-heading')?.closest('section').textContent.includes('خطای آزمایشی دریافت خلاصه')");
+  await clickText('تلاش مجدد', 'section[aria-labelledby=paper-summary-heading] button');
+  await checkPreview(7);
+  await evaluate("document.querySelector('button[aria-label=\"بستن خلاصه برگ اجرا\"]').click()");
+  await evaluate("document.querySelector('button[aria-label=\"تنظیم نمایش فهرست\"]').click()");
+  await waitFor("document.querySelector('dialog[open]')");
+  await evaluate("Array.from(document.querySelectorAll('dialog[open] fieldset label')).find(el=>el.textContent==='سال').querySelector('input').click()");
+  await screenshot('grid-columns-desktop.png');
+  await evaluate("document.querySelector('button[aria-label=\"بستن تنظیم نمایش\"]').click()");
+  assert.equal(await evaluate("Array.from(document.querySelectorAll('thead th')).some(el=>el.textContent==='سال')"), false);
+  await send('Page.reload'); await waitFor("document.querySelector('tbody input[type=checkbox]')");
+  assert.equal(await evaluate("Array.from(document.querySelectorAll('thead th')).some(el=>el.textContent==='سال')"), false);
+  await login('admin'); await navigate(route); await waitFor("document.querySelector('tbody input[type=checkbox]')");
+  assert.equal(await evaluate("Array.from(document.querySelectorAll('thead th')).some(el=>el.textContent==='سال')"), true);
+  await login('demo_directorate_execution_unit_head'); await navigate('/execution-papers'); await waitFor("document.querySelectorAll('tbody input[type=checkbox]').length>=2");
+  await evaluate("document.querySelectorAll('tbody input[type=checkbox]')[0].click();document.querySelectorAll('tbody input[type=checkbox]')[1].click()");
+  assert.equal(await evaluate(`Boolean(${preview})`), false);
+  await evaluate("document.querySelectorAll('tbody input[type=checkbox]')[1].click()"); await waitFor(loaded);
+  await evaluate("document.querySelector('button[aria-label=\"صفحه بعد\"]').click()");
+  await waitFor("!document.querySelector('#paper-summary-heading') && !document.querySelector('tbody input:checked')");
+  await evaluate("document.querySelector('button[aria-label=\"صفحه قبل\"]').click()");
+  await waitFor("document.querySelector('tbody input[type=checkbox]') && !document.querySelector('tbody input:checked')");
+  await evaluate("document.querySelector('button[aria-label=\"تنظیم نمایش فهرست\"]').click()");
+  await evaluate("Array.from(document.querySelectorAll('dialog[open] fieldset input:checked')).forEach(el=>{if(!el.disabled)el.click();})");
+  assert.equal(await evaluate("document.querySelectorAll('dialog[open] fieldset input:checked').length"), 1);
+  await clickText('بازگردانی نمایش پیش‌فرض', 'dialog button');
+  await evaluate("document.querySelector('button[aria-label=\"بستن تنظیم نمایش\"]').click()");
+  await navigate('/arrest-orders'); await waitFor("document.querySelectorAll('tbody input[type=checkbox]').length>=2");
+  await evaluate('Array.from(document.querySelectorAll("tbody tr")).find(row=>row.textContent.includes(' + JSON.stringify(legal.paper.uniqueCode.replace(/\d/g, n => '۰۱۲۳۴۵۶۷۸۹'[n])) + ')).querySelector("input").click()');
+  await checkPreview(7); await screenshot('grid-arrest-summary-desktop.png');
+  const summary = await api('/api/v1/execution-papers/' + legal.paper.id, token);
+  assert.ok(summary.notification.paymentDeadline, 'Summary uses the same payment deadline as the workflow');
+  await evaluate("document.querySelector('thead input[type=checkbox]').click()");
+  assert.equal(await evaluate(`Boolean(${preview})`), false);
+  await clickText('صدور گروهی'); await waitFor("document.querySelector('dialog[open] #arrest-supervisor')");
+  await evaluate("document.querySelector('button[aria-label=\"بستن پنجره صدور\"]').click()");
+  await evaluate("document.querySelector('thead input[type=checkbox]').click()");
+  await evaluate("document.querySelector('tbody input[type=checkbox]').click()"); await waitFor(loaded);
+  await evaluate("document.querySelector('#arrest-tab-mine').click()");
+  await waitFor("!document.querySelector('#paper-summary-heading')");
+  const inbox = await api('/api/v1/arrest-orders?mine=true&size=20', token);
+  if (inbox.content.length) {
+    await waitFor("document.querySelector('tbody input[type=checkbox]')");
+    await evaluate("document.querySelector('tbody input[type=checkbox]').click()"); await waitFor(loaded);
+    const code = inbox.content[0].executionPaperCode.replace(/\d/g, n => '۰۱۲۳۴۵۶۷۸۹'[n]);
+    assert.ok(await evaluate('document.querySelector("#paper-summary-heading").textContent.includes(' + JSON.stringify(code) + ')'));
+    await evaluate("document.querySelector('button[aria-label=\"بستن خلاصه برگ اجرا\"]').click()");
+  }
+  await evaluate("document.querySelector('#arrest-tab-candidates').click()"); await waitFor("document.querySelector('tbody input[type=checkbox]')");
+  assert.equal(await evaluate("document.querySelectorAll('tbody input:checked').length"), 0);
+  await evaluate("document.querySelector('button[aria-label=\"تنظیم نمایش فهرست\"]').click()");
+  await evaluate("Array.from(document.querySelectorAll('dialog[open] fieldset label')).find(el=>el.textContent==='پایان مهلت پرداخت').querySelector('input').click()");
+  await evaluate("document.querySelector('button[aria-label=\"بستن تنظیم نمایش\"]').click()");
+  await send('Page.reload'); await waitFor("document.querySelector('tbody input[type=checkbox]')");
+  assert.equal(await evaluate("Array.from(document.querySelectorAll('thead th')).some(el=>el.textContent==='پایان مهلت پرداخت')"), false);
+  await evaluate("document.querySelector('button[aria-label=\"تنظیم نمایش فهرست\"]').click()"); await clickText('بازگردانی نمایش پیش‌فرض', 'dialog button'); await evaluate("document.querySelector('button[aria-label=\"بستن تنظیم نمایش\"]').click()");
+  const natural = candidates.find(row => ['NATURAL', 'حقیقی'].includes(row.paper.taxpayerType));
+  assert.ok(natural, 'Need a natural candidate to check the legal-only stage');
+  await navigate('/execution-papers?search=' + encodeURIComponent(natural.paper.uniqueCode));
+  await waitFor("document.querySelector('tbody input[type=checkbox]')");
+  await evaluate("document.querySelector('tbody input[type=checkbox]').click()"); await checkPreview(6);
+  assert.equal(await evaluate("Array.from(document.querySelectorAll('[class*=stepName]')).some(el=>el.textContent.includes('محدودیت'))"), false);
+  await navigate('/execution-papers/' + legal.paper.id); await waitFor("document.querySelector('#paper-tab-1')");
+  await evaluate("document.querySelector('#paper-tab-1').click()");
+  assert.equal(await evaluate("document.querySelectorAll('[class*=stepName]').length"), 7);
+  await send('Emulation.setDeviceMetricsOverride', { width:390, height:844, deviceScaleFactor:1, mobile:false });
+  await navigate(route); await waitFor("document.querySelector('tbody input[type=checkbox]')");
+  await evaluate("document.querySelector('tbody input[type=checkbox]').click()"); await checkPreview(7);
+  assert.ok(await evaluate('document.documentElement.scrollWidth<=innerWidth'));
+  await evaluate("document.querySelector('#paper-summary-heading').scrollIntoView()"); await screenshot('grid-paper-summary-mobile.png');
+  await navigate('/arrest-orders'); await waitFor("document.querySelector('tbody input[type=checkbox]')");
+  await evaluate("document.querySelector('tbody input[type=checkbox]').click()"); await waitFor(loaded);
+  assert.ok(await evaluate('document.documentElement.scrollWidth<=innerWidth'));
+  await evaluate("document.querySelector('#paper-summary-heading').scrollIntoView()"); await screenshot('grid-arrest-summary-mobile.png');
+  await evaluate("window.gridTestStorageSet=Storage.prototype.setItem; Storage.prototype.setItem=function(key,value){if(key.startsWith('vosol:grid:'))throw new DOMException('Test storage quota','QuotaExceededError'); return window.gridTestStorageSet.call(this,key,value);}");
+  await evaluate("document.querySelector('button[aria-label=\"تنظیم نمایش فهرست\"]').click()");
+  await evaluate("Array.from(document.querySelectorAll('dialog[open] fieldset label')).find(el=>el.textContent==='پایان مهلت پرداخت').querySelector('input').click()");
+  assert.ok(await evaluate("document.querySelector('dialog[open]').scrollWidth<=innerWidth"));
+  await evaluate("document.querySelector('button[aria-label=\"بستن تنظیم نمایش\"]').click()");
+  assert.equal(await evaluate("Array.from(document.querySelectorAll('#arrest-list-panel thead th')).some(el=>el.textContent==='پایان مهلت پرداخت')"), false);
+  await evaluate("Storage.prototype.setItem=window.gridTestStorageSet; delete window.gridTestStorageSet;");
+  await evaluate("document.querySelector('button[aria-label=\"تنظیم نمایش فهرست\"]').click()"); await clickText('بازگردانی نمایش پیش‌فرض', 'dialog button'); await evaluate("document.querySelector('button[aria-label=\"بستن تنظیم نمایش\"]').click()");
+  assert.deepEqual(exceptions, []);
+  console.log('PASS: single and multiple selection, shared real summary and tabs, legal-only stage, full detail page, paging/tab resets, bulk dialog, column persistence/account isolation/reset/storage-quota fallback, desktop/mobile. No process started.');
+}
+
 (async()=>{
   try {
     let tabs;
@@ -311,6 +492,8 @@ async function privacyChecks() {
     else if(process.argv.includes('--tehran-ready')) await tehranReadyChecks();
     else if(process.argv.includes('--views-only')) await viewChecks();
     else if(process.argv.includes('--privacy')) await privacyChecks();
+    else if(process.argv.includes('--grid-summary')) await gridSummaryChecks();
+    else if(process.argv.includes('--paper-views')) await paperViewChecks();
     else await checks();
   } catch(error){console.error(error.stack);process.exitCode=1;if(ws?.readyState===1){try{await screenshot('arrest-browser-failure.png');}catch{}}}
   finally{ws?.close();browser.kill();}

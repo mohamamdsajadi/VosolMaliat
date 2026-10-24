@@ -22,6 +22,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(properties = {"spring.datasource.url=jdbc:sqlite:file:paper-search-integration?mode=memory&cache=shared"})
@@ -34,6 +35,8 @@ class ExecutionPaperSearchIntegrationTest {
     @Autowired TaxAffairsOfficeRepository offices;
     @Autowired MockMvc http;
     @Autowired MockIdentityProvider identities;
+    @Autowired com.mparsict.vosolmaliat.domain.repository.ExecutionPaperViewRepository paperViews;
+    @Autowired com.mparsict.vosolmaliat.domain.repository.security.GroupPermissionRepository grants;
 
     @BeforeEach
     void papers() {
@@ -41,6 +44,65 @@ class ExecutionPaperSearchIntegrationTest {
         addPaper(false, "2026-08-31T00:00:00", "9007199254740993.01", "PAPER-2", "2222222222");
         addPaper(true, "2026-09-01T12:00:00", "9.1", "PAPER-3", "33333333333");
         em.flush(); em.clear();
+    }
+
+    @Test
+    void personalViewsAreExplicitDurableAndDoNotChangeWorkflow() throws Exception {
+        Long id = service.searchAll(criteria("PAPER-1", null, null, null, null, null), 0, 1).content().getFirst().id();
+        String head = "Bearer " + identities.login("demo_directorate_execution_unit_head").accessToken();
+        String admin = "Bearer " + identities.login("admin").accessToken();
+        http.perform(get("/api/v1/execution-papers").param("search", "PAPER-1").header("Authorization", head))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.lastViewedAt").isEmpty());
+        // Full details and inline previews share read APIs; reading alone never records a view.
+        http.perform(get("/api/v1/execution-papers/{id}", id).header("Authorization", head)).andExpect(status().isOk());
+        assertThat(paperViews.count()).isZero();
+        long auditCount = em.createQuery("select count(a) from AuditLog a", Long.class).getSingleResult();
+        http.perform(post("/api/v1/execution-papers/{id}/viewed", id).header("Authorization", head))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.lastViewedAt").isNotEmpty());
+        http.perform(post("/api/v1/execution-papers/{id}/viewed", id).header("Authorization", head)).andExpect(status().isOk());
+        assertThat(paperViews.count()).isEqualTo(1);
+        em.clear();
+        assertThat(em.find(ExecutionPaper.class, id).getCurrentState()).isEqualTo("UNASSIGNED");
+        assertThat(em.createQuery("select count(a) from AuditLog a", Long.class).getSingleResult()).isEqualTo(auditCount);
+        // Another login session retains the same user's record; another user has no record.
+        head = "Bearer " + identities.login("demo_directorate_execution_unit_head").accessToken();
+        http.perform(get("/api/v1/execution-papers/unassigned").param("search", "PAPER-1").header("Authorization", head))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.lastViewedAt['" + id + "']").isNotEmpty());
+        http.perform(get("/api/v1/execution-papers").param("search", "PAPER-1").header("Authorization", admin))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.lastViewedAt").isEmpty());
+        http.perform(post("/api/v1/execution-papers/{id}/viewed", id).header("Authorization", admin)).andExpect(status().isOk());
+        assertThat(paperViews.count()).isEqualTo(2);
+    }
+
+    @Test
+    void viewMetadataContainsOnlyTheCurrentPageAndTimestampsNeverMoveBackwards() throws Exception {
+        Long id = service.searchAll(criteria("PAPER-1", null, null, null, null, null), 0, 1).content().getFirst().id();
+        String token = identities.login("admin").accessToken();
+        http.perform(post("/api/v1/execution-papers/{id}/viewed", id).header("Authorization", "Bearer " + token)).andExpect(status().isOk());
+        var view = paperViews.findAll().getFirst();
+        String key = view.getUserKey(); long time = view.getLastViewedAtMillis();
+        paperViews.recordView(key, id, time - 10_000);
+        assertThat(paperViews.findByUserKeyAndExecutionPaper_Id(key, id).orElseThrow().getLastViewedAtMillis()).isEqualTo(time);
+        http.perform(get("/api/v1/execution-papers").param("search", "PAPER-2").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.lastViewedAt").isEmpty());
+        var paper = em.find(ExecutionPaper.class, id); paper.setCurrentState("ASSIGNED"); em.flush();
+        http.perform(get("/api/v1/execution-papers/assigned").param("search", "PAPER-1").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.lastViewedAt['" + id + "']").isNotEmpty());
+    }
+
+    @Test
+    void viewRecordingRejectsAnonymousMissingUnassignedAndUnauthorizedAccess() throws Exception {
+        Long id = service.searchAll(criteria("PAPER-1", null, null, null, null, null), 0, 1).content().getFirst().id();
+        http.perform(post("/api/v1/execution-papers/{id}/viewed", id)).andExpect(status().isUnauthorized());
+        String head = "Bearer " + identities.login("demo_directorate_execution_unit_head").accessToken();
+        http.perform(post("/api/v1/execution-papers/{id}/viewed", Long.MAX_VALUE).header("Authorization", head)).andExpect(status().isNotFound());
+        String officer = "Bearer " + identities.login("demo_execution_officer").accessToken();
+        http.perform(post("/api/v1/execution-papers/{id}/viewed", id).header("Authorization", officer)).andExpect(status().isForbidden());
+        for (String code : java.util.List.of("REPORT_VIEW", "EXECUTION_PAPER_DETAIL_VIEW"))
+            grants.findByGroupNameAndPermissionCode("DIRECTORATE_EXECUTION_UNIT_HEAD", code).ifPresent(grants::delete);
+        em.flush();
+        http.perform(post("/api/v1/execution-papers/{id}/viewed", id).header("Authorization", head)).andExpect(status().isForbidden());
+        assertThat(paperViews.count()).isZero();
     }
 
     @Test

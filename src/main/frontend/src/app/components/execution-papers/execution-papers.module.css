@@ -1,9 +1,9 @@
 main.workspace { padding-left: 28px; }
 .workspace input, .workspace select, .workspace button { font: inherit; }
 .workspace input:focus-visible, .workspace select:focus-visible, .workspace [role='region']:focus-visible, .workspace [role='tabpanel']:focus-visible { outline: 3px solid #5a92e0; outline-offset: 2px; }
-.workspace .toolbar { height: 92px; min-height: 92px; padding-block: 16px 20px; align-items: center; gap: 37px; flex-wrap: nowrap; }
+.workspace .toolbar { height: 92px; min-height: 92px; padding-block: 16px 20px; align-items: center; gap: 16px; flex-wrap: nowrap; }
 .toolbar > :first-child { flex: 1; min-width: 0; }
-.toolbar > :last-child { flex-shrink: 0; width: 155px; gap: 2px; font-size: 14px; }
+.toolbar > :last-child { flex-shrink: 0; width: auto; gap: 7px; font-size: 12px; }
 .workspace .detailToolbar { height: 77px; min-height: 77px; padding-block: 16px; flex-wrap: nowrap; gap: 20px; }
 .detailToolbar > :first-child { min-width: 0; flex: 1; }
 .detailToolbar > :last-child { flex-shrink: 0; font-size: 14px; }
@@ -16,9 +16,14 @@ main.workspace { padding-left: 28px; }
 .filterToggle span { display: flex; align-items: center; gap: 4px; }
 .filterToggle small { background: #3177d8; color: white; border-radius: 12px; padding-inline: 5px; font-size: 11px; }
 .pageTools { display: flex; gap: 4px; }
+.viewToolButton.columnsButton { display:flex; align-items:center; justify-content:center; gap:7px; width:auto; min-width:90px; padding:0 12px; font-size:12px; white-space:nowrap; }
+.resetColumns { padding:9px 12px; margin-top:16px; background:#f2f6fc; border:1px solid #dce6f2; border-radius:7px; color:#3177d8; font-size:12px; }
+.selectionCount { font-size:11px; color:#3177d8; }
+.listPanel.previewTable { height:auto; min-height:0; }
+.listPanel.previewTable > .tableScroll { max-height:285px; flex:0 1 auto; }
 .viewToolButton { display: grid; place-items: center; height: 56px; width: 56px; padding: 0; background: transparent; border: 0; border-radius: 12px; color: #363636 !important; }
 .viewToolButton:hover { background: #e8ebef; }
-.viewDialog { padding: 0; border: 0; background: transparent; color: #102742; width: 470px; max-width: calc(100vw - 32px); max-height: calc(100dvh - 32px); border-radius: 16px; box-shadow: 0 16px 60px #10274233; }
+.viewDialog { inset:0; margin:auto; padding: 0; border: 0; background: transparent; color: #102742; width: 470px; max-width: calc(100vw - 32px); max-height: calc(100dvh - 32px); border-radius: 16px; box-shadow: 0 16px 60px #10274233; }
 .viewDialog::backdrop { background: #10274266; }
 .viewDialog > div { padding: 24px; background: white; }
 .viewDialog h2 { font-size: 18px; margin: 4px 0 20px !important; padding-inline-end: 20px; }
@@ -28,8 +33,9 @@ main.workspace { padding-left: 28px; }
 .viewDialog legend { padding-inline: 8px; font-size: 13px; }
 .settingOption { display: flex; align-items: center; gap: 8px; font-size: 13px; }
 .settingOption input { accent-color: #3177d8; }
-.entryLink { display: inline-block; padding: 8px 12px; color: #3177d8 !important; background: #eaf1fb; border-radius: 8px; margin-top: 20px; }
-.issueButton { width: 130px; height: 40px; border: 0; border-radius: 8px; display: flex; align-items: center; justify-content: center; gap: 3px; background: #3177d8; color: #f1f6fb !important; font-size: 14px !important; }
+.tableToolbar.issuanceToolbar { height:auto; min-height:40px; flex-basis:auto; }
+.issuanceTools { flex-wrap:wrap; }
+.issueButton { width: 130px; height: 40px; border: 0; border-radius: 8px; display: flex; align-items: center; justify-content: center; gap: 3px; background: #3177d8; color: #f1f6fb !important; font-size: 14px !important; text-decoration:none; flex-shrink:0; }
 .filterPanel { background: white; border: 1px solid #e8ebef; border-radius: 12px; margin-bottom: 16px; padding-inline: 16px; }
 .filters { position: relative; display: flex; align-items: flex-end; gap: 24px; min-height: 84px; padding: 20px 0 16px; }
 .searchBox { position: relative; display: flex; min-width: 0; height: 56px; background: white; border: .75px solid #e8ebef; border-radius: 12px; }
@@ -79,6 +85,12 @@ main.workspace { padding-left: 28px; }
 .rowDetailsButton:focus-visible { outline: 3px solid #5a92e0; outline-offset: 2px; }
 .rowDetailsButton:hover { background: #dce9fb; }
 .paperRowActions { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.paperViewStatus { display:grid; place-items:center; flex-shrink:0; width:24px; height:24px; cursor:help; }
+.paperViewStatus svg { width:21px; height:21px; }
+.paperUnread { color:#3177d8; }
+.paperViewed { color:#8391a2; }
+.viewReceiptError { display:flex; align-items:center; flex-wrap:wrap; gap:12px; padding:12px 16px; margin-bottom:12px; border:1px solid #e6c8b1; border-radius:8px; background:#fff9f2; color:#85603d; font-size:12px; }
+.viewReceiptError button { border:1px solid #d9bfa7; border-radius:6px; padding:5px 10px; background:white; }
 .paperTable td .paperRowActions .rowDetailsButton { margin-inline: 0; flex-shrink: 0; }
 .paperTable td .paperRowActions > button { flex-shrink: 0; }
 .paperTable .viewDialog { white-space: normal; text-align: start; cursor: default; }

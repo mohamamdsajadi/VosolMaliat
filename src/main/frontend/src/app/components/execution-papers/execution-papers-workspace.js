@@ -1,7 +1,6 @@
 'use client';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { apiJson } from '../../lib/api';
 import { isAdminUser } from '../../lib/navigation';
 import { PAPER_FILTER_DEFAULTS, PAPER_STATES, paperQuery, identifier } from '../../lib/execution-papers';
@@ -12,13 +11,12 @@ import { PrintExecutionPaper } from './paper-document';
 import Icon from './paper-icon';
 import PaperViewTools, { ViewIcon } from './paper-view-tools';
 import PaperTable, { PAPER_LIST_COLUMNS } from './paper-table';
-import PaperReferralAction from './paper-referral-action';
-import PaperReferralDialog from './paper-referral-dialog';
-import { canReferExecutionPaper } from '../../lib/task-referral';
+import PaperSummaryPanel from './paper-summary-panel';
+import PaperViewReceipt from './paper-view-receipt';
+import { useGridSelection, useGridView } from '../../lib/grid-view';
 import styles from './execution-papers.module.css';
 
 const PAPER_NAVIGATION = [
-  { key: 'referral', label: 'ارجاع به گروه اجرائیات', icon: 'referral' },
   { key: 'execution', label: 'اقدامات اجرایی', icon: 'list' },
   { key: 'auction', label: 'مزایده و فروش', icon: 'gavel' },
   { key: 'debt', label: 'تعیین تکلیف بدهی', icon: 'receipt' },
@@ -57,17 +55,14 @@ function initialQuery() {
 }
 
 export default function ExecutionPapersWorkspace({ selectedPaperId }) {
-  const router = useRouter();
   const [query, setQuery] = useState(initialQuery);
   const [searchText, setSearchText] = useState(query.search);
   const [advancedOpen, setAdvancedOpen] = useState(false);
-  const [hiddenColumns, setHiddenColumns] = useState([]);
-  const [dense, setDense] = useState(true);
   const [refreshingRelated, setRefreshingRelated] = useState(false);
   const [relatedRefreshError, setRelatedRefreshError] = useState('');
-  const [selection, setSelection] = useState({ key: '', ids: new Set() });
-  const [referralPapers, setReferralPapers] = useState(null);
   const user = useResource('/api/v1/auth/me');
+  const view = useGridView('execution-papers', user.data, PAPER_LIST_COLUMNS);
+  const { hiddenColumns, dense } = view;
   const stats = useResource('/api/v1/dashboard/stats');
   const hasPermission = permission => isAdminUser(user.data) || (user.data?.allowedActions || []).includes(permission) || (user.data?.localBusinessPermissions || []).includes(permission);
   const canList = hasPermission('REPORT_VIEW') || hasPermission('EXECUTION_PAPER_LIST_VIEW');
@@ -75,33 +70,32 @@ export default function ExecutionPapersWorkspace({ selectedPaperId }) {
   const canTrace = ['REPORT_VIEW', 'AUDIT_VIEW', 'EXECUTION_PAPER_TRACE_VIEW'].some(hasPermission);
   const tasks = useResource('/api/v1/cartable/my-tasks', hasPermission('TASK_VIEW_OWN'));
   const params = paperQuery(query);
-  // Discard the previous view's selection, including when returning to that view.
-  if (selection.key !== params) setSelection({ key: params, ids: new Set() });
   const requestParams = new URLSearchParams(params);
   requestParams.delete('scope');
   const list = useResource(`/api/v1/execution-papers${query.scope ? `/${query.scope}` : ''}?${requestParams}`, canList && !selectedPaperId);
+  const refreshList = list.retry;
   const paperPath = `/api/v1/execution-papers/${encodeURIComponent(selectedPaperId || '')}`;
   const detail = useResource(paperPath, Boolean(selectedPaperId && user.data));
   const trace = useResource(`${paperPath}/trace`, Boolean(selectedPaperId && user.data && canTrace));
   const related = useResource(`${paperPath}/related-persons`, Boolean(selectedPaperId && detail.data?.taxpayer?.type === 'LEGAL'));
   const external = useResource(`${paperPath}/external-requests`, Boolean(selectedPaperId && detail.data));
   const papers = list.data?.content || [];
+  const selection = useGridSelection(`${params}:${list.updatedAt || ''}`, papers.map(paper => paper.id));
+  const previewPaper = selection.ids.size === 1 ? papers.find(paper => selection.ids.has(paper.id)) : null;
   const total = list.data?.totalElements ?? 0;
   const pages = list.data?.totalPages ?? 0;
-  const canRefer = canReferExecutionPaper(user.data);
-  const selectedIds = new Set(papers.filter(paper => selection.key === params && selection.ids.has(paper.id)).map(paper => paper.id));
-  const columns = [...(canRefer ? [{ key: 'selection', label: 'انتخاب', width: 38 }] : []), ...PAPER_LIST_COLUMNS.filter(column => !hiddenColumns.includes(column.key)).map(column => column.key === 'details' && canRefer
-    ? { ...column, label: 'عملیات', width: 80 } : column)];
-  const togglePaper = paper => setSelection({ key: params, ids: selectedIds.has(paper.id) ? new Set([...selectedIds].filter(id => id !== paper.id)) : new Set([...selectedIds, paper.id]) });
-  const retryList = list.retry;
-  const retryTasks = tasks.retry;
-  const referralCompleted = useCallback(ids => {
-    setSelection(current => ({ ...current, ids: new Set([...current.ids].filter(id => !ids.includes(id))) }));
-    if (ids.length) { retryList(); retryTasks(); }
-  }, [retryList, retryTasks]);
+  const columns = [{ key: 'selection', label: 'انتخاب', width: 45 }, ...PAPER_LIST_COLUMNS.filter(column => !hiddenColumns.includes(column.key))];
   const filterCount = Object.entries(PAPER_FILTER_DEFAULTS).filter(([key]) => key !== 'search' && query[key]).length + Number(Boolean(query.scope));
 
   useEffect(() => { window.history.replaceState(null, '', `${window.location.pathname}?${params}`); }, [params]);
+  useEffect(() => {
+    if (selectedPaperId || !canList) return;
+    const refreshViews = () => refreshList();
+    const restore = event => { if (event.persisted) refreshList(); };
+    window.addEventListener('execution-paper-viewed', refreshViews);
+    window.addEventListener('pageshow', restore);
+    return () => { window.removeEventListener('execution-paper-viewed', refreshViews); window.removeEventListener('pageshow', restore); };
+  }, [selectedPaperId, canList, refreshList]);
   useEffect(() => {
     const timer = setTimeout(() => setQuery(current => current.search === searchText.trim() ? current : { ...current, search: searchText.trim(), page: 0 }), 350);
     return () => clearTimeout(timer);
@@ -130,17 +124,18 @@ export default function ExecutionPapersWorkspace({ selectedPaperId }) {
       <button type="submit" aria-label="جستجو"><Icon name="search" /></button>
     </form>
     <button className={styles.filterToggle} aria-expanded={advancedOpen} aria-controls="paper-filters" onClick={() => setAdvancedOpen(!advancedOpen)}><span>فیلترها{filterCount > 0 && <small>{identifier(filterCount)}</small>}</span><ViewIcon name="filter" /></button>
-    <PaperViewTools columns={PAPER_LIST_COLUMNS} hiddenColumns={hiddenColumns} onToggleColumn={key => setHiddenColumns(current => current.includes(key) ? current.filter(item => item !== key) : [...current, key])} dense={dense} onDenseChange={setDense} createAllowed={createAllowed} />
+    <PaperViewTools columns={PAPER_LIST_COLUMNS} hiddenColumns={hiddenColumns} onToggleColumn={view.toggleColumn} dense={dense} onDenseChange={view.setDense} onReset={view.reset} />
   </div>;
   const breadcrumbs = <nav className={styles.breadcrumbs} aria-label="مسیر صفحه"><Link href="/">سامانه جامع وصول و اجرا</Link><span aria-hidden="true">/</span><Link href={`/execution-papers?${params}`}>برگ‌های اجرا</Link><span aria-hidden="true">/</span><span aria-current="page">برگ اجرا <bdi>{identifier(detail.data?.summary?.uniqueCode || selectedPaperId)}</bdi></span></nav>;
 
   return <>
     <FigmaShell user={user.data} active="execution-papers" data={{ stats: stats.data, tasks: tasks.data || [], tasksError: tasks.error }} loading={stats.loading}
       toolbar={selectedPaperId ? breadcrumbs : toolbar} toolbarClassName={selectedPaperId ? styles.detailToolbar : styles.toolbar} mainClassName={styles.workspace} navigationItems={PAPER_NAVIGATION} papersLabel="برگ‌های اجرا">
-      {user.error ? <Retry message="دریافت حساب کاربری ناموفق بود." onRetry={user.retry} /> : selectedPaperId ?
+      {user.error ? <Retry message="دریافت حساب کاربری ناموفق بود." onRetry={user.retry} /> : selectedPaperId ? <>
+        {detail.data && !detail.loading && !detail.error && <PaperViewReceipt key={`${user.data?.username}:${detail.data.summary.id}`} paperId={detail.data.summary.id} />}
         <PaperDetailPanel key={selectedPaperId} resource={detail} trace={trace} canTrace={canTrace} canViewArrest={hasPermission('ARREST_ORDER_VIEW')} related={{ ...related, error: relatedRefreshError || related.error }} external={external}
           onPrint={print} onRefreshRelated={refreshRelated} refreshingRelated={refreshingRelated} hrefFor={paperHref}
-          taskHref={hasPermission('TASK_VIEW_OWN') && detail.data ? `/tasks?executionPaper=${encodeURIComponent(detail.data.summary.uniqueCode)}` : null} /> : <>
+          taskHref={hasPermission('TASK_VIEW_OWN') && detail.data ? `/tasks?executionPaper=${encodeURIComponent(detail.data.summary.uniqueCode)}` : null} /></> : <>
         {advancedOpen && <div id="paper-filters" className={styles.filterPanel}>
           <h2 className={styles.srOnly}>فیلترهای برگ اجرا</h2>
           <div className={styles.filters}>
@@ -161,27 +156,20 @@ export default function ExecutionPapersWorkspace({ selectedPaperId }) {
           </div>
         </div>}
 
-        <section className={styles.listPanel} aria-label="فهرست برگ‌های اجرا" aria-busy={list.loading || user.loading}>
-          {canRefer && <div className={styles.bulkToolbar}>
-            <span aria-live="polite">{identifier(selectedIds.size)} برگ انتخاب شده <small>انتخاب در همین صفحه</small></span>
-            <div><button type="button" className={styles.bulkReferral} disabled={!selectedIds.size || list.loading} onClick={() => setReferralPapers(papers.filter(paper => selectedIds.has(paper.id)))}><ViewIcon name="referral" />ارجاع گروهی</button>
-              <button type="button" disabled={!selectedIds.size} onClick={() => setSelection({ key: params, ids: new Set() })}>لغو انتخاب</button></div>
-          </div>}
-          <div className={styles.tableToolbar}>
-            <div className={styles.tableTools}><button className={styles.iconButton} aria-label="بروزرسانی فهرست" onClick={list.retry} disabled={list.loading || !canList}><Icon name="refresh" /></button><RefreshStatus updatedAt={list.updatedAt} loading={list.loading || user.loading} error={list.error} /></div>
+        <section className={`${styles.listPanel} ${previewPaper ? styles.previewTable : ''}`} aria-label="فهرست برگ‌های اجرا" aria-busy={list.loading || user.loading}>
+          <div className={`${styles.tableToolbar} ${createAllowed ? styles.issuanceToolbar : ''}`}>
+            <div className={`${styles.tableTools} ${createAllowed ? styles.issuanceTools : ''}`}>{createAllowed && <Link className={styles.issueButton} href="/admin/data-entry/execution-paper"><Icon name="add" />صدور برگ اجرا</Link>}<button className={styles.iconButton} aria-label="بروزرسانی فهرست" onClick={list.retry} disabled={list.loading || !canList}><Icon name="refresh" /></button><RefreshStatus updatedAt={list.updatedAt} loading={list.loading || user.loading} error={list.error} />{!!selection.ids.size && <span className={styles.selectionCount} role="status">{identifier(selection.ids.size)} برگ انتخاب شده{selection.ids.size > 1 && '؛ برای خلاصه فقط یک برگ انتخاب کنید'}</span>}</div>
             <div className={styles.pagination}>
               <span aria-live="polite">{list.loading ? '…' : total ? `${identifier(query.page * query.size + 1)} تا ${identifier(Math.min(query.page * query.size + papers.length, total))} از ${identifier(total)} مورد` : '۰ نتیجه'}</span>
               <button aria-label="صفحه قبل" disabled={query.page === 0 || list.loading} onClick={() => setQuery(current => ({ ...current, page: current.page - 1 }))}><Icon name="previous" /></button>
               <button aria-label="صفحه بعد" disabled={query.page + 1 >= pages || list.loading} onClick={() => setQuery(current => ({ ...current, page: current.page + 1 }))}><Icon name="next" /></button>
             </div>
           </div>
-          <PaperTable papers={papers} columns={columns} query={query} onSort={changeSort} onOpen={id => router.push(paperHref(id))} hrefFor={paperHref}
-            selection={canRefer ? { ids: selectedIds, toggle: togglePaper, toggleAll: () => setSelection({ key: params, ids: selectedIds.size === papers.length ? new Set() : new Set(papers.map(paper => paper.id)) }) } : null}
-            renderReferral={canRefer ? paper => <PaperReferralAction paper={paper} onOpen={setReferralPapers} /> : undefined}
-            dense={dense} loading={user.loading || list.loading} canView={canList} canViewDetail={canViewDetail} error={list.error} onRetry={list.retry} />
+          <PaperTable papers={papers} columns={columns} query={query} onSort={changeSort} onOpen={selection.toggle} hrefFor={paperHref} selection={{ ...selection, toggle: paper => selection.toggle(paper.id) }}
+            dense={dense} loading={user.loading || list.loading} canView={canList} canViewDetail={canViewDetail} error={list.error} onRetry={list.retry} viewedAt={list.data?.lastViewedAt} />
         </section>
+        {previewPaper && <PaperSummaryPanel key={previewPaper.id} paperId={previewPaper.id} user={user.data} onClose={selection.clear} revision={list.updatedAt} />}
       </>}
-      {referralPapers && <PaperReferralDialog papers={referralPapers} user={user.data} onClose={() => setReferralPapers(null)} onSuccess={referralCompleted} />}
     </FigmaShell>
     {selectedPaperId && detail.data && <PrintExecutionPaper data={detail.data} />}
   </>;

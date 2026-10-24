@@ -16,7 +16,11 @@ export default function PaperArrestAttachment({ paperId }) {
     return () => abort.abort();
   }, [paperId, retry]);
   const order = state.data;
+  if (!order) return <div className={styles.attachmentNotice} role={state.error ? 'alert' : 'status'}>
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 11v6M12 7v1" /></svg>
+    <span>{state.loading ? 'در حال دریافت دستور مرتبط…' : state.error ? <>{state.error} <button type="button" onClick={() => setRetry(value => value + 1)}>تلاش مجدد</button></> : <>دستور بازداشتی برای این برگ ثبت نشده است. <Link href="/arrest-orders">بررسی برگ‌های آماده صدور ←</Link></>}</span>
+  </div>;
   return <section className={styles.attachment} aria-label="دستور بازداشت پیوست برگ اجرا"><h2>دستور بازداشت اموال</h2>
-    {state.loading ? <p role="status">در حال دریافت دستور مرتبط…</p> : state.error ? <p role="alert">{state.error} <button className={styles.secondary} onClick={() => setRetry(value => value + 1)}>تلاش مجدد</button></p> : order ? <><div><span>{order.issuanceStatus === 'ISSUED' ? `شماره دستور: ${digits(order.letterNumber)}` : 'پیش‌نویس در انتظار صدور'}</span><span>{STAGES[order.stage]}</span><span>تاریخ ارجاع: {arrestDate(order.referredAt)}</span><span>مقصد: {order.referralDestination}</span></div><Link className={styles.paperLink} href={`/arrest-orders?order=${order.id}`}>مشاهده نامه و گردش ارجاع ←</Link></> : <p>دستور بازداشتی برای این برگ ثبت نشده است. <Link className={styles.paperLink} href="/arrest-orders">بررسی برگ‌های آماده صدور ←</Link></p>}
+    <div><span>{order.issuanceStatus === 'ISSUED' ? `شماره دستور: ${digits(order.letterNumber)}` : 'پیش‌نویس در انتظار صدور'}</span><span>{STAGES[order.stage]}</span><span>تاریخ ارجاع: {arrestDate(order.referredAt)}</span><span>مقصد: {order.referralDestination}</span></div><Link className={styles.paperLink} href={`/arrest-orders?order=${order.id}`}>مشاهده نامه و گردش ارجاع ←</Link>
   </section>;
 }

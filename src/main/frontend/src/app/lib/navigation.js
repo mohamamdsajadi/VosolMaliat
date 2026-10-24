@@ -1,4 +1,5 @@
 export const NAV_ITEMS = [
+  { key: 'legal-restrictions', href: '/legal-restrictions', label: 'محدودیت‌های قانونی', helper: 'درخواست‌ها، اشخاص مشمول و سوابق', permissions: ['LEGAL_RESTRICTION_VIEW'] },
   { key: 'arrest', href: '/arrest-orders', label: 'دستور بازداشت اموال', helper: 'صدور و پیگیری ارجاع‌ها', permissions: ['ARREST_ORDER_VIEW'] },
   { key: 'role-permissions', href: '/admin/permissions', label: 'نقش‌ها و دسترسی‌ها', helper: 'مدیریت دسترسی نقش‌ها', permissions: ['GROUP_PERMISSION_VIEW', 'PERMISSION_VIEW'], requiresAll: true },
   {

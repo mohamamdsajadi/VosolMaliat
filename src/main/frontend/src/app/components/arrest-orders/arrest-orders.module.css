@@ -36,6 +36,11 @@
 .table td { border-bottom:1px solid #edf1f4; padding:17px 15px; line-height:1.8; vertical-align:middle; }
 .table tbody tr:nth-child(even) { background:#fcfdfe; }
 .table tbody tr:hover { background:#f3fbfb; }
+.table tbody tr[aria-selected=true] { background:#e5f4f5; }
+.table tbody tr { cursor:pointer; }
+.denseTable td { padding-block:11px; }
+.withPreview .tableScroll { max-height:285px; }
+.withPreview .table th { position:sticky; top:0; z-index:2; }
 .table input { accent-color:#00858c; width:16px; height:16px; cursor:pointer; }
 .table td strong,.table td small { display:block; }
 .table td small { font-size:10px; color:#7a909c; margin-top:4px; }
@@ -68,6 +73,10 @@
 .attachment h2 { color:#1c6e76; font-size:15px; margin:0 0 10px; }
 .attachment>div { display:flex; gap:12px 24px; flex-wrap:wrap; margin-bottom:12px; color:#557482; }
 .attachment a { color:#00858c; }
+.attachmentNotice { display:flex; align-items:center; gap:8px; width:fit-content; max-width:calc(100% - 36px); box-sizing:border-box; padding:7px 12px; margin:12px 18px; border:1px solid #d5e8eb; border-radius:7px; background:#f4fafb; color:#587580; font-size:12px; line-height:1.8; }
+.attachmentNotice svg { flex-shrink:0; color:#34808c; }
+.attachmentNotice a { color:#00858c; font-weight:600; white-space:normal; }
+.attachmentNotice button { padding:0 4px; border:0; background:none; color:#00858c; font:inherit; cursor:pointer; text-decoration:underline; }
 .orderHeading { display:flex; justify-content:space-between; align-items:center; gap:15px; margin-bottom:18px; }
 .orderHeading h2 { margin:0; font-size:20px; color:#19485d; }
 .orderHeading p { color:#758995; margin-bottom:0; font-size:13px; }

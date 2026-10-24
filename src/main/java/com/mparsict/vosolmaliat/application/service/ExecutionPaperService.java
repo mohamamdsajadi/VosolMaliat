@@ -557,6 +557,7 @@ public class ExecutionPaperService {
 
         Map<String, Object> notification = new LinkedHashMap<>();
         executionPaperNotificationRepository.findByExecutionPaperId(ep.getId()).ifPresent(n -> {
+            notification.put("paymentDeadline", n.paymentDeadline());
             notification.put("electronicNotificationDate", n.getElectronicNotificationDate());
             notification.put("informStatus", n.getInformStatus());
             notification.put("informStatusLabel", ExecutionPaperState.labelOf(n.getInformStatus()));

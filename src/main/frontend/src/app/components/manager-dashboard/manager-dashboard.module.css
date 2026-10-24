@@ -180,3 +180,4 @@
 @media print {
   :global(body.execution-printing) .dashboard { display: none !important; }
 }
+.navParent{width:100%;background:transparent;border:0;text-align:right;font:inherit;cursor:pointer}.chevron,.chevronOpen{margin-right:auto;flex-shrink:0;transition:transform .15s}.chevronOpen{transform:rotate(180deg)}.subNavigation{display:flex;flex-direction:column;padding:0 18px 7px;gap:3px}.subNavItem{display:flex;align-items:center;gap:9px;min-height:42px;padding:9px 12px;font-size:12px;line-height:1.8;border-radius:7px}.subNavItem svg{flex-shrink:0}.subNavItem>span>small{display:block;font-size:10px;color:#9bb0c7}.subNavItem:hover{background:#ffffff08}.subNavActive{background:#35577e;color:#fff}.subNavDisabled{color:#99aabd;cursor:default}.subNavDisabled:hover{background:transparent}.soon{margin-right:auto;font-size:9px;color:#94a5b9;border:1px solid #52677e;border-radius:4px;padding:0 4px;white-space:nowrap}

@@ -3,12 +3,15 @@ import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { apiJson } from '../../lib/api';
 import { STAGES, EVENT_LABELS, canStartArrest, hasArrestPermission, arrestDate, arrestTargets, actOnArrestOrder, digits } from '../../lib/arrest-orders';
-import { formatDashboardNumber as money } from '../../lib/manager-dashboard';
+import { useGridSelection, useGridView } from '../../lib/grid-view';
 import FigmaShell from '../manager-dashboard/figma-shell';
 import DashboardIcon from '../manager-dashboard/dashboard-icon';
 import PaperIcon from '../execution-papers/paper-icon';
 import ArrestStartDialog from './arrest-dialog';
 import ArrestLetter, { printArrestLetter } from './arrest-letter';
+import PaperSummaryPanel from '../execution-papers/paper-summary-panel';
+import PaperViewTools from '../execution-papers/paper-view-tools';
+import ArrestOrderTable, { CANDIDATE_COLUMNS, ORDER_COLUMNS } from './arrest-order-table';
 import styles from './arrest-orders.module.css';
 
 function Icon({ name }) {
@@ -34,7 +37,6 @@ export default function ArrestOrdersWorkspace() {
   const [page, setPage] = useState(0);
   const [stage, setStage] = useState('');
   const [revision, setRevision] = useState(0);
-  const [selectedIds, setSelectedIds] = useState([]);
   const [dialogPapers, setDialogPapers] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(() => typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('order') : null);
   const [notice, setNotice] = useState('');
@@ -46,11 +48,11 @@ export default function ArrestOrdersWorkspace() {
   const params = new URLSearchParams({ page, size: 20, search: query, ...(tab !== 'candidates' ? { stage, mine: tab === 'mine', history: tab === 'all' } : {}) });
   const list = useResource(`/api/v1/arrest-orders${tab === 'candidates' ? '/candidates' : ''}?${params}`, canView && !selectedOrder, revision);
   const detail = useResource(`/api/v1/arrest-orders/${encodeURIComponent(selectedOrder || '')}`, canView && !!selectedOrder, revision);
-  const refresh = useCallback(() => { setRevision(value => value + 1); setSelectedIds([]); }, []);
+  const refresh = useCallback(() => { setRevision(value => value + 1); }, []);
   useEffect(() => {
     const normalized = search.trim().replace(/[۰-۹]/g, n => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(n)));
     if (normalized === query) return;
-    const timer = setTimeout(() => { setQuery(normalized); setPage(0); setSelectedIds([]); }, 300);
+    const timer = setTimeout(() => { setQuery(normalized); setPage(0); }, 300);
     return () => clearTimeout(timer);
   }, [search, query]);
   useEffect(() => {
@@ -60,10 +62,14 @@ export default function ArrestOrdersWorkspace() {
   const openOrder = id => { setSelectedOrder(String(id)); window.history.pushState(null, '', `/arrest-orders?order=${encodeURIComponent(id)}`); };
   const closeOrder = () => { setSelectedOrder(null); window.history.pushState(null, '', '/arrest-orders'); refresh(); };
   const rows = list.data?.content || [];
-  const papers = tab === 'candidates' ? rows.map(row => row.paper) : [];
-  const selected = papers.filter(paper => selectedIds.includes(paper.id));
-  const changeTab = value => { setTab(value); setPage(0); setStage(''); setSelectedIds([]); setNotice(''); };
-  const toggle = id => setSelectedIds(ids => ids.includes(id) ? ids.filter(value => value !== id) : [...ids, id]);
+  const selection = useGridSelection(`${tab}:${params}:${revision}`, rows.map(row => tab === 'candidates' ? row.paper.id : row.id));
+  const selectedRows = rows.filter(row => selection.ids.has(tab === 'candidates' ? row.paper.id : row.id));
+  const selected = tab === 'candidates' ? selectedRows.map(row => row.paper) : [];
+  const preview = selectedRows.length === 1 ? selectedRows[0] : null;
+  const allColumns = tab === 'candidates' ? CANDIDATE_COLUMNS : ORDER_COLUMNS;
+  const view = useGridView(tab === 'candidates' ? 'arrest-candidates' : 'arrest-orders', user.data, allColumns);
+  const columns = allColumns.filter(column => !view.hiddenColumns.includes(column.key));
+  const changeTab = value => { setTab(value); setPage(0); setStage(''); setNotice(''); };
   const error = user.error || list.error || detail.error;
   return <FigmaShell user={user.data} active="arrest" toolbar={<nav aria-label="مسیر صفحه"><Link href="/">سامانه جامع وصول و اجرا</Link> / دستور بازداشت اموال</nav>}>
     <section className={styles.workspace} aria-busy={user.loading || (selectedOrder ? detail.loading : list.loading)}>
@@ -75,15 +81,13 @@ export default function ArrestOrdersWorkspace() {
         {detail.loading ? <div className={styles.empty} role="status">در حال دریافت دستور و سوابق ارجاع…</div> : detail.data && <OrderDetail detail={detail.data} onChanged={refresh} />}
       </> : <>
         <div className={styles.tabs} role="tablist" aria-label="فهرست دستورهای بازداشت">{tabs.map(([value, label]) => <button key={value} role="tab" id={`arrest-tab-${value}`} aria-controls="arrest-list-panel" aria-selected={tab === value} tabIndex={tab === value ? 0 : -1} onClick={() => changeTab(value)} onKeyDown={event => { const keys = tabs.map(([key]) => key); if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) { event.preventDefault(); const index = event.key === 'Home' ? 0 : event.key === 'End' ? keys.length - 1 : (keys.indexOf(tab) + (event.key === 'ArrowLeft' ? 1 : keys.length - 1)) % keys.length; changeTab(keys[index]); document.getElementById(`arrest-tab-${keys[index]}`)?.focus(); } }}>{label}</button>)}</div>
-        <section id="arrest-list-panel" role="tabpanel" aria-labelledby={`arrest-tab-${tab}`} className={styles.card}>
-          <div className={styles.listToolbar}><label className={styles.search}><Icon name="search" /><input aria-label={tab === 'candidates' ? 'جستجوی برگ اجرا، مؤدی یا شناسه ملی' : 'جستجوی شماره برگ اجرا'} placeholder={tab === 'candidates' ? 'شماره برگ اجرا، نام مؤدی یا شناسه ملی…' : 'جستجوی شماره برگ اجرا…'} value={search} onChange={event => setSearch(event.target.value)} /></label>{tab !== 'candidates' && <select aria-label="فیلتر مرحله فرایند" value={stage} onChange={event => { setStage(event.target.value); setPage(0); }}><option value="">همه مراحل</option>{Object.entries(STAGES).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select>}<span>{list.loading ? 'در حال دریافت…' : `${digits(list.data?.totalElements || 0)} مورد`}</span></div>
-          {tab === 'candidates' && canStart && <div className={styles.bulkBar}><span>{selected.length ? `${digits(selected.length)} برگ انتخاب شده` : '۰ برگ انتخاب شده'}</span><button className={styles.primary} disabled={!selected.length || list.loading} onClick={() => setDialogPapers(selected)}><Icon name="plus" />صدور گروهی{selected.length ? ` (${digits(selected.length)})` : ''}</button></div>}
-          {list.loading ? <div className={styles.loading} role="status">{[1, 2, 3, 4].map(n => <div key={n} />)}<span>در حال دریافت فهرست…</span></div> : list.error ? <div className={styles.empty}>فهرست دریافت نشد. دوباره تلاش کنید.</div> : !rows.length ? <div className={styles.empty}><Icon name="document" /><h2>{tab === 'candidates' ? 'برگ آماده صدور یافت نشد' : tab === 'mine' ? 'دستوری در انتظار اقدام شما نیست' : 'سابقه دستوری برای شما یافت نشد'}</h2></div> : <div className={styles.tableScroll}><table className={styles.table}><thead><tr>{tab === 'candidates' && canStart && <th><input type="checkbox" aria-label="انتخاب همه برگ‌های این صفحه" checked={!!papers.length && selected.length === papers.length} ref={el => { if (el) el.indeterminate = selected.length > 0 && selected.length < papers.length; }} onChange={event => setSelectedIds(event.target.checked ? papers.map(paper => paper.id) : [])} /></th>}<th>برگ اجرا / مؤدی</th><th>بدهی باقیمانده (ریال)</th>{tab === 'candidates' ? <><th>تاریخ ابلاغ</th><th>پایان مهلت پرداخت</th><th>وضعیت</th></> : <><th>تاریخ ارجاع</th><th>مقصد ارجاع</th><th>وضعیت صدور</th><th>مرحله جاری</th></>}<th>عملیات</th></tr></thead><tbody>{rows.map(item => {
-            const paper = tab === 'candidates' ? item.paper : item;
-            return <tr key={paper.id}>{tab === 'candidates' && canStart && <td><input type="checkbox" aria-label={`انتخاب برگ ${paper.uniqueCode}`} checked={selectedIds.includes(paper.id)} onChange={() => toggle(paper.id)} /></td>}<td><Link className={styles.paperLink} href={`/execution-papers/${tab === 'candidates' ? paper.id : paper.executionPaperId}`}>{digits(paper.uniqueCode || paper.executionPaperCode)}</Link><strong>{paper.taxpayerName || '—'}</strong><small>شناسه ملی: {digits(paper.taxpayerNationalId)}</small></td><td className={styles.amount}>{money(paper.totalDebt ?? paper.debtAmount)}</td>{tab === 'candidates' ? <><td>{arrestDate(paper.notificationDate, false)}</td><td>{arrestDate(item.paymentDeadline, false)}</td><td><span className={styles.ready}>آماده صدور</span></td></> : <><td>{arrestDate(item.referredAt)}</td><td><strong>{item.referralDestination}</strong><small>{item.assignee?.roleTitle || 'صف رئیس اداره اجرائیات ویژه'}</small></td><td><span className={item.issuanceStatus === 'ISSUED' ? styles.ready : styles.pending}>{item.issuanceStatus === 'ISSUED' ? 'صادر شده' : 'در انتظار صدور'}</span>{item.letterNumber && <small>{digits(item.letterNumber)}</small>}</td><td>{STAGES[item.stage] || item.stage}</td></>}<td>{tab === 'candidates' ? canStart ? <button className={styles.rowAction} onClick={() => setDialogPapers([paper])}>آغاز فرایند</button> : <small>شروع توسط رئیس واحد اجرائیات</small> : <button className={styles.rowAction} onClick={() => openOrder(item.id)}>{item.allowedActions.length ? 'بررسی و اقدام' : 'جزئیات و نامه'}</button>}</td></tr>;
-          })}</tbody></table></div>}
-          <footer className={styles.pagination}><span>صفحه {digits(page + 1)} از {digits(Math.max(1, list.data?.totalPages || 1))}</span><div><button className={styles.secondary} disabled={page === 0 || list.loading} onClick={() => { setPage(value => value - 1); setSelectedIds([]); }}>قبلی</button><button className={styles.secondary} disabled={!list.data || page + 1 >= list.data.totalPages || list.loading} onClick={() => { setPage(value => value + 1); setSelectedIds([]); }}>بعدی</button></div></footer>
+        <section id="arrest-list-panel" role="tabpanel" aria-labelledby={`arrest-tab-${tab}`} className={`${styles.card} ${preview ? styles.withPreview : ''}`}>
+          <div className={styles.listToolbar}><label className={styles.search}><Icon name="search" /><input aria-label={tab === 'candidates' ? 'جستجوی برگ اجرا، مؤدی یا شناسه ملی' : 'جستجوی شماره برگ اجرا'} placeholder={tab === 'candidates' ? 'شماره برگ اجرا، نام مؤدی یا شناسه ملی…' : 'جستجوی شماره برگ اجرا…'} value={search} onChange={event => setSearch(event.target.value)} /></label>{tab !== 'candidates' && <select aria-label="فیلتر مرحله فرایند" value={stage} onChange={event => { setStage(event.target.value); setPage(0); }}><option value="">همه مراحل</option>{Object.entries(STAGES).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select>}<PaperViewTools columns={allColumns} hiddenColumns={view.hiddenColumns} onToggleColumn={view.toggleColumn} dense={view.dense} onDenseChange={view.setDense} onReset={view.reset} /><span>{list.loading ? 'در حال دریافت…' : `${digits(list.data?.totalElements || 0)} مورد`}</span></div>
+          {tab !== 'candidates' && selection.ids.size > 0 && <div className={styles.bulkBar}><span role="status">{digits(selection.ids.size)} برگ انتخاب شده{selection.ids.size > 1 && '؛ برای خلاصه فقط یک برگ انتخاب کنید'}</span><button className={styles.secondary} onClick={selection.clear}>لغو انتخاب</button></div>}{tab === 'candidates' && canStart && <div className={styles.bulkBar}><span>{selected.length ? `${digits(selected.length)} برگ انتخاب شده` : '۰ برگ انتخاب شده'}</span><button className={styles.primary} disabled={!selected.length || list.loading} onClick={() => setDialogPapers(selected)}><Icon name="plus" />صدور گروهی{selected.length ? ` (${digits(selected.length)})` : ''}</button></div>}
+          {list.loading ? <div className={styles.loading} role="status">{[1, 2, 3, 4].map(n => <div key={n} />)}<span>در حال دریافت فهرست…</span></div> : list.error ? <div className={styles.empty}>فهرست دریافت نشد. دوباره تلاش کنید.</div> : !rows.length ? <div className={styles.empty}><Icon name="document" /><h2>{tab === 'candidates' ? 'برگ آماده صدور یافت نشد' : tab === 'mine' ? 'دستوری در انتظار اقدام شما نیست' : 'سابقه دستوری برای شما یافت نشد'}</h2></div> : <ArrestOrderTable rows={rows} candidates={tab === 'candidates'} canStart={canStart} columns={columns} dense={view.dense} selection={selection} onStart={paper => setDialogPapers([paper])} onOpen={openOrder} />}
+          <footer className={styles.pagination}><span>صفحه {digits(page + 1)} از {digits(Math.max(1, list.data?.totalPages || 1))}</span><div><button className={styles.secondary} disabled={page === 0 || list.loading} onClick={() => { setPage(value => value - 1); }}>قبلی</button><button className={styles.secondary} disabled={!list.data || page + 1 >= list.data.totalPages || list.loading} onClick={() => { setPage(value => value + 1); }}>بعدی</button></div></footer>
         </section>
+        {preview && !list.loading && !list.error && <PaperSummaryPanel key={tab === 'candidates' ? preview.paper.id : preview.executionPaperId} paperId={tab === 'candidates' ? preview.paper.id : preview.executionPaperId} paymentDeadline={preview.paymentDeadline} user={user.data} onClose={selection.clear} revision={revision} />}
       </>}
     </section>
     {dialogPapers && <ArrestStartDialog papers={dialogPapers} onClose={() => setDialogPapers(null)} onCompleted={ids => { if (ids.length) { refresh(); setNotice(`${digits(ids.length)} فرایند آغاز شد. مراحل نیازمند اقدام شما در «ارجاع‌های من» در دسترس است.`); } }} />}

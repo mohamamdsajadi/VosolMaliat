@@ -9,7 +9,9 @@ import PaperIcon from '../execution-papers/paper-icon';
 import { ViewIcon } from '../execution-papers/paper-view-tools';
 import styles from './manager-dashboard.module.css';
 import { businessRoleLabel } from '../../lib/business-roles';
-import PageHelp, { ArrestGuide, DashboardGuide, PaperGuide, PermissionsGuide } from '../page-help';
+import PageHelp, { ArrestGuide, DashboardGuide, PaperGuide, PermissionsGuide, RestrictionsGuide } from '../page-help';
+import { LEGAL_RESTRICTION_GROUPS } from '../../lib/legal-restrictions';
+import RestrictionIcon from '../legal-restrictions/restriction-icon';
 
 function NavigationIcon({name}) { return name === 'referral' ? <ViewIcon name="referral" /> : ['homeOutline','documentActive'].includes(name) ? <PaperIcon name={name} /> : <Icon name={name} />; }
 
@@ -17,6 +19,7 @@ export default function FigmaShell({user,data,loading,active='dashboard',toolbar
   const [sidebarOpen, setSidebarOpen] = useState(() => typeof window === 'undefined' || window.innerWidth > 800);
   const [profileOpen, setProfileOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [restrictionsOpen, setRestrictionsOpen] = useState(active === 'legal-restrictions');
   const [now, setNow] = useState(() => new Date());
   const profileRef = useRef(null);
   const notificationRef = useRef(null);
@@ -97,7 +100,11 @@ export default function FigmaShell({user,data,loading,active='dashboard',toolbar
           <Link href="/" className={`${styles.navItem} ${active === 'dashboard' ? styles.navActive : ''}`} aria-current={active === 'dashboard' ? 'page' : undefined}><NavigationIcon name={active === 'dashboard' ? 'home' : 'homeOutline'} /><span>داشبورد</span></Link>
           <PermissionLink allowed={canViewReports} href="/execution-papers" current={active === 'execution-papers'} className={`${styles.navItem} ${active === 'execution-papers' ? styles.navActive : ''}`}><NavigationIcon name={active === 'execution-papers' ? 'documentActive' : 'document'} /><span>{papersLabel}</span><Badge value={loading ? null : stats?.totalIssuedExecutionPapers} /></PermissionLink>
           {canSeeNavItem(user, NAV_ITEMS.find(item => item.key === 'arrest')) && <Link href="/arrest-orders" className={`${styles.navItem} ${active === 'arrest' ? styles.navActive : ''}`} aria-current={active === 'arrest' ? 'page' : undefined}><Icon name="lock" /><span>دستور بازداشت اموال</span></Link>}
-          {navigationItems.filter(item => item.key !== 'arrest').map(item => <Link key={item.key} href={`/tasks?taskName=${encodeURIComponent(item.label)}`} className={styles.navItem}>
+          {canSeeNavItem(user, NAV_ITEMS.find(item => item.key === 'legal-restrictions')) && <div>
+            <button className={`${styles.navItem} ${styles.navParent} ${active === 'legal-restrictions' ? styles.navActive : ''}`} aria-expanded={restrictionsOpen} aria-controls="legal-restriction-navigation" onClick={() => setRestrictionsOpen(value => !value)}><Icon name="shield" /><span>محدودیت‌های قانونی</span><RestrictionIcon name="chevron" size={18} className={restrictionsOpen ? styles.chevronOpen : styles.chevron} /></button>
+            {restrictionsOpen && <div id="legal-restriction-navigation" className={styles.subNavigation}>{LEGAL_RESTRICTION_GROUPS.map(group => group.href ? <Link href={group.href} key={group.key} className={`${styles.subNavItem} ${active === 'legal-restrictions' ? styles.subNavActive : ''}`} aria-current={active === 'legal-restrictions' ? 'page' : undefined}><RestrictionIcon name={group.icon} size={18} /><span>{group.label}</span></Link> : <span className={`${styles.subNavItem} ${styles.subNavDisabled}`} aria-disabled="true" key={group.key}><RestrictionIcon name={group.icon} size={18} /><span>{group.label}{group.key === 'debtors' && <small>تبصره ۲ ماده ۱۶۹ مکرر</small>}</span><small className={styles.soon}>غیرفعال</small></span>)}</div>}
+          </div>}
+          {navigationItems.filter(item => !['arrest', 'restriction'].includes(item.key)).map(item => <Link key={item.key} href={`/tasks?taskName=${encodeURIComponent(item.label)}`} className={styles.navItem}>
             <NavigationIcon name={item.icon} /><span>{item.label}</span><Badge value={data?.tasksError || loading ? null : tasks.filter(task => task.name.includes(item.label)).length} />
           </Link>)}
           <div className={styles.navDivider} />
@@ -116,7 +123,7 @@ export default function FigmaShell({user,data,loading,active='dashboard',toolbar
             {!sidebarOpen && <button ref={sidebarOpenRef} className={styles.openSidebar} onClick={openSidebar} aria-label="باز کردن منوی اصلی" aria-controls="manager-sidebar" aria-expanded={sidebarOpen}><Icon name="menu" /></button>}
             {toolbar || <h1>به سامانه جامع وصول و اجرا خوش آمدید</h1>}
           </div>
-          <div className={styles.date}><PageHelp title={active === 'arrest' ? 'راهنمای دستور بازداشت' : active === 'dashboard' ? 'راهنمای داشبورد' : active === 'execution-papers' ? 'راهنمای برگ‌های اجرا' : 'راهنمای نقش‌ها و دسترسی‌ها'}>{active === 'arrest' ? <ArrestGuide /> : active === 'dashboard' ? <DashboardGuide /> : active === 'execution-papers' ? <PaperGuide /> : <PermissionsGuide />}</PageHelp><Icon name="calendar" /><time dateTime={now?.toISOString()} suppressHydrationWarning>{now ? formatHeaderDate(now) : '—'}</time></div>
+          <div className={styles.date}><PageHelp title={active === 'legal-restrictions' ? 'راهنمای محدودیت‌های قانونی' : active === 'arrest' ? 'راهنمای دستور بازداشت' : active === 'dashboard' ? 'راهنمای داشبورد' : active === 'execution-papers' ? 'راهنمای برگ‌های اجرا' : 'راهنمای نقش‌ها و دسترسی‌ها'}>{active === 'legal-restrictions' ? <RestrictionsGuide /> : active === 'arrest' ? <ArrestGuide /> : active === 'dashboard' ? <DashboardGuide /> : active === 'execution-papers' ? <PaperGuide /> : <PermissionsGuide />}</PageHelp><Icon name="calendar" /><time dateTime={now?.toISOString()} suppressHydrationWarning>{now ? formatHeaderDate(now) : '—'}</time></div>
         </div>
 
         {children}

@@ -23,6 +23,7 @@ import java.util.List;
 public class ExecutionPaperController {
 
     private final ExecutionPaperService executionPaperService;
+    private final com.mparsict.vosolmaliat.application.service.ExecutionPaperViewService paperViews;
     private final com.mparsict.vosolmaliat.application.service.security.ExecutionPaperVisibility visibility;
     private final RelatedPersonService relatedPersonService;
     private final ExternalSystemRequestService externalSystemRequestService;
@@ -48,7 +49,7 @@ public class ExecutionPaperController {
         ExecutionPaperSearchCriteria criteria = new ExecutionPaperSearchCriteria(
                 uniqueCode, taxpayerName, taxpayerNationalId, currentState, notificationStatus, minDebt, maxDebt, search, taxpayerType, issuedFrom, issuedTo, sortBy, sortDirection);
         log.debug("GET /api/v1/execution-papers page={}, size={}, criteria={}", page, size, criteria);
-        return executionPaperService.getAll(page, size, criteria);
+        return paperViews.includeViews(executionPaperService.getAll(page, size, criteria));
     }
 
     @GetMapping("/{id}")
@@ -56,6 +57,12 @@ public class ExecutionPaperController {
     public ExecutionPaperDetailResponse getDetails(@PathVariable Long id) {
         log.debug("GET /api/v1/execution-papers/{}", id);
         return executionPaperService.getDetails(id);
+    }
+
+    @PostMapping("/{id}/viewed")
+    @PreAuthorize("hasAnyAuthority('REPORT_VIEW','EXECUTION_PAPER_DETAIL_VIEW')")
+    public java.util.Map<String, java.time.Instant> markViewed(@PathVariable Long id) {
+        return java.util.Map.of("lastViewedAt", paperViews.markViewed(id));
     }
 
     @GetMapping("/{id}/trace")
@@ -110,7 +117,7 @@ public class ExecutionPaperController {
         ExecutionPaperSearchCriteria criteria = new ExecutionPaperSearchCriteria(
                 uniqueCode, taxpayerName, taxpayerNationalId, currentState, notificationStatus, minDebt, maxDebt, search, taxpayerType, issuedFrom, issuedTo, sortBy, sortDirection);
         log.debug("GET /api/v1/execution-papers/assigned page={}, size={}, criteria={}", page, size, criteria);
-        return executionPaperService.getAssigned(page, size, criteria);
+        return paperViews.includeViews(executionPaperService.getAssigned(page, size, criteria));
     }
 
     @GetMapping("/unassigned")
@@ -134,6 +141,6 @@ public class ExecutionPaperController {
         ExecutionPaperSearchCriteria criteria = new ExecutionPaperSearchCriteria(
                 uniqueCode, taxpayerName, taxpayerNationalId, currentState, notificationStatus, minDebt, maxDebt, search, taxpayerType, issuedFrom, issuedTo, sortBy, sortDirection);
         log.debug("GET /api/v1/execution-papers/unassigned page={}, size={}, criteria={}", page, size, criteria);
-        return executionPaperService.getUnassigned(page, size, criteria);
+        return paperViews.includeViews(executionPaperService.getUnassigned(page, size, criteria));
     }
 }

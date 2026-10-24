@@ -641,14 +641,14 @@ function RelatedPersonsSection({ data, loading, refreshing, error, onRefresh }) 
           </span>
           <RelatedPersonsStatusLegend />
         </div>
-        <button
+        {onRefresh && <button
           type="button"
           onClick={onRefresh}
           disabled={refreshing}
           style={{ ...refreshRelatedButtonStyle, ...(refreshing ? printButtonDisabledStyle : {}) }}
         >
           {refreshing ? 'در حال دریافت...' : 'دریافت اطلاعات تازه'}
-        </button>
+        </button>}
       </div>
 
       {loading && <p style={mutedTextStyle}>در حال دریافت اشخاص مرتبط...</p>}
