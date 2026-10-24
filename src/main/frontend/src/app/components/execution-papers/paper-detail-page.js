@@ -41,7 +41,7 @@ export default function PaperDetailPage({ resource, trace, related, external, ca
             if (next != null) { event.preventDefault(); setTab(tabItems[next].key); tabs.current[next]?.focus(); }
           }}>{label}</button>)}</div>
         <div id={`${idPrefix}-panel-${tab}`} role="tabpanel" aria-labelledby={`${idPrefix}-tab-${tab}`} tabIndex={0} className={styles.panel}>
-          {tab === 0 && <DebtHistory data={data} hrefFor={hrefFor} />}
+          {tab === 0 && <><div className={styles.statementLink}><Link href={`/debt-statement?paper=${encodeURIComponent(data.summary.id)}`}>صورت وضعیت بدهی و پرداخت‌ها ←</Link></div><DebtHistory data={data} hrefFor={hrefFor} /></>}
           {tab === 1 && <>
             <div className={styles.workflowScroll} role="region" aria-label="مراحل فرآیند اجرایی" tabIndex={0}><ol className={styles.workflow}>{steps.map((step, index) => <li key={step.key}>
               <button className={styles.step} aria-pressed={selectedStage === step.key} onClick={() => setStage(step.key)}>
@@ -80,7 +80,7 @@ function DebtSummary({ data, paymentDeadline }) {
   </dl><dl className={styles.previewDates}><div><dt><Icon name="timer" />تاریخ صدور</dt><dd><bdi>{paperDate(data.executionPaper?.issuanceDate)}</bdi></dd></div><div><dt><ViewIcon name="alert" />مهلت پرداخت</dt><dd><bdi>{paperDate(data.notification?.paymentDeadline || paymentDeadline)}</bdi></dd></div></dl></aside>;
 }
 
-function DebtHistory({ data, hrefFor }) {
+export function DebtHistory({ data, hrefFor }) {
   const otherPapers = data.executionPaper?.otherActivePapers || [];
   const otherDialog = useRef(null);
   const breakdownDialog = useRef(null);

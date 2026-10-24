@@ -600,6 +600,21 @@ public class ExecutionPaperService {
         return new ExecutionPaperDetailResponse(toDto(ep), execution, finalized, taxpayerMap, debt, notification, ruleRejection);
     }
 
+    @Transactional(readOnly = true)
+    public com.mparsict.vosolmaliat.application.dto.response.ExecutionPaperFinancialStatementResponse getFinancialStatement(Long id) {
+        var detail = getDetails(id); // Same amounts, visibility checks and detail formatting as the paper page.
+        var paper = executionPaperRepository.findById(id).orElseThrow();
+        var history = debtHistoryRepository.findByFinalTaxDebtPaperIdOrderByCreatedAtAscIdAsc(paper.getFinalTaxDebtPaperId())
+                .stream().map(row -> debtSnapshot(row.getId(), row.getCreatedAt(), false,
+                        row.getTotalLiability(), row.getTotalPenalties(), row.getTotalRemissions(),
+                        row.getTotalPayments(), row.getOutstandingTaxDebt(), row.getTotalCredits(),
+                        new com.mparsict.vosolmaliat.domain.model.sanim.DebtFinancialDetails(
+                                row.getTaxLiabilityDetails(), row.getCreditsDetail(), row.getPenaltiesDetail(),
+                                row.getPaymentsDetail(), row.getRemissionsDetail(), row.getOutstandingDebtDetails())))
+                .toList();
+        return new com.mparsict.vosolmaliat.application.dto.response.ExecutionPaperFinancialStatementResponse(detail, history);
+    }
+
     private Map<String, Object> debtSnapshot(Long id, LocalDateTime receivedAt, boolean current,
             java.math.BigDecimal principal, java.math.BigDecimal penalties, java.math.BigDecimal remissions,
             java.math.BigDecimal payments, java.math.BigDecimal outstanding, java.math.BigDecimal credits,

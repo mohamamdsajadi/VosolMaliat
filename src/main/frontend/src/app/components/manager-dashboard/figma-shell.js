@@ -9,9 +9,11 @@ import PaperIcon from '../execution-papers/paper-icon';
 import { ViewIcon } from '../execution-papers/paper-view-tools';
 import styles from './manager-dashboard.module.css';
 import { businessRoleLabel } from '../../lib/business-roles';
-import PageHelp, { ArrestGuide, DashboardGuide, PaperGuide, PermissionsGuide, RestrictionsGuide } from '../page-help';
+import PageHelp, { ArrestGuide, DashboardGuide, PaperGuide, PermissionsGuide, RestrictionsGuide, DebtStatementGuide } from '../page-help';
 import { LEGAL_RESTRICTION_GROUPS } from '../../lib/legal-restrictions';
 import RestrictionIcon from '../legal-restrictions/restriction-icon';
+import BusinessIcon from '../business-feature-icon';
+import { DEBT_SETTLEMENT_ENTRIES, EXECUTION_ACTION_ENTRIES } from '../../lib/demo-navigation';
 
 function NavigationIcon({name}) { return name === 'referral' ? <ViewIcon name="referral" /> : ['homeOutline','documentActive'].includes(name) ? <PaperIcon name={name} /> : <Icon name={name} />; }
 
@@ -20,6 +22,8 @@ export default function FigmaShell({user,data,loading,active='dashboard',toolbar
   const [profileOpen, setProfileOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [restrictionsOpen, setRestrictionsOpen] = useState(active === 'legal-restrictions');
+  const [debtOpen, setDebtOpen] = useState(active === 'debt-settlement');
+  const [executionOpen, setExecutionOpen] = useState(false);
   const [now, setNow] = useState(() => new Date());
   const profileRef = useRef(null);
   const notificationRef = useRef(null);
@@ -104,7 +108,9 @@ export default function FigmaShell({user,data,loading,active='dashboard',toolbar
             <button className={`${styles.navItem} ${styles.navParent} ${active === 'legal-restrictions' ? styles.navActive : ''}`} aria-expanded={restrictionsOpen} aria-controls="legal-restriction-navigation" onClick={() => setRestrictionsOpen(value => !value)}><Icon name="shield" /><span>محدودیت‌های قانونی</span><RestrictionIcon name="chevron" size={18} className={restrictionsOpen ? styles.chevronOpen : styles.chevron} /></button>
             {restrictionsOpen && <div id="legal-restriction-navigation" className={styles.subNavigation}>{LEGAL_RESTRICTION_GROUPS.map(group => group.href ? <Link href={group.href} key={group.key} className={`${styles.subNavItem} ${active === 'legal-restrictions' ? styles.subNavActive : ''}`} aria-current={active === 'legal-restrictions' ? 'page' : undefined}><RestrictionIcon name={group.icon} size={18} /><span>{group.label}</span></Link> : <span className={`${styles.subNavItem} ${styles.subNavDisabled}`} aria-disabled="true" key={group.key}><RestrictionIcon name={group.icon} size={18} /><span>{group.label}{group.key === 'debtors' && <small>تبصره ۲ ماده ۱۶۹ مکرر</small>}</span><small className={styles.soon}>غیرفعال</small></span>)}</div>}
           </div>}
-          {navigationItems.filter(item => !['arrest', 'restriction'].includes(item.key)).map(item => <Link key={item.key} href={`/tasks?taskName=${encodeURIComponent(item.label)}`} className={styles.navItem}>
+          {canSeeNavItem(user, NAV_ITEMS.find(item => item.key === 'debt-settlement')) && <FeatureGroup id="debt-settlement-navigation" label="تعیین تکلیف بدهی" icon="statement" entries={DEBT_SETTLEMENT_ENTRIES} open={debtOpen} onToggle={() => setDebtOpen(value => !value)} current={active === 'debt-settlement'} />}
+          {canViewReports && <FeatureGroup id="execution-actions-navigation" label="اقدامات اجرایی" icon="enforcement" entries={EXECUTION_ACTION_ENTRIES} open={executionOpen} onToggle={() => setExecutionOpen(value => !value)} />}
+          {navigationItems.filter(item => !['arrest', 'restriction', 'debt', 'execution'].includes(item.key)).map(item => <Link key={item.key} href={`/tasks?taskName=${encodeURIComponent(item.label)}`} className={styles.navItem}>
             <NavigationIcon name={item.icon} /><span>{item.label}</span><Badge value={data?.tasksError || loading ? null : tasks.filter(task => task.name.includes(item.label)).length} />
           </Link>)}
           <div className={styles.navDivider} />
@@ -123,13 +129,19 @@ export default function FigmaShell({user,data,loading,active='dashboard',toolbar
             {!sidebarOpen && <button ref={sidebarOpenRef} className={styles.openSidebar} onClick={openSidebar} aria-label="باز کردن منوی اصلی" aria-controls="manager-sidebar" aria-expanded={sidebarOpen}><Icon name="menu" /></button>}
             {toolbar || <h1>به سامانه جامع وصول و اجرا خوش آمدید</h1>}
           </div>
-          <div className={styles.date}><PageHelp title={active === 'legal-restrictions' ? 'راهنمای محدودیت‌های قانونی' : active === 'arrest' ? 'راهنمای دستور بازداشت' : active === 'dashboard' ? 'راهنمای داشبورد' : active === 'execution-papers' ? 'راهنمای برگ‌های اجرا' : 'راهنمای نقش‌ها و دسترسی‌ها'}>{active === 'legal-restrictions' ? <RestrictionsGuide /> : active === 'arrest' ? <ArrestGuide /> : active === 'dashboard' ? <DashboardGuide /> : active === 'execution-papers' ? <PaperGuide /> : <PermissionsGuide />}</PageHelp><Icon name="calendar" /><time dateTime={now?.toISOString()} suppressHydrationWarning>{now ? formatHeaderDate(now) : '—'}</time></div>
+          <div className={styles.date}><PageHelp title={active === 'debt-settlement' ? 'راهنمای صورت وضعیت بدهی' : active === 'legal-restrictions' ? 'راهنمای محدودیت‌های قانونی' : active === 'arrest' ? 'راهنمای دستور بازداشت' : active === 'dashboard' ? 'راهنمای داشبورد' : active === 'execution-papers' ? 'راهنمای برگ‌های اجرا' : 'راهنمای نقش‌ها و دسترسی‌ها'}>{active === 'debt-settlement' ? <DebtStatementGuide /> : active === 'legal-restrictions' ? <RestrictionsGuide /> : active === 'arrest' ? <ArrestGuide /> : active === 'dashboard' ? <DashboardGuide /> : active === 'execution-papers' ? <PaperGuide /> : <PermissionsGuide />}</PageHelp><Icon name="calendar" /><time dateTime={now?.toISOString()} suppressHydrationWarning>{now ? formatHeaderDate(now) : '—'}</time></div>
         </div>
 
         {children}
       </main>
     </div>
   );
+}
+
+function FeatureGroup({ id, label, icon, entries, open, onToggle, current }) {
+  return <div><button className={`${styles.navItem} ${styles.navParent} ${current ? styles.navActive : ''}`} aria-expanded={open} aria-controls={id} onClick={onToggle}><BusinessIcon name={icon} /><span>{label}</span><BusinessIcon name="chevron" size={18} className={open ? styles.chevronOpen : styles.chevron} /></button>
+    {open && <div id={id} className={styles.subNavigation}>{entries.map(entry => entry.href ? <Link href={entry.href} key={entry.key} className={`${styles.subNavItem} ${current ? styles.subNavActive : ''}`} aria-current={current ? 'page' : undefined}><BusinessIcon name={entry.icon} size={18} /><span>{entry.label}</span></Link> : <span key={entry.key} className={`${styles.subNavItem} ${styles.subNavDisabled}`} aria-disabled="true"><BusinessIcon name={entry.icon} size={18} /><span>{entry.label}</span><small className={styles.soon}>غیرفعال</small></span>)}</div>}
+  </div>;
 }
 
 function Badge({ value }) {

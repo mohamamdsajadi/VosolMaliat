@@ -65,6 +65,12 @@ public class ExecutionPaperController {
         return java.util.Map.of("lastViewedAt", paperViews.markViewed(id));
     }
 
+    @GetMapping("/{id}/financial-statement")
+    @PreAuthorize("hasAnyAuthority('REPORT_VIEW','EXECUTION_PAPER_DETAIL_VIEW')")
+    public com.mparsict.vosolmaliat.application.dto.response.ExecutionPaperFinancialStatementResponse getFinancialStatement(@PathVariable Long id) {
+        return executionPaperService.getFinancialStatement(id);
+    }
+
     @GetMapping("/{id}/trace")
     @PreAuthorize("hasAnyAuthority('REPORT_VIEW','AUDIT_VIEW','EXECUTION_PAPER_TRACE_VIEW')")
     public ExecutionPaperTraceResponse getTrace(@PathVariable Long id) {

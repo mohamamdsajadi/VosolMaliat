@@ -45,7 +45,7 @@
 .popover a, .popover button { display: block; background: #edf4ff; border: 0; border-radius: 7px; margin-top: 14px; padding: 8px 12px; width: 100%; text-align: center; }
 .sidebar { position: absolute; top: var(--bar-height); right: 0; bottom: 0; min-height: calc(100vh - var(--bar-height)); width: var(--sidebar-width); padding: 44px 0 16px; background: #1c3a5d; color: white; display: flex; flex-direction: column; }
 .closeSidebar { position: absolute; top: 4px; left: 4px; border: 0; background: none; padding: 0; }
-.navigation { display: flex; flex-direction: column; }
+.navigation { display: flex; flex-direction: column; max-height:calc(100dvh - var(--bar-height) - 115px); overflow-y:auto; scrollbar-width:thin; }
 .navItem { position: relative; height: 56px; padding: 16px 20px; display: flex; align-items: center; gap: 12px; font-size: 16px; white-space: nowrap; }
 .navItem:hover { background: #ffffff09; }
 .navItem > * { position: relative; }

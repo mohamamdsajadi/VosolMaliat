@@ -47,6 +47,43 @@ class ExecutionPaperSearchIntegrationTest {
     }
 
     @Test
+    void financialStatementUsesTheSameExactAmountsAndAllStoredSnapshotsOfThisPaper() throws Exception {
+        Long id = service.searchAll(criteria("PAPER-1", null, null, null, null, null), 0, 1).content().getFirst().id();
+        var paper = em.find(ExecutionPaper.class, id);
+        var debt = em.createQuery("select d from DebtInformation d where d.finalTaxDebtPaper.id=:id", DebtInformation.class)
+                .setParameter("id", paper.getFinalTaxDebtPaperId()).getSingleResult();
+        for (int day = 1; day <= 3; day++) em.persist(DebtInformationHistory.current(debt, LocalDateTime.of(2026, 9, day, 10, 0)));
+        em.flush();
+        String token = "Bearer " + identities.login("admin").accessToken();
+        http.perform(get("/api/v1/execution-papers/{id}/financial-statement", id).header("Authorization", token))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.detail.summary.uniqueCode").value("PAPER-1"))
+                .andExpect(jsonPath("$.detail.debtInformation.outstandingDebtAmount").value("9007199254740993.02"))
+                .andExpect(jsonPath("$.history.length()").value(3))
+                .andExpect(jsonPath("$.history[1].receivedAt").value("2026-09-02T10:00:00"))
+                .andExpect(jsonPath("$.history[0].outstandingAmount").value("9007199254740993.02"));
+        Long other = service.searchAll(criteria("PAPER-2", null, null, null, null, null), 0, 1).content().getFirst().id();
+        http.perform(get("/api/v1/execution-papers/{id}/financial-statement", other).header("Authorization", token))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.history").isEmpty())
+                .andExpect(jsonPath("$.detail.debtInformation.outstandingDebtAmount").value("9007199254740993.01"));
+        assertThat(paperViews.count()).isZero();
+        assertThat(em.createQuery("select count(h) from DebtInformationHistory h", Long.class).getSingleResult()).isEqualTo(3);
+    }
+
+    @Test
+    void financialStatementsRequireDetailPermissionAndAssignedPaperVisibility() throws Exception {
+        Long id = service.searchAll(criteria("PAPER-1", null, null, null, null, null), 0, 1).content().getFirst().id();
+        http.perform(get("/api/v1/execution-papers/{id}/financial-statement", id)).andExpect(status().isUnauthorized());
+        String officer = "Bearer " + identities.login("demo_execution_officer").accessToken();
+        http.perform(get("/api/v1/execution-papers/{id}/financial-statement", id).header("Authorization", officer)).andExpect(status().isForbidden());
+        String head = "Bearer " + identities.login("demo_directorate_execution_unit_head").accessToken();
+        http.perform(get("/api/v1/execution-papers/{id}/financial-statement", id).header("Authorization", head)).andExpect(status().isOk());
+        for (String code : java.util.List.of("REPORT_VIEW", "EXECUTION_PAPER_DETAIL_VIEW"))
+            grants.findByGroupNameAndPermissionCode("DIRECTORATE_EXECUTION_UNIT_HEAD", code).ifPresent(grants::delete);
+        em.flush();
+        http.perform(get("/api/v1/execution-papers/{id}/financial-statement", id).header("Authorization", head)).andExpect(status().isForbidden());
+    }
+
+    @Test
     void personalViewsAreExplicitDurableAndDoNotChangeWorkflow() throws Exception {
         Long id = service.searchAll(criteria("PAPER-1", null, null, null, null, null), 0, 1).content().getFirst().id();
         String head = "Bearer " + identities.login("demo_directorate_execution_unit_head").accessToken();

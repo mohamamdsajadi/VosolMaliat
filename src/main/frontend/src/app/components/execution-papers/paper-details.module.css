@@ -46,6 +46,7 @@
 .tabs button[aria-selected='true'] { background: linear-gradient(180deg, #3177d800, #3177d81a); border-bottom-color: #3177d8; color: #3177d8; font-weight: 700; }
 .panel { margin-top: 28px; min-height: 400px; }
 .debtScroll { overflow-x: auto; border: 1px solid #e8ebef; border-radius: 12px; }
+.statementLink { display:flex; justify-content:flex-end; margin-bottom:12px; color:#3177d8; font-size:12px; }
 .debtTable { width: 100%; min-width: 850px; table-layout: fixed; text-align: center; border-collapse: separate; border-spacing: 0; font-size: 14px; }
 .debtTable th { height: 47px; background: #eaf1fb; font-weight: 700; border-inline-end: 2px solid #a7c7f0; padding: 4px; white-space: nowrap; }
 .debtTable th:last-child { border-inline-end: 0; }

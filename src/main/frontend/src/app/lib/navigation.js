@@ -1,4 +1,5 @@
 export const NAV_ITEMS = [
+  { key: 'debt-settlement', href: '/debt-statement', label: 'تعیین تکلیف بدهی', helper: 'صورت وضعیت بدهی و پرداختی', permissions: ['REPORT_VIEW', 'EXECUTION_PAPER_LIST_VIEW', 'EXECUTION_PAPER_DETAIL_VIEW'] },
   { key: 'legal-restrictions', href: '/legal-restrictions', label: 'محدودیت‌های قانونی', helper: 'درخواست‌ها، اشخاص مشمول و سوابق', permissions: ['LEGAL_RESTRICTION_VIEW'] },
   { key: 'arrest', href: '/arrest-orders', label: 'دستور بازداشت اموال', helper: 'صدور و پیگیری ارجاع‌ها', permissions: ['ARREST_ORDER_VIEW'] },
   { key: 'role-permissions', href: '/admin/permissions', label: 'نقش‌ها و دسترسی‌ها', helper: 'مدیریت دسترسی نقش‌ها', permissions: ['GROUP_PERMISSION_VIEW', 'PERMISSION_VIEW'], requiresAll: true },
