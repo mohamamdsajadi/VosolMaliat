@@ -111,7 +111,7 @@ export default function Ef03Receipts() {
       <section className="ef03-hero">
         <div>
           <p className="eyebrow">دریافت اطلاعات سنیم</p>
-          <h2>آزمایش صدور برگه اجرا با داده‌های EF03</h2>
+          <h2>صدور برگه اجرا با داده‌های EF03</h2>
           <p>یک نمونه واقعی را انتخاب کنید یا فیلدها و XML را دستی وارد کنید. درخواست مستقیماً به API دریافت برگه بدهی قطعی ارسال می‌شود.</p>
         </div>
         <div className="ef03-hero__stat">
@@ -123,7 +123,6 @@ export default function Ef03Receipts() {
       <section className="ef03-sample-panel">
         <div className="ef03-panel-heading">
           <div>
-            <span>داده آزمایشی</span>
             <h3>پرکردن خودکار از EF03-samples.ods</h3>
             <p>انتخاب هر ردیف، XML و فیلدهای متناظر قرارداد را جای‌گذاری می‌کند.</p>
           </div>

@@ -31,6 +31,7 @@ export default function PaperDetailPage({ resource, trace, related, external, ca
     {resource.loading ? <p className={styles.message} role="status">در حال دریافت جزئیات برگ اجرا…</p>
       : resource.error ? <Retry message={resource.error} onRetry={resource.retry} /> : !data ? <p className={styles.message}>اطلاعات این برگ اجرا در دسترس نیست.</p> : <>
         {!embedded && <PaperTable papers={[data.summary]} summary />}
+        <dl className={styles.paperSource}><dt><Icon name="document" />سامانه صادرکننده برگ اجرا:</dt><dd>{data.executionPaper?.issuerSystemLabel || data.executionPaper?.issuerSystem || 'ثبت نشده'}</dd></dl>
         {!embedded && canViewArrest && <PaperArrestAttachment paperId={data.summary.id} />}
         <div className={embedded ? styles.previewLayout : undefined}>
         {embedded && <DebtSummary data={data} paymentDeadline={paymentDeadline} />}

@@ -3,29 +3,16 @@ import { fetchCartableTasks } from './tasks';
 import { sanitizeDisplayText } from './display';
 
 export async function fetchManagerDashboard() {
-  const [stats, tasks, arrest, candidates] = await Promise.allSettled([
+  const [stats, tasks] = await Promise.allSettled([
     apiJson('/api/v1/dashboard/stats'),
     fetchCartableTasks(),
-    apiJson('/api/v1/arrest-orders?mine=true&size=100'),
-    apiJson('/api/v1/arrest-orders/candidates?size=5'),
   ]);
   return {
     stats: stats.status === 'fulfilled' ? stats.value : null,
-    tasks: [
-      ...(tasks.status === 'fulfilled' && Array.isArray(tasks.value) ? tasks.value.filter(task => ['claim', 'complete', 'assign', 'delegate'].some(action => task.allowedActions?.[action])).map(toDashboardTask) : []),
-      ...(arrest.status === 'fulfilled' ? (arrest.value.content || []).filter(order => order.allowedActions.length).map(order => ({
-        key: `arrest-${order.id}`, sourceTask: null, name: `دستور بازداشت اموال — ${order.stage === 'SPECIAL_DEPARTMENT_REVIEW' ? 'انتخاب سرپرست' : order.stage === 'AWAITING_APPROVAL' ? 'تأیید صدور' : 'ارجاع به مأمور اجرا'}`,
-        paperCode: order.executionPaperCode, createdAt: order.referredAt, dueDate: null, priority: null,
-        href: `/arrest-orders?order=${order.id}`,
-      })) : []),
-      ...(candidates.status === 'fulfilled' ? (candidates.value.content || []).map(({ paper }) => ({
-        key: `candidate-${paper.id}`, sourceTask: null, name: 'آغاز صدور دستور بازداشت',
-        paperCode: paper.uniqueCode, createdAt: null, dueDate: null, priority: null, href: '/arrest-orders',
-      })) : []),
-    ],
+    tasks: tasks.status === 'fulfilled' && Array.isArray(tasks.value)
+      ? tasks.value.filter(task => ['claim', 'complete', 'assign', 'delegate'].some(action => task.allowedActions?.[action])).map(toDashboardTask) : [],
     statsError: stats.status === 'rejected' ? stats.reason.message : '',
-    tasksError: [tasks.status === 'rejected' ? tasks.reason.message : !Array.isArray(tasks.value) ? 'پاسخ کارتابل معتبر نیست.' : '',
-      arrest.status === 'rejected' && stats.status === 'fulfilled' && stats.value.arrestOrderPerformance?.total > 0 ? arrest.reason.message : ''].filter(Boolean).join('؛ '),
+    tasksError: tasks.status === 'rejected' ? tasks.reason.message : tasks.status === 'fulfilled' && !Array.isArray(tasks.value) ? 'پاسخ کارتابل معتبر نیست.' : '',
     // No existing endpoint supplies these reports; never substitute design sample values.
     performance: stats.status === 'fulfilled' ? stats.value.arrestOrderPerformance : null,
     collectionSeries: [],

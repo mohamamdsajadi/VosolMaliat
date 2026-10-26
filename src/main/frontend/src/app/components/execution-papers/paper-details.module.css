@@ -1,4 +1,8 @@
 .pageCard { min-height: calc(100dvh - 189px); border: 1px solid #e8ebef; border-radius: 12px; padding: 15px; background: white; }
+.paperSource { display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin:14px 0; font-size:13px; }
+.paperSource dt { display:flex; align-items:center; gap:6px; color:#6f839b; }
+.paperSource dt svg { width:17px; height:17px; }
+.paperSource dd { margin:0; padding:3px 12px; border-radius:6px; background:#eaf1fb; color:#28558e; font-weight:700; }
 .pageCard.embedded { min-height:0; margin-top:20px; padding:20px; color:#102742; }
 .previewHeader { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px; }
 .previewHeader h2 { display:flex; align-items:center; gap:8px; font-size:18px; font-weight:700; }

@@ -10,7 +10,7 @@ export const EVENT_LABELS = {
   OFFICER_SELECTED: 'انتخاب مأمور اجرا برای ارجاع مستقیم',
   STARTED: 'آغاز فرایند و ثبت ارجاع', SUPERVISOR_SELECTED: 'انتخاب سرپرست هیئت اجرا',
   DRAFT_REFRESHED: 'بروزرسانی پیش‌نویس و مبلغ بدهی',
-  DEBT_INQUIRY_MOCKED: 'استعلام بدهی آزمایشی', DRAFT_PREPARED: 'تهیه پیش‌نویس دستور بازداشت اموال',
+  DEBT_INQUIRY_MOCKED: 'استعلام بدهی', DRAFT_PREPARED: 'تهیه پیش‌نویس دستور بازداشت اموال',
   APPROVED_AND_ISSUED: 'تأیید و صدور دستور بازداشت اموال', LETTER_ATTACHED: 'پیوست دستور به برگ اجرا',
   REFERRED_TO_SUPERVISOR: 'ارجاع به سرپرست هیئت اجرا', ASSIGNED_TO_OFFICER: 'ارجاع به مأمور اجرا',
 };

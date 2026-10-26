@@ -36,9 +36,9 @@ export default function Tabsare3186TestPage() {
         })
       });
       setResult(response);
-      setMessage(response.message || 'فرایند آزمایشی آغاز شد.');
+      setMessage(response.message || 'فرایند آغاز شد.');
     } catch (error) {
-      setMessage(error.message || 'شروع فرایند آزمایشی ناموفق بود.');
+      setMessage(error.message || 'شروع فرایند ناموفق بود.');
     } finally {
       setStarting(false);
     }
@@ -47,7 +47,7 @@ export default function Tabsare3186TestPage() {
   return (
     <AppShell
       active="test-front"
-      title="آزمایش فرایند تبصره ۳ ماده ۱۸۶"
+      title="فرایند تبصره ۳ ماده ۱۸۶"
       eyebrow="راه‌اندازی نمونه فرایند"
       contextItems={[
         'شناسه BPMN: Process_0eqvh8j',
@@ -62,7 +62,6 @@ export default function Tabsare3186TestPage() {
       <section className="panel-section">
         <div className="section-heading">
           <div>
-            <p className="eyebrow">داده آزمایشی</p>
             <h2>شروع Tabsare3-186</h2>
           </div>
         </div>
@@ -103,7 +102,7 @@ export default function Tabsare3186TestPage() {
 
           <div className="row-actions">
             <button className="primary-action" type="submit" disabled={starting}>
-              {starting ? 'در حال راه‌اندازی...' : 'شروع فرایند آزمایشی'}
+              {starting ? 'در حال راه‌اندازی...' : 'شروع فرایند'}
             </button>
           </div>
         </form>

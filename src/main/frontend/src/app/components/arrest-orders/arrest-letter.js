@@ -32,7 +32,7 @@ export default function ArrestLetter({ detail }) {
       <tr className={styles.letterTotal}><th colSpan="6">جمع کل بدهی</th><th>{money(letter.totalAmount)}</th></tr>
     </tbody></table>
     <div className={styles.letterSignatures}><div><b>صادرکننده</b><span>نام و نام خانوادگی: {show(letter.preparedBy)}</span><span>سمت: {show(letter.issuerRole)}</span><small>مهر و امضاء</small></div><div><b>تأییدکننده</b><span>نام و نام خانوادگی: {show(letter.approvedBy)}</span><span>سمت: {show(letter.approverRole)}</span><small>مهر و امضاء</small></div></div>
-    <footer className={styles.letterFooter}>استعلام بدهی آزمایشی • مبالغ از آخرین بدهی ذخیره‌شده در زمان تهیه پیش‌نویس • {arrestDate(letter.debtInquiredAt)}</footer>
+    <footer className={styles.letterFooter}>مبالغ از آخرین بدهی ذخیره‌شده در زمان تهیه پیش‌نویس • {arrestDate(letter.debtInquiredAt)}</footer>
   </article>;
 }
 

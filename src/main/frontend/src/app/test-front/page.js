@@ -12,28 +12,28 @@ const TEST_SERVICES = [
   {
     href: '/admin/fake-sanim',
     eyebrow: 'Fake SANIM',
-    title: 'سامانه سنیم آزمایشی',
+    title: 'سامانه سنیم',
     description: 'مشاهده پیام‌های ارسالی به سنیم، تایید دریافت و ساخت برگ بدهی تصادفی.',
-    action: 'ورود به سنیم آزمایشی'
+    action: 'ورود به سنیم'
   },
   {
     href: '/admin/fake-electronic-notification',
     eyebrow: 'Fake Eblagh',
-    title: 'سامانه ابلاغ الکترونیک آزمایشی',
+    title: 'سامانه ابلاغ الکترونیک',
     description: 'مشاهده درخواست‌های ابلاغ و ارسال پاسخ غیرهمزمان تاریخ ابلاغ به فرایند.',
-    action: 'ورود به ابلاغ آزمایشی'
+    action: 'ورود به ابلاغ'
   },
   {
     href: '/admin/fake-official-gazette',
     eyebrow: 'Fake Official Gazette',
-    title: 'روزنامه رسمی آزمایشی',
+    title: 'روزنامه رسمی',
     description: 'مشاهده درخواست استخراج اعضای هیئت‌مدیره و ارسال دستی پاسخ غیرهمزمان.',
     action: 'ورود به روزنامه رسمی'
   },
   {
     href: '/admin/fake-restrictions',
     eyebrow: 'Fake Restrictions',
-    title: 'سامانه اعمال محدودیت آزمایشی',
+    title: 'سامانه اعمال محدودیت',
     description: 'مشاهده فهرست اشخاص فیلترشده و تایید دریافت درخواست اعمال محدودیت.',
     action: 'ورود به سامانه محدودیت'
   }
@@ -44,15 +44,15 @@ export default function TestFrontPage() {
     <AppShell
       active="test-front"
       title="Test Front"
-      eyebrow="سامانه‌ها و فرایندهای آزمایشی"
+      eyebrow="سامانه‌ها و فرایندها"
       contextItems={[
-        `ابزارهای آزمایشی: ${TEST_SERVICES.length.toLocaleString('fa-IR')}`
+        `ابزارها: ${TEST_SERVICES.length.toLocaleString('fa-IR')}`
       ]}
     >
       <section className="test-front-hero">
         <p className="eyebrow">محیط تست یکپارچه</p>
         <h2>ابزارهای تست و سامانه‌های Fake</h2>
-        <span>همه ورودی‌های آزمایشی از این صفحه در دسترس هستند و در منوی اصلی فقط همین مرکز نمایش داده می‌شود.</span>
+        <span>همه ورودی‌ها از این صفحه در دسترس هستند و در منوی اصلی فقط همین مرکز نمایش داده می‌شود.</span>
       </section>
 
       <section className="data-entry-choice-grid test-front-grid">

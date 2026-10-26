@@ -17,12 +17,28 @@ cd src/main/frontend
 npm run dev
 ```
 
-Open **http://localhost:3000/login**. Select **`tehran_general_office_head`**
-(the default) and click **ورود آزمایشی** to open the Figma dashboard at `/`.
+Open **http://localhost:3000/login**. Select the intended user
+and click **ورود به سامانه** to open the dashboard at `/`.
 The dropdown also contains the seeded admin, office heads, and experts; they
 retain their existing landing pages, business roles, and database permissions.
 No password is required in this local development mode. The API binds to
 `127.0.0.1:8025`; the frontend proxies `/api` to it by default.
+
+## IntelliJ startup and compiled output
+
+Use JDK 21 and the Java 21 language level, matching `maven.compiler.release`.
+If startup fails with `ClassFormatError: Invalid method Code length 0` or
+`Unresolved compilation problem`, rebuild the generated classes before running:
+
+```powershell
+mvn "-Dskip.installnodenpm=true" "-Dskip.npm=true" clean compile
+```
+
+Then run `VosolMaliatApplication` with the `mock-local` profile in IntelliJ.
+The frontend's connection error to port 8025 disappears once the backend starts.
+The workspace disables VS Code Java auto-build in `.vscode/settings.json` so
+its background compiler does not overwrite the Maven/IntelliJ classes under
+`target/classes`. Build this project with Maven or IntelliJ.
 
 ## Configuration and switching back
 
@@ -59,7 +75,9 @@ Existing user subjects and edited sample profiles are preserved during mock star
   this mode does not emulate BPMN execution, create fake tasks, or pretend to
   complete business workflows. Database-backed screens remain usable.
 - Dashboard figures remain database values. Missing reporting integrations still
-  show unavailable states. A visible Persian banner identifies offline/mock mode.
+  show unavailable states. Offline/mock mode does not display a banner or demo
+  notices in the frontend; the configured authentication and workflow providers
+  still control runtime behavior.
 
 Mock login endpoints exist only when `app.security.provider=mock`:
 `GET /api/v1/auth/mock/users`, `POST /api/v1/auth/mock/login` with

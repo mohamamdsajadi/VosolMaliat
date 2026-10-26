@@ -111,7 +111,7 @@ export default function RegisterPage() {
         if (body.fieldErrors) setErrors(body.fieldErrors);
         throw new Error(body.message || 'ثبت اطلاعات انجام نشد. دوباره تلاش کنید.');
       }
-      setMessage(body.message || 'ثبت‌نام آزمایشی با موفقیت انجام شد.');
+      setMessage(body.message || 'ثبت‌نام با موفقیت انجام شد.');
       setForm(EMPTY_FORM);
       setErrors({});
     } catch (error) {
@@ -131,7 +131,7 @@ export default function RegisterPage() {
           <div>
             <span className={styles.kicker}>سامانه وصول مالیات</span>
             <h1>حساب شما، شروع یک مسیر ساده‌تر</h1>
-            <p>اطلاعات پایه را وارد کنید تا حساب آزمایشی شما در چند ثانیه ساخته شود.</p>
+            <p>اطلاعات پایه را وارد کنید تا حساب شما در چند ثانیه ساخته شود.</p>
           </div>
 
           <div className={styles.featureList}>
@@ -180,13 +180,13 @@ export default function RegisterPage() {
             {message && <div className={message.includes('موفقیت') ? styles.success : styles.formMessage} role="status">{message}</div>}
 
             <button type="submit" className={styles.submitButton} disabled={submitting}>
-              <span>{submitting ? 'در حال ثبت اطلاعات...' : 'ساخت حساب آزمایشی'}</span>
+              <span>{submitting ? 'در حال ثبت اطلاعات...' : 'ساخت حساب کاربری'}</span>
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
             </button>
           </form>
         </div>
       </section>
-      <footer className={styles.footer}>محیط تست داخلی <span /> نسخه ۱.۰</footer>
+      <footer className={styles.footer}>سامانه وصول و اجرا <span /> نسخه ۱.۰</footer>
     </main>
   );
 }

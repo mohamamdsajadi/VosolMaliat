@@ -74,7 +74,7 @@ export default function FakeRestrictionsPage() {
   return (
     <AppShell
       active="test-front"
-      title="سامانه اعمال محدودیت آزمایشی"
+      title="سامانه اعمال محدودیت"
       eyebrow="Fake Restriction System"
       actions={<div className="row-actions"><Link className="text-action" href="/test-front">بازگشت به Test Front</Link><RefreshButton onClick={load} loading={loading} /></div>}
     >

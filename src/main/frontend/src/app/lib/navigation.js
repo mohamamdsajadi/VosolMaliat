@@ -56,7 +56,7 @@ export const NAV_ITEMS = [
     key: "test-front",
     href: "/test-front",
     label: "Test Front",
-    helper: "سامانه‌ها و فرایندهای آزمایشی",
+    helper: "سامانه‌ها و فرایندها",
     permissions: ["AUDIT_VIEW"]
   }
 ];

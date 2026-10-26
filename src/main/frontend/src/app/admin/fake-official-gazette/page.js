@@ -113,7 +113,7 @@ export default function FakeOfficialGazettePage() {
   return (
     <AppShell
       active="test-front"
-      title="روزنامه رسمی آزمایشی"
+      title="روزنامه رسمی"
       eyebrow="Fake Official Gazette"
       actions={<div className="row-actions"><Link className="text-action" href="/test-front">بازگشت به Test Front</Link><RefreshButton onClick={load} loading={loading} /></div>}
     >

@@ -1051,9 +1051,10 @@ function SanimDocumentSection({ data }) {
         <InfoItem label="نشانی" value={taxpayer.address || source.address} wide />
       </InfoGroup>
 
-      <InfoGroup title="سند بدهی قطعی و مبنای صدور" subtitle="اطلاعات ثبت‌شده در سند سنیم" icon="document" tone="indigo">
-        <InfoItem label="شماره نامه سنیم" value={formatValue(source.documentNumber)} ltr emphasize />
-        <InfoItem label="تاریخ نامه سنیم" value={formatValue(source.issueDateRaw)} />
+      <InfoGroup title="سند بدهی قطعی و مبنای صدور" subtitle="اطلاعات ثبت‌شده در سند مبدأ" icon="document" tone="indigo">
+        <InfoItem label="سامانه صادرکننده برگ اجرا" value={execution.issuerSystemLabel || execution.issuerSystem} />
+        <InfoItem label="شماره نامه مبدأ" value={formatValue(source.documentNumber)} ltr emphasize />
+        <InfoItem label="تاریخ نامه مبدأ" value={formatValue(source.issueDateRaw)} />
         <InfoItem label="شماره سند مبنا" value={formatValue(source.basisDocumentNumber || finalized.uniqueFinalTaxDebtNoticeId)} ltr />
         <InfoItem label="تاریخ صدور برگ بدهی قطعی" value={formatValue(finalized.finalTaxDebtNoticeIssueDate || source.issueDateRaw)} />
         <InfoItem label="علت قطعیت" value={readableEnum(source.issuanceReason || finalized.finalizationReason, FINALIZATION_LABELS)} />
@@ -1068,7 +1069,7 @@ function SanimDocumentSection({ data }) {
         <InfoItem label="اداره کل امور مالیاتی" value={source.generalDirectorateName || finalized.generalDirectorateName || execution.generalDirectorateName} wide />
         <InfoItem label="کد داخلی اداره کل" value={formatValue(finalized.mainTaxBureauId || execution.mainTaxBureauId)} ltr />
         <InfoItem label="اداره امور مالیاتی" value={source.taxOfficeName || finalized.taxAffairsOfficeName || execution.taxAffairsOfficeName} wide />
-        <InfoItem label="کد اداره در سنیم" value={formatValue(source.sourceTaxOfficeCode)} ltr />
+        <InfoItem label="کد اداره در سامانه مبدأ" value={formatValue(source.sourceTaxOfficeCode)} ltr />
         <InfoItem label="شناسه داخلی اداره" value={formatValue(finalized.taxBureauId || execution.taxBureauId)} ltr />
         <InfoItem label="تلفن اداره" value={formatValue(finalized.taxAffairsOfficePhone || execution.taxAffairsOfficePhone)} ltr />
         <InfoItem label="کد پستی اداره" value={formatValue(finalized.taxAffairsOfficePostalCode || execution.taxAffairsOfficePostalCode)} ltr />

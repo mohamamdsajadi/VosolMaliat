@@ -1,10 +1,9 @@
 'use client';
 
-import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { formatDashboardNumber as number } from '../../lib/manager-dashboard';
 import FigmaShell from './figma-shell';
-import TaskReferralAction from '../task-referral/task-referral-action';
+import PendingArrestPapers from './pending-arrest-papers';
 import { formatJalaliDate } from '../../lib/display';
 import Icon from './dashboard-icon';
 import styles from './manager-dashboard.module.css';
@@ -16,7 +15,6 @@ const CollectionChart = dynamic(() => import('./collection-chart'), {
 
 export default function ManagerDashboard({ user, data, loading, onRefresh }) {
   const stats = data?.stats;
-  const tasks = data?.tasks || [];
   const performance = data?.performance;
   const metrics = [
     { key: 'active', label: 'پرونده‌های فعال', icon: 'briefcase', tone: 'blue', value: stats?.activeExecutionPapers,
@@ -29,12 +27,6 @@ export default function ManagerDashboard({ user, data, loading, onRefresh }) {
       value: stats?.closedExecutionPapers,
       detail: 'برگ‌های اجرای قابل مشاهده' },
   ];
-  const taskRows = [...tasks].sort((a, b) => {
-    const aDate = a.dueDate ? Date.parse(a.dueDate) : Infinity;
-    const bDate = b.dueDate ? Date.parse(b.dueDate) : Infinity;
-    return aDate - bDate;
-  }).slice(0, 5);
-
   return (
     <FigmaShell user={user} data={data} loading={loading}>
         <p id="dashboard-scope" className={styles.srOnly}>اقدامات مطابق مسئولیت کاربر؛ عملکرد بر اساس دستورهای بازداشت مربوط به کاربر.</p>
@@ -49,25 +41,7 @@ export default function ManagerDashboard({ user, data, loading, onRefresh }) {
               </article>)}
             </section>
 
-            <section className={`${styles.card} ${styles.pendingCard}`} aria-labelledby="pending-heading">
-              <div className={styles.cardHeading}><h2 id="pending-heading" className={styles.dangerHeading}><Icon name="info" />نیازمند اقدام شما</h2><Link className={styles.viewAll} href="/arrest-orders">دستورهای بازداشت</Link><Link className={styles.viewAll} href="/tasks">کارتابل</Link></div>
-              {data?.tasksError && <ErrorNotice message="دریافت بخشی از کارتابل ناموفق بود." onRetry={onRefresh} />}<div className={styles.tableScroll} tabIndex={0} role="region" aria-label="کارهای نیازمند اقدام؛ برای مشاهده همه ستون‌ها پیمایش افقی کنید">
-                <table className={styles.tasksTable}>
-                  <thead><tr>{['ردیف', 'شماره برگ اجرا', 'نوع اقدام', 'اولویت', 'مهلت اقدام', 'عملیات سریع'].map(label => <th key={label} scope="col">{label}</th>)}</tr></thead>
-                  <tbody>
-                    {loading ? <tr><td colSpan={6} className={styles.tableEmpty}>در حال دریافت کارتابل...</td></tr> : taskRows.length === 0 ? <tr><td colSpan={6} className={styles.tableEmpty}>در حال حاضر اقدامی در کارتابل شما وجود ندارد.</td></tr> : taskRows.map((task, index) => {
-                      const priority = task.priority;
-                      return <tr key={task.key}>
-                        <td>{number(index + 1)}</td><td><bdi>{persianIdentifier(task.paperCode)}</bdi></td><td>{task.name}</td>
-                        <td><span className={`${styles.priority} ${priority === 'urgent' ? styles.urgent : priority === 'normal' ? styles.normal : styles.unknown}`}>{priority === 'urgent' ? 'فوری' : priority === 'normal' ? 'عادی' : 'نامشخص'}</span></td>
-                        <td><bdi>{formatJalaliDate(task.dueDate)}</bdi></td>
-                        <td><div className={styles.quickActions}><Link className={styles.quickAction} href={task.href} aria-label={`مشاهده کار ${task.name}، برگ ${task.paperCode}`}>مشاهده کار</Link><TaskReferralAction task={task.sourceTask} user={user} /></div></td>
-                      </tr>;
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </section>
+            <PendingArrestPapers user={user} refreshKey={data} />
 
             <section className={`${styles.card} ${styles.unitCard}`} aria-labelledby="unit-heading">
               <div className={styles.cardHeading}><h2 id="unit-heading"><Icon name="chart" />عملکرد کلی واحد</h2></div>
@@ -113,8 +87,4 @@ export default function ManagerDashboard({ user, data, loading, onRefresh }) {
 
 function ErrorNotice({ message, onRetry }) {
   return <div className={styles.error} role="alert"><span>{message}</span><button onClick={onRetry}>تلاش مجدد</button></div>;
-}
-
-function persianIdentifier(value) {
-  return String(value).replace(/\d/g, digit => '۰۱۲۳۴۵۶۷۸۹'[digit]);
 }

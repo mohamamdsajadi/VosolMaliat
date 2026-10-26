@@ -1,6 +1,7 @@
 package com.mparsict.vosolmaliat.domain.model.execution;
 
 import com.mparsict.vosolmaliat.domain.model.BaseEntity;
+import com.mparsict.vosolmaliat.domain.enums.ExecutionPaperIssuerSystem;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -23,6 +24,12 @@ public class ExecutionPaper extends BaseEntity {
 
     @Column(name = "execution_paper_unique_code", nullable = false, unique = true, updatable = false)
     private String executionPaperUniqueCode;
+
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @org.hibernate.annotations.ColumnDefault("'SANIM'")
+    @Column(name = "issuer_system", nullable = false, updatable = false, length = 16)
+    private ExecutionPaperIssuerSystem issuerSystem = ExecutionPaperIssuerSystem.SANIM;
 
     @OneToOne(mappedBy = "executionPaper", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
     @com.fasterxml.jackson.annotation.JsonIgnore

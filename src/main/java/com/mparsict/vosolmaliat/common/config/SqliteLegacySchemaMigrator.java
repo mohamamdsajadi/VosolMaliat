@@ -37,6 +37,7 @@ public class SqliteLegacySchemaMigrator
             EnumLookupSchemaMigration.migrate(connection);
             NullableEf03FieldsMigration.migrate(connection);
             SqliteDocumentModelFieldCleanup.migrate(connection);
+            SqliteExecutionPaperIssuerMigration.migrate(connection);
             if (tableExists(connection, "execution_paper") && !tableExists(connection, "dynamic_control_rule"))
                 throw new IllegalStateException("مدل پایگاه داده قدیمی است؛ ابزار بازسازی مستند مدل داده را اجرا کنید.");
         } catch (SQLException exception) { throw new IllegalStateException("بررسی مدل پایگاه داده ناموفق بود", exception); }
@@ -50,6 +51,7 @@ public class SqliteLegacySchemaMigrator
             SanimLegacyFieldCleanup.migrate(connection);
             NullableEf03FieldsMigration.migrate(connection);
             SqliteDocumentModelFieldCleanup.migrate(connection);
+            SqliteExecutionPaperIssuerMigration.migrate(connection);
         } catch (SQLException exception) {
             throw new IllegalStateException("Could not upgrade the SQLite debt inquiry schema", exception);
         }

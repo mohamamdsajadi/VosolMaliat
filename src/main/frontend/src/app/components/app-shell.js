@@ -102,7 +102,6 @@ export default function AppShell({
         )}
 
         <div className="sidebar-footer">
-          <span>سناریوی دمو</span>
           <strong>مرکز عملیات درخواست‌های سازمانی</strong>
         </div>
       </aside>

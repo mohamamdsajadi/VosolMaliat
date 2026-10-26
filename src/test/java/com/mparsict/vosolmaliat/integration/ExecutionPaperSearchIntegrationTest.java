@@ -47,6 +47,22 @@ class ExecutionPaperSearchIntegrationTest {
     }
 
     @Test
+    void detailsExposePersistedIssuerAndPersianLabelForBothSystems() throws Exception {
+        addPaper(true, "2026-09-02T12:00:00", "10", "PAPER-4", "44444444444", ExecutionPaperIssuerSystem.TABRIZ);
+        em.flush(); em.clear();
+        String token = "Bearer " + identities.login("admin").accessToken();
+        for (String code : java.util.List.of("PAPER-1", "PAPER-4")) {
+            var paper = service.searchAll(criteria(code, null, null, null, null, null), 0, 1).content().getFirst();
+            var expected = code.equals("PAPER-4") ? ExecutionPaperIssuerSystem.TABRIZ : ExecutionPaperIssuerSystem.SANIM;
+            assertThat(em.find(ExecutionPaper.class, paper.id()).getIssuerSystem()).isEqualTo(expected);
+            http.perform(get("/api/v1/execution-papers/{id}", paper.id()).header("Authorization", token))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.executionPaper.issuerSystem").value(expected.name()))
+                    .andExpect(jsonPath("$.executionPaper.issuerSystemLabel").value(expected.getLabel()));
+        }
+    }
+
+    @Test
     void financialStatementUsesTheSameExactAmountsAndAllStoredSnapshotsOfThisPaper() throws Exception {
         Long id = service.searchAll(criteria("PAPER-1", null, null, null, null, null), 0, 1).content().getFirst().id();
         var paper = em.find(ExecutionPaper.class, id);
@@ -297,6 +313,10 @@ class ExecutionPaperSearchIntegrationTest {
     }
 
     private void addPaper(boolean legal, String issued, String debt, String code, String nationalId) {
+        addPaper(legal, issued, debt, code, nationalId, null);
+    }
+
+    private void addPaper(boolean legal, String issued, String debt, String code, String nationalId, ExecutionPaperIssuerSystem issuer) {
         var taxpayer = Taxpayer.builder().tin("TIN-" + code).registrationTraceCode("FOLLOW-" + code).build();
         if (legal) {
             var person = LegalPerson.builder().nationalId(nationalId).name("شرکت " + code).build();
@@ -318,6 +338,7 @@ class ExecutionPaperSearchIntegrationTest {
         em.persist(finalPaper);
         var paper = ExecutionPaper.builder().executionPaperUniqueCode(code).issuanceDate(date)
                 .finalTaxDebtPaper(finalPaper).currentState("UNASSIGNED").build();
+        if (issuer != null) paper.setIssuerSystem(issuer);
         em.persist(paper);
         var amount = new BigDecimal(debt);
         em.persist(DebtInformation.builder().finalTaxDebtPaper(finalPaper).totalLiability(amount)

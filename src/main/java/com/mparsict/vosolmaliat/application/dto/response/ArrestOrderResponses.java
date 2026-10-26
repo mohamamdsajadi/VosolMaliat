@@ -15,6 +15,7 @@ public final class ArrestOrderResponses {
     public record Event(Long id, String action, String actorName, String destination, Instant occurredAt, String note) {}
     public record Detail(Row order, Map<String, Object> letter, List<Event> history) {}
     public record Candidate(ExecutionPaperDto paper, String generalDirectorate, Instant paymentDeadline) {}
+    public record PendingPaper(ExecutionPaperDto paper, String status, Long arrestOrderId) {}
     public record Page<T>(List<T> content, long totalElements, int totalPages, int number, int size) {}
     public record StartResult(Long executionPaperId, boolean success, Row order, String message) {}
     public record Batch(List<StartResult> results, long succeeded, long failed) {}

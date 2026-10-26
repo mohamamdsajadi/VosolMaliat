@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { apiJson } from '../../lib/api';
 import { STAGES, EVENT_LABELS, canStartArrest, hasArrestPermission, arrestDate, arrestTargets, actOnArrestOrder, digits } from '../../lib/arrest-orders';
 import { useGridSelection, useGridView } from '../../lib/grid-view';
+import { normalizeDigits } from '../../lib/execution-papers';
 import FigmaShell from '../manager-dashboard/figma-shell';
 import DashboardIcon from '../manager-dashboard/dashboard-icon';
 import PaperIcon from '../execution-papers/paper-icon';
@@ -32,8 +33,8 @@ function useResource(path, enabled = true, revision = 0) {
 
 export default function ArrestOrdersWorkspace() {
   const [selectedTab, setTab] = useState(null);
-  const [search, setSearch] = useState('');
-  const [query, setQuery] = useState('');
+  const [search, setSearch] = useState(() => typeof window === 'undefined' ? '' : new URLSearchParams(window.location.search).get('search') || '');
+  const [query, setQuery] = useState(() => typeof window === 'undefined' ? '' : normalizeDigits((new URLSearchParams(window.location.search).get('search') || '').trim()));
   const [page, setPage] = useState(0);
   const [stage, setStage] = useState('');
   const [revision, setRevision] = useState(0);
@@ -50,7 +51,7 @@ export default function ArrestOrdersWorkspace() {
   const detail = useResource(`/api/v1/arrest-orders/${encodeURIComponent(selectedOrder || '')}`, canView && !!selectedOrder, revision);
   const refresh = useCallback(() => { setRevision(value => value + 1); }, []);
   useEffect(() => {
-    const normalized = search.trim().replace(/[۰-۹]/g, n => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(n)));
+    const normalized = normalizeDigits(search.trim());
     if (normalized === query) return;
     const timer = setTimeout(() => { setQuery(normalized); setPage(0); }, 300);
     return () => clearTimeout(timer);
@@ -101,7 +102,7 @@ function OrderDetail({ detail, onChanged }) {
     <div className={styles.orderHeading}><div><h2>برگ اجرای {digits(order.executionPaperCode)}</h2><p>{order.taxpayerName} • شناسه ملی {digits(order.taxpayerNationalId)}</p></div><span className={order.issuanceStatus === 'ISSUED' ? styles.ready : styles.pending}>{order.issuanceStatus === 'ISSUED' ? 'دستور صادر شده' : 'در انتظار صدور'}</span></div>
     <div className={styles.summary}><div><small>تاریخ ارجاع</small><strong>{arrestDate(order.referredAt)}</strong></div><div><small>مقصد ارجاع</small><strong>{order.referralDestination}</strong><small>{order.assignee?.roleTitle}</small></div><div><small>مرحله جاری</small><strong>{STAGES[order.stage]}</strong></div><div><small>شماره دستور</small><strong>{digits(order.letterNumber)}</strong></div></div>
     <Progress order={order} history={history} />
-    <div className={styles.detailGrid}><section className={styles.card}><div className={styles.detailTabs}><div><button aria-pressed={panel === 'letter'} onClick={() => setPanel('letter')}>نامه دستور بازداشت</button><button aria-pressed={panel === 'history'} onClick={() => setPanel('history')}>سوابق گردش و ارجاع ({digits(history.length)})</button></div>{panel === 'letter' && !!detail.letter?.paper && <button className={styles.secondary} onClick={printArrestLetter}><Icon name="document" />{order.issuanceStatus === 'ISSUED' ? 'چاپ / ذخیره PDF' : 'چاپ پیش‌نویس'}</button>}</div>{panel === 'letter' ? <div className={styles.letterPreview}><ArrestLetter detail={detail} /></div> : <ol className={styles.timeline}>{history.map(event => <li key={event.id}><span className={styles.timelineDot} /><div><strong>{EVENT_LABELS[event.action] || event.action}</strong><time>{arrestDate(event.occurredAt)}</time><p>{event.actorName} ← {event.destination}</p>{event.note && <small>{event.note}</small>}</div></li>)}</ol>}</section><aside><ActionPanel key={`${order.id}:${order.version}`} order={order} onChanged={onChanged} /><div><Link className={styles.paperLink} href={`/execution-papers/${order.executionPaperId}`}>مشاهده برگ اجرا و مشخصات مؤدی ←</Link></div></aside></div>
+    <div className={styles.detailGrid}><section className={styles.card}><div className={styles.detailTabs}><div><button aria-pressed={panel === 'letter'} onClick={() => setPanel('letter')}>نامه دستور بازداشت</button><button aria-pressed={panel === 'history'} onClick={() => setPanel('history')}>سوابق گردش و ارجاع ({digits(history.length)})</button></div>{panel === 'letter' && !!detail.letter?.paper && <button className={styles.secondary} onClick={printArrestLetter}><Icon name="document" />{order.issuanceStatus === 'ISSUED' ? 'چاپ / ذخیره PDF' : 'چاپ پیش‌نویس'}</button>}</div>{panel === 'letter' ? <div className={styles.letterPreview}><ArrestLetter detail={detail} /></div> : <ol className={styles.timeline}>{history.map(event => <li key={event.id}><span className={styles.timelineDot} /><div><strong>{EVENT_LABELS[event.action] || event.action}</strong><time>{arrestDate(event.occurredAt)}</time><p>{event.actorName} ← {event.destination}</p>{event.note && <small>{event.action === 'DEBT_INQUIRY_MOCKED' ? 'استعلام بدهی با استفاده از آخرین بدهی ذخیره‌شده انجام شد.' : event.note}</small>}</div></li>)}</ol>}</section><aside><ActionPanel key={`${order.id}:${order.version}`} order={order} onChanged={onChanged} /><div><Link className={styles.paperLink} href={`/execution-papers/${order.executionPaperId}`}>مشاهده برگ اجرا و مشخصات مؤدی ←</Link></div></aside></div>
   </>;
 }
 
@@ -140,5 +141,5 @@ function ActionPanel({ order, onChanged }) {
 function Progress({ order, history }) {
   const actions = new Set(history.map(event => event.action));
   const steps = [['STARTED', 'آغاز و انتخاب مقصد'], ['DEBT_INQUIRY_MOCKED', 'استعلام بدهی'], ['DRAFT_PREPARED', 'تهیه پیش‌نویس'], ['APPROVED_AND_ISSUED', 'تأیید و صدور'], ...(order.route === 'OFFICER' ? [] : [['REFERRED_TO_SUPERVISOR', 'ارجاع به سرپرست']]), ['ASSIGNED_TO_OFFICER', 'ارجاع به مأمور']];
-  return <ol className={styles.progress} aria-label="مراحل گردش دستور بازداشت">{steps.map(([action, label], i) => <li key={action} className={actions.has(action) ? styles.stepDone : ''} aria-current={!actions.has(action) && (i === 0 || actions.has(steps[i - 1][0])) ? 'step' : undefined}><span>{actions.has(action) ? '✓' : digits(i + 1)}</span><strong>{label}</strong>{action === 'DEBT_INQUIRY_MOCKED' && <small>آزمایشی</small>}</li>)}</ol>;
+  return <ol className={styles.progress} aria-label="مراحل گردش دستور بازداشت">{steps.map(([action, label], i) => <li key={action} className={actions.has(action) ? styles.stepDone : ''} aria-current={!actions.has(action) && (i === 0 || actions.has(steps[i - 1][0])) ? 'step' : undefined}><span>{actions.has(action) ? '✓' : digits(i + 1)}</span><strong>{label}</strong></li>)}</ol>;
 }

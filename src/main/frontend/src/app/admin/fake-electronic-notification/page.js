@@ -79,14 +79,14 @@ export default function FakeElectronicNotificationPage() {
   return (
     <AppShell
       active="test-front"
-      title="سامانه ابلاغ الکترونیک آزمایشی"
+      title="سامانه ابلاغ الکترونیک"
       eyebrow="Fake External System"
       actions={<RefreshButton onClick={load} loading={loading} />}
     >
       <main className="fake-service-page">
         <section className="fake-service-hero">
           <div>
-            <p className="eyebrow">سامانه بیرونی آزمایشی</p>
+            <p className="eyebrow">سامانه بیرونی</p>
             <h2>درخواست‌های ابلاغ الکترونیک</h2>
           </div>
           <div className="fake-service-stats">

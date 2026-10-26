@@ -113,7 +113,6 @@
 .field textarea { resize:vertical; }
 .confirm { display:flex; align-items:flex-start; gap:8px; color:#466d7c; font-size:11px; line-height:2; }
 .confirm input { accent-color:#00858c; margin-top:5px; flex-shrink:0; }
-.mockNote { border-top:1px solid #e5edf0; padding-top:15px; margin:18px 0 0; font-size:10px!important; color:#a07832!important; }
 .timeline { list-style:none; padding:25px; margin:0; display:grid; }
 .timeline li { display:flex; gap:18px; position:relative; padding:0 0 26px; }
 .timeline li:not(:last-child):before { content:''; position:absolute; width:1px; right:4px; top:10px; bottom:0; background:#d7e9e8; }

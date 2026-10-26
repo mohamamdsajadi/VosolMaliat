@@ -23,16 +23,22 @@ No temporary asset URLs or sample design figures are used at runtime.
 | Statistics / collection amount | Authenticated `GET /api/v1/dashboard/stats`; supervisors/officers receive only their assigned execution-paper aggregates |
 | Closed cases | Existing completed + cancelled execution-paper counts |
 | Pending work / completed work | Current actionable Camunda tasks plus the local arrest-order task list; completed work counts distinct tasks/orders acted on by this user, not closed papers |
-| Arrest candidates / local referrals | Eligible papers for the initiating head plus `/api/v1/arrest-orders?mine=true`; dashboard rows link to the local workflow |
+| “نیازمند اقدام شما” table | Paged `GET /api/v1/dashboard/pending-arrest-papers`; eligible unstarted papers and the current user's `AWAITING_APPROVAL` drafts only, with drafts first |
 | Arrest performance | Distinct orders acted on by this user / (their responsible orders + their eligible unstarted papers), counted once per order; zero when no work exists |
-| Task links | Existing `/tasks/{taskKey}` page; no automatic workflow mutation |
+| Pending paper actions | Candidate links open the arrest list filtered by paper code; draft links open the exact order for approval; paper numbers link to details when permitted |
 | Category navigation | Existing tasks API's `taskName` filter |
-| Priority | Only explicit `priority` or `taskPriority` variables; otherwise unknown |
 | Monthly series, collection case count, recent activity, trends | Unavailable states: no existing reporting endpoint or agreed definitions |
 | Notifications | Unavailable state: no notification-feed endpoint |
 | Settings | Account menu and existing Keycloak logout |
 
-Stats and tasks fail independently and support retry. Failed or missing values are
+The pending table shows execution-paper code, taxpayer name and national ID,
+exact current outstanding debt, issuance status, and the relevant action. It
+pages through all eligible rows in groups of five and excludes issued orders,
+supervisor-to-officer assignment tasks, special-department reviews without a
+draft, and unrelated Camunda tasks. The API reuses the arrest module's eligibility,
+organization and ownership rules. No workflow starts just by opening the dashboard.
+
+Stats and pending papers fail independently and support retry. Failed or missing values are
 never replaced by zero or mock values. Decimal strings remain strings during
 Persian number formatting. Mobile tables scroll horizontally within a focusable
 region, and the drawer starts closed on narrow screens. Page instructions are available

@@ -52,6 +52,47 @@ public class ArrestOrderService {
     private final com.mparsict.vosolmaliat.application.service.security.ExecutionPaperVisibility visibility;
 
     @Transactional(readOnly = true)
+    public Page<PendingPaper> pendingPapers(int page, int size) {
+        pagination(page, size);
+        // Reuse the task lists' eligibility, permissions and assignment scope.
+        var approvals = list(0, size, "", AWAITING_APPROVAL.name(), true, null);
+        var ready = candidates(0, size, "");
+        long total = approvals.totalElements() + ready.totalElements();
+        long offset = (long) page * size;
+        var rows = new ArrayList<PendingPaper>();
+        if (offset < approvals.totalElements()) {
+            int count = (int) Math.min(size, approvals.totalElements() - offset);
+            rows.addAll(pendingRange(approvals, offset, count,
+                    next -> list(next, size, "", AWAITING_APPROVAL.name(), true, null)).stream()
+                    .map(order -> new PendingPaper(paperService.getSummary(order.executionPaperId()),
+                            "AWAITING_APPROVAL", order.id())).toList());
+        }
+        int remaining = size - rows.size();
+        if (remaining > 0) {
+            long candidateOffset = Math.max(0, offset - approvals.totalElements());
+            rows.addAll(pendingRange(ready, candidateOffset, remaining,
+                    next -> candidates(next, size, "")).stream()
+                    .map(candidate -> new PendingPaper(candidate.paper(), "READY_FOR_ISSUANCE", null)).toList());
+        }
+        return new Page<>(rows, total, (int) ((total + size - 1) / size), page, size);
+    }
+
+    private <T> List<T> pendingRange(Page<T> first, long offset, int count,
+                                    java.util.function.IntFunction<Page<T>> fetch) {
+        var rows = new ArrayList<T>();
+        while (rows.size() < count && offset < first.totalElements()) {
+            int page = (int) (offset / first.size());
+            var batch = page == 0 ? first : fetch.apply(page);
+            int skip = (int) (offset % first.size());
+            int take = Math.min(count - rows.size(), batch.content().size() - skip);
+            if (take <= 0) break;
+            rows.addAll(batch.content().subList(skip, skip + take));
+            offset += take;
+        }
+        return rows;
+    }
+
+    @Transactional(readOnly = true)
     public Page<Candidate> candidates(int page, int size, String search) {
         var user = viewer();
         if (!canStart(user)) return new Page<>(List.of(), 0, 0, page, size);

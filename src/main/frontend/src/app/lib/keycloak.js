@@ -45,7 +45,7 @@ export async function startKeycloakLogin(nextPath = '/', mockUsername) {
 
 export async function completeKeycloakLogin(code, state) {
   const identity = await fetchIdentityConfiguration();
-  if (identity.provider !== 'keycloak') throw new Error('ورود سازمانی غیرفعال است؛ از صفحه ورود آزمایشی وارد شوید.');
+  if (identity.provider !== 'keycloak') throw new Error('ورود سازمانی غیرفعال است؛ از صفحه ورود وارد شوید.');
   const expectedState = window.sessionStorage.getItem('oauth_state');
   const verifier = window.sessionStorage.getItem('pkce_verifier');
   if (!code || !state || state !== expectedState || !verifier) {

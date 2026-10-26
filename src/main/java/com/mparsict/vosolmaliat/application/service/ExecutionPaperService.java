@@ -410,6 +410,8 @@ public class ExecutionPaperService {
         execution.put("id", ep.getId());
         execution.put("uniqueCode", ep.getExecutionPaperUniqueCode());
         execution.put("issuanceDate", ep.getIssuanceDate());
+        execution.put("issuerSystem", ep.getIssuerSystem());
+        execution.put("issuerSystemLabel", ep.getIssuerSystem() == null ? null : ep.getIssuerSystem().getLabel());
         execution.put("currentState", ep.getCurrentState());
         execution.put("currentStateLabel", ExecutionPaperState.labelOf(ep.getCurrentState()));
         execution.put("currentStateDisplay", ExecutionPaperState.labelOf(ep.getCurrentState()));

@@ -138,7 +138,7 @@ export default function FakeSanimPage() {
   const confirm = async id => {
     setMessage('')
     await apiJson(`/api/v1/fake-sanim/inform-requests/${id}/confirm`, { method: 'POST' })
-    setMessage('دریافت پیام در سنیم آزمایشی تایید شد.')
+    setMessage('دریافت پیام در سنیم تایید شد.')
     await load()
   }
 
@@ -190,7 +190,7 @@ export default function FakeSanimPage() {
   return (
     <AppShell
       active="test-front"
-      title="سامانه عملیاتی سنیم آزمایشی"
+      title="سامانه عملیاتی سنیم"
       eyebrow="Fake External System"
       actions={(
         <div className="row-actions">
@@ -214,7 +214,7 @@ export default function FakeSanimPage() {
       <main className="fake-service-page fake-service-page--sanim">
         <section className="fake-service-hero">
           <div>
-            <p className="eyebrow">سامانه بیرونی آزمایشی</p>
+            <p className="eyebrow">سامانه بیرونی</p>
             <h2>درخواست‌های ارسال تاریخ ابلاغ به سنیم</h2>
           </div>
           <div className="fake-service-stats">
@@ -228,7 +228,7 @@ export default function FakeSanimPage() {
         {message && <div className="notice">{message}</div>}
         <SanimStatsPie items={items} stats={stats} />
         {loading ? <div className="empty-state compact">در حال دریافت درخواست‌ها...</div> : items.length === 0 ? (
-          <section className="empty-state">هنوز تاریخ ابلاغی به سنیم آزمایشی ارسال نشده است.</section>
+          <section className="empty-state">هنوز تاریخ ابلاغی به سنیم ارسال نشده است.</section>
         ) : (
           <div className="task-table-card fake-service-table-card">
             <div className="task-table-header">

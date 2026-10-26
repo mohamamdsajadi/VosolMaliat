@@ -48,14 +48,13 @@
 .dates button{min-width:0!important}
 .clear{border:0;background:none;color:#3b72b2!important;font-size:11px!important;padding:8px 0}
 .tableScroll{overflow:auto;max-width:100%;outline-offset:-3px}
-.table{width:100%;border-collapse:collapse;min-width:980px;font-size:12px;text-align:right}
+.table{width:100%;border-collapse:collapse;min-width:800px;font-size:12px;text-align:right}
 .table th{font-size:11px;color:#5c748a;background:#f7f9fc;padding:14px 20px;white-space:nowrap;border-bottom:1px solid #e6edf4;font-weight:600}
 .table td{padding:18px 20px;border-bottom:1px solid #eff3f7;vertical-align:middle;line-height:1.7}
 .table tr:last-child td{border-bottom:0}
 .table tbody tr:hover{background:#fcfdff}
 .table strong{font-size:12px;font-weight:650;display:block}
 .table small{display:block;color:#7e91a0;font-size:10px;margin-top:4px}
-.tracking{max-width:165px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .paperLink{display:block!important;color:#4078b9!important;font-size:11px;margin-top:4px}
 .table time{white-space:nowrap;direction:rtl;display:inline-block;font-size:11px;color:#60788d}
 .personCount{display:inline-flex;align-items:center;gap:6px;color:#56768f;min-width:48px;justify-content:center}
@@ -66,7 +65,6 @@
 .unknown{color:#6d7c89;background:#edf1f5}
 .detailButton{border:0;background:#f0f5fc;color:#366aab!important;border-radius:8px;padding:8px 11px;white-space:nowrap;display:flex;gap:8px;align-items:center;font-size:11px!important}
 .detailButton:hover{background:#e2edfc}
-.mockTag{display:inline-block;font-size:9px;background:#f2f2f5;border:1px solid #e4e5e9;color:#858795;border-radius:4px;padding:0 5px;margin-top:4px}
 .pagination{display:flex;align-items:center;justify-content:space-between;border-top:1px solid #edf1f5;padding:15px 22px;color:#7b8e9e;font-size:11px}
 .pagination>div{display:flex;gap:8px}
 .pagination button{font-size:11px;min-height:32px;padding:5px 12px}
@@ -103,8 +101,6 @@
 .facts dt,.linkedList dt{font-size:11px;color:#8b9bab;margin-bottom:7px}
 .facts dd,.linkedList dd{font-size:12px;color:#395773;margin:0;line-height:1.9;overflow-wrap:anywhere}
 .wideFact{grid-column:1/-1}
-.sampleNote{font-size:11px;color:#7f8b9b;display:flex;align-items:center;gap:7px;margin:18px 0;line-height:1.9}
-.sampleNote .mockTag{margin:0}
 .failure{display:flex;gap:12px;align-items:flex-start;background:#fff3f4;border:1px solid #f5dfe3;border-radius:10px;padding:16px;color:#b05b66;margin-top:18px}
 .failure strong{font-size:12px}
 .failure p{font-size:12px;white-space:pre-wrap;line-height:2;margin:8px 0 0}

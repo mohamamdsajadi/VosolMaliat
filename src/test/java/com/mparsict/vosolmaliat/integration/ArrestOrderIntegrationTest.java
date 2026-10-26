@@ -46,6 +46,59 @@ class ArrestOrderIntegrationTest {
     private static final String OFFICER = "demo_execution_officer";
 
     @Test
+    void dashboardPaperRowsCombineOnlyEligibleCandidatesAndMyApprovalDraftsAcrossPageBoundaries() {
+        long ready = fixture("DASHBOARD-READY", 40, "9007199254740993.02", false);
+        long draft = fixture("DASHBOARD-DRAFT", 40, "100", false);
+        long assigned = fixture("DASHBOARD-ASSIGNED", 40, "200", false);
+        long special = fixture("DASHBOARD-SPECIAL", 40, "300", false);
+        long foreign = fixture("DASHBOARD-FOREIGN", 40, "400", true);
+        long unexpired = fixture("DASHBOARD-NOT-DUE", 10, "500", false);
+        var draftOrder = start(HEAD, List.of(draft), "USER", profileId(SUPERVISOR)).getBody().path("results").get(0).path("order");
+        var assignedOrder = start(HEAD, List.of(assigned), "USER", profileId(SUPERVISOR)).getBody().path("results").get(0).path("order");
+        post(HEAD, "/" + assignedOrder.path("id").asLong() + "/approve", Map.of("version", assignedOrder.path("version").asLong()));
+        var specialOrder = start(HEAD, List.of(special), "SPECIAL_DEPARTMENT", null).getBody().path("results").get(0).path("order");
+        var rows = pendingDashboardPapers(HEAD);
+        var ids = rows.stream().map(row -> row.path("paper").path("id").asLong()).toList();
+        assertThat(ids).contains(ready, draft).doesNotContain(assigned, special, foreign, unexpired).doesNotHaveDuplicates();
+        assertThat(rows.stream().filter(row -> row.path("paper").path("id").asLong() == ready).findFirst().orElseThrow()
+                .path("paper").path("totalDebt").asText()).isEqualTo("9007199254740993.02");
+        assertThat(rows.stream().filter(row -> row.path("paper").path("id").asLong() == draft).findFirst().orElseThrow()
+                .path("arrestOrderId").asLong()).isEqualTo(draftOrder.path("id").asLong());
+        boolean candidateSeen = false;
+        for (var row : rows) {
+            if (row.path("status").asText().equals("READY_FOR_ISSUANCE")) candidateSeen = true;
+            else { assertThat(candidateSeen).isFalse(); assertThat(row.path("status").asText()).isEqualTo("AWAITING_APPROVAL"); }
+        }
+        assertThat(pendingDashboardPapers(SUPERVISOR)).isEmpty();
+        assertThat(pendingDashboardPapers(OFFICER)).isEmpty();
+        assertThat(pendingDashboardPapers(SPECIAL)).noneMatch(row -> row.path("paper").path("id").asLong() == special);
+        var prepared = post(SPECIAL, "/" + specialOrder.path("id").asLong() + "/prepare",
+                Map.of("version", specialOrder.path("version").asLong(), "userId", profileId(SUPERVISOR))).getBody();
+        assertThat(prepared.path("stage").asText()).isEqualTo("AWAITING_APPROVAL");
+        assertThat(pendingDashboardPapers(SPECIAL)).anyMatch(row -> row.path("paper").path("id").asLong() == special);
+        assertThat(pendingDashboardPapers(HEAD)).noneMatch(row -> row.path("paper").path("id").asLong() == special);
+        post(HEAD, "/" + draftOrder.path("id").asLong() + "/approve", Map.of("version", draftOrder.path("version").asLong()));
+        assertThat(pendingDashboardPapers(HEAD)).noneMatch(row -> row.path("paper").path("id").asLong() == draft);
+        assertThat(http.getForEntity("/api/v1/dashboard/pending-arrest-papers", JsonNode.class).getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(request(HEAD, "/api/v1/dashboard/pending-arrest-papers?size=0", HttpMethod.GET, null).getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    private List<JsonNode> pendingDashboardPapers(String user) {
+        var rows = new ArrayList<JsonNode>();
+        for (int page = 0; ; page++) {
+            var response = request(user, "/api/v1/dashboard/pending-arrest-papers?page=" + page + "&size=3", HttpMethod.GET, null);
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            var body = response.getBody();
+            assertThat(body.path("content").size()).isLessThanOrEqualTo(3);
+            body.path("content").forEach(rows::add);
+            if (page + 1 >= body.path("totalPages").asInt()) {
+                assertThat(rows).hasSize(body.path("totalElements").asInt());
+                return rows;
+            }
+        }
+    }
+
+    @Test
     void headCanSelectOfficerDirectlyButMustApproveBeforeHandoff() {
         long paper = fixture("DIRECT-OFFICER", 40, "1234.56", false);
         var response = post(HEAD, "", Map.of("executionPaperIds", List.of(paper), "destination", "OFFICER", "officerId", profileId(OFFICER)));

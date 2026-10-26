@@ -62,21 +62,19 @@ export default function LoginPage() {
           <div>
             <p className="eyebrow">سامانه وصول و اجرای مالیاتی</p>
             <h1>ورود کاربران سازمان امور مالیاتی</h1>
-            <span>{mock ? 'حالت آزمایشی محلی — ورود بدون رمز عبور و بدون اتصال به Keycloak' : 'احراز هویت از طریق Keycloak و حساب سازمانی انجام می‌شود.'}</span>
             <span className="login-hint">برای ادامه، ابتدا وارد سامانه شوید.</span>
           </div>
         </div>
 
         {mock && <div className="mock-login-options">
-          <label htmlFor="mock-user">کاربر آزمایشی</label>
+          <label htmlFor="mock-user">انتخاب کاربر</label>
           <select id="mock-user" value={username} onChange={event => setUsername(event.target.value)}>
             {users.map(user => <option key={user.username} value={user.username}>{businessRoleLabel(user.businessRole)} — {user.username}</option>)}
           </select>
-          {!users.length && <p role="status">کاربر آزمایشی فعالی موجود نیست.</p>}
-          {configuration.workflow === 'mock' && <p>Camunda غیرفعال است؛ کارتابل آزمایشی خالی است و فرایندها اجرا نمی‌شوند.</p>}
+          {!users.length && <p role="status">کاربر فعالی موجود نیست.</p>}
         </div>}
         <button className="primary-action login-action" onClick={login} disabled={loading || configLoading || !configuration || (mock && !username)}>
-          {configLoading ? 'در حال دریافت تنظیمات ورود' : loading ? 'در حال ورود…' : mock ? 'ورود آزمایشی' : 'ورود با حساب سازمانی'}
+          {configLoading ? 'در حال دریافت تنظیمات ورود' : loading ? 'در حال ورود…' : 'ورود به سامانه'}
         </button>
 
         {message && <div className="notice error" role="alert">{message}</div>}
