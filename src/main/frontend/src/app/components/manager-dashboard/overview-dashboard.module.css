@@ -1,0 +1,358 @@
+/* Dashboard rules stay local to the overview and its dialogs. */
+.viewportMain {
+  --report-text: #183653;
+  --report-muted: #596f85;
+  --report-border: #dfe7f0;
+  --report-soft: #f5f8fc;
+  --report-accent: #2779dc;
+  height: calc(100dvh - 84px);
+  padding: 0 20px 12px !important;
+  display: grid;
+  grid-template-rows: 56px minmax(0, 1fr);
+  min-width: 0;
+}
+
+.viewportMain > :first-child {
+  min-height: 0 !important;
+  padding: 0 !important;
+  flex-wrap: nowrap !important;
+  gap: 12px !important;
+}
+
+.viewportMain > :first-child h1 { font-size: 20px; }
+
+.overview {
+  display: grid;
+  grid-template-rows: 32px 92px minmax(0, .85fr) minmax(0, 1.15fr) 34px;
+  gap: 12px;
+  min-width: 0;
+  min-height: 0;
+  color: var(--report-text);
+}
+
+.overview button, .reportDialog button { font: inherit; }
+.overview button:disabled, .reportDialog button:disabled { cursor: default; opacity: 1; }
+.overview button:focus-visible, .reportDialog button:focus-visible,
+.reportDialog a:focus-visible, .tableScroll:focus-visible {
+  outline: 3px solid var(--report-accent);
+  outline-offset: 3px;
+}
+
+.intro, .intro > div { display: flex; align-items: center; min-width: 0; }
+.intro { grid-row: 1; justify-content: space-between; gap: 12px; font-size: 12px; color: var(--report-muted); }
+.intro > div { gap: 9px; }
+.liveDot { width: 6px; height: 6px; border-radius: 50%; background: #10a38f; box-shadow: 0 0 0 3px #10a38f16; flex-shrink: 0; }
+.scopeDot { width: 3px; height: 3px; border-radius: 50%; background: #8799ab; flex-shrink: 0; }
+
+.refresh, .close, .workButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 32px;
+  border: 1px solid var(--report-border);
+  border-radius: 8px;
+  background: #fff;
+  padding: 5px 11px;
+  font-size: 12px !important;
+  white-space: nowrap;
+  color: #345d83;
+  transition: background .15s, border-color .15s;
+}
+.refresh svg { width: 16px; height: 16px; color: var(--report-accent); }
+.refresh:not(:disabled):hover, .close:hover, .workButton:hover { background: #edf4fd; border-color: #a9c6e6; }
+
+.metrics { grid-row: 2; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; min-height: 0; }
+.metric {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 5px;
+  min-width: 0;
+  text-align: right;
+  border: 1px solid var(--report-border);
+  border-radius: 12px;
+  padding: 10px 14px;
+  background: #fff;
+  box-shadow: 0 2px 5px #18365304;
+  transition: border-color .15s, box-shadow .15s;
+}
+.metric::after { content: ''; position: absolute; inset-inline-start: 0; top: 18px; bottom: 18px; width: 3px; border-radius: 3px; background: var(--tone); }
+.metric:not(:disabled):hover { border-color: var(--tone); box-shadow: 0 4px 14px #18365310; }
+.amber { --tone: #b77b19; --tint: #fff5e1; }
+.violet { --tone: #8060c9; --tint: #f2eefb; }
+.blue { --tone: #2779dc; --tint: #edf4fd; }
+.teal { --tone: #108779; --tint: #e9f7f3; }
+.metricLabel { display: flex; align-items: center; gap: 8px; min-width: 0; color: var(--report-muted); font-size: 12px; line-height: 1.6; }
+.metricIcon { width: 26px; height: 26px; border-radius: 8px; background: var(--tint); color: var(--tone); display: grid; place-items: center; flex-shrink: 0; }
+.metricIcon svg { width: 16px; height: 16px; }
+.metricValue { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; width: 100%; min-width: 0; }
+.metricValue strong { min-width: 0; font-size: 26px; line-height: 1.3; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.metricValue small { font-size: 11px; color: var(--report-muted); flex-shrink: 0; }
+.metric[data-money=true] .metricValue strong { font-size: clamp(13px, 1.17vw, 22px); }
+
+.financialGrid, .analysisGrid { display: grid; gap: 12px; min-height: 0; min-width: 0; }
+.financialGrid { grid-row: 3; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.analysisGrid { grid-row: 4; grid-template-columns: 1.15fr 1fr 1fr; }
+.panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  background: #fff;
+  border: 1px solid var(--report-border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  box-shadow: 0 2px 5px #18365304;
+}
+.panelHeading { display: flex; align-items: center; gap: 9px; flex-shrink: 0; padding-bottom: 9px; margin-bottom: 8px; border-bottom: 1px solid #eef2f7; }
+.panelHeading h2 { font-size: 16px; font-weight: 800; line-height: 1.5; color: var(--report-text); }
+.panelIcon { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 8px; background: #edf4fd; color: var(--report-accent); flex-shrink: 0; }
+.panelIcon svg { width: 17px; height: 17px; }
+
+.composition, .paymentOverview, .adjustmentPieLayout,
+.statusPieLayout, .enforcementPieLayout {
+  display: grid;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+}
+.composition, .paymentOverview, .adjustmentPieLayout { grid-template-columns: minmax(96px, .95fr) minmax(0, 1.05fr); }
+.statusPieLayout { grid-template-columns: minmax(108px, .9fr) minmax(0, 1.1fr); }
+.enforcementPieLayout { grid-template-columns: minmax(110px, 1.1fr) minmax(0, .9fr); }
+.officePieLayout { display: flex; align-items: center; justify-content: center; flex: 1; min-height: 0; min-width: 0; }
+.officePieLayout .pieFrame { max-width: 300px; margin-inline: auto; }
+.legend, .paymentFacts, .enforcementLegend { display: flex; flex-direction: column; justify-content: center; min-width: 0; min-height: 0; }
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  border-bottom: 1px solid #edf2f7;
+  border-radius: 4px;
+  padding: 10px 2px;
+  background: none;
+  text-align: right;
+  font-size: 12px !important;
+  line-height: 1.6;
+  transition: background .15s;
+}
+.legendItem:last-child { border-bottom-color: transparent; }
+.legendItem:not(:disabled):hover { background: var(--report-soft); }
+.dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.legendItem > span:nth-child(2) { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #415e78; }
+.legendItem > strong { font-size: 14px; font-variant-numeric: tabular-nums; text-align: left; white-space: nowrap; }
+.legendItem > strong small { display: block; font-size: 10px; font-weight: 400; color: var(--report-muted); line-height: 1.6; }
+.financialGrid .legendItem, .enforcementLegend .legendItem { display: grid; grid-template-columns: 7px minmax(0, 1fr); gap: 4px 6px; }
+.financialGrid .legendItem > span:nth-child(2), .enforcementLegend .legendItem > span:nth-child(2) { overflow: visible; white-space: normal; }
+.financialGrid .legendItem > strong, .enforcementLegend .legendItem > strong { grid-column: 2; text-align: right; }
+.financialGrid .legendItem > strong { font-size: clamp(11px, .9vw, 16px); line-height: 1.6; max-width: 100%; }
+.financialGrid .legendItem > strong bdi { white-space: nowrap; }
+.financialGrid .legendItem > strong small { margin-top: 1px; }
+.enforcementLegend { gap: 6px; }
+.enforcementLegend .legendItem > strong { font-size: 22px; }
+.enforcementLegend .legendItem > strong small { display: none; }
+.stateLegend { display: flex; flex-direction: column; justify-content: space-evenly; height: 100%; min-height: 0; min-width: 0; }
+.stateLegend .legendItem { flex: 1; min-height: 0; border: 0; padding: 0 2px; gap: 5px; line-height: 1.3; }
+.stateLegend .legendItem > strong { font-size: 12px; line-height: 1.3; }
+.stateLegend .legendItem > strong small { display: none; }
+.notificationSummary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin-top: 8px; flex-shrink: 0; }
+.notificationSummary button { display: flex; align-items: center; gap: 5px; min-width: 0; border: 1px solid #dcf0e8; border-radius: 6px; background: #edf8f4; padding: 4px 7px; font-size: 11px !important; color: #326b5a; }
+.notificationSummary button:last-child { background: #fff7e9; border-color: #f7e8ce; color: #855c1d; }
+.notificationSummary button > strong { margin-inline-start: auto; }
+.notificationSummary button:not(:disabled):hover { border-color: currentColor; }
+.unavailableStages { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; margin-top: 8px; }
+.unavailableStages button { display: flex; justify-content: space-between; align-items: center; gap: 6px; border: 1px dashed #e1e7ee; border-radius: 6px; padding: 4px 7px; background: #f8fafc; text-align: right; font-size: 11px !important; color: #66798c; }
+.unavailableStages small { font-size: 10px; }
+
+.pieFrame { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; width: 100%; height: 100%; min-height: 0; min-width: 0; margin: 0; direction: ltr; }
+.pieCanvas { position: relative; flex: 1; width: 100%; min-height: 0; min-width: 0; }
+.pieCaption { flex-shrink: 0; max-width: 100%; font-size: 11px; font-weight: 500; color: var(--report-muted); line-height: 1.5; text-align: center; direction: rtl; }
+.chartSummary { display: flex; align-items: baseline; justify-content: center; gap: 5px; flex-wrap: wrap; line-height: 1.5; padding-top: 2px; }
+.chartSummary > strong { font-size: 14px; font-weight: 700; color: #315a80; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.chartSummary > span { font-size: 11px; color: var(--report-muted); }
+.pieSector:focus-visible { outline: 2px solid var(--report-text); outline-offset: 3px; border-radius: 4px; }
+.pieTooltip { display: flex; flex-direction: column; gap: 7px; max-width: 280px; padding: 12px 14px; border: 1px solid var(--report-border); border-radius: 10px; background: #fff; box-shadow: 0 8px 26px #1436541c; color: #244868; direction: rtl; font-size: 12px; text-align: right; }
+.pieTooltip > strong { display: flex; align-items: center; gap: 7px; font-size: 12px; line-height: 1.7; }
+.pieTooltip > strong > span { width: 8px; height: 8px; flex-shrink: 0; border-radius: 50%; }
+.pieTooltip > span { font-variant-numeric: tabular-nums; }
+.pieTooltip > small { font-size: 11px; color: var(--report-muted); }
+.chartEmpty, .placeholder { display: flex; align-items: center; justify-content: center; text-align: center; color: var(--report-muted); line-height: 1.8; }
+.chartEmpty { flex: 1; min-height: 0; padding: 12px; font-size: 12px; }
+.placeholder { grid-row: 3 / 5; flex-direction: column; gap: 16px; background: #fff; border: 1px solid var(--report-border); border-radius: 12px; font-size: 14px; }
+
+.overviewFooter { grid-row: 5; display: flex; justify-content: space-between; align-items: center; gap: 12px; min-width: 0; }
+.hint { display: flex; align-items: center; gap: 6px; min-width: 0; font-size: 11px; color: var(--report-muted); line-height: 1.6; }
+.hint svg { width: 15px; height: 15px; flex-shrink: 0; }
+.workButton { color: #345d83; }
+.workButton strong { display: grid; place-items: center; min-width: 21px; height: 21px; border-radius: 6px; background: #edf4fd; color: #2779dc; font-size: 12px; }
+.workButton small { font-size: 11px; color: var(--report-muted); }
+
+/* Dialogs use the same surfaces, controls and type scale as the overview. */
+.reportDialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  height: fit-content;
+  width: min(1160px, calc(100vw - 40px));
+  max-width: none;
+  max-height: calc(100dvh - 40px);
+  padding: 0;
+  border: 1px solid var(--report-border);
+  border-radius: 16px;
+  background: #fff;
+  color: var(--report-text);
+  box-shadow: 0 20px 80px #10274236;
+  direction: rtl;
+  overflow: auto;
+  font-family: inherit;
+}
+.reportDialog::backdrop { background: #10274266; backdrop-filter: blur(4px); }
+.reportDialog > .panel { padding: 20px; border: 0; border-radius: 16px; box-shadow: none; display: block; }
+.detailsHeading { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 16px; }
+.detailsHeading h2 { font-size: 17px; font-weight: 700; line-height: 1.7; }
+.detailsHeading p { font-size: 13px; line-height: 1.8; color: var(--report-muted); margin-top: 5px; }
+.note { font-size: 11px; color: var(--report-muted); line-height: 1.7; margin: 5px 0 10px !important; }
+.tableScroll { width: 100%; max-width: 100%; overflow-x: auto; border: 1px solid var(--report-border); border-radius: 8px; }
+.tableScroll table { width: 100%; border-collapse: collapse; table-layout: fixed; text-align: right; font-size: 13px; }
+.tableScroll th { background: var(--report-soft); color: #506b83; font-weight: 500; font-size: 12px; padding: 11px 9px; line-height: 1.6; }
+.tableScroll td { padding: 10px 9px; border-top: 1px solid #edf2f7; line-height: 1.6; overflow-wrap: anywhere; }
+.tableScroll th:nth-child(2) { width: 22%; }
+.tableScroll td small { display: block; font-size: 11px; color: var(--report-muted); margin-top: 2px; }
+.tableScroll td strong { font-weight: 500; }
+.tableScroll td a { color: #2779dc !important; text-decoration: none; }
+.tableScroll tbody tr:hover { background: #fafcff; }
+.tableEmpty { text-align: center !important; padding: 26px !important; color: var(--report-muted); }
+.pagination { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 16px; font-size: 13px; color: var(--report-muted); }
+.pagination > div { display: flex; gap: 7px; }
+.pagination button, .error button { min-height: 32px; border: 1px solid var(--report-border); border-radius: 7px; padding: 6px 12px; background: #fff; font-size: 12px !important; }
+.pagination button:disabled { opacity: .45; }
+.pagination button:not(:disabled):hover { background: #edf4fd; }
+.error { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: #fff3f3; border: 1px solid #f0d8da; border-radius: 8px; padding: 10px; font-size: 13px; color: #a13e4a; }
+.workDialog { padding: 20px; }
+.workFacts { display: flex; flex-wrap: wrap; gap: 12px 24px; font-size: 13px; color: var(--report-muted); margin: 0 0 15px; }
+.workFacts strong { color: #30577d; }
+.workDialog :global([class*=pendingCard]) { min-height: 0; padding: 0; border: 0; box-shadow: none; }
+.workDialog :global([class*=tableScroll]) { overflow: visible; }
+.workDialog :global([class*=pendingPapersTable]) { min-width: 0; table-layout: fixed; font-size: 13px; }
+.workDialog :global([class*=pendingPapersTable]) td { overflow-wrap: anywhere; white-space: normal; }
+.workDialog :global([class*=pendingPapersTable]) th { font-size: 12px; white-space: normal; }
+
+@media (min-width: 1600px) {
+  .viewportMain { padding-inline: 24px !important; grid-template-rows: 62px minmax(0, 1fr); }
+  .overview { gap: 16px; grid-template-rows: 34px 104px minmax(0, .85fr) minmax(0, 1.15fr) 36px; }
+  .metrics, .financialGrid, .analysisGrid { gap: 16px; }
+  .metric { padding: 13px 18px; }
+  .metricLabel { font-size: 14px; }
+  .metricIcon { width: 28px; height: 28px; }
+  .metricValue strong { font-size: 30px; }
+  .metricValue small { font-size: 12px; }
+  .panel { padding: 16px 18px; }
+  .panelHeading { padding-bottom: 12px; margin-bottom: 10px; }
+  .panelHeading h2 { font-size: 18px; }
+  .legendItem { font-size: 14px !important; }
+  .legendItem > strong small { font-size: 12px; }
+  .stateLegend .legendItem { font-size: 13px !important; }
+  .stateLegend .legendItem > strong { font-size: 14px; }
+  .notificationSummary button, .unavailableStages button { font-size: 12px !important; }
+  .unavailableStages small { font-size: 11px; }
+  .chartSummary > strong { font-size: 16px; }
+  .chartSummary > span, .hint { font-size: 12px; }
+}
+
+@media (max-height: 800px) and (min-width: 1201px) {
+  .viewportMain { grid-template-rows: 44px minmax(0, 1fr); padding-bottom: 8px !important; }
+  .overview { grid-template-rows: 28px 80px minmax(0, .8fr) minmax(0, 1.2fr) 30px; gap: 8px; }
+  .panel { padding: 8px 10px; }
+  .panelHeading { padding-bottom: 5px; margin-bottom: 5px; gap: 7px; }
+  .panelIcon { width: 24px; height: 24px; }
+  .metric { padding: 7px 12px; gap: 3px; }
+  .metricValue strong { font-size: 23px; }
+  .legendItem { padding-block: 5px; }
+  .financialGrid .legendItem { padding-block: 4px; gap: 3px 6px; }
+  .notificationSummary { margin-top: 5px; gap: 4px; }
+  .notificationSummary button { padding: 2px 5px; font-size: 10px !important; }
+  .unavailableStages { margin-top: 5px; gap: 3px; }
+  .unavailableStages button { padding-block: 2px; }
+  .enforcementLegend { gap: 3px; }
+}
+
+@media (max-width: 1200px) {
+  .viewportMain { height: auto; min-height: calc(100dvh - 84px); display: block; padding: 0 16px 20px !important; }
+  .viewportMain > :first-child { min-height: 64px !important; flex-wrap: wrap !important; padding-block: 12px !important; }
+  .overview { display: flex; flex-direction: column; gap: 14px; }
+  .intro { min-height: 34px; }
+  .intro > div { flex-wrap: wrap; gap: 7px; }
+  .scopeDot, .intro > div > span:last-child { display: none; }
+  .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .metric { min-height: 96px; padding: 12px 14px; }
+  .metric[data-money=true] .metricValue strong { font-size: clamp(13px, 1.8vw, 20px); }
+  .financialGrid, .analysisGrid { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .panel { min-height: 252px; padding: 16px; }
+  .panelHeading { margin-bottom: 12px; padding-bottom: 12px; }
+  .composition, .paymentOverview, .adjustmentPieLayout { grid-template-columns: minmax(120px, 1fr) minmax(0, 1.1fr); min-height: 180px; gap: 16px; }
+  .financialGrid .legendItem > strong { font-size: 14px; }
+  .pieFrame { height: 190px; }
+  .statusPieLayout { grid-template-columns: minmax(120px, 1fr) minmax(0, 1.1fr); min-height: 264px; gap: 14px; }
+  .statusPieLayout .pieFrame { height: 230px; }
+  .stateLegend { min-height: 264px; }
+  .stateLegend .legendItem { min-height: 22px; font-size: 12px !important; }
+  .officePieLayout { min-height: 250px; }
+  .officePieLayout .pieFrame { height: 250px; max-width: 320px; }
+  .enforcementPieLayout { grid-template-columns: minmax(140px, 1.2fr) minmax(0, 1fr); min-height: 200px; }
+  .enforcementPieLayout .pieFrame { height: 200px; }
+  .notificationSummary button { min-height: 32px; }
+  .unavailableStages button { min-height: 30px; }
+  .overviewFooter { flex-wrap: wrap; }
+  .workButton { min-height: 38px; }
+  .placeholder { min-height: 260px; }
+}
+
+@media (max-width: 700px) {
+  .viewportMain { padding-inline: 12px !important; }
+  .viewportMain > :first-child h1 { font-size: 18px; }
+  .intro { font-size: 11px; gap: 8px; }
+  .refresh, .close { min-height: 36px; padding-inline: 9px; }
+  .metrics { gap: 10px; }
+  .metric { padding: 10px; min-height: 100px; }
+  .metricLabel { gap: 6px; font-size: 11px; }
+  .metricIcon { width: 24px; height: 24px; }
+  .metricValue { flex-wrap: wrap; gap: 1px 5px; }
+  .metricValue small { font-size: 10px; }
+  .metric[data-money=true] .metricValue { flex-direction: column; }
+  .metric[data-money=true] .metricValue strong { font-size: clamp(11px, 3vw, 18px); line-height: 1.6; }
+  .panel { padding: 14px; }
+  .panelHeading h2 { font-size: 16px; }
+  .composition, .paymentOverview, .adjustmentPieLayout { grid-template-columns: minmax(100px, .95fr) minmax(0, 1.05fr); gap: 10px; }
+  .financialGrid .legendItem > strong { font-size: clamp(11px, 3vw, 14px); }
+  .statusPieLayout { grid-template-columns: minmax(105px, .85fr) minmax(0, 1.15fr); gap: 10px; }
+  .enforcementPieLayout { grid-template-columns: minmax(125px, 1.1fr) minmax(0, 1fr); gap: 10px; }
+  .hint { font-size: 11px; }
+  .reportDialog { width: calc(100vw - 20px); max-height: calc(100dvh - 20px); }
+  .reportDialog > .panel, .workDialog { padding: 12px; }
+  .detailsHeading { gap: 8px; margin-bottom: 12px; }
+  .detailsHeading h2 { font-size: 14px; }
+  .detailsHeading p { font-size: 11px; }
+  .close { font-size: 11px !important; }
+  .tableScroll th { font-size: 10px; padding: 7px 3px; }
+  .tableScroll td { font-size: 11px; padding: 8px 3px; }
+  .tableScroll td small { font-size: 9px; }
+  .tableScroll th:nth-child(2) { width: 24%; }
+  .workDialog :global([class*=pendingPapersTable]) { font-size: 11px; }
+  .workDialog :global([class*=pendingPapersTable]) th { font-size: 10px; }
+  .workDialog :global([class*=pendingPapersTable]) td { padding: 6px 3px; }
+}
+
+@media (max-width: 360px) {
+  .metricLabel { gap: 4px; font-size: 10px; }
+  .metricIcon { width: 20px; height: 20px; }
+  .panel { padding: 12px; }
+  .financialGrid .legendItem > strong { font-size: 10px; }
+  .stateLegend .legendItem { font-size: 11px !important; }
+  .unavailableStages small { font-size: 9px; }
+}

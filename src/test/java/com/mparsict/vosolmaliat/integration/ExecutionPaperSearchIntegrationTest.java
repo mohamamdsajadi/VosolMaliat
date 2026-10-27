@@ -38,6 +38,105 @@ class ExecutionPaperSearchIntegrationTest {
     @Autowired com.mparsict.vosolmaliat.domain.repository.ExecutionPaperViewRepository paperViews;
     @Autowired com.mparsict.vosolmaliat.domain.repository.security.GroupPermissionRepository grants;
 
+    @Test
+    void dashboardChartsAndPagedDetailsShareExactCurrentBalancesWithoutCountingHistoryOrDuplicateDebt() throws Exception {
+        var paper = em.createQuery("select p from ExecutionPaper p where p.executionPaperUniqueCode='PAPER-1'", ExecutionPaper.class).getSingleResult();
+        var debt = em.createQuery("select d from DebtInformation d where d.finalTaxDebtPaper=:fp", DebtInformation.class)
+                .setParameter("fp", paper.getFinalTaxDebtPaper()).getSingleResult();
+        em.persist(DebtInformationHistory.current(debt, paper.getIssuanceDate()));
+        em.persist(ExecutionPaper.builder().executionPaperUniqueCode("DUPLICATE-DEBT")
+                .issuanceDate(paper.getIssuanceDate()).finalTaxDebtPaper(paper.getFinalTaxDebtPaper()).currentState("UNASSIGNED").build());
+        em.flush(); em.clear();
+        var overview = dashboard("admin", "/overview");
+        assertThat(overview.path("papers").asLong()).isEqualTo(4);
+        assertThat(overview.path("taxpayers").asLong()).isEqualTo(3);
+        assertThat(overview.path("balances").path("remaining").isTextual()).isTrue();
+        assertThat(overview.path("balances").path("remaining").asText()).isEqualTo("18014398509481995.13");
+        BigDecimal contributions = BigDecimal.ZERO;
+        var ids = new java.util.HashSet<Long>();
+        for (int page = 0; page < 2; page++) {
+            var details = dashboard("admin", "/details?group=finance&key=remaining&size=2&page=" + page);
+            assertThat(details.path("totalElements").asInt()).isEqualTo(4);
+            assertThat(details.path("amount").asText()).isEqualTo(overview.path("balances").path("remaining").asText());
+            for (var row : details.path("content")) {
+                assertThat(ids.add(row.path("id").asLong())).isTrue();
+                contributions = contributions.add(new BigDecimal(row.path("contribution").asText()));
+            }
+        }
+        assertThat(contributions).isEqualByComparingTo("18014398509481995.13");
+        for (var state : overview.path("states")) {
+            var details = dashboard("admin", "/details?group=state&key=" + state.path("key").asText());
+            assertThat(details.path("totalElements").asLong()).isEqualTo(state.path("count").asLong());
+        }
+        assertThat(overview.path("enforcement").get(2).path("available").asBoolean()).isFalse();
+        assertThat(overview.path("enforcement").get(2).path("count").isNull()).isTrue();
+    }
+
+    @Test
+    void dashboardKeepsMissingBalancesUnknownInOverviewAndDetails() throws Exception {
+        em.remove(em.createQuery("select d from DebtInformation d where d.finalTaxDebtPaper.taxpayer.tin='TIN-PAPER-1'", DebtInformation.class).getSingleResult());
+        em.flush(); em.clear();
+        assertThat(dashboard("admin", "/overview").path("balances").path("remaining").isNull()).isTrue();
+        var details = dashboard("admin", "/details?group=finance&key=remaining");
+        assertThat(details.path("totalElements").asInt()).isEqualTo(3);
+        assertThat(details.path("amount").isNull()).isTrue();
+    }
+
+    @Test
+    void dashboardDoesNotExposeUnassignedPapersToOfficersOrAnotherDirectorateToLocalHeads() throws Exception {
+        assertThat(dashboard("demo_execution_officer", "/overview").path("papers").asInt()).isZero();
+        assertThat(dashboard("demo_execution_officer", "/details?group=all&key=PAPERS").path("totalElements").asInt()).isZero();
+        var directorate = com.mparsict.vosolmaliat.domain.model.masterdata.GeneralDirectorateOfTaxAffairs.builder()
+                .generalDirectorateName("اداره کل خارج از محدوده").postalCode("1").address("address").phone("1").build();
+        em.persist(directorate);
+        var office = com.mparsict.vosolmaliat.domain.model.masterdata.TaxAffairsOffice.builder().officeName("واحد خارج از محدوده")
+                .generalDirectorateOfTaxAffairs(directorate).postalCode("1").address("address").phone("1").build();
+        em.persist(office);
+        // A second final paper for an existing taxpayer, in an unrelated directorate.
+        var original = em.createQuery("select p from ExecutionPaper p where p.executionPaperUniqueCode='PAPER-1'", ExecutionPaper.class).getSingleResult();
+        var fp = FinalTaxDebtPaper.builder().taxpayer(original.getFinalTaxDebtPaper().getTaxpayer()).paperType(PaperType.EF03)
+                .taxAffairsOffice(office).finalizationReason(FinalizationReason.FINAL_NOTICE).uniqueFinalTaxDebtNoticeId("FOREIGN-NOTICE")
+                .finalTaxDebtNoticeIssueDate(original.getIssuanceDate()).finalTaxDebtPaperNotificationNumber("FOREIGN-N")
+                .taxYear(1403).periodStartDate(original.getIssuanceDate()).periodEndDate(original.getIssuanceDate()).build();
+        em.persist(fp);
+        em.persist(ExecutionPaper.builder().executionPaperUniqueCode("FOREIGN-DASHBOARD")
+                .issuanceDate(original.getIssuanceDate()).finalTaxDebtPaper(fp).currentState("UNASSIGNED").build());
+        em.flush(); em.clear();
+        var local = dashboard("demo_tax_directorate_director_general", "/details?group=all&key=PAPERS");
+        for (var row : local.path("content")) assertThat(row.path("uniqueCode").asText()).isNotEqualTo("FOREIGN-DASHBOARD");
+        assertThat(dashboard("admin", "/overview").path("papers").asInt()).isEqualTo(4);
+        assertThat(dashboard("demo_tax_directorate_director_general", "/details?group=office&key=" + office.getId())
+                .path("totalElements").asInt()).isZero();
+    }
+
+    @Test
+    void dashboardRejectsInvalidFiltersAndAnonymousAccess() throws Exception {
+        http.perform(get("/api/v1/dashboard/overview")).andExpect(status().isUnauthorized());
+        String bearer = "Bearer " + identities.login("admin").accessToken();
+        for (String suffix : java.util.List.of("group=state&key=INVALID", "group=finance&key=INVALID", "group=office&key=bad",
+                "group=enforcement&key=AUCTION", "group=all&key=PAPERS&size=0", "group=all&key=PAPERS&page=-1")) {
+            http.perform(get("/api/v1/dashboard/details?" + suffix).header("Authorization", bearer)).andExpect(status().isBadRequest());
+        }
+    }
+
+    private com.fasterxml.jackson.databind.JsonNode dashboard(String username, String suffix) throws Exception {
+        var body = http.perform(get("/api/v1/dashboard" + suffix).header("Authorization", "Bearer " + identities.login(username).accessToken()))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
+        return new com.fasterxml.jackson.databind.ObjectMapper().readTree(body);
+    }
+
+    @Test
+    void dashboardAggregateAccessDoesNotGrantPermissionToReadIndividualPapers() throws Exception {
+        for (String code : java.util.List.of("EXECUTION_PAPER_LIST_VIEW", "REPORT_VIEW")) {
+            grants.findByGroupNameAndPermissionCode("DIRECTORATE_EXECUTION_UNIT_HEAD", code).ifPresent(grants::delete);
+        }
+        em.flush(); em.clear();
+        assertThat(dashboard("demo_directorate_execution_unit_head", "/overview").path("canViewDetails").asBoolean()).isFalse();
+        http.perform(get("/api/v1/dashboard/details?group=all&key=PAPERS")
+                .header("Authorization", "Bearer " + identities.login("demo_directorate_execution_unit_head").accessToken()))
+                .andExpect(status().isForbidden());
+    }
+
     @BeforeEach
     void papers() {
         addPaper(true, "2026-08-30T23:59:59", "9007199254740993.02", "PAPER-1", "11111111111");

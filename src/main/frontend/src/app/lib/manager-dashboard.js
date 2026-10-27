@@ -3,11 +3,14 @@ import { fetchCartableTasks } from './tasks';
 import { sanitizeDisplayText } from './display';
 
 export async function fetchManagerDashboard() {
-  const [stats, tasks] = await Promise.allSettled([
+  const [stats, tasks, overview] = await Promise.allSettled([
     apiJson('/api/v1/dashboard/stats'),
     fetchCartableTasks(),
+    apiJson('/api/v1/dashboard/overview'),
   ]);
   return {
+    overview: overview.status === 'fulfilled' ? overview.value : null,
+    overviewError: overview.status === 'rejected' ? overview.reason.message : '',
     stats: stats.status === 'fulfilled' ? stats.value : null,
     tasks: tasks.status === 'fulfilled' && Array.isArray(tasks.value)
       ? tasks.value.filter(task => ['claim', 'complete', 'assign', 'delegate'].some(action => task.allowedActions?.[action])).map(toDashboardTask) : [],

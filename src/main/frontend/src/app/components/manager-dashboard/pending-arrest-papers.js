@@ -7,12 +7,12 @@ import { identifier, money } from '../../lib/execution-papers';
 import Icon from './dashboard-icon';
 import styles from './manager-dashboard.module.css';
 
-export default function PendingArrestPapers({ user, refreshKey }) {
+export default function PendingArrestPapers({ user, refreshKey, size = 5 }) {
   const [page, setPage] = useState(0);
   const [attempt, setAttempt] = useState(0);
   const [result, setResult] = useState(null);
   const canView = hasArrestPermission(user, 'ARREST_ORDER_VIEW');
-  const path = `/api/v1/dashboard/pending-arrest-papers?page=${page}&size=5`;
+  const path = `/api/v1/dashboard/pending-arrest-papers?page=${page}&size=${size}`;
   useEffect(() => {
     if (!canView) return;
     const controller = new AbortController();
@@ -37,7 +37,7 @@ export default function PendingArrestPapers({ user, refreshKey }) {
     <div className={styles.tableScroll} tabIndex={0} role="region" aria-label="برگ‌های نیازمند صدور یا تأیید دستور بازداشت">
       <table className={`${styles.tasksTable} ${styles.pendingPapersTable}`}><thead><tr>{['ردیف', 'شماره برگ اجرا', 'مشخصات مؤدی', 'مانده بدهی (ریال)', 'وضعیت دستور بازداشت', 'عملیات'].map(label => <th key={label} scope="col">{label}</th>)}</tr></thead>
         <tbody>{loading ? <tr><td colSpan={6} className={styles.tableEmpty}>در حال دریافت برگ‌های نیازمند اقدام…</td></tr> : current?.error ? <tr><td colSpan={6} className={styles.tableEmpty}>فهرست دریافت نشد.</td></tr> : !rows.length ? <tr><td colSpan={6} className={styles.tableEmpty}>برگی برای صدور یا تأیید دستور بازداشت در محدوده مسئولیت شما وجود ندارد.</td></tr> : rows.map((row, index) => <tr key={row.paper.id}>
-          <td>{identifier(page * 5 + index + 1)}</td>
+          <td>{identifier(page * size + index + 1)}</td>
           <td>{canOpenPaper ? <Link className={styles.paperCodeLink} href={`/execution-papers/${row.paper.id}`}><bdi>{identifier(row.paper.uniqueCode)}</bdi></Link> : <bdi>{identifier(row.paper.uniqueCode)}</bdi>}</td>
           <td><strong>{row.paper.taxpayerName || '—'}</strong><small className={styles.pendingTaxpayerId}>شناسه ملی: <bdi>{identifier(row.paper.taxpayerNationalId)}</bdi></small></td>
           <td><bdi>{money(row.paper.totalDebt)}</bdi></td>

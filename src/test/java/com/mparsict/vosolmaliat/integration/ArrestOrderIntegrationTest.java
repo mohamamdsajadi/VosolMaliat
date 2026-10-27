@@ -46,6 +46,29 @@ class ArrestOrderIntegrationTest {
     private static final String OFFICER = "demo_execution_officer";
 
     @Test
+    void dashboardEnforcementCountsIssuedOrdersAndTheirActualVisiblePapers() {
+        var before = request(HEAD, "/api/v1/dashboard/overview", HttpMethod.GET, null).getBody();
+        long issued = before.path("enforcement").get(1).path("count").asLong();
+        long paper = fixture("DASHBOARD-ISSUED-ORDER", 40, "100", false);
+        var draft = start(HEAD, List.of(paper), "USER", profileId(SUPERVISOR)).getBody().path("results").get(0).path("order");
+        var notIssuedBefore = request(HEAD, "/api/v1/dashboard/details?group=enforcement&key=NOT_ISSUED&size=100", HttpMethod.GET, null);
+        assertThat(notIssuedBefore.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(notIssuedBefore.getBody().path("content")).anyMatch(row -> row.path("id").asLong() == paper);
+        post(HEAD, "/" + draft.path("id").asLong() + "/approve", Map.of("version", draft.path("version").asLong()));
+        var after = request(HEAD, "/api/v1/dashboard/overview", HttpMethod.GET, null);
+        assertThat(after.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(after.getBody().path("enforcement").get(1).path("count").asLong()).isEqualTo(issued + 1);
+        var details = request(HEAD, "/api/v1/dashboard/details?group=enforcement&key=ISSUED&size=100", HttpMethod.GET, null);
+        assertThat(details.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(details.getBody().path("content")).anyMatch(row -> row.path("id").asLong() == paper);
+        var notIssuedAfter = request(HEAD, "/api/v1/dashboard/details?group=enforcement&key=NOT_ISSUED&size=100", HttpMethod.GET, null);
+        assertThat(notIssuedAfter.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(notIssuedAfter.getBody().path("content")).noneMatch(row -> row.path("id").asLong() == paper);
+        assertThat(notIssuedAfter.getBody().path("totalElements").asLong() + details.getBody().path("totalElements").asLong())
+                .isEqualTo(after.getBody().path("papers").asLong());
+    }
+
+    @Test
     void dashboardPaperRowsCombineOnlyEligibleCandidatesAndMyApprovalDraftsAcrossPageBoundaries() {
         long ready = fixture("DASHBOARD-READY", 40, "9007199254740993.02", false);
         long draft = fixture("DASHBOARD-DRAFT", 40, "100", false);
